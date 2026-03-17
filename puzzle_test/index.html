@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>테스트 스도쿠</title>
+<meta property="og:title" content="테스트 스도쿠">
+<meta property="og:description" content="기능 테스트용 스도쿠 (9칸 비어있음)">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/puzzle_test/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #ffffff;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 32px 16px 48px;
+  }
+
+  .back {
+    align-self: flex-start;
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: #999;
+    text-decoration: none;
+    margin-bottom: 16px;
+    transition: color 0.12s;
+  }
+
+  .back:hover { color: #555; }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: #888;
+    margin-bottom: 20px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .container {
+    width: min(94vw, 450px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .board-wrap {
+    border: 2.5px solid #222;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: min(6.2vw, 28px);
+    font-weight: 700;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s;
+    border-right: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+  }
+
+  .cell:nth-child(9n) { border-right: none; }
+  .cell:nth-child(n+73) { border-bottom: none; }
+
+  .cell.box-right { border-right: 2.5px solid #222; }
+  .cell.box-bottom { border-bottom: 2.5px solid #222; }
+
+  .cell.given { color: #222; }
+  .cell:not(.given) { color: #4a6fa5; }
+  .cell.selected { background: #e8e8d8 !important; }
+  .cell.error { background: #f5d0d0 !important; color: #c0392b !important; }
+  .cell.given.error { color: #c0392b !important; }
+  .cell:hover:not(.selected):not(.error) { background: #f5f5f0; }
+
+  .numpad {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .numpad button {
+    flex: 1;
+    height: 44px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    border: 1.5px solid #c8c3b8;
+    border-radius: 3px;
+    background: #f4f1eb;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.08s;
+  }
+
+  .numpad button:hover { background: #e8e4da; }
+  .numpad button:active { transform: scale(0.95); background: #ddd9cf; }
+
+  .bottom-buttons {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .bottom-buttons button {
+    flex: 1;
+    height: 40px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1.5px solid #d0ccc4;
+    border-radius: 3px;
+    background: #faf8f4;
+    color: #777;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+
+  .bottom-buttons button:hover { background: #eeebe4; color: #555; }
+  .bottom-buttons button:active { transform: scale(0.97); }
+
+  .bottom-buttons button.danger {
+    border-color: #e0bfbf;
+    background: #fdf5f5;
+    color: #b05050;
+  }
+
+  .bottom-buttons button.danger:hover {
+    background: #f5e0e0;
+    color: #8c3333;
+  }
+
+  .message {
+    margin-top: 16px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    min-height: 1.5em;
+    color: #2e7d32;
+    text-align: center;
+  }
+
+  .rules-toggle {
+    margin-top: 14px;
+    font-size: 0.78rem;
+    color: #999;
+    cursor: pointer;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 1px;
+    align-self: center;
+  }
+
+  .rules-toggle:hover { color: #666; border-color: #999; }
+
+  .rules-box {
+    display: none;
+    margin-top: 10px;
+    padding: 14px 18px;
+    background: #faf8f4;
+    border: 1px solid #e0ddd6;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-weight: 400;
+    line-height: 1.7;
+    color: #555;
+  }
+
+  .rules-box.open { display: block; }
+  .rules-box strong { color: #333; font-size: 0.82rem; font-weight: 700; }
+
+  @media (max-width: 540px) {
+    body { padding: 20px 8px 40px; }
+    h1 { font-size: 1.25rem; }
+    .numpad { gap: 5px; }
+    .numpad button { height: min(9.5vw, 44px); font-size: min(4.4vw, 18px); }
+    .bottom-buttons { gap: 5px; }
+    .bottom-buttons button { height: min(8.5vw, 40px); font-size: min(3.2vw, 13px); }
+  }
+
+  @media (max-width: 380px) {
+    .numpad button { height: 36px; font-size: 16px; }
+    .bottom-buttons button { height: 34px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back" href="/puzzle/">&lt; puzzles</a>
+<h1>테스트 스도쿠</h1>
+<p class="subtitle">기능 테스트용 (9칸 비어있음)</p>
+
+<div class="container">
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="numpad" id="numpad"></div>
+
+  <div class="bottom-buttons">
+    <button onclick="placeNumber(0)">지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>스도쿠 규칙</strong><br>
+    같은 행, 같은 열, 같은 3×3 박스 안에 1~9가 한 번씩 들어갑니다.
+  </div>
+</div>
+
+<script>
+// Each box has exactly one empty cell (the diagonal: r0c0, r1c1, ... r8c8)
+const initial = [
+  [0,2,3, 4,5,6, 7,8,9],
+  [4,5,0, 7,8,9, 1,2,3],
+  [7,8,9, 1,2,0, 4,5,6],
+
+  [2,1,4, 3,6,5, 8,0,7],
+  [3,6,5, 8,0,7, 2,1,4],
+  [8,0,7, 2,1,4, 3,6,5],
+
+  [5,3,1, 6,4,2, 0,7,8],
+  [6,4,2, 0,7,8, 5,3,1],
+  [0,7,8, 5,3,1, 6,4,2],
+];
+
+const SAVE_KEY = 'puzzle_test';
+
+function saveProgress() {
+  localStorage.setItem(SAVE_KEY, JSON.stringify(board));
+}
+
+function loadProgress() {
+  const saved = localStorage.getItem(SAVE_KEY);
+  if (!saved) return initial.map(r => [...r]);
+  try {
+    const parsed = JSON.parse(saved);
+    if (parsed.length === 9 && parsed[0].length === 9) return parsed;
+  } catch (e) {}
+  return initial.map(r => [...r]);
+}
+
+let board = loadProgress();
+let givenSet = new Set();
+let selected = null;
+
+function init() {
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+
+      if (c === 2 || c === 5) cell.classList.add('box-right');
+      if (r === 2 || r === 5) cell.classList.add('box-bottom');
+
+      if (initial[r][c] !== 0) {
+        cell.textContent = initial[r][c];
+        cell.classList.add('given');
+        givenSet.add(r * 9 + c);
+      } else if (board[r][c] !== 0) {
+        cell.textContent = board[r][c];
+      }
+
+      cell.addEventListener('click', () => selectCell(r, c));
+      boardEl.appendChild(cell);
+    }
+  }
+
+  const numpad = document.getElementById('numpad');
+  numpad.innerHTML = '';
+  for (let n = 1; n <= 9; n++) {
+    const btn = document.createElement('button');
+    btn.textContent = n;
+    btn.addEventListener('click', () => placeNumber(n));
+    numpad.appendChild(btn);
+  }
+
+  validate();
+}
+
+function selectCell(r, c) {
+  document.querySelectorAll('.cell').forEach(el => el.classList.remove('selected'));
+  selected = { r, c };
+  getCell(r, c).classList.add('selected');
+}
+
+function getCell(r, c) {
+  return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+}
+
+function placeNumber(n) {
+  if (!selected) return;
+  const { r, c } = selected;
+  if (givenSet.has(r * 9 + c)) return;
+
+  board[r][c] = n;
+  const cell = getCell(r, c);
+  cell.textContent = n || '';
+  saveProgress();
+  validate();
+  checkComplete();
+}
+
+function validate() {
+  const errors = new Set();
+
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const v = board[r][c];
+      if (v === 0) continue;
+
+      for (let cc = 0; cc < 9; cc++) {
+        if (cc !== c && board[r][cc] === v) {
+          errors.add(r * 9 + c);
+          errors.add(r * 9 + cc);
+        }
+      }
+
+      for (let rr = 0; rr < 9; rr++) {
+        if (rr !== r && board[rr][c] === v) {
+          errors.add(r * 9 + c);
+          errors.add(rr * 9 + c);
+        }
+      }
+
+      const br = Math.floor(r / 3) * 3;
+      const bc = Math.floor(c / 3) * 3;
+      for (let rr = br; rr < br + 3; rr++) {
+        for (let cc = bc; cc < bc + 3; cc++) {
+          if ((rr !== r || cc !== c) && board[rr][cc] === v) {
+            errors.add(r * 9 + c);
+            errors.add(rr * 9 + cc);
+          }
+        }
+      }
+    }
+  }
+
+  document.querySelectorAll('.cell').forEach(el => {
+    const idx = parseInt(el.dataset.r) * 9 + parseInt(el.dataset.c);
+    el.classList.toggle('error', errors.has(idx));
+  });
+
+  return errors.size === 0;
+}
+
+function checkComplete() {
+  for (let r = 0; r < 9; r++)
+    for (let c = 0; c < 9; c++)
+      if (board[r][c] === 0) return;
+
+  if (validate()) {
+    document.getElementById('message').textContent = '축하합니다! 퍼즐을 완성했습니다!';
+  }
+}
+
+function resetBoard() {
+  board = initial.map(r => [...r]);
+  selected = null;
+  document.getElementById('message').textContent = '';
+  document.querySelectorAll('.cell').forEach(el => {
+    const r = parseInt(el.dataset.r), c = parseInt(el.dataset.c);
+    el.classList.remove('selected', 'error');
+    el.textContent = initial[r][c] || '';
+  });
+  saveProgress();
+  validate();
+}
+
+function toggleRules() {
+  document.getElementById('rulesBox').classList.toggle('open');
+}
+
+document.addEventListener('keydown', e => {
+  if (!selected) return;
+  const { r, c } = selected;
+  if (e.key >= '1' && e.key <= '9') {
+    placeNumber(parseInt(e.key));
+  } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
+    placeNumber(0);
+  } else if (e.key === 'ArrowUp' && r > 0) selectCell(r - 1, c);
+  else if (e.key === 'ArrowDown' && r < 8) selectCell(r + 1, c);
+  else if (e.key === 'ArrowLeft' && c > 0) selectCell(r, c - 1);
+  else if (e.key === 'ArrowRight' && c < 8) selectCell(r, c + 1);
+});
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>퍼즐 도구</title>
+<meta property="og:title" content="퍼즐 도구">
+<meta property="og:description" content="퍼즐 제작 도구 모음">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/tools/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #ffffff;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px 16px 60px;
+  }
+
+  .back {
+    align-self: flex-start;
+    margin-left: max(3vw, calc(50% - 240px));
+    margin-bottom: 18px;
+    color: #999;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.12s;
+  }
+  .back:hover { color: #555; }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .desc {
+    font-size: 0.82rem;
+    color: #999;
+    margin-bottom: 32px;
+  }
+
+  .list {
+    width: min(94vw, 480px);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .list a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #e8e5df;
+    transition: background 0.12s;
+  }
+
+  .list a:first-child {
+    border-top: 1px solid #e8e5df;
+  }
+
+  .list a:hover {
+    background: #faf8f4;
+  }
+
+  .list .title {
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .list .tag {
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: #aaa;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 540px) {
+    body { padding: 28px 8px 48px; }
+    h1 { font-size: 1.3rem; }
+    .list a { padding: 12px 14px; }
+    .back { margin-left: 3vw; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back" href="/puzzle/">&lt; puzzles</a>
+<h1>도구</h1>
+<p class="desc">xivnick.me/puzzle/tools</p>
+
+<div class="list">
+  <a href="/puzzle/tools/norinori/">
+    <span class="title">노리노리 보드 메이커</span>
+    <span class="tag">제작 도구</span>
+  </a>
+</div>
+
+</body>
+</html>

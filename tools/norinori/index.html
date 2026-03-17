@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>노리노리 보드 메이커</title>
+<meta property="og:title" content="노리노리 보드 메이커">
+<meta property="og:description" content="노리노리 퍼즐 보드를 디자인하고 JSON으로 내보내기">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/tools/norinori/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #ffffff;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px 16px 60px;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .back {
+    align-self: flex-start;
+    margin-left: max(3vw, calc(50% - 240px));
+    margin-bottom: 18px;
+    color: #999;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.12s;
+  }
+  .back:hover { color: #555; }
+
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    font-size: 0.82rem;
+    color: #888;
+    margin-bottom: 20px;
+  }
+
+  .container {
+    width: min(94vw, 480px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Size control */
+  .size-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-size: 0.88rem;
+    color: #555;
+    width: 100%;
+  }
+  .size-control label { white-space: nowrap; }
+  .size-control input[type="range"] {
+    flex: 1;
+    accent-color: #4a6fa5;
+    height: 4px;
+  }
+  .size-label {
+    font-weight: 500;
+    color: #222;
+    min-width: 48px;
+    text-align: right;
+  }
+
+  /* Mode toggle */
+  .mode-toggle {
+    display: flex;
+    gap: 0;
+    margin-bottom: 12px;
+    width: 100%;
+  }
+  .mode-toggle button {
+    flex: 1;
+    height: 40px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    background: #f4f1eb;
+    border: 1px solid #c8c3b8;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .mode-toggle button:first-child {
+    border-radius: 3px 0 0 3px;
+  }
+  .mode-toggle button:last-child {
+    border-radius: 0 3px 3px 0;
+    border-left: none;
+  }
+  .mode-toggle button.active {
+    background: #ffffff;
+    color: #222;
+    border-bottom: 2.5px solid #4a6fa5;
+  }
+  .mode-toggle button:hover:not(.active) {
+    background: #ebe8e1;
+  }
+
+  /* Region palette */
+  .region-palette {
+    display: none;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 12px;
+    width: 100%;
+    align-items: center;
+  }
+  .region-palette.visible { display: flex; }
+  .region-swatch {
+    width: 32px;
+    height: 32px;
+    border: 2px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #666;
+  }
+  .region-swatch.active {
+    border-color: #222;
+    box-shadow: 0 0 0 1px #222;
+  }
+  .region-swatch:hover:not(.active) {
+    border-color: #888;
+  }
+  .region-add {
+    width: 32px;
+    height: 32px;
+    border: 1px dashed #aaa;
+    border-radius: 3px;
+    cursor: pointer;
+    background: transparent;
+    font-size: 1.1rem;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s;
+  }
+  .region-add:hover {
+    border-color: #666;
+    color: #666;
+  }
+
+  /* Board */
+  .board-wrap {
+    width: 100%;
+    margin-bottom: 14px;
+  }
+  .board {
+    display: grid;
+    width: 100%;
+    aspect-ratio: 1/1;
+    touch-action: none;
+  }
+  .cell {
+    border: 1px solid #aaa;
+    cursor: pointer;
+    transition: background 0.08s;
+    position: relative;
+  }
+  .cell.inactive {
+    background: #e8e5df;
+    cursor: default;
+  }
+  .cell.active {
+    background: #ffffff;
+  }
+  .cell.active:hover {
+    background: #f5f5f0;
+  }
+  /* Region borders (set via inline style for per-edge control) */
+
+  /* Buttons */
+  .bottom-buttons {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    margin-bottom: 6px;
+  }
+  .bottom-buttons button {
+    flex: 1;
+    height: 44px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    background: #f4f1eb;
+    border: 1px solid #c8c3b8;
+    border-radius: 3px;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .bottom-buttons button:hover { background: #ebe8e1; }
+  .bottom-buttons button.danger {
+    background: #fdf5f5;
+    border-color: #e0bfbf;
+    color: #b05050;
+  }
+  .bottom-buttons button.danger:hover { background: #f8e8e8; }
+  .bottom-buttons button.primary {
+    background: #4a6fa5;
+    border-color: #3d5e8c;
+    color: #fff;
+  }
+  .bottom-buttons button.primary:hover { background: #3d5e8c; }
+
+  /* Message */
+  .message {
+    font-size: 0.82rem;
+    color: #b05050;
+    margin-bottom: 10px;
+    min-height: 1.2em;
+    text-align: center;
+  }
+
+  /* Export box */
+  .export-box {
+    width: 100%;
+    min-height: 80px;
+    max-height: 200px;
+    background: #faf8f4;
+    border: 1px solid #e0ddd6;
+    border-radius: 3px;
+    padding: 10px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #444;
+    resize: vertical;
+    margin-top: 6px;
+    display: none;
+  }
+  .export-box.visible { display: block; }
+
+  @media (max-width: 540px) {
+    body { padding: 28px 8px 48px; }
+    h1 { font-size: 1.2rem; }
+    .back { margin-left: 3vw; }
+    .bottom-buttons button { height: min(9.5vw, 44px); font-size: 0.82rem; }
+    .mode-toggle button { height: 36px; font-size: 0.82rem; }
+    .region-swatch { width: 28px; height: 28px; font-size: 0.62rem; }
+    .region-add { width: 28px; height: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back" href="/puzzle/tools/">&lt; tools</a>
+<h1>노리노리 보드 메이커</h1>
+<p class="subtitle">보드 모양과 영역을 지정하세요</p>
+
+<div class="container">
+  <div class="size-control">
+    <label for="sizeSlider">크기</label>
+    <input type="range" id="sizeSlider" min="5" max="15" value="8">
+    <span class="size-label" id="sizeLabel">8 x 8</span>
+  </div>
+
+  <div class="mode-toggle">
+    <button class="active" id="btnShape" onclick="setMode('shape')">모양</button>
+    <button id="btnRegion" onclick="setMode('region')">영역</button>
+  </div>
+
+  <div class="region-palette" id="regionPalette"></div>
+
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="bottom-buttons">
+    <button onclick="fillAll()">전체 켜기</button>
+    <button onclick="invertAll()">반전</button>
+    <button class="danger" onclick="clearAll()">초기화</button>
+  </div>
+
+  <div class="bottom-buttons">
+    <button class="primary" onclick="exportJSON()">JSON 내보내기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+  <textarea class="export-box" id="exportBox" readonly></textarea>
+</div>
+
+<script>
+const SAVE_KEY = 'tool_norinori_board';
+const REGION_COLORS = [
+  '#d8e4f0','#f0e0d0','#d8f0d8','#e0d8f0','#f0e8d0',
+  '#d0e8e8','#f0d8e0','#e0e0d0','#d8d8f0','#f0f0d0',
+  '#d8e8d0','#e8d0d0','#d0d8e8','#e8e0d0','#e8e8d8',
+  '#c8d8e8','#e8d0c0','#c8e8c8','#d0c8e0','#e0d8c0',
+  '#c0d8d8','#e0c8d0','#d0d0c0','#c8c8e0','#e0e0c0'
+];
+
+let gridSize = 8;
+let mode = 'shape';
+let cells = {};
+let currentRegion = 1;
+let regionCount = 1;
+let isDragging = false;
+let dragValue = null;
+
+// --- Initialization ---
+function initCells() {
+  cells = {};
+  for (let r = 0; r < gridSize; r++) {
+    for (let c = 0; c < gridSize; c++) {
+      cells[`${r},${c}`] = { active: true, region: null };
+    }
+  }
+}
+
+function init() {
+  const saved = loadProgress();
+  if (!saved) {
+    initCells();
+  }
+  renderBoard();
+  renderPalette();
+}
+
+// --- Mode ---
+function setMode(m) {
+  mode = m;
+  document.getElementById('btnShape').classList.toggle('active', m === 'shape');
+  document.getElementById('btnRegion').classList.toggle('active', m === 'region');
+  document.getElementById('regionPalette').classList.toggle('visible', m === 'region');
+  renderBoard();
+}
+
+// --- Region Palette ---
+function renderPalette() {
+  const pal = document.getElementById('regionPalette');
+  pal.innerHTML = '';
+  for (let i = 1; i <= regionCount; i++) {
+    const sw = document.createElement('div');
+    sw.className = 'region-swatch' + (i === currentRegion ? ' active' : '');
+    sw.style.background = REGION_COLORS[(i - 1) % REGION_COLORS.length];
+    sw.textContent = i;
+    sw.onclick = () => { currentRegion = i; renderPalette(); };
+    pal.appendChild(sw);
+  }
+  const addBtn = document.createElement('button');
+  addBtn.className = 'region-add';
+  addBtn.textContent = '+';
+  addBtn.onclick = () => { regionCount++; currentRegion = regionCount; renderPalette(); saveProgress(); };
+  pal.appendChild(addBtn);
+}
+
+// --- Board Rendering ---
+function renderBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+
+  for (let r = 0; r < gridSize; r++) {
+    for (let c = 0; c < gridSize; c++) {
+      const cell = document.createElement('div');
+      const key = `${r},${c}`;
+      const data = cells[key];
+      cell.className = 'cell ' + (data.active ? 'active' : 'inactive');
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+
+      if (data.active && mode === 'region' && data.region) {
+        cell.style.background = REGION_COLORS[(data.region - 1) % REGION_COLORS.length];
+      }
+
+      // Region borders
+      if (data.active) {
+        applyRegionBorders(cell, r, c, data);
+      }
+
+      // Events
+      cell.addEventListener('mousedown', (e) => { e.preventDefault(); onCellDown(r, c); });
+      cell.addEventListener('mouseenter', () => { if (isDragging) onCellDrag(r, c); });
+      cell.addEventListener('touchstart', (e) => { e.preventDefault(); onCellDown(r, c); }, { passive: false });
+
+      board.appendChild(cell);
+    }
+  }
+}
+
+function applyRegionBorders(cell, r, c, data) {
+  const dirs = [
+    [-1, 0, 'borderTop'],
+    [1, 0, 'borderBottom'],
+    [0, -1, 'borderLeft'],
+    [0, 1, 'borderRight']
+  ];
+  for (const [dr, dc, prop] of dirs) {
+    const nr = r + dr, nc = c + dc;
+    const nKey = `${nr},${nc}`;
+    const neighbor = cells[nKey];
+    const needThick = !neighbor || !neighbor.active || neighbor.region !== data.region;
+    cell.style[prop] = needThick ? '2.5px solid #222' : '1px solid #aaa';
+  }
+}
+
+// --- Interaction ---
+function onCellDown(r, c) {
+  isDragging = true;
+  const key = `${r},${c}`;
+  const data = cells[key];
+
+  if (mode === 'shape') {
+    dragValue = !data.active;
+    data.active = dragValue;
+    if (!dragValue) data.region = null;
+  } else {
+    if (!data.active) return;
+    if (data.region === currentRegion) {
+      dragValue = null;
+      data.region = null;
+    } else {
+      dragValue = currentRegion;
+      data.region = currentRegion;
+    }
+  }
+  renderBoard();
+  saveProgress();
+}
+
+function onCellDrag(r, c) {
+  const key = `${r},${c}`;
+  const data = cells[key];
+
+  if (mode === 'shape') {
+    if (data.active === dragValue) return;
+    data.active = dragValue;
+    if (!dragValue) data.region = null;
+  } else {
+    if (!data.active) return;
+    if (dragValue === null) {
+      if (data.region === null) return;
+      data.region = null;
+    } else {
+      if (data.region === dragValue) return;
+      data.region = dragValue;
+    }
+  }
+  renderBoard();
+  saveProgress();
+}
+
+// Touch move handling
+document.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  e.preventDefault();
+  const touch = e.touches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  if (el && el.classList.contains('cell')) {
+    const r = parseInt(el.dataset.r);
+    const c = parseInt(el.dataset.c);
+    onCellDrag(r, c);
+  }
+}, { passive: false });
+
+document.addEventListener('mouseup', () => { isDragging = false; });
+document.addEventListener('touchend', () => { isDragging = false; });
+
+// --- Actions ---
+function fillAll() {
+  for (const key in cells) {
+    cells[key].active = true;
+  }
+  renderBoard();
+  saveProgress();
+}
+
+function invertAll() {
+  for (const key in cells) {
+    cells[key].active = !cells[key].active;
+    if (!cells[key].active) cells[key].region = null;
+  }
+  renderBoard();
+  saveProgress();
+}
+
+function clearAll() {
+  if (!confirm('모든 데이터를 초기화할까요?')) return;
+  initCells();
+  regionCount = 1;
+  currentRegion = 1;
+  renderPalette();
+  renderBoard();
+  saveProgress();
+  hideExport();
+}
+
+// --- Export ---
+function exportJSON() {
+  const msg = document.getElementById('message');
+  msg.textContent = '';
+
+  // Collect active cells
+  const activeCells = [];
+  for (const key in cells) {
+    if (cells[key].active) {
+      const [r, c] = key.split(',').map(Number);
+      activeCells.push([r, c]);
+    }
+  }
+
+  if (activeCells.length === 0) {
+    msg.textContent = '활성화된 셀이 없습니다.';
+    return;
+  }
+
+  // Check unassigned
+  const unassigned = activeCells.filter(([r, c]) => !cells[`${r},${c}`].region);
+  if (unassigned.length > 0) {
+    msg.textContent = `영역이 지정되지 않은 셀이 ${unassigned.length}개 있습니다.`;
+  }
+
+  // Collect regions
+  const regionMap = {};
+  for (const key in cells) {
+    const d = cells[key];
+    if (d.active && d.region) {
+      if (!regionMap[d.region]) regionMap[d.region] = [];
+      const [r, c] = key.split(',').map(Number);
+      regionMap[d.region].push([r, c]);
+    }
+  }
+
+  // Check small regions
+  const smallRegions = Object.entries(regionMap).filter(([_, v]) => v.length < 2);
+  if (smallRegions.length > 0 && !msg.textContent) {
+    msg.textContent = `2셀 미만인 영역이 ${smallRegions.length}개 있습니다.`;
+  }
+
+  // Sort cells within each region
+  const regions = Object.values(regionMap).map(r =>
+    r.sort((a, b) => a[0] - b[0] || a[1] - b[1])
+  );
+
+  const result = {
+    size: gridSize,
+    cells: activeCells.sort((a, b) => a[0] - b[0] || a[1] - b[1]),
+    regions: regions
+  };
+
+  const box = document.getElementById('exportBox');
+  box.value = JSON.stringify(result, null, 2);
+  box.classList.add('visible');
+  box.select();
+}
+
+function hideExport() {
+  document.getElementById('exportBox').classList.remove('visible');
+  document.getElementById('message').textContent = '';
+}
+
+// --- Size Change ---
+const sizeSlider = document.getElementById('sizeSlider');
+const sizeLabel = document.getElementById('sizeLabel');
+
+sizeSlider.addEventListener('input', () => {
+  const newSize = parseInt(sizeSlider.value);
+  sizeLabel.textContent = `${newSize} x ${newSize}`;
+});
+
+sizeSlider.addEventListener('change', () => {
+  const newSize = parseInt(sizeSlider.value);
+  if (newSize === gridSize) return;
+
+  const oldCells = { ...cells };
+  const oldSize = gridSize;
+  gridSize = newSize;
+  initCells();
+
+  // Preserve overlapping data
+  for (let r = 0; r < Math.min(oldSize, newSize); r++) {
+    for (let c = 0; c < Math.min(oldSize, newSize); c++) {
+      const key = `${r},${c}`;
+      if (oldCells[key]) {
+        cells[key] = { ...oldCells[key] };
+      }
+    }
+  }
+
+  // Clean up orphaned region numbers
+  cleanRegions();
+  renderBoard();
+  renderPalette();
+  saveProgress();
+  hideExport();
+});
+
+function cleanRegions() {
+  const usedRegions = new Set();
+  for (const key in cells) {
+    if (cells[key].active && cells[key].region) {
+      usedRegions.add(cells[key].region);
+    }
+  }
+  regionCount = Math.max(1, usedRegions.size > 0 ? Math.max(...usedRegions) : 1);
+  if (currentRegion > regionCount) currentRegion = regionCount;
+}
+
+// --- localStorage ---
+function saveProgress() {
+  const data = { gridSize, cells, regionCount, currentRegion };
+  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+}
+
+function loadProgress() {
+  const saved = localStorage.getItem(SAVE_KEY);
+  if (!saved) return false;
+  try {
+    const data = JSON.parse(saved);
+    gridSize = data.gridSize;
+    cells = data.cells;
+    regionCount = data.regionCount || 1;
+    currentRegion = data.currentRegion || 1;
+    sizeSlider.value = gridSize;
+    sizeLabel.textContent = `${gridSize} x ${gridSize}`;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// --- Start ---
+init();
+</script>
+
+</body>
+</html>

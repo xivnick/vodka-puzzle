@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>260317 노리노리 - 중</title>
+<meta property="og:title" content="260317 노리노리 - 중">
+<meta property="og:description" content="도미노를 배치하여 모든 영역의 조건을 만족시키세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260317_02/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: #333; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 40px 16px 60px; -webkit-user-select: none; user-select: none; }
+  .back { align-self: flex-start; margin-left: max(3vw, calc(50% - 225px)); margin-bottom: 18px; color: #999; text-decoration: none; font-size: 0.85rem; transition: color 0.12s; }
+  .back:hover { color: #555; }
+  h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; letter-spacing: -0.01em; }
+  .subtitle { font-size: 0.82rem; color: #888; margin-bottom: 20px; text-align: center; }
+  .container { width: min(94vw, 450px); display: flex; flex-direction: column; align-items: center; }
+  .board-wrap { width: 100%; position: relative; margin-bottom: 14px; }
+  .board { width: 100%; display: grid; aspect-ratio: 1/1; }
+  .cell { position: relative; transition: background 0.1s; }
+  .cell.inactive { visibility: hidden; }
+  .cell.active { background: #ffffff; cursor: pointer; }
+  .cell.active:hover { background: #f0efe8; }
+  .cell.satisfied { background: #d8f0d8; }
+  .cell.satisfied:hover { background: #c8e8c8; }
+  .domino-overlay { position: absolute; z-index: 5; background: #b0b0b0; border: 2px solid #888; border-radius: 6px; pointer-events: none; }
+  .domino-overlay.error { background: #cc6666; border-color: #aa4444; }
+  .bottom-buttons { display: flex; gap: 6px; width: 100%; margin-bottom: 14px; }
+  .bottom-buttons button { flex: 1; height: 44px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; font-weight: 500; background: #f4f1eb; border: 1px solid #c8c3b8; border-radius: 3px; color: #333; cursor: pointer; transition: background 0.12s; }
+  .bottom-buttons button:hover { background: #ebe8e1; }
+  .bottom-buttons button.danger { background: #fdf5f5; border-color: #e0bfbf; color: #b05050; }
+  .bottom-buttons button.danger:hover { background: #f8e8e8; }
+  .message { font-size: 0.95rem; font-weight: 700; color: #4a6fa5; margin-bottom: 18px; min-height: 1.4em; text-align: center; }
+  .rules-toggle { font-size: 0.82rem; color: #999; cursor: pointer; margin-bottom: 8px; transition: color 0.12s; }
+  .rules-toggle:hover { color: #555; }
+  .rules-box { display: none; background: #faf8f4; border: 1px solid #e0ddd6; border-radius: 4px; padding: 14px 18px; font-size: 0.82rem; color: #555; line-height: 1.8; width: 100%; }
+  .rules-box.open { display: block; }
+  .rules-box p { margin-bottom: 2px; }
+  @media (max-width: 540px) { body { padding: 28px 8px 48px; } h1 { font-size: 1.2rem; } .back { margin-left: 3vw; } .bottom-buttons button { height: min(9.5vw, 44px); font-size: 0.82rem; } }
+</style>
+</head>
+<body>
+<a class="back" href="/puzzle/">&lt; puzzles</a>
+<h1>260317 노리노리 - 중</h1>
+<p class="subtitle">변을 눌러 도미노를 배치하세요</p>
+<div class="container">
+  <div class="board-wrap" id="boardWrap">
+    <div class="board" id="board"></div>
+  </div>
+  <div class="bottom-buttons">
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+  <div class="message" id="message"></div>
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <p>• 인접한 두 칸 사이의 변을 눌러 도미노를 놓습니다.</p>
+    <p>• 도미노를 다시 누르면 지울 수 있습니다.</p>
+    <p>• 각 영역(굵은 테두리)에 정확히 두 칸이 색칠되어야 합니다.</p>
+    <p>• 서로 다른 도미노끼리는 변을 맞댈 수 없습니다.</p>
+  </div>
+</div>
+<script>
+const SIZE = 10;
+const SAVE_KEY = 'puzzle_260317_02';
+const CELLS = [[0,3],[0,4],[0,5],[0,6],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8],[2,1],[2,2],[2,3],[2,4],[2,5],[2,6],[2,7],[2,8],[3,0],[3,1],[3,2],[3,3],[3,4],[3,5],[3,6],[3,7],[3,8],[3,9],[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6],[4,7],[4,8],[4,9],[5,0],[5,1],[5,2],[5,3],[5,4],[5,5],[5,6],[5,7],[5,8],[5,9],[6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6],[6,7],[6,8],[6,9],[7,1],[7,2],[7,3],[7,4],[7,5],[7,6],[7,7],[7,8],[8,1],[8,2],[8,3],[8,4],[8,5],[8,6],[8,7],[8,8],[9,3],[9,4],[9,5],[9,6]];
+const REGIONS = [
+  [[0,3],[0,4],[0,5],[0,6]],
+  [[1,1],[2,1],[3,0],[3,1]],
+  [[1,2],[1,3],[2,2],[3,2],[4,2],[5,2]],
+  [[4,0],[4,1],[5,1]],
+  [[5,0],[6,0],[6,1],[6,2],[7,2]],
+  [[7,1],[8,1],[8,2]],
+  [[8,3],[8,4],[9,3],[9,4]],
+  [[5,3],[5,4],[6,3],[6,4],[6,5],[7,3],[7,4]],
+  [[2,3],[2,4],[3,3],[3,4],[4,3],[4,4]],
+  [[1,4],[1,5],[1,6],[2,6],[3,6]],
+  [[2,5],[3,5],[4,5],[5,5]],
+  [[3,7],[3,8],[4,6],[4,7],[4,8],[5,6],[5,7],[5,8]],
+  [[6,7],[6,8],[6,9]],
+  [[6,6],[7,5],[7,6],[7,7]],
+  [[7,8],[8,7],[8,8]],
+  [[8,5],[8,6],[9,5],[9,6]],
+  [[1,7],[1,8],[2,7],[2,8]],
+  [[3,9],[4,9],[5,9]]
+];
+
+const activeSet = new Set(CELLS.map(([r,c]) => `${r},${c}`));
+const regionMap = {};
+REGIONS.forEach((region, i) => { region.forEach(([r, c]) => { regionMap[`${r},${c}`] = i; }); });
+
+let dominoes = new Set();
+const cellElements = {};
+const boardWrap = document.getElementById('boardWrap');
+
+function dominoKey(k1, k2) { return k1 < k2 ? `${k1}-${k2}` : `${k2}-${k1}`; }
+
+function dominoAt(cellKey) {
+  for (const dk of dominoes) {
+    const sep = dk.indexOf('-', 2);
+    if (dk.substring(0, sep) === cellKey || dk.substring(sep + 1) === cellKey) return dk;
+  }
+  return null;
+}
+
+function createBoard() {
+  const board = document.getElementById('board');
+  board.style.gridTemplateColumns = `repeat(${SIZE}, 1fr)`;
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const cell = document.createElement('div');
+      const key = `${r},${c}`;
+      if (!activeSet.has(key)) { cell.className = 'cell inactive'; board.appendChild(cell); continue; }
+      cell.className = 'cell active';
+      cell.dataset.r = r; cell.dataset.c = c;
+      applyBorders(cell, r, c);
+      cell.addEventListener('click', (e) => handleCellClick(e, cell, r, c, key));
+      cellElements[key] = cell;
+      board.appendChild(cell);
+    }
+  }
+}
+
+function applyBorders(cell, r, c) {
+  const myRegion = regionMap[`${r},${c}`];
+  const shadows = [];
+  for (const [dr, dc, prop] of [[-1,0,'borderTop'],[1,0,'borderBottom'],[0,-1,'borderLeft'],[0,1,'borderRight']]) {
+    const nk = `${r+dr},${c+dc}`;
+    if (!activeSet.has(nk)) {
+      cell.style[prop] = '2px solid #222';
+      if (dr === -1) shadows.push('0 -2px 0 0 #222');
+      else if (dr === 1) shadows.push('0 2px 0 0 #222');
+      else if (dc === -1) shadows.push('-2px 0 0 0 #222');
+      else shadows.push('2px 0 0 0 #222');
+    } else if (regionMap[nk] !== myRegion) cell.style[prop] = '2px solid #222';
+    else cell.style[prop] = '1px solid #aaa';
+  }
+  if (shadows.length) cell.style.boxShadow = shadows.join(', ');
+}
+
+function handleCellClick(e, cell, r, c, key) {
+  const existing = dominoAt(key);
+  if (existing) { dominoes.delete(existing); onStateChange(); return; }
+
+  const rect = cell.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width;
+  const y = (e.clientY - rect.top) / rect.height;
+  const edges = [
+    { dr: -1, dc: 0, dist: y },
+    { dr: 1, dc: 0, dist: 1 - y },
+    { dr: 0, dc: -1, dist: x },
+    { dr: 0, dc: 1, dist: 1 - x },
+  ];
+  edges.sort((a, b) => a.dist - b.dist);
+
+  const best = edges[0];
+  const nk = `${r + best.dr},${c + best.dc}`;
+  if (!activeSet.has(nk) || dominoAt(nk)) return;
+  dominoes.add(dominoKey(key, nk));
+  onStateChange();
+}
+
+function getFilledCells() {
+  const filled = new Set();
+  for (const dk of dominoes) {
+    const sep = dk.indexOf('-', 2);
+    filled.add(dk.substring(0, sep));
+    filled.add(dk.substring(sep + 1));
+  }
+  return filled;
+}
+
+function checkAdjacentDominoes() {
+  const dominoList = [...dominoes];
+  const errorSet = new Set();
+  for (let i = 0; i < dominoList.length; i++) {
+    const sep_i = dominoList[i].indexOf('-', 2);
+    const ci = [dominoList[i].substring(0, sep_i), dominoList[i].substring(sep_i + 1)];
+    for (let j = i + 1; j < dominoList.length; j++) {
+      const sep_j = dominoList[j].indexOf('-', 2);
+      const cj = [dominoList[j].substring(0, sep_j), dominoList[j].substring(sep_j + 1)];
+      let adjacent = false;
+      for (const ki of ci) {
+        const [ri, cci] = ki.split(',').map(Number);
+        for (const kj of cj) {
+          const [rj, ccj] = kj.split(',').map(Number);
+          if (Math.abs(ri - rj) + Math.abs(cci - ccj) === 1) { adjacent = true; break; }
+        }
+        if (adjacent) break;
+      }
+      if (adjacent) { errorSet.add(dominoList[i]); errorSet.add(dominoList[j]); }
+    }
+  }
+  return errorSet;
+}
+
+function renderBoard() {
+  boardWrap.querySelectorAll('.domino-overlay').forEach(e => e.remove());
+  const filled = getFilledCells();
+  const errorDominoes = checkAdjacentDominoes();
+
+  for (const key in cellElements) {
+    const ri = regionMap[key];
+    const region = REGIONS[ri];
+    const count = region.filter(([r, c]) => filled.has(`${r},${c}`)).length;
+    const cell = cellElements[key];
+    if (count === 2) { cell.classList.add('satisfied'); } else { cell.classList.remove('satisfied'); }
+  }
+
+  for (const dk of dominoes) {
+    const sep = dk.indexOf('-', 2);
+    const k1 = dk.substring(0, sep), k2 = dk.substring(sep + 1);
+    drawDomino(k1, k2, errorDominoes.has(dk) ? 'error' : '');
+  }
+}
+
+function drawDomino(k1, k2, cls) {
+  const [r1, c1] = k1.split(',').map(Number);
+  const [r2, c2] = k2.split(',').map(Number);
+  const p = 100 / SIZE, ins = p * 0.1;
+  const el = document.createElement('div');
+  el.className = `domino-overlay${cls ? ' ' + cls : ''}`;
+  el.style.left = `${Math.min(c1, c2) * p + ins}%`;
+  el.style.top = `${Math.min(r1, r2) * p + ins}%`;
+  el.style.width = `${(Math.abs(c1 - c2) + 1) * p - 2 * ins}%`;
+  el.style.height = `${(Math.abs(r1 - r2) + 1) * p - 2 * ins}%`;
+  boardWrap.appendChild(el);
+}
+
+function onStateChange() { renderBoard(); saveProgress(); checkComplete(); }
+
+function checkComplete() {
+  const msg = document.getElementById('message');
+  if (dominoes.size === 0) { msg.textContent = ''; return; }
+  const filled = getFilledCells();
+
+  for (const region of REGIONS) {
+    if (region.filter(([r, c]) => filled.has(`${r},${c}`)).length !== 2) { msg.textContent = ''; return; }
+  }
+
+  const dominoList = [...dominoes];
+  for (let i = 0; i < dominoList.length; i++) {
+    const sep_i = dominoList[i].indexOf('-', 2);
+    const ci = [dominoList[i].substring(0, sep_i), dominoList[i].substring(sep_i + 1)];
+    for (let j = i + 1; j < dominoList.length; j++) {
+      const sep_j = dominoList[j].indexOf('-', 2);
+      const cj = [dominoList[j].substring(0, sep_j), dominoList[j].substring(sep_j + 1)];
+      for (const ki of ci) {
+        const [ri, cci] = ki.split(',').map(Number);
+        for (const kj of cj) {
+          const [rj, ccj] = kj.split(',').map(Number);
+          if (Math.abs(ri - rj) + Math.abs(cci - ccj) === 1) { msg.textContent = ''; return; }
+        }
+      }
+    }
+  }
+
+  msg.textContent = '축하합니다! 퍼즐을 완성했습니다!';
+}
+
+function resetBoard() {
+  if (dominoes.size === 0) return;
+  if (!confirm('모든 도미노를 지울까요?')) return;
+  dominoes = new Set();
+  document.getElementById('message').textContent = '';
+  onStateChange();
+}
+
+function toggleRules() { document.getElementById('rulesBox').classList.toggle('open'); }
+function saveProgress() { localStorage.setItem(SAVE_KEY, JSON.stringify([...dominoes])); }
+function loadProgress() {
+  const s = localStorage.getItem(SAVE_KEY);
+  if (s) { try { const arr = JSON.parse(s); dominoes = new Set(arr.filter(dk => typeof dk === 'string' && dk.includes('-'))); } catch(e) { dominoes = new Set(); } }
+}
+
+createBoard(); loadProgress(); onStateChange();
+</script>
+</body>
+</html>
