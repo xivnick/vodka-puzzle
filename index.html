@@ -186,6 +186,12 @@
 
   loadCompletions();
 
+  window.addEventListener('pageshow', e => {
+    if (!e.persisted) return;
+    document.querySelectorAll('.check-mark').forEach(el => el.remove());
+    loadCompletions();
+  });
+
   async function loadCounts() {
     const counts = await getSolverCounts();
     document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
