@@ -149,7 +149,7 @@
 
 <header class="site-header">
   <a class="header-back" href="/puzzle/">&lt; puzzles</a>
-  <input class="header-nick-input" id="nicknameInput" type="text" placeholder="닉네임을 입력해주세요" maxlength="20" autocomplete="off" spellcheck="false">
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
 </header>
 <h1>260317 노리노리 - 하</h1>
 <p class="subtitle">변을 눌러 도미노를 배치하세요</p>
@@ -161,6 +161,10 @@
 
   <div class="bottom-buttons">
     <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
   </div>
 
   <div class="message" id="message"></div>
@@ -174,7 +178,7 @@
   </div>
 
   <div class="lb-section">
-    <div class="lb-title">순위</div>
+    <div class="lb-title">푼 사람</div>
     <div id="leaderboard"></div>
   </div>
 </div>
@@ -379,8 +383,7 @@ function resetBoard() {
   dominoes = new Set();
   document.getElementById('message').textContent = '';
   onStateChange();
-  timerReset(PUZZLE_ID);
-  timerStart(PUZZLE_ID);
+  resetCompletion(PUZZLE_ID);
 }
 
 function toggleRules() { document.getElementById('rulesBox').classList.toggle('open'); }
@@ -392,9 +395,22 @@ function loadProgress() {
   if (s) { try { const arr = JSON.parse(s); dominoes = new Set(arr.filter(dk => typeof dk === 'string' && dk.includes('-'))); } catch(e) { dominoes = new Set(); } }
 }
 
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, [...dominoes]);
+}
+async function handleCloudLoad() {
+  const state = await loadProgressCloud(PUZZLE_ID);
+  if (!state) return;
+  if (Array.isArray(state)) {
+    dominoes = new Set(state.filter(dk => typeof dk === 'string' && dk.includes('-')));
+    onStateChange();
+    saveProgress();
+  }
+}
+
 createBoard(); loadProgress(); onStateChange();
 initHeader();
-timerStart(PUZZLE_ID);
+initCloudBtns();
 renderLeaderboard(PUZZLE_ID, 'leaderboard');
 </script>
 

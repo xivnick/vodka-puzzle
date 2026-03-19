@@ -255,7 +255,7 @@
 
 <header class="site-header">
   <a class="header-back" href="/puzzle/">&lt; puzzles</a>
-  <input class="header-nick-input" id="nicknameInput" type="text" placeholder="닉네임을 입력해주세요" maxlength="20" autocomplete="off" spellcheck="false">
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
 </header>
 <h1>260316 온도계 스도쿠</h1>
 <p class="subtitle">온도계의 큰 원에서 끝으로 갈수록 숫자가 커져야 합니다</p>
@@ -272,6 +272,10 @@
     <button onclick="placeNumber(0)">지우기</button>
     <button class="danger" onclick="resetBoard()">초기화</button>
   </div>
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
 
   <div class="message" id="message"></div>
 
@@ -283,7 +287,7 @@
   </div>
 
   <div class="lb-section">
-    <div class="lb-title">순위</div>
+    <div class="lb-title">푼 사람</div>
     <div id="leaderboard"></div>
   </div>
 </div>
@@ -511,6 +515,7 @@ function checkComplete() {
 }
 
 function resetBoard() {
+  if (!confirm('정말 초기화하시겠습니까?')) return;
   board = initial.map(r => [...r]);
   selected = null;
   document.getElementById('message').textContent = '';
@@ -521,8 +526,7 @@ function resetBoard() {
   });
   saveProgress();
   validate();
-  timerReset(PUZZLE_ID);
-  timerStart(PUZZLE_ID);
+  resetCompletion(PUZZLE_ID);
 }
 
 function toggleRules() {
@@ -542,9 +546,22 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowRight' && c < 8) selectCell(r, c + 1);
 });
 
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, board);
+}
+async function handleCloudLoad() {
+  const state = await loadProgressCloud(PUZZLE_ID);
+  if (!state) return;
+  if (Array.isArray(state) && state.length === 9) {
+    board = state;
+    renderBoard();
+    saveProgress();
+  }
+}
+
 init();
 initHeader();
-timerStart(PUZZLE_ID);
+initCloudBtns();
 renderLeaderboard(PUZZLE_ID, 'leaderboard');
 </script>
 </body>

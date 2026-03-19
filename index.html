@@ -68,6 +68,15 @@
   .list .title {
     font-size: 0.95rem;
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .list .solver-count {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: #bbb;
   }
 
   .list .tag {
@@ -111,12 +120,24 @@
 
 <header class="site-header">
   <span></span>
-  <input class="header-nick-input" id="nicknameInput" type="text" placeholder="닉네임을 입력해주세요" maxlength="20" autocomplete="off" spellcheck="false">
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
 </header>
 <h1>퍼즐</h1>
 <p class="desc">xivnick.me/puzzle</p>
 
 <div class="list">
+  <a href="/puzzle/260319_03/" data-puzzle-id="260319_03">
+    <span class="title">260319 스카이스크레이퍼 #3</span>
+    <span class="tag">스카이스크레이퍼</span>
+  </a>
+  <a href="/puzzle/260319_02/" data-puzzle-id="260319_02">
+    <span class="title">260319 스카이스크레이퍼 #2</span>
+    <span class="tag">스카이스크레이퍼</span>
+  </a>
+  <a href="/puzzle/260319_01/" data-puzzle-id="260319_01">
+    <span class="title">260319 스카이스크레이퍼 #1</span>
+    <span class="tag">스카이스크레이퍼</span>
+  </a>
   <a href="/puzzle/260317_03/" data-puzzle-id="260317_03">
     <span class="title">260317 노리노리 - 상</span>
     <span class="tag">노리노리</span>
@@ -137,7 +158,7 @@
     <span class="title">260316 노 터치 스도쿠</span>
     <span class="tag">스도쿠</span>
   </a>
-  <a href="/puzzle/puzzle_test/">
+  <a href="/puzzle/puzzle_test/" data-puzzle-id="puzzle_test">
     <span class="title">테스트 스도쿠</span>
     <span class="tag">테스트</span>
   </a>
@@ -157,13 +178,32 @@
           const ck = document.createElement('span');
           ck.className = 'check-mark';
           ck.textContent = '✓';
-          a.appendChild(ck);
+          a.querySelector('.title').appendChild(ck);
         }
       }
     });
   }
 
   loadCompletions();
+
+  async function loadCounts() {
+    const counts = await getSolverCounts();
+    document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
+      const pid = a.dataset.puzzleId;
+      const n = counts.get(pid);
+      if (n) {
+        const titleSpan = a.querySelector('.title');
+        if (!titleSpan.querySelector('.solver-count')) {
+          const ct = document.createElement('span');
+          ct.className = 'solver-count';
+          ct.textContent = `(${n})`;
+          titleSpan.insertBefore(ct, titleSpan.querySelector('.check-mark'));
+        }
+      }
+    });
+  }
+
+  loadCounts();
 </script>
 </body>
 </html>

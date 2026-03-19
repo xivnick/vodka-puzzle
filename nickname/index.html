@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>닉네임 설정</title>
+<meta property="og:title" content="닉네임 설정">
+<meta property="og:description" content="닉네임으로 풀이 기록을 관리합니다">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/nickname/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/puzzle/css/common.css">
+<script src="/puzzle/js/common.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #fff;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 0 16px 60px;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 24px;
+    letter-spacing: -0.01em;
+  }
+
+  .form-wrap {
+    width: min(94vw, 480px);
+  }
+
+  .nick-input {
+    width: 100%;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    border: none;
+    border-bottom: 1.5px solid #ddd;
+    padding: 10px 0;
+    outline: none;
+    color: #222;
+    background: transparent;
+    transition: border-color 0.15s;
+  }
+  .nick-input::placeholder { color: #ccc; }
+  .nick-input:focus { border-bottom-color: #888; }
+
+  .nick-status {
+    min-height: 22px;
+    font-size: 0.78rem;
+    margin-top: 8px;
+    transition: color 0.15s;
+    color: #bbb;
+  }
+  .nick-status.checking { color: #bbb; }
+  .nick-status.is-new    { color: #5a9a5a; }
+  .nick-status.is-exists { color: #4a6fa5; }
+
+  .use-btn {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    background: #f4f1eb;
+    border: 1px solid #c8c3b8;
+    border-radius: 2px;
+    cursor: pointer;
+    color: #444;
+    transition: background 0.12s;
+  }
+  .use-btn:hover { background: #ede9e1; }
+  .use-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .desc-section {
+    width: min(94vw, 480px);
+    margin-top: 36px;
+    border-top: 1px solid #e8e5df;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .desc-item {
+    font-size: 0.8rem;
+    color: #999;
+    line-height: 1.6;
+    padding-left: 12px;
+    position: relative;
+  }
+  .desc-item::before {
+    content: '·';
+    position: absolute;
+    left: 0;
+    color: #ccc;
+  }
+  .desc-item strong {
+    color: #777;
+    font-weight: 500;
+  }
+
+  @media (max-width: 540px) {
+    h1 { font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="header-back" id="backLink" href="/puzzle/">&lt; 뒤로</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+
+<h1>닉네임</h1>
+
+<div class="form-wrap">
+  <input class="nick-input" id="nickInput" type="text" placeholder="닉네임 입력" maxlength="20" autocomplete="off" spellcheck="false">
+  <div class="nick-status" id="nickStatus"></div>
+  <button class="use-btn" id="useBtn" disabled>사용하기</button>
+</div>
+
+<div class="desc-section">
+  <p class="desc-item">닉네임으로 풀이 완료 기록이 저장되고 <strong>리더보드에 표시</strong>됩니다. 게스트는 기록이 저장되지 않습니다.</p>
+  <p class="desc-item">닉네임을 설정하면 퍼즐 페이지에 <strong>저장하기 / 불러오기</strong> 버튼이 활성화됩니다. 풀이 진행 상태를 클라우드에 저장하고 다른 기기에서 불러올 수 있습니다.</p>
+  <p class="desc-item">여러 기기에서 <strong>같은 닉네임을 사용</strong>하면 동일한 기록으로 연결됩니다.</p>
+  <p class="desc-item">닉네임은 언제든 변경할 수 있지만, <strong>이전 닉네임의 기록은 새 닉네임으로 이전되지 않습니다.</strong></p>
+  <p class="desc-item">닉네임은 비밀번호 없이 누구나 사용할 수 있으므로, <strong>고유한 닉네임</strong>을 사용하는 것이 좋습니다.</p>
+</div>
+
+<script>
+  initHeader();
+
+  // 뒤로가기 링크: referrer가 퍼즐 내부면 history.back(), 아니면 /puzzle/
+  const backLink = document.getElementById('backLink');
+  try {
+    const ref = document.referrer;
+    if (ref && new URL(ref).hostname === location.hostname && new URL(ref).pathname.startsWith('/puzzle/')) {
+      backLink.href = '#';
+      backLink.addEventListener('click', e => { e.preventDefault(); history.back(); });
+    }
+  } catch(e) {}
+
+  const nickInput = document.getElementById('nickInput');
+  const statusEl  = document.getElementById('nickStatus');
+  const useBtn    = document.getElementById('useBtn');
+
+  // 현재 닉네임 미리 채우기
+  const current = getNickname();
+  if (current) nickInput.value = current;
+
+  let checkTimer = null;
+
+  nickInput.addEventListener('input', () => {
+    const name = nickInput.value.trim();
+    clearTimeout(checkTimer);
+    useBtn.disabled = !name;
+    if (!name) { statusEl.textContent = ''; statusEl.className = 'nick-status'; return; }
+
+    statusEl.textContent = '확인 중…';
+    statusEl.className = 'nick-status checking';
+
+    // 게스트는 DB 조회 없이 바로 경고
+    if (name === GUEST_NAME) {
+      statusEl.textContent = '게스트는 기록이 저장되지 않습니다.';
+      statusEl.className = 'nick-status is-exists';
+      return;
+    }
+
+    checkTimer = setTimeout(async () => {
+      try {
+        const rows = await sbSelect(
+          'nicknames',
+          `nickname=eq.${encodeURIComponent(name)}&select=nickname&limit=1`
+        );
+        if (rows.length > 0) {
+          statusEl.textContent = '이미 사용 중인 닉네임입니다. 내 닉네임이라면 그대로 사용하세요.';
+          statusEl.className = 'nick-status is-exists';
+        } else {
+          statusEl.textContent = '새로운 닉네임입니다.';
+          statusEl.className = 'nick-status is-new';
+        }
+      } catch(e) {
+        statusEl.textContent = '';
+        statusEl.className = 'nick-status';
+      }
+    }, 500);
+  });
+
+  // 엔터키 지원
+  let composing = false;
+  nickInput.addEventListener('compositionstart', () => { composing = true; });
+  nickInput.addEventListener('compositionend',   () => { composing = false; });
+  nickInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !composing) apply();
+  });
+
+  useBtn.addEventListener('click', apply);
+
+  async function apply() {
+    const name = nickInput.value.trim();
+    if (!name) return;
+    setNickname(name);
+    await registerNickname(name); // nicknames 테이블에 등록 후 이동 (중복이면 무시)
+    // 헤더 링크 텍스트 즉시 업데이트
+    const link = document.getElementById('nicknameLink');
+    if (link) link.textContent = name;
+
+    try {
+      const ref = document.referrer;
+      if (ref && new URL(ref).hostname === location.hostname && new URL(ref).pathname.startsWith('/puzzle/')) {
+        history.back();
+        return;
+      }
+    } catch(e) {}
+    location.href = '/puzzle/';
+  }
+</script>
+</body>
+</html>

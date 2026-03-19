@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>260319 스카이스크레이퍼 #3</title>
+<meta property="og:title" content="260319 스카이스크레이퍼 #3">
+<meta property="og:description" content="각 방향에서 보이는 건물 수를 힌트로 1~N 숫자를 채워넣으세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260319_03/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #fff;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 0 16px 60px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; letter-spacing: -0.01em; margin-top: 20px; }
+.subtitle { font-size: 0.82rem; color: #888; margin-bottom: 20px; text-align: center; }
+.container {
+  width: min(94vw, 450px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.sky-board {
+  --cell: min(46px, 11vw);
+  --clue: min(28px, 6.5vw);
+  display: inline-grid;
+  grid-template-columns: var(--clue) repeat(6, var(--cell)) var(--clue);
+  grid-template-rows: var(--clue) repeat(6, var(--cell)) var(--clue);
+  margin-bottom: 8px;
+}
+.sky-clue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #333;
+}
+.sky-clue.clue-err { color: #c0392b; }
+.sky-corner {}
+.sky-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #4a6fa5;
+  cursor: pointer;
+  transition: background 0.1s;
+  background: #fff;
+  box-sizing: border-box;
+}
+.sky-cell:hover { background: #f0efe8; }
+.sky-cell.selected { background: #e8e8d8; }
+.sky-cell.conflict { background: #f5d0d0; color: #c0392b; }
+.numpad {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  width: calc(6 * min(46px, 11vw));
+}
+.numpad button {
+  flex: 1;
+  height: 44px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  background: #f4f1eb;
+  border: 1px solid #c8c3b8;
+  border-radius: 3px;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.numpad button:hover { background: #ebe8e1; }
+.bottom-buttons {
+  display: flex;
+  gap: 6px;
+  width: calc(6 * min(46px, 11vw));
+  margin-bottom: 8px;
+}
+.bottom-buttons button {
+  flex: 1;
+  height: 44px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  background: #f4f1eb;
+  border: 1px solid #c8c3b8;
+  border-radius: 3px;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.bottom-buttons button:hover { background: #ebe8e1; }
+.bottom-buttons button.danger { background: #fdf5f5; border-color: #e0bfbf; color: #b05050; }
+.bottom-buttons button.danger:hover { background: #f8e8e8; }
+.message {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #4a6fa5;
+  margin-bottom: 18px;
+  min-height: 1.4em;
+  text-align: center;
+}
+.rules-toggle { font-size: 0.82rem; color: #999; cursor: pointer; margin-bottom: 8px; transition: color 0.12s; }
+.rules-toggle:hover { color: #555; }
+.rules-box {
+  display: none;
+  background: #faf8f4;
+  border: 1px solid #e0ddd6;
+  border-radius: 4px;
+  padding: 14px 18px;
+  font-size: 0.82rem;
+  color: #555;
+  line-height: 1.8;
+  width: 100%;
+  margin-bottom: 16px;
+}
+.rules-box.open { display: block; }
+@media (max-width: 540px) {
+  body { padding: 0 8px 48px; }
+  h1 { font-size: 1.2rem; }
+}
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css">
+<script src="/puzzle/js/common.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260319 스카이스크레이퍼 #3</h1>
+<p class="subtitle">6×6 · 각 방향에서 보이는 건물 수를 힌트로 숫자를 채우세요</p>
+<div class="container">
+  <div class="sky-board" id="skyBoard"></div>
+  <div class="numpad" id="numpad"></div>
+  <div class="bottom-buttons">
+    <button onclick="input(0)">지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+  <div class="message" id="message"></div>
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <p>• 6×6 격자의 각 가로/세로줄에 1~6의 숫자를 하나씩 채워넣으세요.</p>
+    <p>• 격자 바깥의 숫자는, 그 방향에서 바라봤을 때 보이는 건물의 수입니다.</p>
+    <p>• 숫자가 클수록 건물이 높습니다. 높은 건물은 낮은 건물을 가립니다.</p>
+  </div>
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+<script>
+const PUZZLE_ID = '260319_03';
+const SAVE_KEY = 'puzzle_260319_03';
+const N = 6;
+const CLUES = {
+  top:    [null, null, 3, 3, null, null],
+  right:  [4, null, null, 4, null, null],
+  bottom: [5, null, null, null, 5, null],
+  left:   [null, null, 2, null, null, 2]
+};
+
+let board = Array.from({length: N}, () => Array(N).fill(0));
+let sel = null;
+
+function countVisible(arr) {
+  let cnt = 0, max = 0;
+  for (const v of arr) { if (v > max) { cnt++; max = v; } }
+  return cnt;
+}
+function countVisiblePrefix(arr) {
+  let cnt = 0, max = 0;
+  for (const v of arr) {
+    if (!v) break;
+    if (v > max) { cnt++; max = v; }
+  }
+  return cnt;
+}
+
+function getConflicts() {
+  const set = new Set();
+  for (let r = 0; r < N; r++) {
+    const seen = new Map();
+    for (let c = 0; c < N; c++) {
+      const v = board[r][c]; if (!v) continue;
+      if (seen.has(v)) { set.add(`${r},${c}`); set.add(`${r},${seen.get(v)}`); }
+      else seen.set(v, c);
+    }
+  }
+  for (let c = 0; c < N; c++) {
+    const seen = new Map();
+    for (let r = 0; r < N; r++) {
+      const v = board[r][c]; if (!v) continue;
+      if (seen.has(v)) { set.add(`${r},${c}`); set.add(`${seen.get(v)},${c}`); }
+      else seen.set(v, r);
+    }
+  }
+  return set;
+}
+
+function getClueErrors() {
+  const errs = new Set();
+  for (let c = 0; c < N; c++) {
+    const col = board.map(row => row[c]);
+    const complete = col.every(v => v);
+    if (CLUES.top[c] !== null) {
+      const pre = countVisiblePrefix(col);
+      if (pre > CLUES.top[c] || (complete && countVisible(col) !== CLUES.top[c])) errs.add(`T${c}`);
+    }
+    if (CLUES.bottom[c] !== null) {
+      const rev = [...col].reverse();
+      const pre = countVisiblePrefix(rev);
+      if (pre > CLUES.bottom[c] || (complete && countVisible(rev) !== CLUES.bottom[c])) errs.add(`B${c}`);
+    }
+  }
+  for (let r = 0; r < N; r++) {
+    const row = board[r];
+    const complete = row.every(v => v);
+    if (CLUES.left[r] !== null) {
+      const pre = countVisiblePrefix(row);
+      if (pre > CLUES.left[r] || (complete && countVisible(row) !== CLUES.left[r])) errs.add(`L${r}`);
+    }
+    if (CLUES.right[r] !== null) {
+      const rev = [...row].reverse();
+      const pre = countVisiblePrefix(rev);
+      if (pre > CLUES.right[r] || (complete && countVisible(rev) !== CLUES.right[r])) errs.add(`R${r}`);
+    }
+  }
+  return errs;
+}
+
+function isComplete() {
+  if (!board.every(row => row.every(v => v > 0))) return false;
+  if (getConflicts().size > 0) return false;
+  for (let c = 0; c < N; c++) {
+    const col = board.map(row => row[c]);
+    if (CLUES.top[c] !== null && countVisible(col) !== CLUES.top[c]) return false;
+    if (CLUES.bottom[c] !== null && countVisible([...col].reverse()) !== CLUES.bottom[c]) return false;
+  }
+  for (let r = 0; r < N; r++) {
+    const row = board[r];
+    if (CLUES.left[r] !== null && countVisible(row) !== CLUES.left[r]) return false;
+    if (CLUES.right[r] !== null && countVisible([...row].reverse()) !== CLUES.right[r]) return false;
+  }
+  return true;
+}
+
+function buildGrid() {
+  const g = document.getElementById('skyBoard');
+  g.appendChild(Object.assign(document.createElement('div'), {className: 'sky-corner'}));
+  for (let c = 0; c < N; c++) {
+    const d = document.createElement('div');
+    d.className = 'sky-clue';
+    d.dataset.ckey = `T${c}`;
+    if (CLUES.top[c] !== null) d.textContent = CLUES.top[c];
+    g.appendChild(d);
+  }
+  g.appendChild(Object.assign(document.createElement('div'), {className: 'sky-corner'}));
+
+  for (let r = 0; r < N; r++) {
+    const lc = document.createElement('div');
+    lc.className = 'sky-clue';
+    lc.dataset.ckey = `L${r}`;
+    if (CLUES.left[r] !== null) lc.textContent = CLUES.left[r];
+    g.appendChild(lc);
+
+    for (let c = 0; c < N; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'sky-cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.style.borderTop    = r === 0     ? '2px solid #222' : '1px solid #aaa';
+      cell.style.borderLeft   = c === 0     ? '2px solid #222' : '1px solid #aaa';
+      cell.style.borderBottom = r === N - 1 ? '2px solid #222' : '1px solid #aaa';
+      cell.style.borderRight  = c === N - 1 ? '2px solid #222' : '1px solid #aaa';
+      cell.addEventListener('click', () => { sel = [r, c]; renderBoard(); });
+      g.appendChild(cell);
+    }
+
+    const rc = document.createElement('div');
+    rc.className = 'sky-clue';
+    rc.dataset.ckey = `R${r}`;
+    if (CLUES.right[r] !== null) rc.textContent = CLUES.right[r];
+    g.appendChild(rc);
+  }
+
+  g.appendChild(Object.assign(document.createElement('div'), {className: 'sky-corner'}));
+  for (let c = 0; c < N; c++) {
+    const d = document.createElement('div');
+    d.className = 'sky-clue';
+    d.dataset.ckey = `B${c}`;
+    if (CLUES.bottom[c] !== null) d.textContent = CLUES.bottom[c];
+    g.appendChild(d);
+  }
+  g.appendChild(Object.assign(document.createElement('div'), {className: 'sky-corner'}));
+}
+
+function renderBoard() {
+  const conflicts = getConflicts();
+  const clueErrs = getClueErrors();
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
+      const cell = document.querySelector(`.sky-cell[data-r="${r}"][data-c="${c}"]`);
+      if (!cell) continue;
+      const isConflict = conflicts.has(`${r},${c}`);
+      const isSelected = sel && sel[0] === r && sel[1] === c;
+      cell.className = 'sky-cell' + (isSelected ? ' selected' : '') + (isConflict ? ' conflict' : '');
+      cell.textContent = board[r][c] || '';
+    }
+  }
+  document.querySelectorAll('.sky-clue').forEach(el => {
+    el.classList.toggle('clue-err', clueErrs.has(el.dataset.ckey));
+  });
+}
+
+function buildNumpad() {
+  const np = document.getElementById('numpad');
+  for (let i = 1; i <= N; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    btn.addEventListener('click', () => input(i));
+    np.appendChild(btn);
+  }
+}
+
+function input(v) {
+  if (!sel) return;
+  const [r, c] = sel;
+  board[r][c] = v;
+  renderBoard();
+  saveProgress();
+  checkComplete();
+}
+
+function checkComplete() {
+  const msg = document.getElementById('message');
+  if (!isComplete()) { msg.textContent = ''; return; }
+  msg.textContent = '축하합니다! 퍼즐을 완성했습니다!';
+  recordCompletion(PUZZLE_ID);
+}
+
+function saveProgress() { localStorage.setItem(SAVE_KEY, JSON.stringify(board)); }
+function loadProgress() {
+  const s = localStorage.getItem(SAVE_KEY);
+  if (!s) return;
+  try {
+    const saved = JSON.parse(s);
+    if (Array.isArray(saved) && saved.length === N) board = saved;
+  } catch(e) {}
+}
+
+async function handleCloudSave() { await saveProgressCloud(PUZZLE_ID, board); }
+async function handleCloudLoad() {
+  const state = await loadProgressCloud(PUZZLE_ID);
+  if (!state || !Array.isArray(state) || state.length !== N) return;
+  board = state;
+  renderBoard();
+  saveProgress();
+}
+
+function resetBoard() {
+  if (!confirm('정말 초기화하시겠습니까?')) return;
+  board = Array.from({length: N}, () => Array(N).fill(0));
+  sel = null;
+  document.getElementById('message').textContent = '';
+  renderBoard();
+  saveProgress();
+  resetCompletion(PUZZLE_ID);
+}
+
+function toggleRules() { document.getElementById('rulesBox').classList.toggle('open'); }
+
+document.addEventListener('keydown', e => {
+  if (e.key >= '1' && e.key <= String(N)) { input(parseInt(e.key)); return; }
+  if (e.key === 'Backspace' || e.key === 'Delete') { input(0); return; }
+  if (!sel) return;
+  const [r, c] = sel;
+  if (e.key === 'ArrowUp' && r > 0) sel = [r-1, c];
+  else if (e.key === 'ArrowDown' && r < N-1) sel = [r+1, c];
+  else if (e.key === 'ArrowLeft' && c > 0) sel = [r, c-1];
+  else if (e.key === 'ArrowRight' && c < N-1) sel = [r, c+1];
+  else return;
+  e.preventDefault();
+  renderBoard();
+});
+
+buildGrid();
+buildNumpad();
+loadProgress();
+renderBoard();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>
