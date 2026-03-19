@@ -100,31 +100,40 @@
     h1 { font-size: 1.3rem; }
     .list a { padding: 12px 14px; }
   }
+
+  /* 완료 체크 */
+  .list a { position: relative; }
 </style>
+<link rel="stylesheet" href="/puzzle/css/common.css">
+<script src="/puzzle/js/common.js"></script>
 </head>
 <body>
 
+<header class="site-header">
+  <span></span>
+  <input class="header-nick-input" id="nicknameInput" type="text" placeholder="닉네임" maxlength="20" autocomplete="off" spellcheck="false">
+</header>
 <h1>퍼즐</h1>
 <p class="desc">xivnick.me/puzzle</p>
 
 <div class="list">
-  <a href="/puzzle/260317_03/">
+  <a href="/puzzle/260317_03/" data-puzzle-id="260317_03">
     <span class="title">260317 노리노리 - 상</span>
     <span class="tag">노리노리</span>
   </a>
-  <a href="/puzzle/260317_02/">
+  <a href="/puzzle/260317_02/" data-puzzle-id="260317_02">
     <span class="title">260317 노리노리 - 중</span>
     <span class="tag">노리노리</span>
   </a>
-  <a href="/puzzle/260317_01/">
+  <a href="/puzzle/260317_01/" data-puzzle-id="260317_01">
     <span class="title">260317 노리노리 - 하</span>
     <span class="tag">노리노리</span>
   </a>
-  <a href="/puzzle/260316_02/">
+  <a href="/puzzle/260316_02/" data-puzzle-id="260316_02">
     <span class="title">260316 온도계 스도쿠</span>
     <span class="tag">스도쿠</span>
   </a>
-  <a href="/puzzle/260316_01/">
+  <a href="/puzzle/260316_01/" data-puzzle-id="260316_01">
     <span class="title">260316 노 터치 스도쿠</span>
     <span class="tag">스도쿠</span>
   </a>
@@ -136,5 +145,27 @@
 
 <a class="tools-link" href="/puzzle/tools/">도구</a>
 
+<script>
+  initHeader();
+
+  async function loadCompletions() {
+    const completed = await getMyCompletedPuzzles();
+    document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
+      const pid = a.dataset.puzzleId;
+      if (completed.has(pid)) {
+        // 체크마크를 title span 뒤에 추가
+        const titleSpan = a.querySelector('.title');
+        if (titleSpan && !titleSpan.querySelector('.check-mark')) {
+          const ck = document.createElement('span');
+          ck.className = 'check-mark';
+          ck.textContent = '✓';
+          titleSpan.appendChild(ck);
+        }
+      }
+    });
+  }
+
+  loadCompletions();
+</script>
 </body>
 </html>
