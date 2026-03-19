@@ -153,13 +153,11 @@
     document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
       const pid = a.dataset.puzzleId;
       if (completed.has(pid)) {
-        // 체크마크를 title span 뒤에 추가
-        const titleSpan = a.querySelector('.title');
-        if (titleSpan && !titleSpan.querySelector('.check-mark')) {
+        if (!a.querySelector('.check-mark')) {
           const ck = document.createElement('span');
           ck.className = 'check-mark';
           ck.textContent = '✓';
-          titleSpan.appendChild(ck);
+          a.appendChild(ck);
         }
       }
     });
