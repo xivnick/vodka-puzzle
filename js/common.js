@@ -71,7 +71,10 @@ function initHeader() {
     setNickname(name);
     if (name !== prev) showToast(`닉네임이 "${escHtml(name)}"(으)로 변경되었습니다`);
   }
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') { save(); input.blur(); } });
+  let composing = false;
+  input.addEventListener('compositionstart', () => { composing = true; });
+  input.addEventListener('compositionend', () => { composing = false; });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !composing) { save(); input.blur(); } });
   input.addEventListener('blur', save);
 }
 
