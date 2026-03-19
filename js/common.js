@@ -148,7 +148,7 @@ function resetCompletion(puzzleId) {
 
 // ── Cloud progress ────────────────────────────────────────────────────────────
 async function sbUpsert(table, data, onConflict) {
-  const url = `${SUPABASE_URL}/rest/v1/${table}?on_conflict=${encodeURIComponent(onConflict)}`;
+  const url = `${SUPABASE_URL}/rest/v1/${table}?on_conflict=${onConflict}`;
   const res = await fetch(url, {
     method: 'POST',
     headers: {
