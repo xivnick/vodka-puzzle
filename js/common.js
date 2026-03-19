@@ -42,6 +42,22 @@ function setNickname(name) {
   localStorage.setItem(NICK_KEY, name);
 }
 
+// ── Toast ────────────────────────────────────────────────────────────────────
+let _toastTimer = null;
+function showToast(msg) {
+  let el = document.getElementById('_toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_toast';
+    el.className = 'toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
 // ── Header init ─────────────────────────────────────────────────────────────
 function initHeader() {
   const input = document.getElementById('nicknameInput');
@@ -50,7 +66,10 @@ function initHeader() {
   if (saved) input.value = saved;
   function save() {
     const name = input.value.trim();
-    if (name) setNickname(name);
+    if (!name) return;
+    const prev = getNickname();
+    setNickname(name);
+    if (name !== prev) showToast(`닉네임이 "${escHtml(name)}"(으)로 변경되었습니다`);
   }
   input.addEventListener('keydown', e => { if (e.key === 'Enter') { save(); input.blur(); } });
   input.addEventListener('blur', save);

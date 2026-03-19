@@ -209,10 +209,15 @@
     .bottom-buttons button { height: 34px; font-size: 11px; }
   }
 </style>
+<link rel="stylesheet" href="/puzzle/css/common.css">
+<script src="/puzzle/js/common.js"></script>
 </head>
 <body>
 
-<a class="back" href="/puzzle/">&lt; puzzles</a>
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <input class="header-nick-input" id="nicknameInput" type="text" placeholder="닉네임을 입력해주세요" maxlength="20" autocomplete="off" spellcheck="false">
+</header>
 <h1>테스트 스도쿠</h1>
 <p class="subtitle">기능 테스트용 (9칸 비어있음)</p>
 
@@ -235,6 +240,11 @@
     <strong>스도쿠 규칙</strong><br>
     같은 행, 같은 열, 같은 3×3 박스 안에 1~9가 한 번씩 들어갑니다.
   </div>
+
+  <div class="lb-section">
+    <div class="lb-title">순위</div>
+    <div id="leaderboard"></div>
+  </div>
 </div>
 
 <script>
@@ -253,6 +263,7 @@ const initial = [
   [0,7,8, 5,3,1, 6,4,2],
 ];
 
+const PUZZLE_ID = 'puzzle_test';
 const SAVE_KEY = 'puzzle_test';
 
 function saveProgress() {
@@ -384,6 +395,7 @@ function checkComplete() {
 
   if (validate()) {
     document.getElementById('message').textContent = '축하합니다! 퍼즐을 완성했습니다!';
+    recordCompletion(PUZZLE_ID);
   }
 }
 
@@ -398,6 +410,8 @@ function resetBoard() {
   });
   saveProgress();
   validate();
+  timerReset(PUZZLE_ID);
+  timerStart(PUZZLE_ID);
 }
 
 function toggleRules() {
@@ -418,6 +432,9 @@ document.addEventListener('keydown', e => {
 });
 
 init();
+initHeader();
+timerStart(PUZZLE_ID);
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
 </script>
 </body>
 </html>

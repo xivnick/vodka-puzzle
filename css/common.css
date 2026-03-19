@@ -34,7 +34,30 @@
   text-align: right;
   transition: border-color 0.12s, color 0.12s;
 }
-.header-nick-input::placeholder { color: #ccc; }
+.header-nick-input::placeholder { color: #bbb; }
+
+/* ── Toast ────────────────────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: #333;
+  color: #fff;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.82rem;
+  padding: 9px 18px;
+  border-radius: 20px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 999;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 .header-nick-input:hover { border-bottom-color: #ddd; }
 .header-nick-input:focus { border-bottom-color: #aaa; color: #333; }
 
