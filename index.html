@@ -168,7 +168,7 @@
 
 <div style="width: min(94vw, 480px);">
   <div class="lb-section">
-    <div class="lb-title" id="rankTitle">풀이왕</div>
+    <div class="lb-title" id="rankTitle">참여자</div>
     <div id="solverRank"><div class="lb-loading">불러오는 중...</div></div>
   </div>
 </div>
@@ -223,7 +223,7 @@
       return;
     }
 
-    titleEl.textContent = `풀이왕(${rankings.length})`;
+    titleEl.textContent = `참여자 (${rankings.length})`;
 
     const myIdx = (!myNick || isGuest()) ? -1 : rankings.findIndex(r => r.nick === myNick);
     const top = Math.min(10, rankings.length);
