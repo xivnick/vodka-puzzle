@@ -282,6 +282,23 @@ async function getMyCompletedPuzzles() {
   }
 }
 
+// ── Solver rankings (for index page) ────────────────────────────────────────
+async function getSolverRankings() {
+  try {
+    const rows = await sbSelect('completions', 'select=nickname,puzzle_id');
+    const nickPuzzles = new Map();
+    for (const row of rows) {
+      if (!nickPuzzles.has(row.nickname)) nickPuzzles.set(row.nickname, new Set());
+      nickPuzzles.get(row.nickname).add(row.puzzle_id);
+    }
+    return [...nickPuzzles.entries()]
+      .map(([nick, puzzles]) => ({ nick, count: puzzles.size }))
+      .sort((a, b) => b.count - a.count || a.nick.localeCompare(b.nick));
+  } catch (e) {
+    return [];
+  }
+}
+
 // ── Solver counts (for index page) ──────────────────────────────────────────
 async function getSolverCounts() {
   try {

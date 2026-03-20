@@ -166,6 +166,13 @@
 
 <a class="tools-link" href="/puzzle/tools/">도구</a>
 
+<div style="width: min(94vw, 480px);">
+  <div class="lb-section">
+    <div class="lb-title" id="rankTitle">풀이왕</div>
+    <div id="solverRank"><div class="lb-loading">불러오는 중...</div></div>
+  </div>
+</div>
+
 <script>
   initHeader();
 
@@ -186,12 +193,6 @@
 
   loadCompletions();
 
-  window.addEventListener('pageshow', e => {
-    if (!e.persisted) return;
-    document.querySelectorAll('.check-mark').forEach(el => el.remove());
-    loadCompletions();
-  });
-
   async function loadCounts() {
     const counts = await getSolverCounts();
     document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
@@ -210,6 +211,52 @@
   }
 
   loadCounts();
+
+  async function loadSolverRankings() {
+    const rankings = await getSolverRankings();
+    const myNick = getNickname();
+    const container = document.getElementById('solverRank');
+    const titleEl = document.getElementById('rankTitle');
+
+    if (rankings.length === 0) {
+      container.innerHTML = '<div class="lb-empty">아직 기록이 없습니다.</div>';
+      return;
+    }
+
+    titleEl.textContent = `풀이왕(${rankings.length})`;
+
+    const myIdx = (!myNick || isGuest()) ? -1 : rankings.findIndex(r => r.nick === myNick);
+    const top = Math.min(10, rankings.length);
+
+    function rowHtml(rank, nick, count, extra) {
+      const isMe = myNick && nick === myNick;
+      return `<div class="lb-row${isMe ? ' lb-me' : ''}${extra ? ' ' + extra : ''}">` +
+        `<span class="lb-rank">${rank}</span>` +
+        `<span class="lb-name">${escHtml(nick)}</span>` +
+        `<span class="lb-time">${count}개</span>` +
+        `</div>`;
+    }
+
+    let html = '<div class="lb-list">';
+    for (let i = 0; i < top; i++) {
+      html += rowHtml(i + 1, rankings[i].nick, rankings[i].count);
+    }
+    if (myIdx >= 10) {
+      html += `<div class="lb-row lb-ellipsis"><span class="lb-rank">⋯</span><span class="lb-name"></span><span class="lb-time"></span></div>`;
+      html += rowHtml(myIdx + 1, rankings[myIdx].nick, rankings[myIdx].count);
+    }
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  loadSolverRankings();
+
+  window.addEventListener('pageshow', e => {
+    if (!e.persisted) return;
+    document.querySelectorAll('.check-mark').forEach(el => el.remove());
+    loadCompletions();
+    loadSolverRankings();
+  });
 </script>
 </body>
 </html>
