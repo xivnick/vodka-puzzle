@@ -285,17 +285,24 @@ async function getMyCompletedPuzzles() {
 // ── Solver rankings (for index page) ────────────────────────────────────────
 async function getSolverRankings() {
   try {
-    const rows = await sbSelect('completions', 'select=nickname,puzzle_id');
+    const rows = await sbSelect('completions', 'select=nickname,puzzle_id,completed_at');
     const EXCLUDE = new Set(['puzzle_test']);
-    const nickPuzzles = new Map();
+    const nickPuzzles = new Map(); // nickname -> Set of puzzle_ids
+    const nickLastAt = new Map(); // nickname -> 가장 최근 completed_at
     for (const row of rows) {
       if (EXCLUDE.has(row.puzzle_id)) continue;
-      if (!nickPuzzles.has(row.nickname)) nickPuzzles.set(row.nickname, new Set());
+      if (!nickPuzzles.has(row.nickname)) {
+        nickPuzzles.set(row.nickname, new Set());
+        nickLastAt.set(row.nickname, row.completed_at);
+      }
       nickPuzzles.get(row.nickname).add(row.puzzle_id);
+      if (row.completed_at > nickLastAt.get(row.nickname)) {
+        nickLastAt.set(row.nickname, row.completed_at);
+      }
     }
     return [...nickPuzzles.entries()]
-      .map(([nick, puzzles]) => ({ nick, count: puzzles.size }))
-      .sort((a, b) => b.count - a.count || a.nick.localeCompare(b.nick));
+      .map(([nick, puzzles]) => ({ nick, count: puzzles.size, lastAt: nickLastAt.get(nick) }))
+      .sort((a, b) => b.count - a.count || new Date(a.lastAt) - new Date(b.lastAt));
   } catch (e) {
     return [];
   }
