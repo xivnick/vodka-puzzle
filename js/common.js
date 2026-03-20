@@ -286,8 +286,10 @@ async function getMyCompletedPuzzles() {
 async function getSolverRankings() {
   try {
     const rows = await sbSelect('completions', 'select=nickname,puzzle_id');
+    const EXCLUDE = new Set(['puzzle_test']);
     const nickPuzzles = new Map();
     for (const row of rows) {
+      if (EXCLUDE.has(row.puzzle_id)) continue;
       if (!nickPuzzles.has(row.nickname)) nickPuzzles.set(row.nickname, new Set());
       nickPuzzles.get(row.nickname).add(row.puzzle_id);
     }
