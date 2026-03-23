@@ -59,6 +59,7 @@
   .board {
     display: grid;
     grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(9, 1fr);
     width: 100%;
     aspect-ratio: 1 / 1;
   }
@@ -92,30 +93,37 @@
   .cell.given.error { color: #c0392b !important; }
   .cell:hover:not(.selected):not(.error) { background: #f5f5f0; }
 
-  /* ── Kropki dots overlay ── */
-  .dots-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
+  /* ── Cell number span ── */
+  .cell-num { line-height: 1; }
+
+  /* ── Kropki dots (cell-relative) ── */
+  .cell { position: relative; overflow: visible; }
 
   .kropki-dot {
     position: absolute;
     width: 13px;
     height: 13px;
     border-radius: 50%;
-    transform: translate(-50%, -50%);
     z-index: 10;
+    pointer-events: none;
   }
 
-  .kropki-white {
-    background: #fff;
-    border: 2px solid #444;
+  /* 가로 점: 셀 오른쪽 경계 중앙 */
+  .kropki-dot.dot-h {
+    right: -6.5px;
+    top: 50%;
+    transform: translateY(-50%);
   }
 
-  .kropki-black {
-    background: #333;
+  /* 세로 점: 셀 아래쪽 경계 중앙 */
+  .kropki-dot.dot-v {
+    bottom: -6.5px;
+    left: 50%;
+    transform: translateX(-50%);
   }
+
+  .kropki-white { background: #fff; border: 2px solid #444; }
+  .kropki-black { background: #333; }
 
   /* ── Numpad ── */
   .numpad {
@@ -235,7 +243,6 @@
 <div class="container">
   <div class="board-wrap">
     <div class="board" id="board"></div>
-    <div class="dots-overlay" id="dotsOverlay"></div>
   </div>
 
   <div class="numpad" id="numpad"></div>
@@ -273,23 +280,23 @@ const SAVE_KEY  = 'puzzle_260321_01';
 
 // 주어진 셀 [row, col, value] (0-indexed)
 const PRESETS = [
-  [0,4,6],[0,7,3],
+  [0,5,6],[0,7,3],
   [1,3,8],
-  [2,1,1],[2,6,7],[2,8,5],
+  [2,2,1],[2,6,7],[2,8,5],
   [4,1,9],[4,4,2],[4,6,8],
-  [5,1,7],[5,2,1],[5,6,3],
+  [5,2,7],[5,3,1],[5,6,3],
   [6,0,4],[6,1,3],[6,5,1],[6,7,5],
   [7,0,7],[7,3,5],[7,7,1],
-  [8,3,7],[8,5,2],
+  [8,4,7],[8,6,2],
 ];
 
 // 크롭키 점 [row, col, dir('h'=가로/'v'=세로), type('w'=흰/'b'=검)]
 // 'h': (r,c)와 (r,c+1) 사이  |  'v': (r,c)와 (r+1,c) 사이
 const DOTS = [
   [0,1,'v','w'],   // ○ (0,1)-(1,1)
-  [0,7,'h','w'],   // ○ (0,7)=3 오른쪽 → (0,8) ∈ {2,4}
-  [0,7,'v','b'],   // ● (0,7)=3 아래 → (1,7)=6
-  [1,2,'v','b'],   // ● (1,2)-(2,2)
+  [0,7,'v','w'],   // ○ (0,7)=3 오른쪽 → (0,8) ∈ {2,4}
+  [1,1,'h','b'],   // ● (0,7)=3 아래 → (1,7)=6
+  [1,6,'h','b'],   // ● (1,2)-(2,2)
   [3,3,'v','w'],   // ○ (3,3)-(4,3)
   [3,5,'v','w'],   // ○ (3,5)-(4,5)
   [5,0,'v','b'],   // ● (5,0)-(6,0)=4 → (5,0) ∈ {2,8}
@@ -320,24 +327,21 @@ function buildGrid() {
         (r === 2 || r === 5 ? ' box-bottom' : '');
       cell.dataset.r = r;
       cell.dataset.c = c;
+      const numSpan = document.createElement('span');
+      numSpan.className = 'cell-num';
+      cell.appendChild(numSpan);
       cell.addEventListener('click', () => { sel = [r, c]; renderBoard(); });
       boardEl.appendChild(cell);
     }
   }
 
-  // 크롭키 점 렌더링
-  const overlay = document.getElementById('dotsOverlay');
+  // 크롭키 점: 해당 셀 내부에 부착 (셀 경계 중앙)
   for (const [r, c, dir, type] of DOTS) {
+    const cell = boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+    if (!cell) continue;
     const dot = document.createElement('div');
-    dot.className = `kropki-dot kropki-${type === 'w' ? 'white' : 'black'}`;
-    if (dir === 'h') {
-      dot.style.left = `${(c + 1) / 9 * 100}%`;
-      dot.style.top  = `${(r + 0.5) / 9 * 100}%`;
-    } else {
-      dot.style.left = `${(c + 0.5) / 9 * 100}%`;
-      dot.style.top  = `${(r + 1) / 9 * 100}%`;
-    }
-    overlay.appendChild(dot);
+    dot.className = `kropki-dot dot-${dir} kropki-${type === 'w' ? 'white' : 'black'}`;
+    cell.appendChild(dot);
   }
 }
 
@@ -400,7 +404,7 @@ function renderBoard() {
     const isSelected = sel && sel[0] === r && sel[1] === c;
     cell.classList.toggle('selected', isSelected);
     cell.classList.toggle('error', isConflict);
-    cell.textContent = board[r][c] || '';
+    cell.querySelector('.cell-num').textContent = board[r][c] || '';
   });
 }
 
