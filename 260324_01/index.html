@@ -446,8 +446,9 @@ function loadProgress() {
   if (!raw) return;
   try {
     const s = JSON.parse(raw);
-    if (s.rSep) { rSep = s.rSep; hasInteracted = true; }
-    if (s.cSep) { cSep = s.cSep; hasInteracted = true; }
+    if (s.rSep) rSep = s.rSep;
+    if (s.cSep) cSep = s.cSep;
+    hasInteracted = rSep.some(row => row.some(Boolean)) || cSep.some(row => row.some(Boolean));
   } catch(e) {}
 }
 
