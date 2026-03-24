@@ -11,7 +11,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/common.css?v=4">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -27,6 +26,7 @@
   }
 
   h1 {
+    font-family: 'Noto Sans KR', sans-serif;
     font-size: 1.5rem;
     font-weight: 700;
     color: #222;
@@ -36,10 +36,11 @@
 
   .subtitle {
     font-size: 0.82rem;
+    font-weight: 400;
     color: #888;
     margin-bottom: 20px;
     text-align: center;
-    line-height: 1.6;
+    line-height: 1.5;
   }
 
   .container {
@@ -54,7 +55,6 @@
 
   .board {
     display: grid;
-    /* 10 cell columns interleaved with 9 separator columns */
     grid-template-columns: repeat(9, 1fr 10px) 1fr;
     grid-template-rows:    repeat(9, 1fr 10px) 1fr;
     width: 100%;
@@ -74,10 +74,13 @@
     background: #fff;
     user-select: none;
   }
-  .cell.match { color: #4a6fa5; }
-  .cell.error { color: #c0392b; background: #f5d0d0; }
 
-  /* Separator strips (clickable edges between cells) */
+  /* number color states (only applied to preset/clue cells) */
+  .cell.match     { color: #4a6fa5; }
+  .cell.under     { color: #c0392b; background: #f5d0d0; }
+  .cell.adj-err   { color: #c0392b; background: #f5d0d0; }
+
+  /* Separator strips between cells */
   .sep {
     cursor: pointer;
     position: relative;
@@ -91,23 +94,20 @@
     pointer-events: none;
   }
 
-  /* Horizontal sep: full-width thin line centered vertically */
   .sep-h::after { left: 0; right: 0; height: 1px; top: 50%; transform: translateY(-50%); }
-  /* Vertical sep: full-height thin line centered horizontally */
   .sep-v::after { top: 0; bottom: 0; width: 1px; left: 50%; transform: translateX(-50%); }
 
-  .sep.active::after    { background: #222; }
-  .sep-h.active::after  { height: 2.5px; }
-  .sep-v.active::after  { width: 2.5px; }
+  .sep.active::after   { background: #222; }
+  .sep-h.active::after { height: 2.5px; }
+  .sep-v.active::after { width: 2.5px; }
 
-  .sep:hover::after     { background: #888; }
-  .sep-h:hover::after   { height: 2px; }
-  .sep-v:hover::after   { width: 2px; }
+  .sep:hover::after    { background: #888; }
+  .sep-h:hover::after  { height: 2px; }
+  .sep-v:hover::after  { width: 2px; }
 
-  /* Corner squares (between separators — non-interactive) */
   .corner { background: #fff; }
 
-  /* ── Buttons ── */
+  /* ── Bottom buttons ── */
   .bottom-buttons {
     display: flex;
     gap: 6px;
@@ -127,8 +127,10 @@
     cursor: pointer;
     transition: background 0.12s;
   }
+
   .bottom-buttons button:hover  { background: #eeebe4; color: #555; }
   .bottom-buttons button:active { transform: scale(0.97); }
+
   .bottom-buttons button.danger {
     border-color: #e0bfbf;
     background: #fdf5f5;
@@ -136,24 +138,52 @@
   }
   .bottom-buttons button.danger:hover { background: #f5e0e0; color: #8c3333; }
 
-  .lb-section { width: min(94vw, 450px); margin-top: 20px; }
+  /* ── Rules ── */
+  .rules-toggle {
+    margin-top: 14px;
+    font-size: 0.78rem;
+    color: #999;
+    cursor: pointer;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 1px;
+    align-self: center;
+  }
+  .rules-toggle:hover { color: #666; border-color: #999; }
+
+  .rules-box {
+    display: none;
+    margin-top: 10px;
+    padding: 14px 18px;
+    background: #faf8f4;
+    border: 1px solid #e0ddd6;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-weight: 400;
+    line-height: 1.7;
+    color: #555;
+  }
+  .rules-box.open { display: block; }
+  .rules-box strong { color: #333; font-size: 0.82rem; font-weight: 700; }
 
   @media (max-width: 540px) {
-    .bottom-buttons button { height: 10vw; font-size: 3.5vw; }
+    body { padding: 20px 8px 40px; }
+    h1 { font-size: 1.25rem; }
+    .bottom-buttons { gap: 5px; }
+    .bottom-buttons button { height: min(8.5vw, 40px); font-size: min(3.2vw, 13px); }
   }
 </style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=4">
+<script src="/puzzle/js/common.js?v=4"></script>
 </head>
 <body>
+
 <header class="site-header">
   <a class="header-back" href="/puzzle/">&lt; puzzles</a>
   <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
 </header>
 
 <h1>260324 필로미노</h1>
-<p class="subtitle">
-  변을 눌러 영역 경계를 그려보세요<br>
-  숫자는 그 칸이 포함된 영역의 넓이
-</p>
+<p class="subtitle">변을 눌러 영역 경계를 그려보세요<br>숫자는 그 칸이 포함된 영역의 넓이</p>
 
 <div class="container">
   <div class="board-wrap">
@@ -163,24 +193,36 @@
   <div class="bottom-buttons">
     <button class="danger" onclick="resetBoard()">초기화</button>
   </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>필로미노 규칙</strong><br>
+    1. 모든 칸을 점선을 따라 여러 영역으로 나눕니다.<br>
+    2. 숫자가 있는 칸은, 그 칸이 속한 영역의 <strong>넓이(칸 수)</strong>가 숫자와 같아야 합니다.<br>
+    3. 하나의 영역에 숫자가 2개 이상 있어도 되고, 없어도 됩니다.<br>
+    4. <strong>크기가 같은 영역</strong>끼리는 변을 맞대고 닿을 수 없습니다.<br>
+    <br>
+    <strong>색상 안내</strong><br>
+    · 파란색: 영역 크기가 숫자와 일치합니다.<br>
+    · 빨간색: 영역이 너무 작거나, 같은 크기 영역끼리 닿아 있습니다.<br>
+    · 검정색: 영역이 숫자보다 큽니다 (경계를 더 그어야 합니다).
+  </div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
 </div>
 
-<div class="cloud-btns" id="cloudBtns" style="display:none">
-  <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
-  <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
-</div>
-
-<div class="lb-section">
-  <div class="lb-title">푼 사람</div>
-  <div id="leaderboard"></div>
-</div>
-
-<script src="../js/common.js?v=4"></script>
 <script>
 const PUZZLE_ID = '260324_01';
 const SIZE = 10;
 
-// Preset clue numbers: [row, col, value]  (0-indexed)
 const PRESETS = [
   [0,1,3],[0,2,2],[0,4,4],[0,5,3],[0,7,1],[0,8,3],
   [1,0,1],[1,3,5],[1,6,4],[1,9,2],
@@ -195,8 +237,8 @@ const PRESETS = [
 const presetGrid = Array.from({length: SIZE}, () => Array(SIZE).fill(0));
 for (const [r, c, v] of PRESETS) presetGrid[r][c] = v;
 
-// rSep[r][c]: wall between row r and r+1, at column c   (r ∈ 0..8, c ∈ 0..9)
-// cSep[r][c]: wall between col c and c+1, at row r      (r ∈ 0..9, c ∈ 0..8)
+// rSep[r][c]: wall below row r at column c   (r ∈ 0..8, c ∈ 0..9)
+// cSep[r][c]: wall right of col c at row r   (r ∈ 0..9, c ∈ 0..8)
 let rSep = Array.from({length: SIZE-1}, () => Array(SIZE).fill(false));
 let cSep = Array.from({length: SIZE}, () => Array(SIZE-1).fill(false));
 let hasInteracted = false;
@@ -205,32 +247,26 @@ let hasInteracted = false;
 function buildGrid() {
   const el = document.getElementById('board');
   el.innerHTML = '';
-  // 19×19 visual grid: even indices = cells/seps, odd-odd = corners
   for (let gi = 0; gi < 2*SIZE - 1; gi++) {
     for (let gj = 0; gj < 2*SIZE - 1; gj++) {
       const div = document.createElement('div');
 
       if (gi % 2 === 0 && gj % 2 === 0) {
-        // Puzzle cell
         const r = gi / 2, c = gj / 2;
         div.className = 'cell';
         div.dataset.r = r; div.dataset.c = c;
         if (presetGrid[r][c]) div.textContent = presetGrid[r][c];
 
       } else if (gi % 2 === 1 && gj % 2 === 0) {
-        // Horizontal separator: between rows (gi-1)/2 and (gi+1)/2, column gj/2
         const r = (gi - 1) / 2, c = gj / 2;
         div.className = 'sep sep-h';
         div.dataset.t = 'r'; div.dataset.r = r; div.dataset.c = c;
-        if (rSep[r][c]) div.classList.add('active');
         div.addEventListener('click', () => toggle('r', r, c));
 
       } else if (gi % 2 === 0 && gj % 2 === 1) {
-        // Vertical separator: between cols (gj-1)/2 and (gj+1)/2, row gi/2
         const r = gi / 2, c = (gj - 1) / 2;
         div.className = 'sep sep-v';
         div.dataset.t = 'c'; div.dataset.r = r; div.dataset.c = c;
-        if (cSep[r][c]) div.classList.add('active');
         div.addEventListener('click', () => toggle('c', r, c));
 
       } else {
@@ -272,10 +308,10 @@ function getRegions() {
           if (presetGrid[cr][cc]) nums.push(presetGrid[cr][cc]);
 
           const nbrs = [
-            [cr-1, cc,  cr > 0       && rSep[cr-1][cc]],
-            [cr+1, cc,  cr < SIZE-1  && rSep[cr  ][cc]],
-            [cr, cc-1,  cc > 0       && cSep[cr][cc-1]],
-            [cr, cc+1,  cc < SIZE-1  && cSep[cr][cc  ]],
+            [cr-1, cc, cr > 0      && rSep[cr-1][cc]],
+            [cr+1, cc, cr < SIZE-1 && rSep[cr  ][cc]],
+            [cr, cc-1, cc > 0      && cSep[cr][cc-1]],
+            [cr, cc+1, cc < SIZE-1 && cSep[cr][cc  ]],
           ];
           for (const [nr, nc, blocked] of nbrs) {
             if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && !visited[nr][nc] && !blocked) {
@@ -292,18 +328,27 @@ function getRegions() {
 }
 
 /* ── Color logic ── */
+// size > clue  → '' (no class = stays black, needs more borders)
+// size < clue  → 'under' (red, region sealed off too small)
+// size === clue → 'match' (blue, correct)
+// adjacent same-size regions → 'adj-err' (red, overrides match)
 function computeColors() {
   const {regions, regionOf} = getRegions();
 
-  const status = regions.map(({nums, size}) => {
-    if (!nums.length) return 'normal';
-    const uniq = [...new Set(nums)];
-    if (uniq.length > 1 || size > uniq[0]) return 'error';
-    if (size === uniq[0]) return 'match';
-    return 'normal'; // still growing
-  });
+  const status = Array(regions.length).fill('');
 
-  // Two adjacent 'match' regions of equal size → both become 'error'
+  for (let i = 0; i < regions.length; i++) {
+    const {nums, size} = regions[i];
+    if (!nums.length) continue;
+    const uniq = [...new Set(nums)];
+    if (uniq.length > 1) { status[i] = 'under'; continue; } // contradicting clues
+    const clue = uniq[0];
+    if (size === clue)      status[i] = 'match';
+    else if (size < clue)   status[i] = 'under';
+    // size > clue: leave '' (black default)
+  }
+
+  // Adjacent same-size regions → both red
   const seen = new Set();
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
@@ -314,9 +359,9 @@ function computeColors() {
             const key = ri < rj ? `${ri}-${rj}` : `${rj}-${ri}`;
             if (!seen.has(key)) {
               seen.add(key);
-              if (status[ri] === 'match' && status[rj] === 'match' &&
-                  regions[ri].size === regions[rj].size) {
-                status[ri] = status[rj] = 'error';
+              if (regions[ri].size === regions[rj].size) {
+                status[ri] = 'adj-err';
+                status[rj] = 'adj-err';
               }
             }
           }
@@ -325,13 +370,12 @@ function computeColors() {
     }
   }
 
-  // Only apply color to cells that have a preset number (and only after first interaction)
   const colors = Array.from({length: SIZE}, () => Array(SIZE).fill(''));
   if (!hasInteracted) return colors;
-  for (const {idx, cells, nums} of regions) {
-    if (!nums.length) continue;
-    for (const [r, c] of cells) {
-      if (presetGrid[r][c]) colors[r][c] = status[idx];
+  for (let i = 0; i < regions.length; i++) {
+    if (!status[i]) continue;
+    for (const [r, c] of regions[i].cells) {
+      if (presetGrid[r][c]) colors[r][c] = status[i];
     }
   }
   return colors;
@@ -353,18 +397,16 @@ function render() {
   });
 }
 
-/* ── Completion check ── */
+/* ── Completion ── */
 function isSolved() {
   const {regions, regionOf} = getRegions();
 
-  // Every numbered region must have size == its number (and only one distinct number)
   for (const {nums, size} of regions) {
     if (!nums.length) continue;
     const uniq = [...new Set(nums)];
     if (uniq.length > 1 || size !== uniq[0]) return false;
   }
 
-  // No two adjacent regions may have the same size
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
       if (c < SIZE-1) {
@@ -407,6 +449,7 @@ function resetBoard() {
   if (!confirm('정말 초기화하시겠습니까?')) return;
   rSep = Array.from({length: SIZE-1}, () => Array(SIZE).fill(false));
   cSep = Array.from({length: SIZE}, () => Array(SIZE-1).fill(false));
+  hasInteracted = false;
   resetCompletion(PUZZLE_ID);
   saveProgress();
   render();
@@ -417,11 +460,16 @@ function handleCloudSave() { saveProgressCloud(PUZZLE_ID, getState()); }
 async function handleCloudLoad() {
   const s = await loadProgressCloud(PUZZLE_ID);
   if (!s) return;
-  if (s.rSep) rSep = s.rSep;
-  if (s.cSep) cSep = s.cSep;
+  if (s.rSep) { rSep = s.rSep; hasInteracted = true; }
+  if (s.cSep) { cSep = s.cSep; hasInteracted = true; }
   saveProgress();
   render();
   checkComplete();
+}
+
+/* ── Rules toggle ── */
+function toggleRules() {
+  document.getElementById('rulesBox').classList.toggle('open');
 }
 
 /* ── Init ── */
