@@ -336,17 +336,16 @@ function getRegions() {
 function computeColors() {
   const {regions, regionOf} = getRegions();
 
-  // Number color per region (only applied to clue cells)
-  const numStatus = Array(regions.length).fill('');
-  for (let i = 0; i < regions.length; i++) {
-    const {nums, size} = regions[i];
-    if (!nums.length) continue;
-    const uniq = [...new Set(nums)];
-    if (uniq.length > 1) { numStatus[i] = 'under'; continue; } // contradicting clues
-    const clue = uniq[0];
-    if (size === clue)    numStatus[i] = 'match';
-    else if (size < clue) numStatus[i] = 'under';
-    // size > clue: stays '' = black (default)
+  // Number color per clue cell: compare each clue independently to its region size
+  const numStatus = Array.from({length: SIZE}, () => Array(SIZE).fill(''));
+  for (const {cells, size} of regions) {
+    for (const [r, c] of cells) {
+      const v = presetGrid[r][c];
+      if (!v) continue;
+      if (size === v)    numStatus[r][c] = 'match';
+      else if (size < v) numStatus[r][c] = 'under';
+      // size > v: stays '' = black (default)
+    }
   }
 
   // Background per region: red if adjacent to same-size region (applied to ALL cells)
@@ -377,8 +376,8 @@ function computeColors() {
   if (!hasInteracted) return cell;
   for (let i = 0; i < regions.length; i++) {
     for (const [r, c] of regions[i].cells) {
-      cell[r][c].bg = bgStatus[i];
-      if (presetGrid[r][c]) cell[r][c].num = numStatus[i];
+      cell[r][c].bg  = bgStatus[i];
+      cell[r][c].num = numStatus[r][c];
     }
   }
   return cell;
