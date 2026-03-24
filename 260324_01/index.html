@@ -75,10 +75,13 @@
     user-select: none;
   }
 
-  /* number color states (only applied to preset/clue cells) */
-  .cell.match     { color: #4a6fa5; }
-  .cell.under     { color: #c0392b; background: #f5d0d0; }
-  .cell.adj-err   { color: #c0392b; background: #f5d0d0; }
+  /* Number color: applied only to clue cells */
+  .cell.match { color: #4a6fa5; }           /* blue: size === clue */
+  .cell.under { color: #c0392b; }           /* red:  size < clue  */
+  /* size > clue: stays #222 (default) */
+
+  /* Background: applied to ALL cells in adjacent same-size regions */
+  .cell.adj-bg { background: #f5d0d0; }
 
   /* Separator strips between cells */
   .sep {
@@ -328,27 +331,26 @@ function getRegions() {
 }
 
 /* ── Color logic ── */
-// size > clue  → '' (no class = stays black, needs more borders)
-// size < clue  → 'under' (red, region sealed off too small)
-// size === clue → 'match' (blue, correct)
-// adjacent same-size regions → 'adj-err' (red, overrides match)
+// numStatus per region: '' (size>clue=black default), 'under' (size<clue=red), 'match' (size===clue=blue)
+// bgStatus per region: true if adjacent to a same-size region → red background on ALL cells
 function computeColors() {
   const {regions, regionOf} = getRegions();
 
-  const status = Array(regions.length).fill('');
-
+  // Number color per region (only applied to clue cells)
+  const numStatus = Array(regions.length).fill('');
   for (let i = 0; i < regions.length; i++) {
     const {nums, size} = regions[i];
     if (!nums.length) continue;
     const uniq = [...new Set(nums)];
-    if (uniq.length > 1) { status[i] = 'under'; continue; } // contradicting clues
+    if (uniq.length > 1) { numStatus[i] = 'under'; continue; } // contradicting clues
     const clue = uniq[0];
-    if (size === clue)      status[i] = 'match';
-    else if (size < clue)   status[i] = 'under';
-    // size > clue: leave '' (black default)
+    if (size === clue)    numStatus[i] = 'match';
+    else if (size < clue) numStatus[i] = 'under';
+    // size > clue: stays '' = black (default)
   }
 
-  // Adjacent same-size regions → both red
+  // Background per region: red if adjacent to same-size region (applied to ALL cells)
+  const bgStatus = Array(regions.length).fill(false);
   const seen = new Set();
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
@@ -360,8 +362,8 @@ function computeColors() {
             if (!seen.has(key)) {
               seen.add(key);
               if (regions[ri].size === regions[rj].size) {
-                status[ri] = 'adj-err';
-                status[rj] = 'adj-err';
+                bgStatus[ri] = true;
+                bgStatus[rj] = true;
               }
             }
           }
@@ -370,15 +372,16 @@ function computeColors() {
     }
   }
 
-  const colors = Array.from({length: SIZE}, () => Array(SIZE).fill(''));
-  if (!hasInteracted) return colors;
+  // Build per-cell: {bg, num}
+  const cell = Array.from({length: SIZE}, () => Array.from({length: SIZE}, () => ({bg: false, num: ''})));
+  if (!hasInteracted) return cell;
   for (let i = 0; i < regions.length; i++) {
-    if (!status[i]) continue;
     for (const [r, c] of regions[i].cells) {
-      if (presetGrid[r][c]) colors[r][c] = status[i];
+      cell[r][c].bg = bgStatus[i];
+      if (presetGrid[r][c]) cell[r][c].num = numStatus[i];
     }
   }
-  return colors;
+  return cell;
 }
 
 function render() {
@@ -387,7 +390,11 @@ function render() {
 
   el.querySelectorAll('.cell').forEach(cell => {
     const r = +cell.dataset.r, c = +cell.dataset.c;
-    cell.className = 'cell' + (colors[r][c] ? ' ' + colors[r][c] : '');
+    const {bg, num} = colors[r][c];
+    let cls = 'cell';
+    if (bg)  cls += ' adj-bg';
+    if (num) cls += ' ' + num;
+    cell.className = cls;
     cell.textContent = presetGrid[r][c] || '';
   });
 
