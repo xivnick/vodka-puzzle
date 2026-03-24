@@ -199,6 +199,7 @@ for (const [r, c, v] of PRESETS) presetGrid[r][c] = v;
 // cSep[r][c]: wall between col c and c+1, at row r      (r ∈ 0..9, c ∈ 0..8)
 let rSep = Array.from({length: SIZE-1}, () => Array(SIZE).fill(false));
 let cSep = Array.from({length: SIZE}, () => Array(SIZE-1).fill(false));
+let hasInteracted = false;
 
 /* ── Build DOM ── */
 function buildGrid() {
@@ -244,6 +245,7 @@ function buildGrid() {
 function toggle(t, r, c) {
   if (t === 'r') rSep[r][c] = !rSep[r][c];
   else           cSep[r][c] = !cSep[r][c];
+  hasInteracted = true;
   saveProgress();
   render();
   checkComplete();
@@ -323,8 +325,9 @@ function computeColors() {
     }
   }
 
-  // Only apply color to cells that have a preset number
+  // Only apply color to cells that have a preset number (and only after first interaction)
   const colors = Array.from({length: SIZE}, () => Array(SIZE).fill(''));
+  if (!hasInteracted) return colors;
   for (const {idx, cells, nums} of regions) {
     if (!nums.length) continue;
     for (const [r, c] of cells) {
@@ -395,8 +398,8 @@ function loadProgress() {
   if (!raw) return;
   try {
     const s = JSON.parse(raw);
-    if (s.rSep) rSep = s.rSep;
-    if (s.cSep) cSep = s.cSep;
+    if (s.rSep) { rSep = s.rSep; hasInteracted = true; }
+    if (s.cSep) { cSep = s.cSep; hasInteracted = true; }
   } catch(e) {}
 }
 
