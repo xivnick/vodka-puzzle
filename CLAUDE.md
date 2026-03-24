@@ -6,7 +6,7 @@
 
 ## 캐시 버스팅
 - `css/common.css`와 `js/common.js`를 수정할 때마다 모든 HTML 파일의 `?v=N`을 1씩 올린다.
-- 현재 버전: `?v=4`
+- 현재 버전: `?v=5`
 - 변경 명령 예시: `sed -i '' 's|common.js?v=4|common.js?v=5|g'` (css도 동일)
 
 ## 디자인
