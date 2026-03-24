@@ -404,7 +404,7 @@ function render() {
     if (bg)  cls += ' ' + bg;
     if (num) cls += ' ' + num;
     cell.className = cls;
-    cell.textContent = presetGrid[r][c] || '\u00a0';
+    cell.textContent = presetGrid[r][c] || '';
   });
 
   el.querySelectorAll('.sep').forEach(sep => {
