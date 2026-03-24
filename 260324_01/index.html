@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260324 필로미노</title>
+<meta property="og:title" content="260324 필로미노">
+<meta property="og:description" content="같은 크기의 영역끼리 닿지 않게, 숫자는 그 칸이 포함된 영역의 넓이입니다.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260324_01/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css?v=4">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #ffffff;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 32px 16px 48px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+    color: #999;
+    margin-bottom: 20px;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    width: min(92vw, 480px);
+    height: min(92vw, 480px);
+    border: 2.5px solid #222;
+    box-sizing: border-box;
+    user-select: none;
+  }
+
+  .cell {
+    border-right: 1px dashed #bbb;
+    border-bottom: 1px dashed #bbb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: clamp(12px, 3.5vw, 20px);
+    font-weight: 400;
+    color: #555;
+    transition: background 0.1s;
+  }
+
+  .cell:nth-child(10n)   { border-right: none; }
+  .cell:nth-child(n+91)  { border-bottom: none; }
+
+  .cell.preset   { font-weight: 700; color: #111; cursor: default; }
+  .cell.selected { background: #d0e8ff !important; }
+  .cell.conflict { color: #d00; background: #ffe8e8 !important; }
+  .cell.preset.conflict { background: #ffd0d0 !important; }
+
+  .num-btns {
+    display: flex;
+    gap: 6px;
+    margin: 14px 0 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .num-btn {
+    width: 40px; height: 40px;
+    border: 1.5px solid #ccc;
+    border-radius: 7px;
+    background: #fff;
+    font-size: 17px;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: #333;
+  }
+  .num-btn:active { background: #e0e8ff; }
+
+  .bottom-buttons {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+  }
+
+  .btn {
+    padding: 8px 18px;
+    border: 1.5px solid #bbb;
+    border-radius: 7px;
+    background: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: #333;
+  }
+  .btn:active { background: #eee; }
+
+  .lb-section { width: min(92vw, 480px); margin-top: 20px; }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+
+<h1>260324 필로미노</h1>
+<p class="subtitle">같은 크기의 영역끼리 닿지 않게 &middot; 숫자 = 영역 넓이</p>
+
+<div class="board" id="board"></div>
+
+<div class="num-btns" id="numBtns">
+  <button class="num-btn" onclick="inputNum(0)">✕</button>
+  <button class="num-btn" onclick="inputNum(1)">1</button>
+  <button class="num-btn" onclick="inputNum(2)">2</button>
+  <button class="num-btn" onclick="inputNum(3)">3</button>
+  <button class="num-btn" onclick="inputNum(4)">4</button>
+  <button class="num-btn" onclick="inputNum(5)">5</button>
+  <button class="num-btn" onclick="inputNum(6)">6</button>
+  <button class="num-btn" onclick="inputNum(7)">7</button>
+  <button class="num-btn" onclick="inputNum(8)">8</button>
+  <button class="num-btn" onclick="inputNum(9)">9</button>
+</div>
+
+<div class="bottom-buttons">
+  <button class="btn" onclick="eraseSelected()">지우기</button>
+  <button class="btn" onclick="resetBoard()">초기화</button>
+</div>
+
+<div class="cloud-btns" id="cloudBtns" style="display:none">
+  <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+  <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+</div>
+
+<div class="lb-section">
+  <div class="lb-title">푼 사람</div>
+  <div id="leaderboard"></div>
+</div>
+
+<script src="../js/common.js?v=4"></script>
+<script>
+const PUZZLE_ID = '260324_01';
+const SIZE = 10;
+const PRESETS = [
+  [0,1,3],[0,2,2],[0,4,4],[0,5,3],[0,7,1],[0,8,3],
+  [1,0,1],[1,3,5],[1,6,4],[1,9,2],
+  [2,0,3],[2,3,2],[2,6,5],[2,9,4],
+  [4,0,5],[4,2,3],[4,3,3],[4,4,4],[4,6,4],[4,8,4],
+  [5,1,5],[5,3,2],[5,5,2],[5,6,4],[5,7,2],[5,9,2],
+  [7,0,5],[7,3,5],[7,6,3],[7,9,5],
+  [8,0,1],[8,3,2],[8,6,4],[8,9,2],
+  [9,1,3],[9,2,5],[9,4,3],[9,5,4],[9,7,4],[9,8,1]
+];
+
+let board = Array.from({length: SIZE}, () => Array(SIZE).fill(0));
+const presetSet = new Set();
+let selected = null;
+
+for (const [r, c, v] of PRESETS) {
+  board[r][c] = v;
+  presetSet.add(`${r},${c}`);
+}
+
+function buildGrid() {
+  const el = document.getElementById('board');
+  el.innerHTML = '';
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (presetSet.has(`${r},${c}`) ? ' preset' : '');
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      if (board[r][c]) cell.textContent = board[r][c];
+      cell.addEventListener('click', () => selectCell(r, c));
+      el.appendChild(cell);
+    }
+  }
+}
+
+function selectCell(r, c) {
+  if (presetSet.has(`${r},${c}`)) { selected = null; render(); return; }
+  selected = [r, c];
+  render();
+}
+
+function inputNum(n) {
+  if (!selected) return;
+  const [r, c] = selected;
+  board[r][c] = n;
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+function eraseSelected() {
+  inputNum(0);
+}
+
+/* ── Region detection ── */
+function getRegions() {
+  const visited = Array.from({length: SIZE}, () => Array(SIZE).fill(false));
+  const regions = [];
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (!visited[r][c] && board[r][c] !== 0) {
+        const val = board[r][c];
+        const cells = [];
+        const queue = [[r, c]];
+        visited[r][c] = true;
+        while (queue.length) {
+          const [cr, cc] = queue.shift();
+          cells.push([cr, cc]);
+          for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+            const nr = cr+dr, nc = cc+dc;
+            if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE
+                && !visited[nr][nc] && board[nr][nc] === val) {
+              visited[nr][nc] = true;
+              queue.push([nr, nc]);
+            }
+          }
+        }
+        regions.push({val, cells, size: cells.length});
+      }
+    }
+  }
+  return regions;
+}
+
+function getConflicts() {
+  const set = new Set();
+  const regions = getRegions();
+
+  // 1. Region size exceeds the number → definitely wrong
+  for (const {val, cells, size} of regions) {
+    if (size > val) {
+      for (const [r, c] of cells) set.add(`${r},${c}`);
+    }
+  }
+
+  // 2. Two adjacent distinct regions of equal size → conflict
+  const rIdx = Array.from({length: SIZE}, () => Array(SIZE).fill(-1));
+  regions.forEach(({cells}, i) => cells.forEach(([r, c]) => rIdx[r][c] = i));
+
+  const seen = new Set();
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (rIdx[r][c] === -1) continue;
+      for (const [dr, dc] of [[0,1],[1,0]]) {
+        const nr = r+dr, nc = c+dc;
+        if (nr < SIZE && nc < SIZE) {
+          const ri = rIdx[r][c], rj = rIdx[nr][nc];
+          if (rj !== -1 && ri !== rj) {
+            const key = `${Math.min(ri,rj)}-${Math.max(ri,rj)}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              if (regions[ri].size === regions[rj].size) {
+                regions[ri].cells.forEach(([a,b]) => set.add(`${a},${b}`));
+                regions[rj].cells.forEach(([a,b]) => set.add(`${a},${b}`));
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return set;
+}
+
+function isSolved() {
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++)
+      if (!board[r][c]) return false;
+  if (getConflicts().size > 0) return false;
+  for (const {val, size} of getRegions())
+    if (val !== size) return false;
+  return true;
+}
+
+function render() {
+  const conflicts = getConflicts();
+  const el = document.getElementById('board');
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const cell = el.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+      if (!cell) continue;
+      cell.textContent = board[r][c] || '';
+      cell.className = 'cell'
+        + (presetSet.has(`${r},${c}`) ? ' preset' : '')
+        + (selected && selected[0]===r && selected[1]===c ? ' selected' : '')
+        + (conflicts.has(`${r},${c}`) ? ' conflict' : '');
+    }
+  }
+}
+
+function checkComplete() {
+  if (isSolved()) recordCompletion(PUZZLE_ID);
+}
+
+/* ── Storage ── */
+function saveProgress() {
+  localStorage.setItem(`puzzle_${PUZZLE_ID}`, JSON.stringify({board: board.map(r => [...r])}));
+}
+
+function loadProgress() {
+  const raw = localStorage.getItem(`puzzle_${PUZZLE_ID}`);
+  if (!raw) return;
+  try {
+    const {board: saved} = JSON.parse(raw);
+    if (saved) {
+      for (let r = 0; r < SIZE; r++)
+        for (let c = 0; c < SIZE; c++)
+          if (!presetSet.has(`${r},${c}`)) board[r][c] = saved[r][c] || 0;
+    }
+  } catch(e) {}
+}
+
+function resetBoard() {
+  if (!confirm('정말 초기화하시겠습니까?')) return;
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++)
+      if (!presetSet.has(`${r},${c}`)) board[r][c] = 0;
+  selected = null;
+  resetCompletion(PUZZLE_ID);
+  saveProgress();
+  render();
+}
+
+/* ── Cloud ── */
+function handleCloudSave() {
+  saveProgressCloud(PUZZLE_ID, {board: board.map(r => [...r])});
+}
+
+async function handleCloudLoad() {
+  const state = await loadProgressCloud(PUZZLE_ID);
+  if (!state) return;
+  if (state.board) {
+    for (let r = 0; r < SIZE; r++)
+      for (let c = 0; c < SIZE; c++)
+        if (!presetSet.has(`${r},${c}`)) board[r][c] = state.board[r][c] || 0;
+  }
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+/* ── Keyboard ── */
+document.addEventListener('keydown', e => {
+  if (!selected) return;
+  const [r, c] = selected;
+  if (e.key >= '1' && e.key <= '9') { inputNum(parseInt(e.key)); return; }
+  if (e.key === '0' || e.key === 'Backspace' || e.key === 'Delete') { inputNum(0); return; }
+  if (e.key === 'ArrowUp')    { selected = [Math.max(0, r-1), c]; render(); }
+  if (e.key === 'ArrowDown')  { selected = [Math.min(SIZE-1, r+1), c]; render(); }
+  if (e.key === 'ArrowLeft')  { selected = [r, Math.max(0, c-1)]; render(); }
+  if (e.key === 'ArrowRight') { selected = [r, Math.min(SIZE-1, c+1)]; render(); }
+});
+
+/* ── Init ── */
+buildGrid();
+loadProgress();
+render();
+
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+
+window.addEventListener('pageshow', e => {
+  if (e.persisted) {
+    initHeader();
+    initCloudBtns();
+    checkComplete();
+  }
+});
+</script>
+</body>
+</html>
