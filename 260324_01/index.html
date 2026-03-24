@@ -51,14 +51,21 @@
   }
 
   /* ── Board ── */
-  .board-wrap { border: 2.5px solid #222; padding: 5px; }
+  .board-wrap {
+    border: 2.5px solid #222;
+    padding: 5px;
+    width: 100%;
+    /* aspect-ratio 미지원 브라우저 대비 명시적 height */
+    height: calc(min(94vw, 450px) - 14px); /* container width - wrap border(5px) - padding(2px) */
+    box-sizing: border-box;
+  }
 
   .board {
     display: grid;
     grid-template-columns: repeat(9, 1fr 10px) 1fr;
     grid-template-rows:    repeat(9, 1fr 10px) 1fr;
     width: 100%;
-    aspect-ratio: 1 / 1;
+    height: 100%;
     background: #fff;
   }
 

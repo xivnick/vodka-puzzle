@@ -51,14 +51,20 @@
   }
 
   /* ── Board ── */
-  .board-wrap { border: 2.5px solid #222; padding: 5px; }
+  .board-wrap {
+    border: 2.5px solid #222;
+    padding: 5px;
+    width: 100%;
+    height: calc(min(94vw, 420px) - 14px);
+    box-sizing: border-box;
+  }
 
   .board {
     display: grid;
     grid-template-columns: repeat(9, 1fr 10px) 1fr;
     grid-template-rows:    repeat(9, 1fr 10px) 1fr;
     width: 100%;
-    aspect-ratio: 1 / 1;
+    height: 100%;
     background: #fff;
   }
 
