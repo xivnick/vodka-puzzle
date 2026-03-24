@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260324 필로미노(123)</title>
+<meta property="og:title" content="260324 필로미노(123)">
+<meta property="og:description" content="모든 영역의 넓이가 1, 2, 3 중 하나인 필로미노입니다.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260324_02/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #ffffff;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 32px 16px 48px;
+  }
+
+  h1 {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: #888;
+    margin-bottom: 20px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .container {
+    width: min(94vw, 420px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* ── Board ── */
+  .board-wrap { border: 2.5px solid #222; padding: 5px; }
+
+  .board {
+    display: grid;
+    /* 9 cell columns, 8 separator columns */
+    grid-template-columns: repeat(8, 1fr 10px) 1fr;
+    /* 10 cell rows, 9 separator rows */
+    grid-template-rows:    repeat(9, 1fr 10px) 1fr;
+    width: 100%;
+    aspect-ratio: 9 / 10;
+    background: #fff;
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: min(5.5vw, 22px);
+    font-weight: 700;
+    color: #222;
+    background: #fff;
+    user-select: none;
+  }
+
+  /* Number color: applied only to clue cells */
+  .cell.match { color: #4a6fa5; }           /* blue: size === clue */
+  .cell.under { color: #c0392b; }           /* red:  size < clue  */
+  /* size > clue: stays #222 (default) */
+
+  /* Background: applied to ALL cells in same-size-adjacent OR size>3 regions */
+  .cell.adj-bg { background: #f5d0d0; }
+
+  /* Separator strips */
+  .sep {
+    cursor: pointer;
+    position: relative;
+    background: #fff;
+  }
+  .sep::after {
+    content: '';
+    position: absolute;
+    background: #ccc;
+    transition: background 0.1s;
+    pointer-events: none;
+  }
+
+  .sep-h::after { left: 0; right: 0; height: 1px; top: 50%; transform: translateY(-50%); }
+  .sep-v::after { top: 0; bottom: 0; width: 1px; left: 50%; transform: translateX(-50%); }
+
+  .sep.active::after   { background: #222; }
+  .sep-h.active::after { height: 2.5px; }
+  .sep-v.active::after { width: 2.5px; }
+
+  .sep:hover::after    { background: #888; }
+  .sep-h:hover::after  { height: 2px; }
+  .sep-v:hover::after  { width: 2px; }
+
+  .corner { background: #fff; }
+
+  /* ── Bottom buttons ── */
+  .bottom-buttons {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .bottom-buttons button {
+    flex: 1;
+    height: 40px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1.5px solid #d0ccc4;
+    border-radius: 3px;
+    background: #faf8f4;
+    color: #777;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+
+  .bottom-buttons button:hover  { background: #eeebe4; color: #555; }
+  .bottom-buttons button:active { transform: scale(0.97); }
+
+  .bottom-buttons button.danger {
+    border-color: #e0bfbf;
+    background: #fdf5f5;
+    color: #b05050;
+  }
+  .bottom-buttons button.danger:hover { background: #f5e0e0; color: #8c3333; }
+
+  /* ── Rules ── */
+  .rules-toggle {
+    margin-top: 14px;
+    font-size: 0.78rem;
+    color: #999;
+    cursor: pointer;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 1px;
+    align-self: center;
+  }
+  .rules-toggle:hover { color: #666; border-color: #999; }
+
+  .rules-box {
+    display: none;
+    margin-top: 10px;
+    padding: 14px 18px;
+    background: #faf8f4;
+    border: 1px solid #e0ddd6;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-weight: 400;
+    line-height: 1.7;
+    color: #555;
+  }
+  .rules-box.open { display: block; }
+  .rules-box strong { color: #333; font-size: 0.82rem; font-weight: 700; }
+
+  @media (max-width: 540px) {
+    body { padding: 20px 8px 40px; }
+    h1 { font-size: 1.25rem; }
+    .bottom-buttons { gap: 5px; }
+    .bottom-buttons button { height: min(8.5vw, 40px); font-size: min(3.2vw, 13px); }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=4">
+<script src="/puzzle/js/common.js?v=4"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+
+<h1>260324 필로미노(123)</h1>
+<p class="subtitle">변을 눌러 영역 경계를 그려보세요<br>모든 영역의 넓이는 1, 2, 3 중 하나</p>
+
+<div class="container">
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="bottom-buttons">
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>필로미노(123) 규칙</strong><br>
+    1. 모든 칸을 점선을 따라 여러 영역으로 나눕니다.<br>
+    2. 숫자가 있는 칸은, 그 칸이 속한 영역의 <strong>넓이(칸 수)</strong>가 숫자와 같아야 합니다.<br>
+    3. 하나의 영역에 숫자가 2개 이상 있어도 되고, 없어도 됩니다.<br>
+    4. <strong>크기가 같은 영역</strong>끼리는 변을 맞대고 닿을 수 없습니다.<br>
+    5. <strong>모든 영역의 넓이는 1, 2, 3 중 하나</strong>여야 합니다.<br>
+    <br>
+    <strong>색상 안내</strong><br>
+    · 파란색: 영역 크기가 숫자와 일치합니다.<br>
+    · 빨간색 숫자: 영역이 너무 작습니다.<br>
+    · 빨간 배경: 영역이 넓이 3을 초과했거나, 같은 크기 영역끼리 닿아 있습니다.
+  </div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260324_02';
+const SIZE_R = 10;  // rows
+const SIZE_C = 9;   // columns
+
+const PRESETS = [
+  [0,2,2],[0,6,1],
+  [1,0,1],[1,4,1],
+  [2,2,2],[2,7,1],
+  [3,1,2],[3,5,1],
+  [4,3,2],[4,8,1],
+  [5,2,3],[5,6,1],
+  [6,0,1],[6,4,1],
+  [7,2,1],[7,6,3],
+  [8,1,3],[8,5,3],
+  [9,3,2],[9,8,2]
+];
+
+const presetGrid = Array.from({length: SIZE_R}, () => Array(SIZE_C).fill(0));
+for (const [r, c, v] of PRESETS) presetGrid[r][c] = v;
+
+// rSep[r][c]: wall below row r at column c  (r: 0..SIZE_R-2, c: 0..SIZE_C-1)
+// cSep[r][c]: wall right of col c at row r  (r: 0..SIZE_R-1, c: 0..SIZE_C-2)
+let rSep = Array.from({length: SIZE_R-1}, () => Array(SIZE_C).fill(false));
+let cSep = Array.from({length: SIZE_R}, () => Array(SIZE_C-1).fill(false));
+let hasInteracted = false;
+
+/* ── Build DOM ── */
+function buildGrid() {
+  const el = document.getElementById('board');
+  el.innerHTML = '';
+  for (let gi = 0; gi < 2*SIZE_R - 1; gi++) {
+    for (let gj = 0; gj < 2*SIZE_C - 1; gj++) {
+      const div = document.createElement('div');
+
+      if (gi % 2 === 0 && gj % 2 === 0) {
+        const r = gi / 2, c = gj / 2;
+        div.className = 'cell';
+        div.dataset.r = r; div.dataset.c = c;
+        if (presetGrid[r][c]) div.textContent = presetGrid[r][c];
+
+      } else if (gi % 2 === 1 && gj % 2 === 0) {
+        const r = (gi - 1) / 2, c = gj / 2;
+        div.className = 'sep sep-h';
+        div.dataset.t = 'r'; div.dataset.r = r; div.dataset.c = c;
+        div.addEventListener('click', () => toggle('r', r, c));
+
+      } else if (gi % 2 === 0 && gj % 2 === 1) {
+        const r = gi / 2, c = (gj - 1) / 2;
+        div.className = 'sep sep-v';
+        div.dataset.t = 'c'; div.dataset.r = r; div.dataset.c = c;
+        div.addEventListener('click', () => toggle('c', r, c));
+
+      } else {
+        div.className = 'corner';
+      }
+
+      el.appendChild(div);
+    }
+  }
+}
+
+function toggle(t, r, c) {
+  if (t === 'r') rSep[r][c] = !rSep[r][c];
+  else           cSep[r][c] = !cSep[r][c];
+  hasInteracted = true;
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+/* ── Region BFS ── */
+function getRegions() {
+  const visited  = Array.from({length: SIZE_R}, () => Array(SIZE_C).fill(false));
+  const regionOf = Array.from({length: SIZE_R}, () => Array(SIZE_C).fill(-1));
+  const regions  = [];
+
+  for (let r = 0; r < SIZE_R; r++) {
+    for (let c = 0; c < SIZE_C; c++) {
+      if (!visited[r][c]) {
+        const idx = regions.length;
+        const cells = [], nums = [];
+        const queue = [[r, c]];
+        visited[r][c] = true;
+
+        while (queue.length) {
+          const [cr, cc] = queue.shift();
+          cells.push([cr, cc]);
+          regionOf[cr][cc] = idx;
+          if (presetGrid[cr][cc]) nums.push(presetGrid[cr][cc]);
+
+          const nbrs = [
+            [cr-1, cc, cr > 0        && rSep[cr-1][cc]],
+            [cr+1, cc, cr < SIZE_R-1 && rSep[cr  ][cc]],
+            [cr, cc-1, cc > 0        && cSep[cr][cc-1]],
+            [cr, cc+1, cc < SIZE_C-1 && cSep[cr][cc  ]],
+          ];
+          for (const [nr, nc, blocked] of nbrs) {
+            if (nr >= 0 && nr < SIZE_R && nc >= 0 && nc < SIZE_C && !visited[nr][nc] && !blocked) {
+              visited[nr][nc] = true;
+              queue.push([nr, nc]);
+            }
+          }
+        }
+        regions.push({idx, cells, nums, size: cells.length});
+      }
+    }
+  }
+  return {regions, regionOf};
+}
+
+/* ── Color logic ── */
+function computeColors() {
+  const {regions, regionOf} = getRegions();
+
+  // Number color per clue cell: compare each clue to its own region size
+  const numStatus = Array.from({length: SIZE_R}, () => Array(SIZE_C).fill(''));
+  for (const {cells, size} of regions) {
+    for (const [r, c] of cells) {
+      const v = presetGrid[r][c];
+      if (!v) continue;
+      if (size === v)    numStatus[r][c] = 'match';
+      else if (size < v) numStatus[r][c] = 'under';
+      // size > v: stays '' = black default
+    }
+  }
+
+  // Background: red if region size > 3 (violates 123 rule) OR adjacent same-size
+  const bgStatus = Array(regions.length).fill(false);
+
+  for (let i = 0; i < regions.length; i++) {
+    if (regions[i].size > 3) bgStatus[i] = true;
+  }
+
+  const seen = new Set();
+  for (let r = 0; r < SIZE_R; r++) {
+    for (let c = 0; c < SIZE_C; c++) {
+      for (const [nr, nc] of [[r, c+1], [r+1, c]]) {
+        if (nr < SIZE_R && nc < SIZE_C) {
+          const ri = regionOf[r][c], rj = regionOf[nr][nc];
+          if (ri !== rj) {
+            const key = ri < rj ? `${ri}-${rj}` : `${rj}-${ri}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              if (regions[ri].size === regions[rj].size) {
+                bgStatus[ri] = true;
+                bgStatus[rj] = true;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  const cell = Array.from({length: SIZE_R}, () =>
+    Array.from({length: SIZE_C}, () => ({bg: false, num: ''})));
+  if (!hasInteracted) return cell;
+  for (let i = 0; i < regions.length; i++) {
+    for (const [r, c] of regions[i].cells) {
+      cell[r][c].bg  = bgStatus[i];
+      cell[r][c].num = numStatus[r][c];
+    }
+  }
+  return cell;
+}
+
+function render() {
+  const colors = computeColors();
+  const el = document.getElementById('board');
+
+  el.querySelectorAll('.cell').forEach(cell => {
+    const r = +cell.dataset.r, c = +cell.dataset.c;
+    const {bg, num} = colors[r][c];
+    let cls = 'cell';
+    if (bg)  cls += ' adj-bg';
+    if (num) cls += ' ' + num;
+    cell.className = cls;
+    cell.textContent = presetGrid[r][c] || '';
+  });
+
+  el.querySelectorAll('.sep').forEach(sep => {
+    const t = sep.dataset.t, r = +sep.dataset.r, c = +sep.dataset.c;
+    sep.classList.toggle('active', t === 'r' ? rSep[r][c] : cSep[r][c]);
+  });
+}
+
+/* ── Completion ── */
+function isSolved() {
+  const {regions, regionOf} = getRegions();
+
+  for (const {nums, size} of regions) {
+    // All regions must have size 1, 2, or 3
+    if (size > 3) return false;
+    // Numbered regions must match their clue
+    for (const v of nums) {
+      if (size !== v) return false;
+    }
+  }
+
+  // No two adjacent regions of same size
+  for (let r = 0; r < SIZE_R; r++) {
+    for (let c = 0; c < SIZE_C; c++) {
+      if (c < SIZE_C-1) {
+        const ri = regionOf[r][c], rj = regionOf[r][c+1];
+        if (ri !== rj && regions[ri].size === regions[rj].size) return false;
+      }
+      if (r < SIZE_R-1) {
+        const ri = regionOf[r][c], rj = regionOf[r+1][c];
+        if (ri !== rj && regions[ri].size === regions[rj].size) return false;
+      }
+    }
+  }
+  return true;
+}
+
+function checkComplete() {
+  if (isSolved()) recordCompletion(PUZZLE_ID);
+}
+
+/* ── Storage ── */
+function getState() {
+  return { rSep: rSep.map(row => [...row]), cSep: cSep.map(row => [...row]) };
+}
+
+function saveProgress() {
+  localStorage.setItem(`puzzle_${PUZZLE_ID}`, JSON.stringify(getState()));
+}
+
+function loadProgress() {
+  const raw = localStorage.getItem(`puzzle_${PUZZLE_ID}`);
+  if (!raw) return;
+  try {
+    const s = JSON.parse(raw);
+    if (s.rSep) { rSep = s.rSep; hasInteracted = true; }
+    if (s.cSep) { cSep = s.cSep; hasInteracted = true; }
+  } catch(e) {}
+}
+
+function resetBoard() {
+  if (!confirm('정말 초기화하시겠습니까?')) return;
+  rSep = Array.from({length: SIZE_R-1}, () => Array(SIZE_C).fill(false));
+  cSep = Array.from({length: SIZE_R}, () => Array(SIZE_C-1).fill(false));
+  hasInteracted = false;
+  resetCompletion(PUZZLE_ID);
+  saveProgress();
+  render();
+}
+
+/* ── Cloud ── */
+function handleCloudSave() { saveProgressCloud(PUZZLE_ID, getState()); }
+async function handleCloudLoad() {
+  const s = await loadProgressCloud(PUZZLE_ID);
+  if (!s) return;
+  if (s.rSep) { rSep = s.rSep; hasInteracted = true; }
+  if (s.cSep) { cSep = s.cSep; hasInteracted = true; }
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+/* ── Rules toggle ── */
+function toggleRules() {
+  document.getElementById('rulesBox').classList.toggle('open');
+}
+
+/* ── Init ── */
+loadProgress();
+buildGrid();
+render();
+
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+
+window.addEventListener('pageshow', e => {
+  if (e.persisted) { initHeader(); initCloudBtns(); checkComplete(); }
+});
+</script>
+</body>
+</html>
