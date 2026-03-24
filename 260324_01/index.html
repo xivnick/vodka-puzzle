@@ -394,7 +394,7 @@ function render() {
     if (bg)  cls += ' adj-bg';
     if (num) cls += ' ' + num;
     cell.className = cls;
-    cell.textContent = presetGrid[r][c] || '';
+    cell.textContent = presetGrid[r][c] || '\u00a0';
   });
 
   el.querySelectorAll('.sep').forEach(sep => {
