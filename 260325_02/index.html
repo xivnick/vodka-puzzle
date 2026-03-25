@@ -523,6 +523,20 @@ async function handleCloudLoad() {
   showToast('불러왔습니다.');
 }
 
+// ── Keyboard input ────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key >= '0' && e.key <= '9') { inputDigit(parseInt(e.key)); return; }
+  if (e.key === 'Backspace' || e.key === 'Delete') { deleteCell(); return; }
+  if (!selectedCell) return;
+  const {r, c} = selectedCell;
+  const dirs = { ArrowUp:[-1,0], ArrowDown:[1,0], ArrowLeft:[0,-1], ArrowRight:[0,1] };
+  const d = dirs[e.key];
+  if (!d) return;
+  e.preventDefault();
+  const nr = r + d[0], nc = c + d[1];
+  if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) selectCell(nr, nc);
+});
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 buildBoard();
 buildNumpad();
