@@ -67,6 +67,8 @@
     justify-content: center;
     background: #ffffff;
     min-height: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Cage clue label */
@@ -83,36 +85,78 @@
     white-space: nowrap;
   }
 
-  /* Number input */
-  .cell-input {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    height: 100%;
-    border: none;
-    background: transparent;
-    text-align: center;
+  /* Number display */
+  .cell-num {
     font-family: 'Noto Sans KR', sans-serif;
     font-size: min(5.5vw, 22px);
     font-weight: 700;
     color: #4a6fa5;
-    outline: none;
-    cursor: pointer;
-    -moz-appearance: textfield;
+    pointer-events: none;
+    z-index: 2;
   }
-  .cell-input::-webkit-inner-spin-button,
-  .cell-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .cell-num.path-err { color: #c0392b; }
 
   /* ── Color states ── */
   .cell.cage-ok  { background: #dce8f5; }
   .cell.cage-err { background: #f5d0d0; }
-  .cell-input.path-err { color: #c0392b; }
+  .cell.selected { outline: 2.5px solid #4a6fa5; outline-offset: -3px; z-index: 3; }
+
+  /* ── Numpad ── */
+  .numpad {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .numpad-tens {
+    display: flex;
+    gap: 6px;
+  }
+
+  .numpad-tens button {
+    flex: 1;
+    height: 40px;
+    border-radius: 4px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 1.5px solid #ddd;
+    background: #f5f5f5;
+    color: #555;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .numpad-tens button.active {
+    background: #4a6fa5;
+    color: #fff;
+    border-color: #4a6fa5;
+  }
+
+  .numpad-digits {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+  }
+  .numpad-digits button {
+    height: 40px;
+    border-radius: 4px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .numpad-digits button:active { background: #eee; }
 
   /* ── Bottom buttons ── */
   .bottom-buttons {
     display: flex;
     justify-content: center;
-    margin-top: 12px;
+    margin-top: 10px;
   }
 
   .bottom-buttons button {
@@ -170,6 +214,11 @@
 <div class="container">
   <div class="board" id="board"></div>
 
+  <div class="numpad" id="numpad">
+    <div class="numpad-tens" id="numpadTens"></div>
+    <div class="numpad-digits" id="numpadDigits"></div>
+  </div>
+
   <div class="bottom-buttons">
     <button class="btn-danger" onclick="resetBoard()">초기화</button>
   </div>
@@ -202,6 +251,9 @@ const PUZZLE_ID = '260325_02';
 const ROWS = 6, COLS = 6;
 const N = 36; // 6×6 = 36
 
+// 십의 자리 토글 옵션 (n=36이므로 00, 10, 20, 30)
+const TENS_OPTIONS = [0, 10, 20, 30];
+
 // ── Cage definitions ──────────────────────────────────────────────────────────
 // op: '+' | '-' | '×' | '÷' | null (null = 연산자 미표시, 4가지 모두 시도)
 // unknown: true → clue 미확인, 검증 스킵
@@ -215,35 +267,33 @@ const N = 36; // 6×6 = 36
 //   행5: [  ][  ][  ][  ][  ][  ]
 // ─────────────────────────────────────────────────────────────────────────────
 const CAGES = [
-  { cells:[[0,0],[0,1],[0,2]],             clue:'',    op:null, target:0,   unknown:true },
-  { cells:[[0,3],[0,4]],                   clue:'6-',  op:'-',  target:6              },
-  { cells:[[0,5],[1,4],[1,5]],             clue:'',    op:null, target:0,   unknown:true },
-  { cells:[[1,0],[1,1],[1,2],[1,3]],       clue:'105', op:null, target:105             },
-  { cells:[[2,0],[2,1],[2,2],[2,3]],       clue:'',    op:null, target:0,   unknown:true },
-  { cells:[[2,4]],                         clue:'3',   op:null, target:3              },
-  { cells:[[2,5],[3,5]],                   clue:'',    op:null, target:0,   unknown:true },
-  { cells:[[3,0],[3,1]],                   clue:'133', op:null, target:133             },
-  { cells:[[3,2],[3,3],[3,4]],             clue:'',    op:null, target:0,   unknown:true },
-  { cells:[[4,0],[4,1],[5,0],[5,1]],       clue:'',    op:null, target:0,   unknown:true },
-  { cells:[[4,2],[5,2]],                   clue:'7÷',  op:'÷',  target:7              },
-  { cells:[[4,3],[4,4]],                   clue:'108', op:null, target:108             },
-  { cells:[[4,5],[5,5]],                   clue:'',    op:null, target:0,   unknown:true },
-  { cells:[[5,3],[5,4]],                   clue:'',    op:null, target:0,   unknown:true },
+  { cells:[[0,0],[0,1],[0,2]],                               clue:'',    op:null, target:0,   unknown:true },
+  { cells:[[0,3],[1,3]],                                     clue:'6-',  op:'-',  target:6              },
+  { cells:[[0,4],[0,5],[1,4],[1,5]],                         clue:'',    op:null, target:0,   unknown:true },
+  { cells:[[1,0],[1,1],[1,2]],                               clue:'105', op:null, target:105             },
+  { cells:[[2,0],[2,1],[2,2],[2,3],[3,2],[3,3],[3,4],[3,5]], clue:'',    op:null, target:0,   unknown:true },
+  { cells:[[2,4],[2,5]],                                     clue:'3',   op:null, target:3              },
+  { cells:[[3,0],[3,1]],                                     clue:'133', op:null, target:133             },
+  { cells:[[4,0],[4,1],[5,0],[5,1]],                         clue:'',    op:null, target:0,   unknown:true },
+  { cells:[[4,2],[5,2]],                                     clue:'7÷',  op:'÷',  target:7              },
+  { cells:[[4,3],[4,4],[4,5]],                               clue:'108', op:null, target:108             },
+  { cells:[[5,3],[5,4],[5,5]],                               clue:'',    op:null, target:0,   unknown:true },
 ];
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Pre-compute cage map
 const cageOf = Array.from({length:ROWS}, () => Array(COLS).fill(-1));
-CAGES.forEach((cage, id) => {
-  cage.cells.forEach(([r,c]) => { cageOf[r][c] = id; });
-});
+CAGES.forEach((cage, id) => cage.cells.forEach(([r,c]) => { cageOf[r][c] = id; }));
 
-// Leader cell (topmost then leftmost) → clue label
 const cageLeader = {};
 CAGES.forEach((cage, id) => {
   const [r,c] = [...cage.cells].sort(([r1,c1],[r2,c2]) => r1-r2 || c1-c2)[0];
   cageLeader[`${r},${c}`] = id;
 });
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let values = Array.from({length:ROWS}, () => Array(COLS).fill(0));
+let selectedCell = null; // {r, c}
+let tensVal = TENS_OPTIONS[0];
 
 // ── Cage arithmetic ───────────────────────────────────────────────────────────
 function calcOp(op, vals) {
@@ -259,21 +309,19 @@ function calcOp(op, vals) {
 }
 
 function evalCage(cage, vals) {
-  if (cage.op === null) {
+  if (cage.op === null)
     return ['+','-','×','÷'].some(op => Math.abs(calcOp(op, vals) - cage.target) < 0.0001);
-  }
   return Math.abs(calcOp(cage.op, vals) - cage.target) < 0.0001;
 }
 
-// ── Grid ──────────────────────────────────────────────────────────────────────
-function getGrid() {
-  const g = Array.from({length:ROWS}, () => Array(COLS).fill(0));
-  for (let r = 0; r < ROWS; r++)
-    for (let c = 0; c < COLS; c++) {
-      const v = parseInt(document.querySelector(`#cell-${r}-${c} .cell-input`).value);
-      if (!isNaN(v) && v >= 1 && v <= N) g[r][c] = v;
-    }
-  return g;
+// ── Grid helper ───────────────────────────────────────────────────────────────
+function getGrid() { return values.map(row => [...row]); }
+
+// ── Cell display ──────────────────────────────────────────────────────────────
+function updateCellDisplay(r, c) {
+  const cell = document.getElementById(`cell-${r}-${c}`);
+  if (!cell) return;
+  cell.querySelector('.cell-num').textContent = values[r][c] || '';
 }
 
 // ── Validation ────────────────────────────────────────────────────────────────
@@ -310,23 +358,55 @@ function validate() {
   for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) {
       const cell = document.getElementById(`cell-${r}-${c}`);
-      const inp  = cell.querySelector('.cell-input');
+      const num  = cell.querySelector('.cell-num');
       const key  = `${r},${c}`;
       const cId  = cageOf[r][c];
 
       cell.classList.remove('cage-ok', 'cage-err');
-      inp.classList.remove('path-err');
+      num.classList.remove('path-err');
 
       if      (cageState[cId] === 'ok')  cell.classList.add('cage-ok');
       else if (cageState[cId] === 'err') cell.classList.add('cage-err');
 
-      if (dupSet.has(key) || adjErrSet.has(key)) inp.classList.add('path-err');
+      if (dupSet.has(key) || adjErrSet.has(key)) num.classList.add('path-err');
     }
 
   const allFilled = Object.keys(pos).length === N;
   const noErr = dupSet.size === 0 && adjErrSet.size === 0;
   const allCageOk = CAGES.every((cage, id) => cage.unknown || cageState[id] === 'ok');
   if (allFilled && noErr && allCageOk) recordCompletion(PUZZLE_ID);
+}
+
+// ── Select cell ───────────────────────────────────────────────────────────────
+function selectCell(r, c) {
+  if (selectedCell) {
+    const prev = document.getElementById(`cell-${selectedCell.r}-${selectedCell.c}`);
+    if (prev) prev.classList.remove('selected');
+  }
+  if (selectedCell && selectedCell.r === r && selectedCell.c === c) {
+    selectedCell = null;
+    return;
+  }
+  selectedCell = {r, c};
+  document.getElementById(`cell-${r}-${c}`).classList.add('selected');
+}
+
+// ── Numpad input ──────────────────────────────────────────────────────────────
+function inputDigit(digit) {
+  if (!selectedCell) return;
+  const {r, c} = selectedCell;
+  const v = tensVal + digit;
+  values[r][c] = (v >= 1 && v <= N) ? v : 0;
+  updateCellDisplay(r, c);
+  validate();
+  saveProgress();
+}
+
+function setTens(t) {
+  tensVal = t;
+  document.querySelectorAll('.numpad-tens button').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.tens) === t);
+  });
 }
 
 // ── Board build ───────────────────────────────────────────────────────────────
@@ -341,6 +421,7 @@ function buildBoard() {
       const div = document.createElement('div');
       div.className = 'cell';
       div.id = `cell-${r}-${c}`;
+      div.addEventListener('click', () => selectCell(r, c));
 
       const myCage = cageOf[r][c];
       const adj = (dr, dc) => {
@@ -376,35 +457,49 @@ function buildBoard() {
         }
       }
 
-      const inp = document.createElement('input');
-      inp.type = 'number';
-      inp.min = 1; inp.max = N;
-      inp.className = 'cell-input';
-      inp.addEventListener('input', () => {
-        const v = parseInt(inp.value);
-        if (inp.value !== '' && (isNaN(v) || v < 1 || v > N)) inp.value = '';
-        validate();
-        saveProgress();
-      });
-      div.appendChild(inp);
+      const num = document.createElement('span');
+      num.className = 'cell-num';
+      div.appendChild(num);
       board.appendChild(div);
     }
 }
 
+// ── Numpad build ──────────────────────────────────────────────────────────────
+function buildNumpad() {
+  const tensEl   = document.getElementById('numpadTens');
+  const digitsEl = document.getElementById('numpadDigits');
+
+  TENS_OPTIONS.forEach(t => {
+    const btn = document.createElement('button');
+    btn.textContent = String(t).padStart(2, '0');
+    btn.dataset.tens = t;
+    if (t === tensVal) btn.classList.add('active');
+    btn.addEventListener('click', () => setTens(t));
+    tensEl.appendChild(btn);
+  });
+
+  for (let d = 0; d <= 9; d++) {
+    const btn = document.createElement('button');
+    btn.textContent = d;
+    btn.addEventListener('click', () => inputDigit(d));
+    digitsEl.appendChild(btn);
+  }
+}
+
 // ── Save / Load ───────────────────────────────────────────────────────────────
 function saveProgress() {
-  localStorage.setItem(`puzzle_${PUZZLE_ID}`, JSON.stringify(getGrid()));
+  localStorage.setItem(`puzzle_${PUZZLE_ID}`, JSON.stringify(values));
 }
 
 function loadProgress() {
   const raw = localStorage.getItem(`puzzle_${PUZZLE_ID}`);
   if (!raw) return;
   try {
-    const grid = JSON.parse(raw);
+    const saved = JSON.parse(raw);
     for (let r = 0; r < ROWS; r++)
       for (let c = 0; c < COLS; c++) {
-        const inp = document.querySelector(`#cell-${r}-${c} .cell-input`);
-        if (inp && grid[r]?.[c]) inp.value = grid[r][c];
+        values[r][c] = saved[r]?.[c] || 0;
+        updateCellDisplay(r, c);
       }
     validate();
   } catch(e) {}
@@ -412,9 +507,18 @@ function loadProgress() {
 
 function resetBoard() {
   if (!confirm('정말 초기화하시겠습니까?')) return;
-  document.querySelectorAll('.cell-input').forEach(inp => { inp.value = ''; });
+  if (selectedCell) {
+    const prev = document.getElementById(`cell-${selectedCell.r}-${selectedCell.c}`);
+    if (prev) prev.classList.remove('selected');
+    selectedCell = null;
+  }
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      values[r][c] = 0;
+      updateCellDisplay(r, c);
+    }
   document.querySelectorAll('.cell').forEach(c => c.classList.remove('cage-ok','cage-err'));
-  document.querySelectorAll('.cell-input').forEach(inp => inp.classList.remove('path-err'));
+  document.querySelectorAll('.cell-num').forEach(n => n.classList.remove('path-err'));
   resetCompletion(PUZZLE_ID);
   saveProgress();
 }
@@ -428,8 +532,8 @@ async function handleCloudLoad() {
   if (!state) { showToast('불러올 데이터가 없습니다.'); return; }
   for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) {
-      const inp = document.querySelector(`#cell-${r}-${c} .cell-input`);
-      if (inp) inp.value = state[r]?.[c] || '';
+      values[r][c] = state[r]?.[c] || 0;
+      updateCellDisplay(r, c);
     }
   validate();
   saveProgress();
@@ -438,6 +542,7 @@ async function handleCloudLoad() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 buildBoard();
+buildNumpad();
 loadProgress();
 initHeader();
 initCloudBtns();
