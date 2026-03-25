@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260325 Math Path (2)</title>
+<meta property="og:title" content="260325 Math Path (2)">
+<meta property="og:description" content="1~n을 킹 이동으로 연결하고 영역 계산식을 만족시키는 수학 퍼즐">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260325_02/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #ffffff;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 32px 16px 48px;
+  }
+
+  h1 {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: #888;
+    margin-bottom: 20px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .container {
+    width: min(94vw, 420px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* ── Board ── */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    background: #ffffff;
+  }
+
+  .cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    min-height: 0;
+  }
+
+  /* Cage clue label */
+  .cage-clue {
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    font-size: min(2.5vw, 9px);
+    font-weight: 700;
+    color: #222;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 1;
+    white-space: nowrap;
+  }
+
+  /* Number input */
+  .cell-input {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: min(5.5vw, 22px);
+    font-weight: 700;
+    color: #4a6fa5;
+    outline: none;
+    cursor: pointer;
+    -moz-appearance: textfield;
+  }
+  .cell-input::-webkit-inner-spin-button,
+  .cell-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  /* ── Color states ── */
+  .cell.cage-ok  { background: #dce8f5; }
+  .cell.cage-err { background: #f5d0d0; }
+  .cell-input.path-err { color: #c0392b; }
+
+  /* ── Bottom buttons ── */
+  .bottom-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+  }
+
+  .bottom-buttons button {
+    flex: 1;
+    height: 44px;
+    border-radius: 4px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .btn-danger {
+    background: #fdf5f5;
+    border: 1.5px solid #e0bfbf;
+    color: #b05050;
+  }
+  .btn-danger:hover { background: #f5e0e0; }
+
+  .rules-toggle {
+    display: block;
+    margin: 10px auto 0;
+    background: none;
+    border: none;
+    color: #888;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .rules-box {
+    display: none;
+    margin-top: 10px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 0.82rem;
+    color: #555;
+    line-height: 1.7;
+  }
+  .rules-box.open { display: block; }
+  .rules-box strong { display: block; margin-bottom: 4px; color: #333; }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=5">
+</head>
+<body>
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+
+<h1>260325 Math Path (2)</h1>
+<p class="subtitle">모든 칸에 1~36을 채우세요<br>연속된 수는 반드시 인접(대각선 포함)해야 합니다</p>
+
+<div class="container">
+  <div class="board" id="board"></div>
+
+  <div class="bottom-buttons">
+    <button class="btn-danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <button class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</button>
+  <div class="rules-box" id="rulesBox">
+    <strong>Math Path 규칙</strong>
+    1. 1부터 n(칸의 수)까지 모든 수를 정확히 한 번씩 채웁니다.<br>
+    2. 차이가 1인 두 수는 서로 변 또는 꼭짓점으로 인접해야 합니다.<br>
+    3. 각 영역의 숫자를 내림차순으로 표시된 연산자로 계산하면 영역의 클루 값이 됩니다.<br>
+    연산자가 없으면 +, -, ×, ÷ 중 하나로 계산 가능하면 됩니다.<br>
+    <br>
+    <em>파란 배경: 영역 정답 / 빨간 글자: 인접 규칙 위반</em>
+  </div>
+</div>
+
+<div class="cloud-btns" id="cloudBtns" style="display:none">
+  <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+  <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+</div>
+
+<div class="lb-section">
+  <div class="lb-title">푼 사람</div>
+  <div id="leaderboard"></div>
+</div>
+
+<script src="/puzzle/js/common.js?v=5"></script>
+<script>
+const PUZZLE_ID = '260325_02';
+const ROWS = 6, COLS = 6;
+const N = 36; // 6×6 = 36
+
+// ── Cage definitions ──────────────────────────────────────────────────────────
+// op: '+' | '-' | '×' | '÷' | null (null = 연산자 미표시, 4가지 모두 시도)
+// unknown: true → clue 미확인, 검증 스킵
+//
+// 셀 배치 (행,열) 0-indexed:
+//   행0: [  ][  ][  ][6-][  ][  ]
+//   행1: [105][  ][  ][  ][  ][  ]
+//   행2: [  ][  ][  ][  ][ 3][  ]
+//   행3: [133][  ][  ][  ][  ][  ]
+//   행4: [  ][  ][7÷][108][  ][  ]
+//   행5: [  ][  ][  ][  ][  ][  ]
+// ─────────────────────────────────────────────────────────────────────────────
+const CAGES = [
+  { cells:[[0,0],[0,1],[0,2]],             clue:'',    op:null, target:0,   unknown:true },
+  { cells:[[0,3],[0,4]],                   clue:'6-',  op:'-',  target:6              },
+  { cells:[[0,5],[1,4],[1,5]],             clue:'',    op:null, target:0,   unknown:true },
+  { cells:[[1,0],[1,1],[1,2],[1,3]],       clue:'105', op:null, target:105             },
+  { cells:[[2,0],[2,1],[2,2],[2,3]],       clue:'',    op:null, target:0,   unknown:true },
+  { cells:[[2,4]],                         clue:'3',   op:null, target:3              },
+  { cells:[[2,5],[3,5]],                   clue:'',    op:null, target:0,   unknown:true },
+  { cells:[[3,0],[3,1]],                   clue:'133', op:null, target:133             },
+  { cells:[[3,2],[3,3],[3,4]],             clue:'',    op:null, target:0,   unknown:true },
+  { cells:[[4,0],[4,1],[5,0],[5,1]],       clue:'',    op:null, target:0,   unknown:true },
+  { cells:[[4,2],[5,2]],                   clue:'7÷',  op:'÷',  target:7              },
+  { cells:[[4,3],[4,4]],                   clue:'108', op:null, target:108             },
+  { cells:[[4,5],[5,5]],                   clue:'',    op:null, target:0,   unknown:true },
+  { cells:[[5,3],[5,4]],                   clue:'',    op:null, target:0,   unknown:true },
+];
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Pre-compute cage map
+const cageOf = Array.from({length:ROWS}, () => Array(COLS).fill(-1));
+CAGES.forEach((cage, id) => {
+  cage.cells.forEach(([r,c]) => { cageOf[r][c] = id; });
+});
+
+// Leader cell (topmost then leftmost) → clue label
+const cageLeader = {};
+CAGES.forEach((cage, id) => {
+  const [r,c] = [...cage.cells].sort(([r1,c1],[r2,c2]) => r1-r2 || c1-c2)[0];
+  cageLeader[`${r},${c}`] = id;
+});
+
+// ── Cage arithmetic ───────────────────────────────────────────────────────────
+function calcOp(op, vals) {
+  const s = [...vals].sort((a,b) => b-a);
+  let r = s[0];
+  for (let i = 1; i < s.length; i++) {
+    if      (op === '+') r += s[i];
+    else if (op === '-') r -= s[i];
+    else if (op === '×') r *= s[i];
+    else if (op === '÷') r /= s[i];
+  }
+  return r;
+}
+
+function evalCage(cage, vals) {
+  if (cage.op === null) {
+    return ['+','-','×','÷'].some(op => Math.abs(calcOp(op, vals) - cage.target) < 0.0001);
+  }
+  return Math.abs(calcOp(cage.op, vals) - cage.target) < 0.0001;
+}
+
+// ── Grid ──────────────────────────────────────────────────────────────────────
+function getGrid() {
+  const g = Array.from({length:ROWS}, () => Array(COLS).fill(0));
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      const v = parseInt(document.querySelector(`#cell-${r}-${c} .cell-input`).value);
+      if (!isNaN(v) && v >= 1 && v <= N) g[r][c] = v;
+    }
+  return g;
+}
+
+// ── Validation ────────────────────────────────────────────────────────────────
+function validate() {
+  const grid = getGrid();
+
+  const pos = {}, dupSet = new Set();
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      if (!grid[r][c]) continue;
+      const v = grid[r][c];
+      if (pos[v]) { dupSet.add(`${pos[v][0]},${pos[v][1]}`); dupSet.add(`${r},${c}`); }
+      pos[v] = [r, c];
+    }
+
+  const adjErrSet = new Set();
+  for (let v = 1; v < N; v++) {
+    if (pos[v] && pos[v+1]) {
+      const [r1,c1] = pos[v], [r2,c2] = pos[v+1];
+      if (Math.abs(r1-r2) > 1 || Math.abs(c1-c2) > 1) {
+        adjErrSet.add(`${r1},${c1}`); adjErrSet.add(`${r2},${c2}`);
+      }
+    }
+  }
+
+  const cageState = {};
+  CAGES.forEach((cage, id) => {
+    if (cage.unknown) { cageState[id] = 'unknown'; return; }
+    const vals = cage.cells.map(([r,c]) => grid[r][c]).filter(v => v > 0);
+    if (vals.length < cage.cells.length) { cageState[id] = 'incomplete'; return; }
+    cageState[id] = evalCage(cage, vals) ? 'ok' : 'err';
+  });
+
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      const cell = document.getElementById(`cell-${r}-${c}`);
+      const inp  = cell.querySelector('.cell-input');
+      const key  = `${r},${c}`;
+      const cId  = cageOf[r][c];
+
+      cell.classList.remove('cage-ok', 'cage-err');
+      inp.classList.remove('path-err');
+
+      if      (cageState[cId] === 'ok')  cell.classList.add('cage-ok');
+      else if (cageState[cId] === 'err') cell.classList.add('cage-err');
+
+      if (dupSet.has(key) || adjErrSet.has(key)) inp.classList.add('path-err');
+    }
+
+  const allFilled = Object.keys(pos).length === N;
+  const noErr = dupSet.size === 0 && adjErrSet.size === 0;
+  const allCageOk = CAGES.every((cage, id) => cage.unknown || cageState[id] === 'ok');
+  if (allFilled && noErr && allCageOk) recordCompletion(PUZZLE_ID);
+}
+
+// ── Board build ───────────────────────────────────────────────────────────────
+function buildBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  const THICK = '2px solid #222';
+  const THIN  = '1px solid #aaa';
+
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      const div = document.createElement('div');
+      div.className = 'cell';
+      div.id = `cell-${r}-${c}`;
+
+      const myCage = cageOf[r][c];
+      const adj = (dr, dc) => {
+        const nr=r+dr, nc=c+dc;
+        return nr>=0&&nr<ROWS&&nc>=0&&nc<COLS;
+      };
+
+      const shadows = [];
+      for (const [dr, dc, prop, shadow] of [
+        [-1, 0, 'borderTop',    '0 -2px 0 0 #222'],
+        [ 1, 0, 'borderBottom', '0  2px 0 0 #222'],
+        [ 0,-1, 'borderLeft',   '-2px 0 0 0 #222'],
+        [ 0, 1, 'borderRight',  ' 2px 0 0 0 #222'],
+      ]) {
+        if (!adj(dr, dc)) {
+          div.style[prop] = THICK;
+          shadows.push(shadow);
+        } else if (cageOf[r+dr][c+dc] !== myCage) {
+          div.style[prop] = THICK;
+        } else {
+          div.style[prop] = THIN;
+        }
+      }
+      if (shadows.length) div.style.boxShadow = shadows.join(', ');
+
+      if (cageLeader[`${r},${c}`] !== undefined) {
+        const cage = CAGES[cageLeader[`${r},${c}`]];
+        if (cage.clue) {
+          const lbl = document.createElement('span');
+          lbl.className = 'cage-clue';
+          lbl.textContent = cage.clue;
+          div.appendChild(lbl);
+        }
+      }
+
+      const inp = document.createElement('input');
+      inp.type = 'number';
+      inp.min = 1; inp.max = N;
+      inp.className = 'cell-input';
+      inp.addEventListener('input', () => {
+        const v = parseInt(inp.value);
+        if (inp.value !== '' && (isNaN(v) || v < 1 || v > N)) inp.value = '';
+        validate();
+        saveProgress();
+      });
+      div.appendChild(inp);
+      board.appendChild(div);
+    }
+}
+
+// ── Save / Load ───────────────────────────────────────────────────────────────
+function saveProgress() {
+  localStorage.setItem(`puzzle_${PUZZLE_ID}`, JSON.stringify(getGrid()));
+}
+
+function loadProgress() {
+  const raw = localStorage.getItem(`puzzle_${PUZZLE_ID}`);
+  if (!raw) return;
+  try {
+    const grid = JSON.parse(raw);
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++) {
+        const inp = document.querySelector(`#cell-${r}-${c} .cell-input`);
+        if (inp && grid[r]?.[c]) inp.value = grid[r][c];
+      }
+    validate();
+  } catch(e) {}
+}
+
+function resetBoard() {
+  if (!confirm('정말 초기화하시겠습니까?')) return;
+  document.querySelectorAll('.cell-input').forEach(inp => { inp.value = ''; });
+  document.querySelectorAll('.cell').forEach(c => c.classList.remove('cage-ok','cage-err'));
+  document.querySelectorAll('.cell-input').forEach(inp => inp.classList.remove('path-err'));
+  resetCompletion(PUZZLE_ID);
+  saveProgress();
+}
+
+// ── Cloud ─────────────────────────────────────────────────────────────────────
+function handleCloudSave() {
+  saveProgressCloud(PUZZLE_ID, getGrid()).then(() => showToast('저장했습니다.'));
+}
+async function handleCloudLoad() {
+  const state = await loadProgressCloud(PUZZLE_ID);
+  if (!state) { showToast('불러올 데이터가 없습니다.'); return; }
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      const inp = document.querySelector(`#cell-${r}-${c} .cell-input`);
+      if (inp) inp.value = state[r]?.[c] || '';
+    }
+  validate();
+  saveProgress();
+  showToast('불러왔습니다.');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildBoard();
+loadProgress();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>
