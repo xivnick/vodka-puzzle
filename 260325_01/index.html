@@ -332,7 +332,7 @@ function validate() {
 function buildBoard() {
   const board = document.getElementById('board');
   board.innerHTML = '';
-  const THICK = '2.5px solid #222';
+  const THICK = '2px solid #222';
   const THIN  = '1px solid #aaa';
 
   for (let r = 0; r < ROWS; r++)
@@ -348,11 +348,25 @@ function buildBoard() {
         const nr=r+dr, nc=c+dc;
         return nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&ACTIVE[nr][nc];
       };
-      const side = (dr, dc) => !adj(dr,dc) || cageOf[r+dr][c+dc]!==myCage ? THICK : THIN;
-      div.style.borderTop    = side(-1, 0);
-      div.style.borderBottom = side( 1, 0);
-      div.style.borderLeft   = side( 0,-1);
-      div.style.borderRight  = side( 0, 1);
+
+      // 외곽선(비활성 이웃)은 boxShadow 2px를 추가해 내부 케이지 경계(2px+2px=4px)와 두께 일치
+      const shadows = [];
+      for (const [dr, dc, prop, shadow] of [
+        [-1, 0, 'borderTop',    '0 -2px 0 0 #222'],
+        [ 1, 0, 'borderBottom', '0  2px 0 0 #222'],
+        [ 0,-1, 'borderLeft',   '-2px 0 0 0 #222'],
+        [ 0, 1, 'borderRight',  ' 2px 0 0 0 #222'],
+      ]) {
+        if (!adj(dr, dc)) {
+          div.style[prop] = THICK;
+          shadows.push(shadow);
+        } else if (cageOf[r+dr][c+dc] !== myCage) {
+          div.style[prop] = THICK;
+        } else {
+          div.style[prop] = THIN;
+        }
+      }
+      if (shadows.length) div.style.boxShadow = shadows.join(', ');
 
       // Cage clue label
       if (cageLeader[`${r},${c}`] !== undefined) {
