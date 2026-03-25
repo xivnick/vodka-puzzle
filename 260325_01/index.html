@@ -26,32 +26,38 @@
   }
 
   h1 {
+    font-family: 'Noto Sans KR', sans-serif;
     font-size: 1.5rem;
     font-weight: 700;
-    text-align: center;
-    margin-bottom: 6px;
+    color: #222;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
   }
 
   .subtitle {
-    font-size: 0.85rem;
-    color: #666;
-    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: #888;
     margin-bottom: 20px;
-    line-height: 1.6;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .container {
+    width: min(94vw, 420px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   /* ── Board ── */
-  .board-wrap {
-    width: min(95vw, 380px);
-  }
-
   .board {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(4, 1fr);
     aspect-ratio: 1 / 1;
     width: 100%;
-    background: transparent;
+    background: #ffffff;
   }
 
   .cell {
@@ -59,7 +65,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
+    background: #ffffff;
     min-height: 0;
   }
 
@@ -68,14 +74,14 @@
     min-height: 0;
   }
 
-  /* Cage clue label (top-left corner of cage) */
+  /* Cage clue label */
   .cage-clue {
     position: absolute;
     top: 2px;
     left: 3px;
     font-size: min(3vw, 11px);
     font-weight: 700;
-    color: #444;
+    color: #222;
     line-height: 1;
     pointer-events: none;
     z-index: 1;
@@ -94,7 +100,7 @@
     font-family: 'Noto Sans KR', sans-serif;
     font-size: min(7vw, 26px);
     font-weight: 700;
-    color: #222;
+    color: #4a6fa5;
     outline: none;
     cursor: pointer;
     -moz-appearance: textfield;
@@ -105,30 +111,35 @@
   /* ── Color states ── */
   .cell.cage-ok  { background: #dce8f5; }
   .cell.cage-err { background: #f5d0d0; }
-  .cell-input.adj-err { color: #c0392b; }
-  .cell-input.dup-err { color: #e67e22; }
+  .cell-input.path-err { color: #c0392b; }
 
-  /* ── Buttons ── */
+  /* ── Bottom buttons ── */
   .bottom-buttons {
     display: flex;
     justify-content: center;
-    margin-top: 16px;
+    margin-top: 12px;
   }
-  button.reset-btn {
-    background: #fff0f0;
-    border: 1.5px solid #e0b0b0;
-    border-radius: 6px;
-    padding: 8px 32px;
+
+  .bottom-buttons button {
+    flex: 1;
+    height: 44px;
+    border-radius: 4px;
     font-family: 'Noto Sans KR', sans-serif;
     font-size: 0.95rem;
-    color: #c0392b;
     cursor: pointer;
   }
-  button.reset-btn:hover { background: #ffe0e0; }
 
+  .btn-danger {
+    background: #fdf5f5;
+    border: 1.5px solid #e0bfbf;
+    color: #b05050;
+  }
+  .btn-danger:hover { background: #f5e0e0; }
+
+  /* Rules toggle */
   .rules-toggle {
     display: block;
-    margin: 12px auto 0;
+    margin: 10px auto 0;
     background: none;
     border: none;
     color: #888;
@@ -137,19 +148,19 @@
     cursor: pointer;
     text-decoration: underline;
   }
+
   .rules-box {
     display: none;
-    margin: 10px auto 0;
-    width: min(95vw, 380px);
+    margin-top: 10px;
     background: #f5f5f5;
-    border-radius: 8px;
+    border-radius: 4px;
     padding: 12px 16px;
     font-size: 0.82rem;
     color: #555;
     line-height: 1.7;
   }
   .rules-box.open { display: block; }
-  .rules-box strong { display: block; margin-bottom: 4px; }
+  .rules-box strong { display: block; margin-bottom: 4px; color: #333; }
 </style>
 <link rel="stylesheet" href="/puzzle/css/common.css?v=5">
 </head>
@@ -159,16 +170,14 @@
   <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
 </header>
 
-<main style="width:100%;display:flex;flex-direction:column;align-items:center;">
-  <h1>260325 Math Path (1)</h1>
-  <p class="subtitle">모든 칸에 1~14를 채우세요<br>연속된 수는 반드시 인접(대각선 포함)해야 합니다</p>
+<h1>260325 Math Path (1)</h1>
+<p class="subtitle">모든 칸에 1~14를 채우세요<br>연속된 수는 반드시 인접(대각선 포함)해야 합니다</p>
 
-  <div class="board-wrap">
-    <div class="board" id="board"></div>
-  </div>
+<div class="container">
+  <div class="board" id="board"></div>
 
   <div class="bottom-buttons">
-    <button class="reset-btn" onclick="resetBoard()">초기화</button>
+    <button class="btn-danger" onclick="resetBoard()">초기화</button>
   </div>
 
   <button class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</button>
@@ -180,24 +189,24 @@
     <br>
     <em>파란 배경: 영역 계산 정답 / 빨간 글자: 인접 규칙 위반</em>
   </div>
+</div>
 
-  <div class="cloud-btns" id="cloudBtns" style="display:none">
-    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
-    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
-  </div>
+<div class="cloud-btns" id="cloudBtns" style="display:none">
+  <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+  <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+</div>
 
-  <div class="lb-section">
-    <div class="lb-title">푼 사람</div>
-    <div id="leaderboard"></div>
-  </div>
-</main>
+<div class="lb-section">
+  <div class="lb-title">푼 사람</div>
+  <div id="leaderboard"></div>
+</div>
 
 <script src="/puzzle/js/common.js?v=5"></script>
 <script>
 const PUZZLE_ID = '260325_01';
 const ROWS = 4, COLS = 4;
 
-// 1 = active cell, 0 = inactive
+// 1 = active, 0 = inactive
 const ACTIVE = [
   [1,1,1,0],
   [1,1,1,1],
@@ -207,19 +216,17 @@ const ACTIVE = [
 const N = ACTIVE.flat().reduce((s,v) => s+v, 0); // 14
 
 // ── Cage definitions ──────────────────────────────────────────────────────────
-// cells: [[row,col], ...]   (0-indexed)
 // op: '+' | '-' | '×' | '÷' | null (null = exact value)
-// target: result value
-// unknown: true → skip validation (placeholder for missing clue data)
+// unknown: true → clue not yet set, skip validation
 // ─────────────────────────────────────────────────────────────────────────────
 const CAGES = [
-  { cells:[[0,0],[0,1]],         clue:'4÷',  op:'÷', target:4 },
-  { cells:[[0,2],[1,2]],         clue:'',     op:null, target:0, unknown:true },
-  { cells:[[1,0],[2,0]],         clue:'',     op:null, target:0, unknown:true },
-  { cells:[[1,1],[2,1]],         clue:'2×',  op:'×', target:2 },
-  { cells:[[1,3]],               clue:'1',    op:null, target:1 },
-  { cells:[[2,2],[2,3]],         clue:'2÷',  op:'÷', target:2 },
-  { cells:[[3,1],[3,2],[3,3]],   clue:'',     op:null, target:0, unknown:true },
+  { cells:[[0,0],[0,1]],       clue:'4÷',  op:'÷', target:4 },
+  { cells:[[0,2],[1,2]],       clue:'',    op:null, target:0, unknown:true },
+  { cells:[[1,0],[2,0]],       clue:'',    op:null, target:0, unknown:true },
+  { cells:[[1,1],[2,1]],       clue:'2×',  op:'×', target:2 },
+  { cells:[[1,3]],             clue:'1',   op:null, target:1 },
+  { cells:[[2,2],[2,3]],       clue:'2÷',  op:'÷', target:2 },
+  { cells:[[3,1],[3,2],[3,3]], clue:'',    op:null, target:0, unknown:true },
 ];
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -229,11 +236,11 @@ CAGES.forEach((cage, id) => {
   cage.cells.forEach(([r,c]) => { cageOf[r][c] = id; });
 });
 
-// Leader cell of each cage (topmost-then-leftmost) → shows clue label
+// Leader cell of each cage (topmost then leftmost) — receives clue label
 const cageLeader = {};
 CAGES.forEach((cage, id) => {
-  const sorted = [...cage.cells].sort(([r1,c1],[r2,c2]) => r1-r2 || c1-c2);
-  cageLeader[`${sorted[0][0]},${sorted[0][1]}`] = id;
+  const [r,c] = [...cage.cells].sort(([r1,c1],[r2,c2]) => r1-r2 || c1-c2)[0];
+  cageLeader[`${r},${c}`] = id;
 });
 
 // ── Cage arithmetic ───────────────────────────────────────────────────────────
@@ -242,7 +249,7 @@ function evalCage(cage, vals) {
   const s = [...vals].sort((a,b) => b-a);
   let r = s[0];
   for (let i = 1; i < s.length; i++) {
-    if (cage.op === '+') r += s[i];
+    if      (cage.op === '+') r += s[i];
     else if (cage.op === '-') r -= s[i];
     else if (cage.op === '×') r *= s[i];
     else if (cage.op === '÷') r /= s[i];
@@ -250,17 +257,15 @@ function evalCage(cage, vals) {
   return Math.abs(r - cage.target) < 0.0001;
 }
 
-// ── Grid helpers ──────────────────────────────────────────────────────────────
+// ── Grid ──────────────────────────────────────────────────────────────────────
 function getGrid() {
   const g = Array.from({length:ROWS}, () => Array(COLS).fill(0));
-  for (let r = 0; r < ROWS; r++) {
+  for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) {
       if (!ACTIVE[r][c]) continue;
-      const inp = document.querySelector(`#cell-${r}-${c} .cell-input`);
-      const v = parseInt(inp.value);
+      const v = parseInt(document.querySelector(`#cell-${r}-${c} .cell-input`).value);
       if (!isNaN(v) && v >= 1 && v <= N) g[r][c] = v;
     }
-  }
   return g;
 }
 
@@ -268,34 +273,28 @@ function getGrid() {
 function validate() {
   const grid = getGrid();
 
-  // Position map & duplicate detection
-  const pos = {};
-  const dupSet = new Set();
-  for (let r = 0; r < ROWS; r++) {
+  // Position map + duplicate detection
+  const pos = {}, dupSet = new Set();
+  for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) {
       if (!ACTIVE[r][c] || !grid[r][c]) continue;
       const v = grid[r][c];
-      if (pos[v]) {
-        dupSet.add(`${pos[v][0]},${pos[v][1]}`);
-        dupSet.add(`${r},${c}`);
-      }
+      if (pos[v]) { dupSet.add(`${pos[v][0]},${pos[v][1]}`); dupSet.add(`${r},${c}`); }
       pos[v] = [r, c];
     }
-  }
 
-  // King-adjacency check for consecutive numbers
+  // King-adjacency check
   const adjErrSet = new Set();
   for (let v = 1; v < N; v++) {
     if (pos[v] && pos[v+1]) {
       const [r1,c1] = pos[v], [r2,c2] = pos[v+1];
       if (Math.abs(r1-r2) > 1 || Math.abs(c1-c2) > 1) {
-        adjErrSet.add(`${r1},${c1}`);
-        adjErrSet.add(`${r2},${c2}`);
+        adjErrSet.add(`${r1},${c1}`); adjErrSet.add(`${r2},${c2}`);
       }
     }
   }
 
-  // Cage arithmetic check
+  // Cage arithmetic
   const cageState = {};
   CAGES.forEach((cage, id) => {
     if (cage.unknown) { cageState[id] = 'unknown'; return; }
@@ -305,88 +304,71 @@ function validate() {
   });
 
   // Apply styles
-  for (let r = 0; r < ROWS; r++) {
+  for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) {
       if (!ACTIVE[r][c]) continue;
       const cell = document.getElementById(`cell-${r}-${c}`);
-      const inp = cell.querySelector('.cell-input');
-      const key = `${r},${c}`;
-      const cId = cageOf[r][c];
+      const inp  = cell.querySelector('.cell-input');
+      const key  = `${r},${c}`;
+      const cId  = cageOf[r][c];
 
       cell.classList.remove('cage-ok', 'cage-err');
-      inp.classList.remove('adj-err', 'dup-err');
+      inp.classList.remove('path-err');
 
-      if (cageState[cId] === 'ok') cell.classList.add('cage-ok');
+      if      (cageState[cId] === 'ok')  cell.classList.add('cage-ok');
       else if (cageState[cId] === 'err') cell.classList.add('cage-err');
 
-      if (dupSet.has(key)) inp.classList.add('dup-err');
-      else if (adjErrSet.has(key)) inp.classList.add('adj-err');
+      if (dupSet.has(key) || adjErrSet.has(key)) inp.classList.add('path-err');
     }
-  }
 
-  // Win check
+  // Win
   const allFilled = Object.keys(pos).length === N;
-  const noDup = dupSet.size === 0;
-  const noAdj = adjErrSet.size === 0;
+  const noErr = dupSet.size === 0 && adjErrSet.size === 0;
   const allCageOk = CAGES.every((cage, id) => cage.unknown || cageState[id] === 'ok');
-  if (allFilled && noDup && noAdj && allCageOk) {
-    recordCompletion(PUZZLE_ID);
-  }
+  if (allFilled && noErr && allCageOk) recordCompletion(PUZZLE_ID);
 }
 
-// ── Board rendering ───────────────────────────────────────────────────────────
+// ── Board build ───────────────────────────────────────────────────────────────
 function buildBoard() {
   const board = document.getElementById('board');
   board.innerHTML = '';
-
   const THICK = '2.5px solid #222';
-  const THIN  = '0.5px solid #ccc';
+  const THIN  = '1px solid #aaa';
 
-  for (let r = 0; r < ROWS; r++) {
+  for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) {
       const div = document.createElement('div');
-
-      if (!ACTIVE[r][c]) {
-        div.className = 'cell-inactive';
-        board.appendChild(div);
-        continue;
-      }
+      if (!ACTIVE[r][c]) { div.className = 'cell-inactive'; board.appendChild(div); continue; }
 
       div.className = 'cell';
       div.id = `cell-${r}-${c}`;
 
-      // Border per side: thick if adjacent cell is different cage or inactive/oob
       const myCage = cageOf[r][c];
-      const adjActive = (dr, dc) => {
-        const nr = r+dr, nc = c+dc;
-        return nr>=0 && nr<ROWS && nc>=0 && nc<COLS && ACTIVE[nr][nc];
+      const adj = (dr, dc) => {
+        const nr=r+dr, nc=c+dc;
+        return nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&ACTIVE[nr][nc];
       };
-      const border = (dr, dc) => {
-        if (!adjActive(dr, dc)) return THICK;
-        return cageOf[r+dr][c+dc] !== myCage ? THICK : THIN;
-      };
-      div.style.borderTop    = border(-1, 0);
-      div.style.borderBottom = border( 1, 0);
-      div.style.borderLeft   = border( 0,-1);
-      div.style.borderRight  = border( 0, 1);
+      const side = (dr, dc) => !adj(dr,dc) || cageOf[r+dr][c+dc]!==myCage ? THICK : THIN;
+      div.style.borderTop    = side(-1, 0);
+      div.style.borderBottom = side( 1, 0);
+      div.style.borderLeft   = side( 0,-1);
+      div.style.borderRight  = side( 0, 1);
 
-      // Cage clue label on leader cell
-      const key = `${r},${c}`;
-      if (cageLeader[key] !== undefined) {
-        const cage = CAGES[cageLeader[key]];
+      // Cage clue label
+      if (cageLeader[`${r},${c}`] !== undefined) {
+        const cage = CAGES[cageLeader[`${r},${c}`]];
         if (cage.clue) {
-          const label = document.createElement('span');
-          label.className = 'cage-clue';
-          label.textContent = cage.clue;
-          div.appendChild(label);
+          const lbl = document.createElement('span');
+          lbl.className = 'cage-clue';
+          lbl.textContent = cage.clue;
+          div.appendChild(lbl);
         }
       }
 
-      // Number input
+      // Input
       const inp = document.createElement('input');
       inp.type = 'number';
-      inp.min = 1;
-      inp.max = N;
+      inp.min = 1; inp.max = N;
       inp.className = 'cell-input';
       inp.addEventListener('input', () => {
         const v = parseInt(inp.value);
@@ -395,10 +377,8 @@ function buildBoard() {
         saveProgress();
       });
       div.appendChild(inp);
-
       board.appendChild(div);
     }
-  }
 }
 
 // ── Save / Load ───────────────────────────────────────────────────────────────
@@ -411,13 +391,12 @@ function loadProgress() {
   if (!raw) return;
   try {
     const grid = JSON.parse(raw);
-    for (let r = 0; r < ROWS; r++) {
+    for (let r = 0; r < ROWS; r++)
       for (let c = 0; c < COLS; c++) {
         if (!ACTIVE[r][c]) continue;
         const inp = document.querySelector(`#cell-${r}-${c} .cell-input`);
         if (inp && grid[r]?.[c]) inp.value = grid[r][c];
       }
-    }
     validate();
   } catch(e) {}
 }
@@ -425,8 +404,8 @@ function loadProgress() {
 function resetBoard() {
   if (!confirm('정말 초기화하시겠습니까?')) return;
   document.querySelectorAll('.cell-input').forEach(inp => { inp.value = ''; });
-  document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('cage-ok','cage-err'));
-  document.querySelectorAll('.cell-input').forEach(inp => inp.classList.remove('adj-err','dup-err'));
+  document.querySelectorAll('.cell').forEach(c => c.classList.remove('cage-ok','cage-err'));
+  document.querySelectorAll('.cell-input').forEach(inp => inp.classList.remove('path-err'));
   resetCompletion(PUZZLE_ID);
   saveProgress();
 }
@@ -438,13 +417,12 @@ function handleCloudSave() {
 async function handleCloudLoad() {
   const state = await loadProgressCloud(PUZZLE_ID);
   if (!state) { showToast('불러올 데이터가 없습니다.'); return; }
-  for (let r = 0; r < ROWS; r++) {
+  for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) {
       if (!ACTIVE[r][c]) continue;
       const inp = document.querySelector(`#cell-${r}-${c} .cell-input`);
       if (inp) inp.value = state[r]?.[c] || '';
     }
-  }
   validate();
   saveProgress();
   showToast('불러왔습니다.');
