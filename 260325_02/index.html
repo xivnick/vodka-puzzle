@@ -109,30 +109,6 @@
     gap: 6px;
   }
 
-  .numpad-tens {
-    display: flex;
-    gap: 6px;
-  }
-
-  .numpad-tens button {
-    flex: 1;
-    height: 40px;
-    border-radius: 4px;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    border: 1.5px solid #ddd;
-    background: #f5f5f5;
-    color: #555;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .numpad-tens button.active {
-    background: #4a6fa5;
-    color: #fff;
-    border-color: #4a6fa5;
-  }
-
   .numpad-digits {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
@@ -152,21 +128,6 @@
   }
   .numpad-digits button:active { background: #eee; }
 
-  .numpad-del button {
-    width: 100%;
-    height: 40px;
-    border-radius: 4px;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    border: 1.5px solid #e0bfbf;
-    background: #fdf5f5;
-    color: #b05050;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .numpad-del button:active { background: #f5e0e0; }
-
   /* ── Bottom buttons ── */
   .bottom-buttons {
     display: flex;
@@ -183,12 +144,21 @@
     cursor: pointer;
   }
 
+  .btn-default {
+    background: #f5f5f5;
+    border: 1.5px solid #ddd;
+    color: #555;
+  }
+  .btn-default:hover { background: #eee; }
+
   .btn-danger {
     background: #fdf5f5;
     border: 1.5px solid #e0bfbf;
     color: #b05050;
   }
   .btn-danger:hover { background: #f5e0e0; }
+
+  .bottom-buttons { gap: 8px; }
 
   .rules-toggle {
     display: block;
@@ -230,12 +200,11 @@
   <div class="board" id="board"></div>
 
   <div class="numpad" id="numpad">
-    <div class="numpad-tens" id="numpadTens"></div>
     <div class="numpad-digits" id="numpadDigits"></div>
-    <div class="numpad-del"><button onclick="deleteCell()">지우기</button></div>
   </div>
 
   <div class="bottom-buttons">
+    <button class="btn-default" onclick="deleteCell()">지우기</button>
     <button class="btn-danger" onclick="resetBoard()">초기화</button>
   </div>
 
@@ -267,8 +236,6 @@ const PUZZLE_ID = '260325_02';
 const ROWS = 6, COLS = 6;
 const N = 36; // 6×6 = 36
 
-// 십의 자리 토글 옵션 (n=36이므로 00, 10, 20, 30)
-const TENS_OPTIONS = [0, 10, 20, 30];
 
 // ── Cage definitions ──────────────────────────────────────────────────────────
 // op: '+' | '-' | '×' | '÷' | null (null = 연산자 미표시, 4가지 모두 시도)
@@ -308,8 +275,8 @@ CAGES.forEach((cage, id) => {
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let values = Array.from({length:ROWS}, () => Array(COLS).fill(0));
-let selectedCell = null; // {r, c}
-let tensVal = TENS_OPTIONS[0];
+let selectedCell = null;
+let freshlySelected = false;
 
 // ── Cage arithmetic ───────────────────────────────────────────────────────────
 function calcOp(op, vals) {
@@ -401,9 +368,11 @@ function selectCell(r, c) {
   }
   if (selectedCell && selectedCell.r === r && selectedCell.c === c) {
     selectedCell = null;
+    freshlySelected = false;
     return;
   }
   selectedCell = {r, c};
+  freshlySelected = true;
   document.getElementById(`cell-${r}-${c}`).classList.add('selected');
 }
 
@@ -420,18 +389,18 @@ function deleteCell() {
 function inputDigit(digit) {
   if (!selectedCell) return;
   const {r, c} = selectedCell;
-  const v = tensVal + digit;
+  let v;
+  if (freshlySelected) {
+    v = digit;
+    freshlySelected = false;
+  } else {
+    const appended = values[r][c] * 10 + digit;
+    v = (appended >= 1 && appended <= N) ? appended : digit;
+  }
   values[r][c] = (v >= 1 && v <= N) ? v : 0;
   updateCellDisplay(r, c);
   validate();
   saveProgress();
-}
-
-function setTens(t) {
-  tensVal = t;
-  document.querySelectorAll('.numpad-tens button').forEach(btn => {
-    btn.classList.toggle('active', parseInt(btn.dataset.tens) === t);
-  });
 }
 
 // ── Board build ───────────────────────────────────────────────────────────────
@@ -491,24 +460,13 @@ function buildBoard() {
 
 // ── Numpad build ──────────────────────────────────────────────────────────────
 function buildNumpad() {
-  const tensEl   = document.getElementById('numpadTens');
   const digitsEl = document.getElementById('numpadDigits');
-
-  TENS_OPTIONS.forEach(t => {
-    const btn = document.createElement('button');
-    btn.textContent = String(t).padStart(2, '0');
-    btn.dataset.tens = t;
-    if (t === tensVal) btn.classList.add('active');
-    btn.addEventListener('click', () => setTens(t));
-    tensEl.appendChild(btn);
-  });
-
-  for (let d = 0; d <= 9; d++) {
+  [...Array(9).keys()].map(i => i+1).concat([0]).forEach(d => {
     const btn = document.createElement('button');
     btn.textContent = d;
     btn.addEventListener('click', () => inputDigit(d));
     digitsEl.appendChild(btn);
-  }
+  });
 }
 
 // ── Save / Load ───────────────────────────────────────────────────────────────
