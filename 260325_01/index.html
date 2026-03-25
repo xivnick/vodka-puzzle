@@ -157,6 +157,24 @@
   }
   .numpad-digits button:active { background: #eee; }
 
+  .numpad-del {
+    margin-top: 0;
+  }
+  .numpad-del button {
+    width: 100%;
+    height: 40px;
+    border-radius: 4px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border: 1.5px solid #e0bfbf;
+    background: #fdf5f5;
+    color: #b05050;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .numpad-del button:active { background: #f5e0e0; }
+
   /* ── Bottom buttons ── */
   .bottom-buttons {
     display: flex;
@@ -223,6 +241,7 @@
   <div class="numpad" id="numpad">
     <div class="numpad-tens" id="numpadTens"></div>
     <div class="numpad-digits" id="numpadDigits"></div>
+    <div class="numpad-del"><button onclick="deleteCell()">지우기</button></div>
   </div>
 
   <div class="bottom-buttons">
@@ -393,6 +412,15 @@ function selectCell(r, c) {
 }
 
 // ── Numpad input ──────────────────────────────────────────────────────────────
+function deleteCell() {
+  if (!selectedCell) return;
+  const {r, c} = selectedCell;
+  values[r][c] = 0;
+  updateCellDisplay(r, c);
+  validate();
+  saveProgress();
+}
+
 function inputDigit(digit) {
   if (!selectedCell) return;
   const {r, c} = selectedCell;
