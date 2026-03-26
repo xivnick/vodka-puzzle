@@ -11,6 +11,28 @@
 
 ## 디자인
 - 디자인 가이드는 `DESIGN.md`를 따른다.
+- **기준 파일**: `puzzle_test/index.html` (테스트 스도쿠) — 버튼/규칙박스/레이아웃의 기준
+
+## 버튼 스타일 (puzzle_test 기준)
+- **숫자 키패드** (`.numpad button`):
+  - `height: 44px; border-radius: 3px; font-size: 18px; font-weight: 700`
+  - `border: 1.5px solid #c8c3b8; background: #f4f1eb; color: #333`
+  - hover: `#e8e4da` / active: `scale(0.95)` + `#ddd9cf`
+- **하단 버튼** (`.bottom-buttons button`):
+  - `height: 40px; border-radius: 3px; font-size: 13px; font-weight: 500`
+  - `border: 1.5px solid #d0ccc4; background: #faf8f4; color: #777`
+  - 초기화(danger): `border-color: #e0bfbf; background: #fdf5f5; color: #b05050`
+  - HTML 클래스: 지우기는 클래스 없음, 초기화는 `class="danger"`
+  - gap: 6px, margin-top: 6px
+- **규칙 보기** (`.rules-toggle`):
+  - `<span>` 태그 사용 (button 아님)
+  - `font-size: 0.78rem; color: #999; border-bottom: 1px solid #ccc; padding-bottom: 1px; align-self: center; margin-top: 14px`
+- **규칙 박스** (`.rules-box`):
+  - `background: #faf8f4; border: 1px solid #e0ddd6; border-radius: 3px; padding: 14px 18px`
+
+## cloud-btns / lb-section 위치
+- **container 안**에 배치 (bottom-buttons div 아래, `</div>` 닫기 전)
+- 순서: `bottom-buttons` → `rules-toggle` → `rules-box` → `cloud-btns` → `lb-section`
 
 ## 퍼즐 목록 관리
 - `puzzle/index.html`이 퍼즐 목록 페이지 역할을 한다.

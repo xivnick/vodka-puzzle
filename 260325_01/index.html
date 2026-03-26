@@ -120,76 +120,72 @@
     gap: 4px;
   }
   .numpad-digits button {
-    height: 40px;
-    border-radius: 4px;
+    height: 44px;
+    border-radius: 3px;
     font-family: 'Noto Sans KR', sans-serif;
     font-size: 1rem;
     font-weight: 700;
-    border: 1.5px solid #ddd;
-    background: #fff;
+    border: 1.5px solid #c8c3b8;
+    background: #f4f1eb;
     color: #333;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
-  .numpad-digits button:active { background: #eee; }
+  .numpad-digits button:hover { background: #e8e4da; }
+  .numpad-digits button:active { transform: scale(0.95); background: #ddd9cf; }
 
   /* ── Bottom buttons ── */
   .bottom-buttons {
     display: flex;
-    justify-content: center;
-    margin-top: 10px;
+    gap: 6px;
+    margin-top: 6px;
   }
 
   .bottom-buttons button {
     flex: 1;
-    height: 44px;
-    border-radius: 4px;
+    height: 40px;
+    border-radius: 3px;
     font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.95rem;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1.5px solid #d0ccc4;
+    background: #faf8f4;
+    color: #777;
     cursor: pointer;
   }
-
-  .btn-default {
-    background: #f5f5f5;
-    border: 1.5px solid #ddd;
-    color: #555;
-  }
-  .btn-default:hover { background: #eee; }
-
-  .btn-danger {
+  .bottom-buttons button:hover { background: #eeebe4; color: #555; }
+  .bottom-buttons button:active { transform: scale(0.97); }
+  .bottom-buttons button.danger {
+    border-color: #e0bfbf;
     background: #fdf5f5;
-    border: 1.5px solid #e0bfbf;
     color: #b05050;
   }
-  .btn-danger:hover { background: #f5e0e0; }
+  .bottom-buttons button.danger:hover { background: #f5e0e0; color: #8c3333; }
 
-  .bottom-buttons { gap: 8px; }
-
-  /* Rules toggle */
   .rules-toggle {
-    display: block;
-    margin: 10px auto 0;
-    background: none;
-    border: none;
-    color: #888;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.85rem;
+    margin-top: 14px;
+    font-size: 0.78rem;
+    color: #999;
     cursor: pointer;
-    text-decoration: underline;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 1px;
+    align-self: center;
   }
+  .rules-toggle:hover { color: #666; border-color: #999; }
 
   .rules-box {
     display: none;
     margin-top: 10px;
-    background: #f5f5f5;
-    border-radius: 4px;
-    padding: 12px 16px;
-    font-size: 0.82rem;
-    color: #555;
+    padding: 14px 18px;
+    background: #faf8f4;
+    border: 1px solid #e0ddd6;
+    border-radius: 3px;
+    font-size: 0.8rem;
     line-height: 1.7;
+    color: #555;
   }
   .rules-box.open { display: block; }
-  .rules-box strong { display: block; margin-bottom: 4px; color: #333; }
+  .rules-box strong { color: #333; font-size: 0.82rem; font-weight: 700; }
 </style>
 <link rel="stylesheet" href="/puzzle/css/common.css?v=5">
 </head>
@@ -210,29 +206,29 @@
   </div>
 
   <div class="bottom-buttons">
-    <button class="btn-default" onclick="deleteCell()">지우기</button>
-    <button class="btn-danger" onclick="resetBoard()">초기화</button>
+    <button onclick="deleteCell()">지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
   </div>
 
-  <button class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</button>
+  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
   <div class="rules-box" id="rulesBox">
-    <strong>Math Path 규칙</strong>
+    <strong>Math Path 규칙</strong><br>
     1. 1부터 n(칸의 수)까지 모든 수를 정확히 한 번씩 채웁니다.<br>
     2. 차이가 1인 두 수는 서로 변 또는 꼭짓점으로 인접해야 합니다.<br>
     3. 각 영역의 숫자를 내림차순으로 표시된 연산자로 계산하면 영역의 클루 값이 됩니다.<br>
     <br>
     <em>파란 배경: 영역 계산 정답 / 빨간 글자: 인접 규칙 위반</em>
   </div>
-</div>
 
-<div class="cloud-btns" id="cloudBtns" style="display:none">
-  <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
-  <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
-</div>
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
 
-<div class="lb-section">
-  <div class="lb-title">푼 사람</div>
-  <div id="leaderboard"></div>
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
 </div>
 
 <script src="/puzzle/js/common.js?v=5"></script>
