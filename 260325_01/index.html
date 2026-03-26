@@ -210,6 +210,11 @@
     <button class="danger" onclick="resetBoard()">초기화</button>
   </div>
 
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
   <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
   <div class="rules-box" id="rulesBox">
     <strong>Math Path 규칙</strong><br>
@@ -218,11 +223,6 @@
     3. 각 영역의 숫자를 내림차순으로 표시된 연산자로 계산하면 영역의 클루 값이 됩니다.<br>
     <br>
     <em>파란 배경: 영역 계산 정답 / 빨간 글자: 인접 규칙 위반</em>
-  </div>
-
-  <div class="cloud-btns" id="cloudBtns" style="display:none">
-    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
-    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
   </div>
 
   <div class="lb-section">

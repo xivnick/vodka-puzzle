@@ -32,7 +32,7 @@
 
 ## cloud-btns / lb-section 위치
 - **container 안**에 배치 (bottom-buttons div 아래, `</div>` 닫기 전)
-- 순서: `bottom-buttons` → `rules-toggle` → `rules-box` → `cloud-btns` → `lb-section`
+- 순서: `bottom-buttons` → `cloud-btns` → `rules-toggle` → `rules-box` → `lb-section`
 
 ## 퍼즐 목록 관리
 - `puzzle/index.html`이 퍼즐 목록 페이지 역할을 한다.

@@ -207,6 +207,11 @@ h1 {
     <button class="danger" onclick="resetBoard()">초기화</button>
   </div>
 
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
   <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
   <div class="rules-box" id="rulesBox">
     <strong>부등호 규칙</strong><br>
@@ -214,11 +219,6 @@ h1 {
     화살표의 뾰족한 끝이 가리키는 칸의 숫자가 더 작습니다.<br>
     <br>
     <em>회색 칸: 고정 숫자 / 빨간 배경: 오류</em>
-  </div>
-
-  <div class="cloud-btns" id="cloudBtns" style="display:none">
-    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
-    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
   </div>
 
   <div class="lb-section">
