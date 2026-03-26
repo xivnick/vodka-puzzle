@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>260326 부등호 3</title>
-<meta property="og:title" content="260326 부등호 3">
-<meta property="og:description" content="각 줄에 1~7을 한 번씩 채우고 화살표가 가리키는 크기 관계를 만족시키세요">
+<title>검정색 삼각형 3</title>
+<meta property="og:title" content="검정색 삼각형 3">
+<meta property="og:description" content="예시 솔루션을 보고 규칙을 추론해 퍼즐을 풀어보세요">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://xivnick.me/puzzle/260326_03/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -80,18 +80,18 @@ h1 {
 }
 
 .cell.selected { background: #e8e8d8; }
-.cell.err { background: #f5d0d0; }
+.cell.err { background: #fff; }
 
 .cell-num {
   font-family: 'Noto Sans KR', sans-serif;
   font-size: min(6vw, 22px);
   font-weight: 700;
-  color: #4a6fa5;
+  color: #222;
   pointer-events: none;
 }
 
 .cell.preset .cell-num { color: #222; }
-.cell.err    .cell-num { color: #c0392b; }
+.cell.err    .cell-num { color: #222; }
 
 /* ── Arrow separators ── */
 .sep-v, .sep-h, .sep-corner {
@@ -192,8 +192,8 @@ h1 {
   <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
 </header>
 
-<h1>260326 부등호 3</h1>
-<p class="subtitle">각 가로줄에 1~7을 한 번씩 채우세요<br>화살표의 뾰족한 끝이 가리키는 칸이 더 작습니다</p>
+<h1>검정색 삼각형 3</h1>
+<p class="subtitle">예시 솔루션을 보고 퍼즐을 풀어보세요.</p>
 
 <div class="container">
   <div class="board-wrap">
@@ -212,13 +212,12 @@ h1 {
     <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
   </div>
 
-  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
+  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">예시 솔루션 보기</span>
   <div class="rules-box" id="rulesBox">
-    <strong>부등호 규칙</strong><br>
-    각 가로줄에 1부터 7까지 숫자가 한 번씩 들어가야 합니다.<br>
-    화살표의 뾰족한 끝이 가리키는 칸의 숫자가 더 작습니다.<br>
-    <br>
-    <em>회색 칸: 고정 숫자 / 빨간 배경: 오류</em>
+    <div style="display:flex;gap:8px;">
+      <img src="/puzzle/img/budeungho_ex1.png" style="flex:1;min-width:0;border-radius:2px;">
+      <img src="/puzzle/img/budeungho_ex2.png" style="flex:1;min-width:0;border-radius:2px;">
+    </div>
   </div>
 
   <div class="lb-section">
