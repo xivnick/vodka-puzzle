@@ -121,13 +121,13 @@ h1 {
   font-family: 'Noto Sans KR', sans-serif;
   font-size: 1.1rem;
   font-weight: 700;
-  border: 1.5px solid #c8c3b8;
-  background: #f4f1eb;
+  border: 1.5px solid #ddd;
+  background: #fff;
   color: #333;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-.numpad button:active { background: #e8e4dc; }
+.numpad button:active { background: #eee; }
 
 /* ── Bottom buttons ── */
 .bottom-buttons {
@@ -264,7 +264,7 @@ CONSTRAINTS.forEach(({a, b}) => {
   if (ar === br) {
     // 수평
     const leftC = Math.min(ac, bc);
-    horizArrowMap[`${ar},${leftC}`] = (ac < bc) ? '►' : '◄';
+    horizArrowMap[`${ar},${leftC}`] = (ac < bc) ? '▶' : '◀';
     // a > b: a가 왼쪽(ac<bc)이면 끝이 오른쪽 b → ►
     //        a가 오른쪽(ac>bc)이면 끝이 왼쪽 b → ◄
   } else {
