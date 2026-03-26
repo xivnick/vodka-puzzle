@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260326 부등호</title>
+<meta property="og:title" content="260326 부등호">
+<meta property="og:description" content="각 줄에 1~5를 한 번씩 채우고 화살표가 가리키는 크기 관계를 만족시키세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260326_01/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #ffffff;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 32px 16px 48px;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 0.82rem;
+  color: #888;
+  margin-bottom: 20px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.container {
+  width: min(94vw, 380px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* ── Board ── */
+.board-wrap {
+  border: 2px solid #222;
+  width: 100%;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr 20px) 1fr;
+  grid-template-rows:    repeat(4, 1fr 20px) 1fr;
+  width: 100%;
+  height: calc(min(94vw, 380px) - 4px);
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #aaa;
+  cursor: pointer;
+  min-height: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cell.preset {
+  background: #e8e8e8;
+  cursor: default;
+  pointer-events: none;
+}
+
+.cell.selected { background: #e8e8d8; }
+
+.cell.err { background: #f5d0d0; }
+
+.cell-num {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: min(8vw, 26px);
+  font-weight: 700;
+  color: #4a6fa5;
+  pointer-events: none;
+}
+
+.cell.preset .cell-num { color: #222; }
+.cell.err    .cell-num { color: #c0392b; }
+
+/* ── Arrow separators ── */
+.sep-v, .sep-h, .sep-corner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  font-size: min(3.5vw, 14px);
+  font-weight: 900;
+  color: #111;
+  min-height: 0;
+  min-width: 0;
+  pointer-events: none;
+}
+
+/* ── Numpad ── */
+.numpad {
+  margin-top: 10px;
+  display: flex;
+  gap: 6px;
+}
+
+.numpad button {
+  flex: 1;
+  height: 44px;
+  border-radius: 4px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: 1.5px solid #c8c3b8;
+  background: #f4f1eb;
+  color: #333;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.numpad button:active { background: #e8e4dc; }
+
+/* ── Bottom buttons ── */
+.bottom-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.bottom-buttons button {
+  flex: 1;
+  height: 44px;
+  border-radius: 4px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.btn-default {
+  background: #f5f5f5;
+  border: 1.5px solid #ddd;
+  color: #555;
+}
+.btn-default:hover { background: #eee; }
+
+.btn-danger {
+  background: #fdf5f5;
+  border: 1.5px solid #e0bfbf;
+  color: #b05050;
+}
+.btn-danger:hover { background: #f5e0e0; }
+
+/* ── Rules ── */
+.rules-toggle {
+  display: block;
+  margin: 10px auto 0;
+  background: none;
+  border: none;
+  color: #888;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.rules-box {
+  display: none;
+  margin-top: 10px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  padding: 12px 16px;
+  font-size: 0.82rem;
+  color: #555;
+  line-height: 1.7;
+}
+.rules-box.open { display: block; }
+.rules-box strong { display: block; margin-bottom: 4px; color: #333; }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=5">
+</head>
+<body>
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+
+<h1>260326 부등호</h1>
+<p class="subtitle">각 가로줄에 1~5를 한 번씩 채우세요<br>화살표의 뾰족한 끝이 가리키는 칸이 더 작습니다</p>
+
+<div class="container">
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="numpad" id="numpad"></div>
+
+  <div class="bottom-buttons">
+    <button class="btn-default" onclick="deleteCell()">지우기</button>
+    <button class="btn-danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <button class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</button>
+  <div class="rules-box" id="rulesBox">
+    <strong>부등호 규칙</strong>
+    각 가로줄에 1부터 5까지 숫자가 한 번씩 들어가야 합니다.<br>
+    화살표의 뾰족한 끝이 가리키는 칸의 숫자가 더 작습니다.<br>
+    <br>
+    <em>회색 칸: 고정 숫자 / 빨간 배경: 오류</em>
+  </div>
+</div>
+
+<div class="cloud-btns" id="cloudBtns" style="display:none">
+  <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+  <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+</div>
+
+<div class="lb-section">
+  <div class="lb-title">푼 사람</div>
+  <div id="leaderboard"></div>
+</div>
+
+<script src="/puzzle/js/common.js?v=5"></script>
+<script>
+const PUZZLE_ID = '260326_01';
+const ROWS = 5, COLS = 5;
+const N = 5;
+
+// 고정 숫자
+const PRESETS = {
+  '0,0': 5,
+  '2,0': 4,
+  '3,4': 2,
+};
+
+// {a, b}: values[a[0]][a[1]] > values[b[0]][b[1]]
+// 화살표 뾰족한 끝 → b (더 작은 쪽)
+const CONSTRAINTS = [
+  { a:[1,3], b:[0,3] },  // 행0-1 col3: ▲ (끝이 위, 위가 작음)
+  { a:[0,4], b:[1,4] },  // 행0-1 col4: ▼ (끝이 아래, 아래가 작음)
+  { a:[2,3], b:[1,3] },  // 행1-2 col3: ▲ (끝이 위, 위가 작음)
+  { a:[4,1], b:[4,0] },  // 행4: ◄ (끝이 왼쪽)
+  { a:[4,2], b:[4,1] },  // 행4: ◄
+  { a:[4,3], b:[4,2] },  // 행4: ◄
+  { a:[4,3], b:[4,4] },  // 행4: ► (끝이 오른쪽)
+];
+
+// ── Arrow map 생성 ─────────────────────────────────────────────────────────────
+// vertArrowMap['topRow,col']  → '▼' or '▲'
+// horizArrowMap['row,leftCol'] → '◄' or '►'
+const vertArrowMap  = {};
+const horizArrowMap = {};
+
+CONSTRAINTS.forEach(({a, b}) => {
+  const [ar, ac] = a, [br, bc] = b;
+  if (ar === br) {
+    // 수평
+    const leftC = Math.min(ac, bc);
+    horizArrowMap[`${ar},${leftC}`] = (ac < bc) ? '►' : '◄';
+    // a > b: a가 왼쪽(ac<bc)이면 끝이 오른쪽 b → ►
+    //        a가 오른쪽(ac>bc)이면 끝이 왼쪽 b → ◄
+  } else {
+    // 수직
+    const topR = Math.min(ar, br);
+    vertArrowMap[`${topR},${ac}`] = (ar < br) ? '▼' : '▲';
+    // a > b: a가 위(ar<br)이면 끝이 아래 b → ▼
+    //        a가 아래(ar>br)이면 끝이 위 b → ▲
+  }
+});
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let values = Array.from({length:ROWS}, () => Array(COLS).fill(0));
+let selectedCell = null;
+
+// ── Cell display ──────────────────────────────────────────────────────────────
+function updateCellDisplay(r, c) {
+  const num = document.querySelector(`#cell-${r}-${c} .cell-num`);
+  if (num) num.textContent = values[r][c] || '';
+}
+
+// ── Validation ────────────────────────────────────────────────────────────────
+function validate() {
+  const errSet = new Set();
+
+  // 같은 줄 중복
+  for (let r = 0; r < ROWS; r++) {
+    const seen = {};
+    for (let c = 0; c < COLS; c++) {
+      const v = values[r][c];
+      if (!v) continue;
+      if (seen[v] !== undefined) {
+        errSet.add(`${r},${seen[v]}`);
+        errSet.add(`${r},${c}`);
+      } else seen[v] = c;
+    }
+  }
+
+  // 화살표 위반
+  CONSTRAINTS.forEach(({a, b}) => {
+    const av = values[a[0]][a[1]], bv = values[b[0]][b[1]];
+    if (av && bv && av <= bv) {
+      errSet.add(`${a[0]},${a[1]}`);
+      errSet.add(`${b[0]},${b[1]}`);
+    }
+  });
+
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      document.getElementById(`cell-${r}-${c}`)
+              .classList.toggle('err', errSet.has(`${r},${c}`));
+
+  const allFilled = values.every(row => row.every(v => v > 0));
+  if (allFilled && errSet.size === 0) recordCompletion(PUZZLE_ID);
+}
+
+// ── Select ────────────────────────────────────────────────────────────────────
+function selectCell(r, c) {
+  if (PRESETS[`${r},${c}`] !== undefined) return;
+  if (selectedCell) {
+    document.getElementById(`cell-${selectedCell.r}-${selectedCell.c}`)
+            ?.classList.remove('selected');
+  }
+  if (selectedCell?.r === r && selectedCell?.c === c) {
+    selectedCell = null;
+    return;
+  }
+  selectedCell = {r, c};
+  document.getElementById(`cell-${r}-${c}`).classList.add('selected');
+}
+
+// ── Input ─────────────────────────────────────────────────────────────────────
+function inputDigit(d) {
+  if (!selectedCell) return;
+  const {r, c} = selectedCell;
+  if (PRESETS[`${r},${c}`] !== undefined) return;
+  values[r][c] = (d >= 1 && d <= N) ? d : 0;
+  updateCellDisplay(r, c);
+  validate();
+  saveProgress();
+}
+
+function deleteCell() {
+  if (!selectedCell) return;
+  const {r, c} = selectedCell;
+  if (PRESETS[`${r},${c}`] !== undefined) return;
+  values[r][c] = 0;
+  updateCellDisplay(r, c);
+  validate();
+  saveProgress();
+}
+
+// ── Board build ───────────────────────────────────────────────────────────────
+function buildBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  for (let gr = 0; gr < 9; gr++) {
+    for (let gc = 0; gc < 9; gc++) {
+      const el = document.createElement('div');
+      const isRow = gr % 2 === 0;
+      const isCol = gc % 2 === 0;
+
+      if (isRow && isCol) {
+        // 퍼즐 셀
+        const r = gr / 2, c = gc / 2;
+        const isPreset = PRESETS[`${r},${c}`] !== undefined;
+        el.className = isPreset ? 'cell preset' : 'cell';
+        el.id = `cell-${r}-${c}`;
+        if (!isPreset) el.addEventListener('click', () => selectCell(r, c));
+        const num = document.createElement('span');
+        num.className = 'cell-num';
+        if (isPreset) {
+          values[r][c] = PRESETS[`${r},${c}`];
+          num.textContent = values[r][c];
+        } else {
+          num.textContent = '\u00a0';
+        }
+        el.appendChild(num);
+
+      } else if (!isRow && isCol) {
+        // 수직 구분자 (행 사이)
+        const topR = (gr - 1) / 2, pc = gc / 2;
+        el.className = 'sep-v';
+        el.textContent = vertArrowMap[`${topR},${pc}`] || '';
+
+      } else if (isRow && !isCol) {
+        // 수평 구분자 (열 사이)
+        const pr = gr / 2, leftC = (gc - 1) / 2;
+        el.className = 'sep-h';
+        el.textContent = horizArrowMap[`${pr},${leftC}`] || '';
+
+      } else {
+        el.className = 'sep-corner';
+      }
+
+      board.appendChild(el);
+    }
+  }
+}
+
+// ── Numpad ────────────────────────────────────────────────────────────────────
+function buildNumpad() {
+  const numpad = document.getElementById('numpad');
+  for (let d = 1; d <= N; d++) {
+    const btn = document.createElement('button');
+    btn.textContent = d;
+    btn.addEventListener('click', () => inputDigit(d));
+    numpad.appendChild(btn);
+  }
+}
+
+// ── Keyboard ──────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  const d = parseInt(e.key);
+  if (!isNaN(d) && e.key !== ' ') {
+    if (d >= 1 && d <= N) inputDigit(d); else deleteCell();
+    return;
+  }
+  if (e.key === 'Backspace' || e.key === 'Delete') { deleteCell(); return; }
+  if (!selectedCell) return;
+  const {r, c} = selectedCell;
+  const dirs = { ArrowUp:[-1,0], ArrowDown:[1,0], ArrowLeft:[0,-1], ArrowRight:[0,1] };
+  const d2 = dirs[e.key];
+  if (!d2) return;
+  e.preventDefault();
+  let nr = r + d2[0], nc = c + d2[1];
+  // 프리셋 셀 건너뜀
+  while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && PRESETS[`${nr},${nc}`] !== undefined) {
+    nr += d2[0]; nc += d2[1];
+  }
+  if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) selectCell(nr, nc);
+});
+
+// ── Save / Load ───────────────────────────────────────────────────────────────
+function saveProgress() {
+  localStorage.setItem(`puzzle_${PUZZLE_ID}`, JSON.stringify(values));
+}
+
+function loadProgress() {
+  const raw = localStorage.getItem(`puzzle_${PUZZLE_ID}`);
+  if (!raw) return;
+  try {
+    const saved = JSON.parse(raw);
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++) {
+        if (PRESETS[`${r},${c}`] !== undefined) continue;
+        values[r][c] = saved[r]?.[c] || 0;
+        updateCellDisplay(r, c);
+      }
+    validate();
+  } catch(e) {}
+}
+
+function resetBoard() {
+  if (!confirm('정말 초기화하시겠습니까?')) return;
+  if (selectedCell) {
+    document.getElementById(`cell-${selectedCell.r}-${selectedCell.c}`)
+            ?.classList.remove('selected');
+    selectedCell = null;
+  }
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      if (PRESETS[`${r},${c}`] !== undefined) continue;
+      values[r][c] = 0;
+      updateCellDisplay(r, c);
+      document.getElementById(`cell-${r}-${c}`).classList.remove('err');
+    }
+  resetCompletion(PUZZLE_ID);
+  saveProgress();
+}
+
+// ── Cloud ─────────────────────────────────────────────────────────────────────
+function handleCloudSave() {
+  saveProgressCloud(PUZZLE_ID, values).then(() => showToast('저장했습니다.'));
+}
+async function handleCloudLoad() {
+  const state = await loadProgressCloud(PUZZLE_ID);
+  if (!state) { showToast('불러올 데이터가 없습니다.'); return; }
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      if (PRESETS[`${r},${c}`] !== undefined) continue;
+      values[r][c] = state[r]?.[c] || 0;
+      updateCellDisplay(r, c);
+    }
+  validate();
+  saveProgress();
+  showToast('불러왔습니다.');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildBoard();
+buildNumpad();
+loadProgress();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>
