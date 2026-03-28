@@ -114,11 +114,14 @@ h1 { font-size: 1.4rem; font-weight: 700; margin-top: 10px; }
     <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
   </div>
 
-  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">예시 보기</span>
+  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
   <div class="rules-box" id="rulesBox">
     <strong>펜토미노 블리츠 규칙</strong><br>
-    판에서 빈 칸 5개를 클릭해 조각 모양을 만드세요. 남은 조각 중 하나와 일치하면 "놓기"가 활성화됩니다.<br>
-    선수와 후수가 번갈아 한 번에 조각 하나씩 배치합니다. 더 이상 조각을 놓지 못하는 플레이어가 패배합니다.
+    1. 선수와 후수가 번갈아 펜토미노 조각을 하나씩 판에 배치합니다.<br>
+    2. 조각은 공용이며 종류별로 1개씩 존재합니다.<br>
+    3. 더 이상 조각을 놓지 못하게 된 플레이어가 패배합니다.<br>
+    <br>
+    <em>빈 칸 5개를 클릭해 조각 모양을 만들면 일치하는 조각이 자동으로 인식됩니다.</em>
   </div>
 
   <div class="lb-section">
@@ -148,7 +151,7 @@ const INITIAL_BOARD = [
   ['I', 'Y', 'Y', 'Y', 'Y', 'N', 'N', 'N', '.' ], // 1
   ['I', '#', 'Y', '.', '.', '.', '#', 'N', 'N' ], // 2
   ['I', '.', '.', '.', '.', '#', '.', '.', '.' ], // 3
-  ['I', '.', 'W', '#', '#', '.', 'T', 'T', 'T' ], // 4
+  ['I', '.', 'W', '.', '#', '.', 'T', 'T', 'T' ], // 4
   ['I', '.', 'W', 'W', '#', '.', '.', 'T', '.' ], // 5
   ['.', '.', '.', 'W', 'W', '#', '.', 'T', '.' ], // 6
   ['.', '#', '.', '.', '.', '.', '#', '.', '.' ], // 7
