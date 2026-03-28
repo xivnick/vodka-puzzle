@@ -67,13 +67,6 @@ h1 { font-size: 1.4rem; font-weight: 700; margin-top: 10px; }
 .lb-section { width: 100%; margin-top: 28px; }
 .lb-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 8px; }
 
-/* Game over overlay */
-.game-over { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
-.game-over.show { display: flex; }
-.game-over-box { background: #fff; border-radius: 8px; padding: 32px 40px; text-align: center; }
-.game-over-box h2 { font-size: 1.6rem; margin-bottom: 8px; }
-.game-over-box p { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
-.game-over-box button { padding: 10px 28px; border-radius: 4px; border: none; background: #4a6fa5; color: #fff; font-size: 1rem; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -130,14 +123,6 @@ h1 { font-size: 1.4rem; font-weight: 700; margin-top: 10px; }
   </div>
 </div>
 
-<!-- Game over overlay -->
-<div class="game-over" id="gameOver">
-  <div class="game-over-box">
-    <h2 id="gameOverTitle"></h2>
-    <p id="gameOverMsg"></p>
-    <button onclick="handleReset()">다시 도전</button>
-  </div>
-</div>
 
 <script src="/puzzle/js/common.js?v=5"></script>
 <script>
@@ -469,8 +454,7 @@ function handleReset() {
   matchedPiece = null;
   gameOver = false;
   memo.clear();
-  document.getElementById('gameOver').classList.remove('show');
-  renderBoard();
+renderBoard();
   updateStatus('당신의 차례 — 5칸을 선택하세요');
   saveProgress();
   resetCompletion(PUZZLE_ID);
@@ -504,20 +488,12 @@ function doComputerTurn() {
 
 function endGame(playerWon) {
   gameOver = true;
-  const overlay = document.getElementById('gameOver');
-  const title = document.getElementById('gameOverTitle');
-  const msg = document.getElementById('gameOverMsg');
   if (playerWon) {
-    title.textContent = '🎉 승리!';
-    msg.textContent = '필승수를 찾았습니다!';
+    updateStatus('🎉 승리! 필승수를 찾았습니다!');
     recordCompletion(PUZZLE_ID);
-    updateStatus('🎉 승리!');
   } else {
-    title.textContent = '패배...';
-    msg.textContent = '필승수를 다시 찾아보세요.';
-    updateStatus('패배... 다시 도전해보세요.');
+    updateStatus('패배... 필승수를 다시 찾아보세요.');
   }
-  overlay.classList.add('show');
 }
 
 // ─── 저장/복원 ────────────────────────────────────────────────────────────
