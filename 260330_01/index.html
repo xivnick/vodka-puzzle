@@ -242,8 +242,7 @@ function getBorderStyle(r, c) {
   // top
   let top;
   if      (inG1 && (r===0||r===3||r===6)) top = T;  // Grid 1 박스/외곽
-  else if (inG2 && r===1)                 top = D;  // Grid 2 외곽 점선
-  else if (inG2 && (r===4||r===7))        top = T;  // Grid 2 내부 박스
+  else if (inG2 && (r===1||r===4||r===7)) top = D;  // Grid 2 외곽·내부 박스 점선
   else                                    top = (inG1||inG2) ? t : n;
 
   // bottom
@@ -255,8 +254,7 @@ function getBorderStyle(r, c) {
   // left
   let left;
   if      (inG1 && (c===0||c===3||c===6)) left = T;  // Grid 1 박스/외곽
-  else if (inG2 && c===1)                 left = D;  // Grid 2 외곽 점선
-  else if (inG2 && (c===4||c===7))        left = T;  // Grid 2 내부 박스
+  else if (inG2 && (c===1||c===4||c===7)) left = D;  // Grid 2 외곽·내부 박스 점선
   else                                    left = (inG1||inG2) ? t : n;
 
   // right
