@@ -198,14 +198,14 @@ const PUZZLE_ID = '260330_01';
 //           c0  c1  c2  c3  c4  c5  c6  c7  c8  c9
 const PRESETS = [
   [ 0,  0,  0,  0,  0,  0,  0,  0,  0, -1], // r0
-  [ 0,  4,  0,  0,  8,  5,  0,  0,  0,  0], // r1
+  [ 0,  4,  0,  0,  8,  0,  5,  0,  0,  0], // r1
   [ 0,  0,  1,  0,  0,  3,  0,  9,  0,  0], // r2
   [ 0,  0,  0,  2,  0,  0,  3,  0,  0,  0], // r3
-  [ 0,  0,  0,  6,  0,  0,  0,  8,  0,  0], // r4
-  [ 0,  7,  0,  0,  1,  0,  0,  0,  0,  0], // r5
-  [ 0,  0,  2,  0,  0,  5,  0,  0,  0,  0], // r6
-  [ 0,  9,  0,  5,  0,  0,  8,  0,  0,  0], // r7
-  [ 0,  0,  8,  9,  0,  0,  0,  1,  0,  0], // r8
+  [ 0,  0,  0,  0,  6,  0,  0,  8,  0,  0], // r4
+  [ 0,  7,  0,  0,  0,  1,  0,  0,  0,  0], // r5
+  [ 0,  0,  2,  0,  0,  0,  5,  0,  0,  0], // r6
+  [ 0,  9,  0,  5,  0,  0,  0,  8,  0,  0], // r7
+  [ 0,  0,  8,  0,  9,  0,  0,  0,  1,  0], // r8
   [-1,  0,  0,  0,  0,  0,  0,  0,  0,  0], // r9
 ];
 
@@ -231,19 +231,39 @@ function isPreset(r, c) {
 }
 
 // 테두리 계산
+// Grid 2 외곽(r=1 top, r=9 bottom, c=1 left, c=9 right)은 점선
+// Grid 1 외곽·박스, Grid 2 내부 박스는 실선
 function getBorderStyle(r, c) {
   const inG1 = r <= 8 && c <= 8;
   const inG2 = r >= 1 && c >= 1;
-  const T = '2.5px solid #222', t = '1px solid #aaa', n = 'none';
+  const T = '2.5px solid #222', D = '2.5px dashed #555';
+  const t = '1px solid #aaa', n = 'none';
 
-  const top    = (inG1 && (r===0||r===3||r===6)) || (inG2 && (r===1||r===4||r===7)) ? T
-               : (inG1||inG2) ? t : n;
-  const bottom = (inG1 && r===8) || (inG2 && r===9) ? T
-               : (inG1||inG2) ? t : n;
-  const left   = (inG1 && (c===0||c===3||c===6)) || (inG2 && (c===1||c===4||c===7)) ? T
-               : (inG1||inG2) ? t : n;
-  const right  = (inG1 && c===8) || (inG2 && c===9) ? T
-               : (inG1||inG2) ? t : n;
+  // top
+  let top;
+  if      (inG1 && (r===0||r===3||r===6)) top = T;  // Grid 1 박스/외곽
+  else if (inG2 && r===1)                 top = D;  // Grid 2 외곽 점선
+  else if (inG2 && (r===4||r===7))        top = T;  // Grid 2 내부 박스
+  else                                    top = (inG1||inG2) ? t : n;
+
+  // bottom
+  let bottom;
+  if      (inG1 && r===8) bottom = T;  // Grid 1 외곽
+  else if (inG2 && r===9) bottom = D;  // Grid 2 외곽 점선
+  else                    bottom = (inG1||inG2) ? t : n;
+
+  // left
+  let left;
+  if      (inG1 && (c===0||c===3||c===6)) left = T;  // Grid 1 박스/외곽
+  else if (inG2 && c===1)                 left = D;  // Grid 2 외곽 점선
+  else if (inG2 && (c===4||c===7))        left = T;  // Grid 2 내부 박스
+  else                                    left = (inG1||inG2) ? t : n;
+
+  // right
+  let right;
+  if      (inG1 && c===8) right = T;  // Grid 1 외곽
+  else if (inG2 && c===9) right = D;  // Grid 2 외곽 점선
+  else                    right = (inG1||inG2) ? t : n;
 
   return `border-top:${top};border-bottom:${bottom};border-left:${left};border-right:${right};`;
 }
