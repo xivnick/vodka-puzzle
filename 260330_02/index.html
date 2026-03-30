@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>260330 스카이스크레이퍼 스도쿠</title>
+<meta property="og:title" content="260330 스카이스크레이퍼 스도쿠">
+<meta property="og:description" content="스도쿠와 스카이스크레이퍼 규칙을 동시에 만족하도록 1~9를 채우세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260330_02/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #fff;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 0 16px 60px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; letter-spacing: -0.01em; margin-top: 20px; }
+.subtitle { font-size: 0.82rem; color: #888; margin-bottom: 20px; text-align: center; }
+.container {
+  width: min(94vw, 450px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.sky-board {
+  --clue: 26px;
+  --cell: calc((min(94vw, 450px) - 52px) / 9);
+  display: inline-grid;
+  grid-template-columns: var(--clue) repeat(9, var(--cell)) var(--clue);
+  grid-template-rows: var(--clue) repeat(9, var(--cell)) var(--clue);
+  margin-bottom: 8px;
+}
+.sky-clue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #333;
+}
+.sky-clue.clue-err { color: #c0392b; }
+.sky-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(0.75rem, 3.5vw, 1.1rem);
+  font-weight: 700;
+  color: #4a6fa5;
+  cursor: pointer;
+  background: #fff;
+  min-height: 0;
+  transition: background 0.1s;
+}
+.sky-cell:hover:not(.preset) { background: #f0efe8; }
+.sky-cell.selected { background: #e8e8d8; }
+.sky-cell.preset { background: #f0f0ee; color: #555; cursor: default; }
+.sky-cell.preset.selected { background: #dde0d4; }
+.sky-cell.conflict { background: #f5d0d0; color: #c0392b; }
+.sky-cell.preset.conflict { background: #f0d0d0; color: #c0392b; }
+.numpad {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 6px;
+  width: calc(min(94vw, 450px) - 52px);
+}
+.numpad button {
+  flex: 1;
+  height: 44px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: clamp(13px, 3.5vw, 18px);
+  font-weight: 700;
+  background: #f4f1eb;
+  border: 1.5px solid #c8c3b8;
+  border-radius: 3px;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.numpad button:hover { background: #e8e4da; }
+.numpad button:active { transform: scale(0.95); background: #ddd9cf; }
+.bottom-buttons {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+.bottom-buttons button {
+  flex: 1;
+  height: 40px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  background: #faf8f4;
+  border: 1.5px solid #d0ccc4;
+  border-radius: 3px;
+  color: #777;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.bottom-buttons button:hover { background: #f0ede7; }
+.bottom-buttons button.danger { border-color: #e0bfbf; background: #fdf5f5; color: #b05050; }
+.bottom-buttons button.danger:hover { background: #f8e8e8; }
+.message {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #4a6fa5;
+  margin-bottom: 8px;
+  min-height: 1.4em;
+  text-align: center;
+}
+.rules-toggle {
+  font-size: 0.78rem;
+  color: #999;
+  cursor: pointer;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 1px;
+  align-self: center;
+  margin-top: 14px;
+}
+.rules-toggle:hover { color: #555; }
+.rules-box {
+  display: none;
+  background: #faf8f4;
+  border: 1px solid #e0ddd6;
+  border-radius: 3px;
+  padding: 14px 18px;
+  font-size: 0.82rem;
+  color: #555;
+  line-height: 1.8;
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+.rules-box.open { display: block; }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=5">
+</head>
+<body>
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260330 스카이스크레이퍼 스도쿠</h1>
+<p class="subtitle">스도쿠 + 스카이스크레이퍼 규칙을 동시에 만족하도록 채우세요</p>
+<div class="container">
+  <div class="sky-board" id="skyBoard"></div>
+  <div class="numpad" id="numpad"></div>
+  <div class="bottom-buttons">
+    <button onclick="input(0)">지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+  <div class="message" id="message"></div>
+  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>스카이스크레이퍼 스도쿠 규칙</strong><br>
+    • 9×9 격자의 각 가로줄, 세로줄, 3×3 박스에 1~9를 하나씩 채우세요.<br>
+    • 격자 바깥의 숫자는 그 방향에서 바라봤을 때 보이는 건물의 수입니다.<br>
+    • 숫자가 클수록 건물이 높으며, 높은 건물은 낮은 건물을 가립니다.
+  </div>
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+<script src="/puzzle/js/common.js?v=5"></script>
+<script>
+const PUZZLE_ID = '260330_02';
+const SAVE_KEY  = 'puzzle_260330_02';
+const N = 9;
+const CLUES = {
+  top:    [null, null, 5, null, null, 7, null, null, null],
+  bottom: [null, null, null, 4, null, null, 2, null, null],
+  left:   [null, null, null, 7, null, null, 3, null, null],
+  right:  [null, null, 8, null, null, 5, null, null, null]
+};
+const PRESETS = {
+  '1,1': 1, '1,4': 2, '1,7': 3,
+  '4,1': 4, '4,4': 5, '4,7': 6,
+  '7,1': 7, '7,4': 8, '7,7': 9
+};
+
+let board = Array.from({length: N}, () => Array(N).fill(0));
+let sel = null;
+
+function applyPresets() {
+  for (const [key, val] of Object.entries(PRESETS)) {
+    const [r, c] = key.split(',').map(Number);
+    board[r][c] = val;
+  }
+}
+applyPresets();
+
+function countVisible(arr) {
+  let cnt = 0, max = 0;
+  for (const v of arr) { if (v > max) { cnt++; max = v; } }
+  return cnt;
+}
+function countVisiblePrefix(arr) {
+  let cnt = 0, max = 0;
+  for (const v of arr) {
+    if (!v) break;
+    if (v > max) { cnt++; max = v; }
+  }
+  return cnt;
+}
+
+function getConflicts() {
+  const set = new Set();
+  for (let r = 0; r < N; r++) {
+    const seen = new Map();
+    for (let c = 0; c < N; c++) {
+      const v = board[r][c]; if (!v) continue;
+      if (seen.has(v)) { set.add(`${r},${c}`); set.add(`${r},${seen.get(v)}`); }
+      else seen.set(v, c);
+    }
+  }
+  for (let c = 0; c < N; c++) {
+    const seen = new Map();
+    for (let r = 0; r < N; r++) {
+      const v = board[r][c]; if (!v) continue;
+      if (seen.has(v)) { set.add(`${r},${c}`); set.add(`${seen.get(v)},${c}`); }
+      else seen.set(v, r);
+    }
+  }
+  for (let br = 0; br < 3; br++) {
+    for (let bc = 0; bc < 3; bc++) {
+      const seen = new Map();
+      for (let dr = 0; dr < 3; dr++) {
+        for (let dc = 0; dc < 3; dc++) {
+          const r = br*3+dr, c = bc*3+dc;
+          const v = board[r][c]; if (!v) continue;
+          if (seen.has(v)) {
+            const [pr, pc] = seen.get(v);
+            set.add(`${r},${c}`); set.add(`${pr},${pc}`);
+          } else seen.set(v, [r, c]);
+        }
+      }
+    }
+  }
+  return set;
+}
+
+function getClueErrors() {
+  const errs = new Set();
+  for (let c = 0; c < N; c++) {
+    const col = board.map(row => row[c]);
+    const complete = col.every(v => v);
+    if (CLUES.top[c] !== null) {
+      if (countVisiblePrefix(col) > CLUES.top[c] || (complete && countVisible(col) !== CLUES.top[c])) errs.add(`T${c}`);
+    }
+    if (CLUES.bottom[c] !== null) {
+      const rev = [...col].reverse();
+      if (countVisiblePrefix(rev) > CLUES.bottom[c] || (complete && countVisible(rev) !== CLUES.bottom[c])) errs.add(`B${c}`);
+    }
+  }
+  for (let r = 0; r < N; r++) {
+    const row = board[r];
+    const complete = row.every(v => v);
+    if (CLUES.left[r] !== null) {
+      if (countVisiblePrefix(row) > CLUES.left[r] || (complete && countVisible(row) !== CLUES.left[r])) errs.add(`L${r}`);
+    }
+    if (CLUES.right[r] !== null) {
+      const rev = [...row].reverse();
+      if (countVisiblePrefix(rev) > CLUES.right[r] || (complete && countVisible(rev) !== CLUES.right[r])) errs.add(`R${r}`);
+    }
+  }
+  return errs;
+}
+
+function isComplete() {
+  if (!board.every(row => row.every(v => v > 0))) return false;
+  if (getConflicts().size > 0) return false;
+  for (let c = 0; c < N; c++) {
+    const col = board.map(row => row[c]);
+    if (CLUES.top[c]    !== null && countVisible(col)                  !== CLUES.top[c])    return false;
+    if (CLUES.bottom[c] !== null && countVisible([...col].reverse())   !== CLUES.bottom[c]) return false;
+  }
+  for (let r = 0; r < N; r++) {
+    const row = board[r];
+    if (CLUES.left[r]   !== null && countVisible(row)                  !== CLUES.left[r])   return false;
+    if (CLUES.right[r]  !== null && countVisible([...row].reverse())   !== CLUES.right[r])  return false;
+  }
+  return true;
+}
+
+function buildGrid() {
+  const g = document.getElementById('skyBoard');
+
+  g.appendChild(document.createElement('div'));
+  for (let c = 0; c < N; c++) {
+    const d = document.createElement('div');
+    d.className = 'sky-clue'; d.dataset.ckey = `T${c}`;
+    if (CLUES.top[c] !== null) d.textContent = CLUES.top[c];
+    g.appendChild(d);
+  }
+  g.appendChild(document.createElement('div'));
+
+  for (let r = 0; r < N; r++) {
+    const lc = document.createElement('div');
+    lc.className = 'sky-clue'; lc.dataset.ckey = `L${r}`;
+    if (CLUES.left[r] !== null) lc.textContent = CLUES.left[r];
+    g.appendChild(lc);
+
+    for (let c = 0; c < N; c++) {
+      const cell = document.createElement('div');
+      const isPreset = PRESETS[`${r},${c}`] !== undefined;
+      cell.className = 'sky-cell' + (isPreset ? ' preset' : '');
+      cell.dataset.r = r; cell.dataset.c = c;
+      const bt = (r % 3 === 0) ? '2.5px solid #222' : '1px solid #bbb';
+      const bl = (c % 3 === 0) ? '2.5px solid #222' : '1px solid #bbb';
+      const bb = (r === N-1)   ? '2.5px solid #222' : '1px solid #bbb';
+      const br = (c === N-1)   ? '2.5px solid #222' : '1px solid #bbb';
+      cell.style.cssText = `border-top:${bt};border-left:${bl};border-bottom:${bb};border-right:${br};`;
+      cell.addEventListener('click', () => { sel = [r, c]; renderBoard(); });
+      g.appendChild(cell);
+    }
+
+    const rc = document.createElement('div');
+    rc.className = 'sky-clue'; rc.dataset.ckey = `R${r}`;
+    if (CLUES.right[r] !== null) rc.textContent = CLUES.right[r];
+    g.appendChild(rc);
+  }
+
+  g.appendChild(document.createElement('div'));
+  for (let c = 0; c < N; c++) {
+    const d = document.createElement('div');
+    d.className = 'sky-clue'; d.dataset.ckey = `B${c}`;
+    if (CLUES.bottom[c] !== null) d.textContent = CLUES.bottom[c];
+    g.appendChild(d);
+  }
+  g.appendChild(document.createElement('div'));
+}
+
+function renderBoard() {
+  const conflicts = getConflicts();
+  const clueErrs  = getClueErrors();
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
+      const cell = document.querySelector(`.sky-cell[data-r="${r}"][data-c="${c}"]`);
+      if (!cell) continue;
+      const isPreset   = PRESETS[`${r},${c}`] !== undefined;
+      const isConflict = conflicts.has(`${r},${c}`);
+      const isSelected = sel && sel[0] === r && sel[1] === c;
+      cell.className = 'sky-cell'
+        + (isPreset   ? ' preset'   : '')
+        + (isSelected ? ' selected' : '')
+        + (isConflict ? ' conflict' : '');
+      cell.textContent = board[r][c] || '';
+    }
+  }
+  document.querySelectorAll('.sky-clue').forEach(el => {
+    el.classList.toggle('clue-err', clueErrs.has(el.dataset.ckey));
+  });
+}
+
+function buildNumpad() {
+  const np = document.getElementById('numpad');
+  for (let i = 1; i <= N; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    btn.addEventListener('click', () => input(i));
+    np.appendChild(btn);
+  }
+}
+
+function input(v) {
+  if (!sel) return;
+  const [r, c] = sel;
+  if (PRESETS[`${r},${c}`] !== undefined) return;
+  board[r][c] = v;
+  renderBoard();
+  saveProgress();
+  checkComplete();
+}
+
+function checkComplete() {
+  const msg = document.getElementById('message');
+  if (!isComplete()) { msg.textContent = ''; return; }
+  msg.textContent = '축하합니다! 퍼즐을 완성했습니다! 🎉';
+  recordCompletion(PUZZLE_ID);
+}
+
+function saveProgress() { localStorage.setItem(SAVE_KEY, JSON.stringify(board)); }
+function loadProgress() {
+  const s = localStorage.getItem(SAVE_KEY);
+  if (!s) return;
+  try {
+    const saved = JSON.parse(s);
+    if (Array.isArray(saved) && saved.length === N) { board = saved; applyPresets(); }
+  } catch(e) {}
+}
+
+async function handleCloudSave() { await saveProgressCloud(PUZZLE_ID, board); }
+async function handleCloudLoad() {
+  const state = await loadProgressCloud(PUZZLE_ID);
+  if (!state || !Array.isArray(state) || state.length !== N) return;
+  board = state;
+  applyPresets();
+  renderBoard(); saveProgress(); checkComplete();
+}
+
+function resetBoard() {
+  if (!confirm('정말 초기화하시겠습니까?')) return;
+  board = Array.from({length: N}, () => Array(N).fill(0));
+  applyPresets();
+  sel = null;
+  document.getElementById('message').textContent = '';
+  renderBoard(); saveProgress(); resetCompletion(PUZZLE_ID);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key >= '1' && e.key <= '9') { input(parseInt(e.key)); return; }
+  if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { input(0); return; }
+  if (!sel) return;
+  const [r, c] = sel;
+  if      (e.key === 'ArrowUp'    && r > 0)   sel = [r-1, c];
+  else if (e.key === 'ArrowDown'  && r < N-1) sel = [r+1, c];
+  else if (e.key === 'ArrowLeft'  && c > 0)   sel = [r, c-1];
+  else if (e.key === 'ArrowRight' && c < N-1) sel = [r, c+1];
+  else return;
+  e.preventDefault();
+  renderBoard();
+});
+
+buildGrid();
+buildNumpad();
+loadProgress();
+renderBoard();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>
