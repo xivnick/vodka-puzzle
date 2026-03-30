@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260330 겹침 스도쿠</title>
+<meta property="og:title" content="260330 겹침 스도쿠">
+<meta property="og:description" content="두 개의 겹쳐진 스도쿠 규칙을 모두 만족하도록 숫자를 채우세요.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260330_01/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/puzzle/css/common.css?v=5">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #fff;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 32px 16px 48px;
+}
+
+h1 { font-size: 1.5rem; font-weight: 700; color: #222; margin-bottom: 4px; }
+.subtitle { font-size: 0.82rem; color: #888; margin-bottom: 20px; text-align: center; line-height: 1.5; }
+
+.container {
+  width: min(94vw, 450px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* ── Board ── */
+.board {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  width: 100%;
+  aspect-ratio: 1;
+  margin-bottom: 10px;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  cursor: pointer;
+  font-size: min(4.5vw, 20px);
+  font-weight: 700;
+  color: #4a6fa5;
+  min-height: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.cell.dead {
+  background: transparent;
+  pointer-events: none;
+}
+
+.cell.preset {
+  color: #222;
+  background: #e8e8e8;
+  cursor: default;
+  pointer-events: none;
+}
+
+.cell.selected { background: #e8e8d8; }
+.cell.err { background: #f5d0d0; color: #c0392b; }
+.cell.preset.err { background: #e8e8e8; color: #222; }
+.cell.selected.err { background: #e8e8d8; color: #c0392b; }
+
+/* ── Numpad ── */
+.numpad {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.numpad button {
+  flex: 1;
+  height: 44px;
+  border-radius: 3px;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  border: 1.5px solid #c8c3b8;
+  background: #f4f1eb;
+  color: #333;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.numpad button:hover { background: #e8e4da; }
+.numpad button:active { transform: scale(0.95); background: #ddd9cf; }
+
+/* ── Bottom buttons ── */
+.bottom-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.bottom-buttons button {
+  flex: 1;
+  height: 40px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Noto Sans KR', sans-serif;
+  border: 1.5px solid #d0ccc4;
+  background: #faf8f4;
+  color: #777;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.bottom-buttons button:hover { background: #f0ede6; }
+.bottom-buttons button.danger {
+  border-color: #e0bfbf;
+  background: #fdf5f5;
+  color: #b05050;
+}
+.bottom-buttons button.danger:hover { background: #f5e0e0; }
+
+/* ── Rules ── */
+.rules-toggle {
+  font-size: 0.78rem;
+  color: #999;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 1px;
+  align-self: center;
+  margin-top: 14px;
+  cursor: pointer;
+}
+.rules-box {
+  display: none;
+  background: #faf8f4;
+  border: 1px solid #e0ddd6;
+  border-radius: 3px;
+  padding: 14px 18px;
+  font-size: 0.82rem;
+  color: #555;
+  line-height: 1.7;
+  margin-top: 8px;
+}
+.rules-box.open { display: block; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+
+<h1>260330 겹침 스도쿠</h1>
+<p class="subtitle">두 개의 겹쳐진 스도쿠 규칙을 모두<br>만족하도록 숫자를 집어넣으세요.</p>
+
+<div class="container">
+  <div class="board" id="board"></div>
+
+  <div class="numpad" id="numpad"></div>
+
+  <div class="bottom-buttons">
+    <button onclick="deleteCell()">지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>겹침 스도쿠 규칙</strong><br>
+    두 개의 9×9 스도쿠가 겹쳐져 있습니다.<br>
+    각 스도쿠의 가로줄, 세로줄, 3×3 박스에 1~9가 한 번씩 들어가야 합니다.<br>
+    겹치는 칸은 두 스도쿠의 규칙을 모두 만족해야 합니다.
+  </div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script src="/puzzle/js/common.js?v=5"></script>
+<script>
+const PUZZLE_ID = '260330_01';
+
+// 10×10 합성 그리드 프리셋
+// 0 = 빈 칸, 양수 = 프리셋, -1 = 죽은 셀 (두 그리드 모두 밖)
+//           c0  c1  c2  c3  c4  c5  c6  c7  c8  c9
+const PRESETS = [
+  [ 0,  0,  0,  0,  0,  0,  0,  0,  0, -1], // r0
+  [ 0,  4,  0,  0,  8,  5,  0,  0,  0,  0], // r1
+  [ 0,  0,  1,  0,  0,  3,  0,  9,  0,  0], // r2
+  [ 0,  0,  0,  2,  0,  0,  3,  0,  0,  0], // r3
+  [ 0,  0,  0,  6,  0,  0,  0,  8,  0,  0], // r4
+  [ 0,  7,  0,  0,  1,  0,  0,  0,  0,  0], // r5
+  [ 0,  0,  2,  0,  0,  5,  0,  0,  0,  0], // r6
+  [ 0,  9,  0,  5,  0,  0,  8,  0,  0,  0], // r7
+  [ 0,  0,  8,  9,  0,  0,  0,  1,  0,  0], // r8
+  [-1,  0,  0,  0,  0,  0,  0,  0,  0,  0], // r9
+];
+
+// 현재 값 (0 = 비어있음)
+const values = Array.from({length: 10}, (_, r) =>
+  Array.from({length: 10}, (_, c) => {
+    const p = PRESETS[r][c];
+    return p > 0 ? p : 0;
+  })
+);
+
+let selectedCell = null;
+
+// 활성 셀 여부
+function isActive(r, c) {
+  return (r <= 8 && c <= 8) || (r >= 1 && c >= 1);
+}
+function isDead(r, c) {
+  return !isActive(r, c);
+}
+function isPreset(r, c) {
+  return PRESETS[r][c] > 0;
+}
+
+// 테두리 계산
+function getBorderStyle(r, c) {
+  const inG1 = r <= 8 && c <= 8;
+  const inG2 = r >= 1 && c >= 1;
+  const T = '2.5px solid #222', t = '1px solid #aaa', n = 'none';
+
+  const top    = (inG1 && (r===0||r===3||r===6)) || (inG2 && (r===1||r===4||r===7)) ? T
+               : (inG1||inG2) ? t : n;
+  const bottom = (inG1 && r===8) || (inG2 && r===9) ? T
+               : (inG1||inG2) ? t : n;
+  const left   = (inG1 && (c===0||c===3||c===6)) || (inG2 && (c===1||c===4||c===7)) ? T
+               : (inG1||inG2) ? t : n;
+  const right  = (inG1 && c===8) || (inG2 && c===9) ? T
+               : (inG1||inG2) ? t : n;
+
+  return `border-top:${top};border-bottom:${bottom};border-left:${left};border-right:${right};`;
+}
+
+// 보드 렌더링
+function renderBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  for (let r = 0; r < 10; r++) {
+    for (let c = 0; c < 10; c++) {
+      const div = document.createElement('div');
+      div.id = `cell-${r}-${c}`;
+      div.className = 'cell';
+      if (isDead(r, c)) {
+        div.classList.add('dead');
+      } else {
+        div.style.cssText = getBorderStyle(r, c);
+        if (isPreset(r, c)) {
+          div.classList.add('preset');
+          div.textContent = PRESETS[r][c];
+        } else {
+          div.addEventListener('click', () => selectCell(r, c));
+          if (values[r][c]) div.textContent = values[r][c];
+        }
+      }
+      board.appendChild(div);
+    }
+  }
+}
+
+function selectCell(r, c) {
+  if (isDead(r, c) || isPreset(r, c)) return;
+  if (selectedCell) {
+    const [pr, pc] = selectedCell;
+    document.getElementById(`cell-${pr}-${pc}`).classList.remove('selected');
+  }
+  selectedCell = [r, c];
+  document.getElementById(`cell-${r}-${c}`).classList.add('selected');
+}
+
+function inputNumber(n) {
+  if (!selectedCell) return;
+  const [r, c] = selectedCell;
+  values[r][c] = n;
+  const cell = document.getElementById(`cell-${r}-${c}`);
+  cell.textContent = n || '';
+  saveProgress();
+  validate();
+}
+
+function deleteCell() {
+  if (!selectedCell) return;
+  const [r, c] = selectedCell;
+  values[r][c] = 0;
+  document.getElementById(`cell-${r}-${c}`).textContent = '';
+  saveProgress();
+  validate();
+}
+
+function resetBoard() {
+  if (!confirm('정말 초기화하시겠습니까?')) return;
+  for (let r = 0; r < 10; r++)
+    for (let c = 0; c < 10; c++) {
+      values[r][c] = PRESETS[r][c] > 0 ? PRESETS[r][c] : 0;
+      if (!isDead(r, c) && !isPreset(r, c)) {
+        const cell = document.getElementById(`cell-${r}-${c}`);
+        cell.textContent = '';
+        cell.classList.remove('err');
+      }
+    }
+  if (selectedCell) {
+    const [pr, pc] = selectedCell;
+    document.getElementById(`cell-${pr}-${pc}`).classList.remove('selected');
+    selectedCell = null;
+  }
+  saveProgress();
+  resetCompletion(PUZZLE_ID);
+}
+
+// ── 검증 ──
+function addConflicts(errs, cells) {
+  const seen = {};
+  for (const [r, c] of cells) {
+    const v = values[r][c];
+    if (!v) continue;
+    const key = `${v}`;
+    if (seen[key]) {
+      errs.add(`${r},${c}`);
+      errs.add(seen[key]);
+    } else {
+      seen[key] = `${r},${c}`;
+    }
+  }
+}
+
+function validate() {
+  const errs = new Set();
+
+  // Grid 1 (r:0-8, c:0-8)
+  for (let r = 0; r <= 8; r++)
+    addConflicts(errs, Array.from({length:9}, (_, c) => [r, c]));
+  for (let c = 0; c <= 8; c++)
+    addConflicts(errs, Array.from({length:9}, (_, r) => [r, c]));
+  for (let br = 0; br < 3; br++)
+    for (let bc = 0; bc < 3; bc++) {
+      const cells = [];
+      for (let dr = 0; dr < 3; dr++)
+        for (let dc = 0; dc < 3; dc++)
+          cells.push([br*3+dr, bc*3+dc]);
+      addConflicts(errs, cells);
+    }
+
+  // Grid 2 (r:1-9, c:1-9)
+  for (let r = 1; r <= 9; r++)
+    addConflicts(errs, Array.from({length:9}, (_, i) => [r, i+1]));
+  for (let c = 1; c <= 9; c++)
+    addConflicts(errs, Array.from({length:9}, (_, i) => [i+1, c]));
+  for (let br = 0; br < 3; br++)
+    for (let bc = 0; bc < 3; bc++) {
+      const cells = [];
+      for (let dr = 0; dr < 3; dr++)
+        for (let dc = 0; dc < 3; dc++)
+          cells.push([1+br*3+dr, 1+bc*3+dc]);
+      addConflicts(errs, cells);
+    }
+
+  // 스타일 적용
+  for (let r = 0; r < 10; r++)
+    for (let c = 0; c < 10; c++) {
+      const cell = document.getElementById(`cell-${r}-${c}`);
+      if (cell && !isDead(r, c))
+        cell.classList.toggle('err', errs.has(`${r},${c}`));
+    }
+
+  // 완성 체크
+  let allFilled = true;
+  for (let r = 0; r < 10; r++)
+    for (let c = 0; c < 10; c++)
+      if (!isDead(r, c) && values[r][c] === 0) { allFilled = false; break; }
+  if (allFilled && errs.size === 0) recordCompletion(PUZZLE_ID);
+}
+
+// ── localStorage ──
+function saveProgress() {
+  const state = values.map(row => [...row]);
+  localStorage.setItem(`puzzle_${PUZZLE_ID}`, JSON.stringify(state));
+}
+
+function loadProgress() {
+  const raw = localStorage.getItem(`puzzle_${PUZZLE_ID}`);
+  if (!raw) return;
+  try {
+    const state = JSON.parse(raw);
+    for (let r = 0; r < 10; r++)
+      for (let c = 0; c < 10; c++)
+        if (!isDead(r, c) && !isPreset(r, c))
+          values[r][c] = state[r]?.[c] ?? 0;
+  } catch(e) {}
+}
+
+// ── 클라우드 ──
+function handleCloudSave() {
+  saveProgressCloud(PUZZLE_ID, values.map(row => [...row]));
+}
+async function handleCloudLoad() {
+  const state = await loadProgressCloud(PUZZLE_ID);
+  if (!state) return;
+  for (let r = 0; r < 10; r++)
+    for (let c = 0; c < 10; c++)
+      if (!isDead(r, c) && !isPreset(r, c))
+        values[r][c] = state[r]?.[c] ?? 0;
+  updateCellDisplay();
+  validate();
+}
+
+function updateCellDisplay() {
+  for (let r = 0; r < 10; r++)
+    for (let c = 0; c < 10; c++)
+      if (!isDead(r, c) && !isPreset(r, c)) {
+        const cell = document.getElementById(`cell-${r}-${c}`);
+        cell.textContent = values[r][c] || '';
+      }
+}
+
+// ── 키보드 ──
+document.addEventListener('keydown', e => {
+  if (e.key >= '1' && e.key <= '9') { inputNumber(Number(e.key)); return; }
+  if (e.key === 'Backspace' || e.key === 'Delete') { deleteCell(); return; }
+
+  if (!selectedCell) return;
+  let [r, c] = selectedCell;
+  const dirs = { ArrowUp:[-1,0], ArrowDown:[1,0], ArrowLeft:[0,-1], ArrowRight:[0,1] };
+  const d = dirs[e.key];
+  if (!d) return;
+  e.preventDefault();
+  let nr = r + d[0], nc = c + d[1];
+  while (nr >= 0 && nr < 10 && nc >= 0 && nc < 10) {
+    if (!isDead(nr, nc) && !isPreset(nr, nc)) { selectCell(nr, nc); break; }
+    nr += d[0]; nc += d[1];
+  }
+});
+
+// ── 숫자 키패드 렌더링 ──
+function renderNumpad() {
+  const np = document.getElementById('numpad');
+  for (let n = 1; n <= 9; n++) {
+    const btn = document.createElement('button');
+    btn.textContent = n;
+    btn.addEventListener('click', () => inputNumber(n));
+    np.appendChild(btn);
+  }
+}
+
+// ── 초기화 ──
+renderBoard();
+renderNumpad();
+loadProgress();
+updateCellDisplay();
+validate();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>
