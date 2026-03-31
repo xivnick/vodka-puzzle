@@ -234,9 +234,6 @@ function validate() {
     const nums = region.filter(([r,c]) => PRESETS[`${r},${c}`] !== undefined);
     if (nums.length !== 1) {
       region.forEach(([r,c]) => errWhite.add(`${r},${c}`));
-    } else {
-      const expected = PRESETS[`${nums[0][0]},${nums[0][1]}`];
-      if (region.length > expected) region.forEach(([r,c]) => errWhite.add(`${r},${c}`));
     }
   }
 
