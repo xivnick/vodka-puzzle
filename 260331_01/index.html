@@ -35,10 +35,10 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
 }
 .board {
   display: grid;
-  grid-template-columns: repeat(9, 1fr);
+  grid-template-columns: repeat(10, 1fr);
   border: 2.5px solid #222;
-  width: min(94vw, 450px);
-  aspect-ratio: 1;
+  width: min(94vw, 500px);
+  aspect-ratio: 10/9;
   margin-bottom: 12px;
 }
 .cell {
@@ -157,24 +157,24 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
 <script>
 const PUZZLE_ID = '260331_01';
 const SAVE_KEY  = 'puzzle_260331_01';
-const N = 9;
+const ROWS = 9, COLS = 10;
 // 0 = 빈 칸, 양수 = 프리셋 숫자
 const PRESET_GRID = [
-  [0, 0, 0, 0, 7, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 6, 0],
-  [0, 8, 0, 0, 1, 0, 0, 0, 0],
-  [0, 0, 0, 2, 0, 0, 0, 5, 0],
-  [0, 0, 0, 0, 3, 0, 4, 0, 0],
-  [0, 0, 9, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 7, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 6, 0],
+  [0, 8, 0, 0, 0, 1, 0, 0, 0, 0],
+  [0, 0, 0, 0, 2, 0, 0, 0, 5, 0],
+  [0, 0, 0, 0, 0, 3, 0, 4, 0, 0],
+  [0, 0, 9, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 ];
 const PRESETS = {};
 PRESET_GRID.forEach((row, r) => row.forEach((v, c) => { if (v) PRESETS[`${r},${c}`] = v; }));
 
 // true = painted black
-let board = Array.from({length: N}, () => Array(N).fill(false));
+let board = Array.from({length: ROWS}, () => Array(COLS).fill(false));
 
 function bfs(startR, startC, passable) {
   const visited = new Set();
@@ -185,7 +185,7 @@ function bfs(startR, startC, passable) {
     const [r, c] = queue.shift();
     for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
       const nr = r+dr, nc = c+dc;
-      if (nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
+      if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
       const k = `${nr},${nc}`;
       if (!visited.has(k) && passable(nr, nc)) { visited.add(k); queue.push([nr, nc]); }
     }
@@ -194,10 +194,10 @@ function bfs(startR, startC, passable) {
 }
 
 function getWhiteRegions() {
-  const seen = Array.from({length: N}, () => Array(N).fill(false));
+  const seen = Array.from({length: ROWS}, () => Array(COLS).fill(false));
   const regions = [];
-  for (let r = 0; r < N; r++) {
-    for (let c = 0; c < N; c++) {
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
       if (!board[r][c] && !seen[r][c]) {
         const region = [];
         const q = [[r, c]]; seen[r][c] = true;
@@ -205,7 +205,7 @@ function getWhiteRegions() {
           const [cr, cc] = q.shift(); region.push([cr, cc]);
           for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
             const nr = cr+dr, nc = cc+dc;
-            if (nr>=0 && nr<N && nc>=0 && nc<N && !board[nr][nc] && !seen[nr][nc]) {
+            if (nr>=0 && nr<ROWS && nc>=0 && nc<COLS && !board[nr][nc] && !seen[nr][nc]) {
               seen[nr][nc] = true; q.push([nr, nc]);
             }
           }
@@ -222,8 +222,8 @@ function validate() {
   const errWhite   = new Set();
 
   // 2×2 all-painted
-  for (let r = 0; r < N-1; r++) {
-    for (let c = 0; c < N-1; c++) {
+  for (let r = 0; r < ROWS-1; r++) {
+    for (let c = 0; c < COLS-1; c++) {
       if (board[r][c] && board[r+1][c] && board[r][c+1] && board[r+1][c+1]) {
         [`${r},${c}`,`${r+1},${c}`,`${r},${c+1}`,`${r+1},${c+1}`].forEach(k => errPainted.add(k));
       }
@@ -232,7 +232,7 @@ function validate() {
 
   // Disconnected painted cells
   const painted = [];
-  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (board[r][c]) painted.push([r, c]);
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (board[r][c]) painted.push([r, c]);
   if (painted.length > 1) {
     const connected = bfs(painted[0][0], painted[0][1], (r,c) => board[r][c]);
     for (const [r, c] of painted) if (!connected.has(`${r},${c}`)) errPainted.add(`${r},${c}`);
@@ -260,12 +260,12 @@ function validate() {
 }
 
 function isComplete() {
-  for (let r = 0; r < N-1; r++)
-    for (let c = 0; c < N-1; c++)
+  for (let r = 0; r < ROWS-1; r++)
+    for (let c = 0; c < COLS-1; c++)
       if (board[r][c] && board[r+1][c] && board[r][c+1] && board[r+1][c+1]) return false;
 
   const painted = [];
-  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (board[r][c]) painted.push([r, c]);
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (board[r][c]) painted.push([r, c]);
   if (painted.length > 0) {
     const connected = bfs(painted[0][0], painted[0][1], (r,c) => board[r][c]);
     if (connected.size !== painted.length) return false;
@@ -281,8 +281,8 @@ function isComplete() {
 
 function buildGrid() {
   const b = document.getElementById('board');
-  for (let r = 0; r < N; r++) {
-    for (let c = 0; c < N; c++) {
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
       const cell = document.createElement('div');
       cell.className = 'cell';
       cell.dataset.r = r; cell.dataset.c = c;
@@ -312,8 +312,8 @@ function toggleCell(r, c) {
 function renderBoard() {
   const hasPainted = board.some(row => row.some(v => v));
   const { errPainted, errWhite, correct } = hasPainted ? validate() : { errPainted: new Set(), errWhite: new Set(), correct: new Set() };
-  for (let r = 0; r < N; r++) {
-    for (let c = 0; c < N; c++) {
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
       const cell = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
       const key = `${r},${c}`;
       const isPreset  = PRESETS[key] !== undefined;
@@ -340,9 +340,9 @@ function loadProgress() {
   if (!s) return;
   try {
     const saved = JSON.parse(s);
-    if (Array.isArray(saved) && saved.length === N) {
-      for (let r = 0; r < N; r++)
-        for (let c = 0; c < N; c++)
+    if (Array.isArray(saved) && saved.length === ROWS) {
+      for (let r = 0; r < ROWS; r++)
+        for (let c = 0; c < COLS; c++)
           if (PRESETS[`${r},${c}`] === undefined) board[r][c] = !!saved[r][c];
     }
   } catch(e) {}
@@ -353,9 +353,9 @@ async function handleCloudSave() {
 }
 async function handleCloudLoad() {
   const state = await loadProgressCloud(PUZZLE_ID);
-  if (!state || !Array.isArray(state) || state.length !== N) return;
-  for (let r = 0; r < N; r++)
-    for (let c = 0; c < N; c++)
+  if (!state || !Array.isArray(state) || state.length !== ROWS) return;
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
       if (PRESETS[`${r},${c}`] === undefined) board[r][c] = !!state[r][c];
   renderBoard(); saveProgress();
   if (isComplete()) document.getElementById('message').textContent = '축하합니다! 퍼즐을 완성했습니다! 🎉';
@@ -363,7 +363,7 @@ async function handleCloudLoad() {
 
 function resetBoard() {
   if (!confirm('정말 초기화하시겠습니까?')) return;
-  board = Array.from({length: N}, () => Array(N).fill(false));
+  board = Array.from({length: ROWS}, () => Array(COLS).fill(false));
   document.getElementById('message').textContent = '';
   renderBoard(); saveProgress(); resetCompletion(PUZZLE_ID);
 }
