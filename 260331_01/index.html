@@ -158,13 +158,20 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
 const PUZZLE_ID = '260331_01';
 const SAVE_KEY  = 'puzzle_260331_01';
 const N = 9;
-const PRESETS = {
-  '0,4': 7, '2,7': 6,
-  '3,1': 8, '3,4': 1,
-  '4,3': 2, '4,7': 5,
-  '5,4': 3, '5,6': 4,
-  '6,2': 9
-};
+// 0 = 빈 칸, 양수 = 프리셋 숫자
+const PRESET_GRID = [
+  [0, 0, 0, 0, 7, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 6, 0],
+  [0, 8, 0, 0, 1, 0, 0, 0, 0],
+  [0, 0, 0, 2, 0, 0, 0, 5, 0],
+  [0, 0, 0, 0, 3, 0, 4, 0, 0],
+  [0, 0, 9, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0],
+];
+const PRESETS = {};
+PRESET_GRID.forEach((row, r) => row.forEach((v, c) => { if (v) PRESETS[`${r},${c}`] = v; }));
 
 // true = painted black
 let board = Array.from({length: N}, () => Array(N).fill(false));
