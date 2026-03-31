@@ -62,6 +62,8 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
 .cell.err-painted { background: #8b1a1a; }
 .cell.err-white { background: #fde8e8; color: #b03030; }
 .cell.err-white.preset { color: #b03030; }
+.cell.correct { background: #e8f5ec; color: #2d7a4a; }
+.cell.correct.preset { color: #2d7a4a; }
 .bottom-buttons {
   display: flex;
   gap: 6px;
@@ -238,7 +240,16 @@ function validate() {
     }
   }
 
-  return { errPainted, errWhite };
+  // Correct white regions
+  const correct = new Set();
+  for (const region of getWhiteRegions()) {
+    const nums = region.filter(([r,c]) => PRESETS[`${r},${c}`] !== undefined);
+    if (nums.length === 1 && region.length === PRESETS[`${nums[0][0]},${nums[0][1]}`]) {
+      region.forEach(([r,c]) => correct.add(`${r},${c}`));
+    }
+  }
+
+  return { errPainted, errWhite, correct };
 }
 
 function isComplete() {
@@ -293,7 +304,7 @@ function toggleCell(r, c) {
 
 function renderBoard() {
   const hasPainted = board.some(row => row.some(v => v));
-  const { errPainted, errWhite } = hasPainted ? validate() : { errPainted: new Set(), errWhite: new Set() };
+  const { errPainted, errWhite, correct } = hasPainted ? validate() : { errPainted: new Set(), errWhite: new Set(), correct: new Set() };
   for (let r = 0; r < N; r++) {
     for (let c = 0; c < N; c++) {
       const cell = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
@@ -306,6 +317,8 @@ function renderBoard() {
         cls += errPainted.has(key) ? ' err-painted' : ' painted';
       } else if (errWhite.has(key)) {
         cls += ' err-white';
+      } else if (correct.has(key)) {
+        cls += ' correct';
       }
       cell.className = cls;
     }
