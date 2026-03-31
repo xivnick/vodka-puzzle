@@ -245,10 +245,12 @@ function validate() {
       const expected = nums.reduce((s,[r,c]) => s + PRESETS[`${r},${c}`], 0);
       if (region.length < expected) region.forEach(([r,c]) => errWhite.add(`${r},${c}`));
       else if (region.length === expected) region.forEach(([r,c]) => correct.add(`${r},${c}`));
-    } else if (nums.length > 2) {
-      // 3개 이상이면 무조건 오류
+      // size > expected: 흰색 그대로 (풀이 중 정상)
+    } else if (nums.length < 2) {
+      // 0개 또는 1개: 오류
       region.forEach(([r,c]) => errWhite.add(`${r},${c}`));
     }
+    // 3개 이상: 흰색 그대로 (풀이 중 정상)
   }
 
   return { errPainted, errWhite, correct };
