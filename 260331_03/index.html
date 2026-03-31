@@ -218,8 +218,13 @@ function getWhiteRegions() {
 }
 
 function isSymmetric(region) {
+  if (region.length === 0) return true;
   const cellSet = new Set(region.map(([r,c]) => `${r},${c}`));
-  return region.every(([r,c]) => cellSet.has(`${ROWS-1-r},${COLS-1-c}`));
+  const minR = Math.min(...region.map(([r]) => r));
+  const maxR = Math.max(...region.map(([r]) => r));
+  const minC = Math.min(...region.map(([,c]) => c));
+  const maxC = Math.max(...region.map(([,c]) => c));
+  return region.every(([r,c]) => cellSet.has(`${minR+maxR-r},${minC+maxC-c}`));
 }
 
 function validate() {
