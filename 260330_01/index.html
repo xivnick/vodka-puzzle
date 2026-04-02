@@ -64,11 +64,19 @@ h1 { font-size: 1.5rem; font-weight: 700; color: #222; margin-bottom: 4px; }
   pointer-events: none;
 }
 
+/* Grid 2 전용 셀 (overlap 영역 제외) */
+.cell.g2 {
+  background: #eef3fa;
+}
+
 .cell.preset {
   color: #222;
   background: #e8e8e8;
   cursor: default;
   pointer-events: none;
+}
+.cell.preset.g2 {
+  background: #d8e4f0;
 }
 
 .cell.selected { background: #e8e8d8; }
@@ -235,8 +243,8 @@ function isPreset(r, c) {
 function getBorderStyle(r, c) {
   const inG1 = r <= 8 && c <= 8;
   const inG2 = r >= 1 && c >= 1;
-  const T = '2.5px solid #222', D = '2.5px dashed #555';
-  const t = '1px solid #aaa', n = 'none';
+  const T = '2.5px solid #222', D = '2px solid #5588bb';
+  const t = '1px solid #ccc', n = 'none';
 
   // top
   let top;
@@ -278,6 +286,10 @@ function renderBoard() {
         div.classList.add('dead');
       } else {
         div.style.cssText = getBorderStyle(r, c);
+        // Grid 2 전용 셀 (Grid 1 밖, Grid 2 안) = row 9 또는 col 9
+        const inG1 = r <= 8 && c <= 8;
+        const inG2 = r >= 1 && c >= 1;
+        if (inG2 && !inG1) div.classList.add('g2');
         if (isPreset(r, c)) {
           div.classList.add('preset');
           div.textContent = PRESETS[r][c];
