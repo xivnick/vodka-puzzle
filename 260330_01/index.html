@@ -40,19 +40,18 @@ h1 { font-size: 1.5rem; font-weight: 700; color: #222; margin-bottom: 4px; }
 .board {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  grid-template-rows: repeat(10, 1fr);
   width: 100%;
-  aspect-ratio: 1;
   margin-bottom: 10px;
 }
 
 .cell {
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #fff;
   cursor: pointer;
-  font-size: min(4.5vw, 20px);
+  font-size: clamp(12px, 4vw, 20px);
   font-weight: 700;
   color: #4a6fa5;
   min-height: 0;
@@ -87,7 +86,7 @@ h1 { font-size: 1.5rem; font-weight: 700; color: #222; margin-bottom: 4px; }
   flex: 1;
   height: 44px;
   border-radius: 3px;
-  font-size: 18px;
+  font-size: clamp(13px, 3.5vw, 18px);
   font-weight: 700;
   font-family: 'Noto Sans KR', sans-serif;
   border: 1.5px solid #c8c3b8;
@@ -198,10 +197,10 @@ const PUZZLE_ID = '260330_01';
 //           c0  c1  c2  c3  c4  c5  c6  c7  c8  c9
 const PRESETS = [
   [ 0,  0,  0,  0,  0,  0,  0,  0,  0, -1], // r0
-  [ 0,  4,  0,  0,  8,  0,  5,  0,  0,  0], // r1
-  [ 0,  0,  1,  0,  0,  3,  0,  9,  0,  0], // r2
-  [ 0,  0,  0,  2,  0,  0,  3,  0,  0,  0], // r3
-  [ 0,  0,  0,  0,  6,  0,  0,  8,  0,  0], // r4
+  [ 0,  4,  0,  0,  0,  8,  0,  5,  0,  0], // r1
+  [ 0,  0,  1,  0,  0,  0,  3,  0,  9,  0], // r2
+  [ 0,  0,  0,  2,  0,  0,  0,  3,  0,  0], // r3
+  [ 0,  0,  0,  0,  6,  0,  0,  0,  8,  0], // r4
   [ 0,  7,  0,  0,  0,  1,  0,  0,  0,  0], // r5
   [ 0,  0,  2,  0,  0,  0,  5,  0,  0,  0], // r6
   [ 0,  9,  0,  5,  0,  0,  0,  8,  0,  0], // r7
