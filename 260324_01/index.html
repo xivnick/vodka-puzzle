@@ -144,7 +144,8 @@
 
   /* ── Rules ── */
   .rules-toggle {
-    margin-top: 14px;
+    margin-top: 0;
+    margin-bottom: 8px;
     font-size: 0.78rem;
     color: #999;
     cursor: pointer;
@@ -190,19 +191,6 @@
 <p class="subtitle">변을 눌러 영역 경계를 그려보세요<br>숫자는 그 칸이 포함된 영역의 넓이</p>
 
 <div class="container">
-  <div class="board-wrap">
-    <div class="board" id="board"></div>
-  </div>
-
-  <div class="bottom-buttons">
-    <button class="danger" onclick="resetBoard()">초기화</button>
-  </div>
-
-  <div class="cloud-btns" id="cloudBtns" style="display:none">
-    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
-    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
-  </div>
-
   <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
   <div class="rules-box" id="rulesBox">
     <strong>필로미노 규칙</strong><br>
@@ -215,6 +203,19 @@
     · 파란색: 영역 크기가 숫자와 일치합니다.<br>
     · 빨간색: 영역이 너무 작거나, 같은 크기 영역끼리 닿아 있습니다.<br>
     · 검정색: 영역이 숫자보다 큽니다 (경계를 더 그어야 합니다).
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="bottom-buttons">
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
   </div>
 
   <div class="lb-section">

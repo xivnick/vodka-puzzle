@@ -26,13 +26,13 @@
   - gap: 6px, margin-top: 6px
 - **규칙 보기** (`.rules-toggle`):
   - `<span>` 태그 사용 (button 아님)
-  - `font-size: 0.78rem; color: #999; border-bottom: 1px solid #ccc; padding-bottom: 1px; align-self: center; margin-top: 14px`
+  - `font-size: 0.78rem; color: #999; border-bottom: 1px solid #ccc; padding-bottom: 1px; align-self: center; margin-bottom: 8px`
 - **규칙 박스** (`.rules-box`):
   - `background: #faf8f4; border: 1px solid #e0ddd6; border-radius: 3px; padding: 14px 18px`
 
-## cloud-btns / lb-section 위치
-- **container 안**에 배치 (bottom-buttons div 아래, `</div>` 닫기 전)
-- 순서: `bottom-buttons` → `cloud-btns` → `rules-toggle` → `rules-box` → `lb-section`
+## container 내 요소 순서
+- **container 안** 순서: `rules-toggle` → `rules-box` → board → (퍼즐별 요소: numpad 등) → `bottom-buttons` → `cloud-btns` → `message`(있는 경우) → `lb-section`
+- 규칙 박스는 board **위**에 배치한다.
 
 ## 퍼즐 목록 관리
 - `puzzle/index.html`이 퍼즐 목록 페이지 역할을 한다.

@@ -155,6 +155,14 @@
 <p class="subtitle">변을 눌러 도미노를 배치하세요</p>
 
 <div class="container">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <p>• 인접한 두 칸 사이의 변을 눌러 도미노를 놓습니다.</p>
+    <p>• 도미노를 다시 누르면 지울 수 있습니다.</p>
+    <p>• 각 영역(굵은 테두리)에 정확히 두 칸이 색칠되어야 합니다.</p>
+    <p>• 서로 다른 도미노끼리는 변을 맞댈 수 없습니다.</p>
+  </div>
+
   <div class="board-wrap" id="boardWrap">
     <div class="board" id="board"></div>
   </div>
@@ -168,14 +176,6 @@
   </div>
 
   <div class="message" id="message"></div>
-
-  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
-  <div class="rules-box" id="rulesBox">
-    <p>• 인접한 두 칸 사이의 변을 눌러 도미노를 놓습니다.</p>
-    <p>• 도미노를 다시 누르면 지울 수 있습니다.</p>
-    <p>• 각 영역(굵은 테두리)에 정확히 두 칸이 색칠되어야 합니다.</p>
-    <p>• 서로 다른 도미노끼리는 변을 맞댈 수 없습니다.</p>
-  </div>
 
   <div class="lb-section">
     <div class="lb-title">푼 사람</div>
