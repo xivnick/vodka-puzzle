@@ -12,125 +12,22 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: 'Noto Sans KR', sans-serif;
-  background: #fff;
-  color: #333;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-  padding: 0 16px 60px;
-  user-select: none;
-  -webkit-user-select: none;
-}
-h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; letter-spacing: -0.01em; margin-top: 20px; }
-.subtitle { font-size: 0.82rem; color: #888; margin-bottom: 0; text-align: center; }
-.container {
-  width: min(94vw, 450px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
 .board {
-  display: grid;
   grid-template-columns: repeat(9, 1fr);
-  border: 2.5px solid #222;
-  width: min(94vw, 450px);
-  aspect-ratio: 1;
-  margin-top: 20px;
-  margin-bottom: 12px;
+  --paint-board-width: min(94vw, 450px);
 }
-.cell {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: clamp(0.8rem, 4vw, 1.15rem);
-  font-weight: 700;
-  cursor: pointer;
-  border-right: 1px solid #bbb;
-  border-bottom: 1px solid #bbb;
-  background: #fff;
-  color: #333;
-  transition: background 0.08s;
-  min-height: 0;
-}
-.cell.painted   { background: #333; }
-.cell.preset    { cursor: default; }
-.cell.err-painted { background: #8b1a1a; }
-.cell.err-white { background: #fde8e8; color: #b03030; }
-.cell.err-white.preset { color: #b03030; }
-.cell.correct   { background: #e8f5ec; color: #2d7a4a; }
-.cell.correct.preset { color: #2d7a4a; }
-.bottom-buttons {
-  display: flex;
-  gap: 6px;
-  width: 100%;
-  margin-top: 6px;
-  margin-bottom: 6px;
-}
-.bottom-buttons button {
-  flex: 1;
-  height: 40px;
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  background: #faf8f4;
-  border: 1.5px solid #d0ccc4;
-  border-radius: 3px;
-  color: #777;
-  cursor: pointer;
-  transition: background 0.12s;
-}
-.bottom-buttons button:hover { background: #f0ede7; }
-.bottom-buttons button.danger { border-color: #e0bfbf; background: #fdf5f5; color: #b05050; }
-.bottom-buttons button.danger:hover { background: #f8e8e8; }
-.message {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #4a6fa5;
-  margin-bottom: 8px;
-  min-height: 1.4em;
-  text-align: center;
-}
-.rules-toggle {
-  font-size: 0.78rem;
-  color: #999;
-  cursor: pointer;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 1px;
-  align-self: center;
-  margin-bottom: 8px;
-}
-.rules-toggle:hover { color: #555; }
-.rules-box {
-  display: none;
-  background: #faf8f4;
-  border: 1px solid #e0ddd6;
-  border-radius: 3px;
-  padding: 14px 18px;
-  font-size: 0.82rem;
-  color: #555;
-  line-height: 1.8;
-  width: 100%;
-  margin-top: 8px;
-  margin-bottom: 8px;
-}
-.rules-box.open { display: block; }
 </style>
-<link rel="stylesheet" href="/puzzle/css/common.css?v=5">
+<link rel="stylesheet" href="/puzzle/css/common.css?v=9">
 </head>
-<body>
+<body class="puzzle-page">
 <header class="site-header">
   <a class="header-back" href="/puzzle/">&lt; puzzles</a>
   <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
 </header>
 <h1>260331 누리카베 (쌍의 합)</h1>
 <p class="subtitle">각 영역의 두 숫자의 합이 영역 넓이가 되도록 칸을 칠하세요</p>
-<div class="container">
-  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
+<div class="container puzzle-width-md align-center">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
   <div class="rules-box" id="rulesBox">
     <strong>누리카베 (쌍의 합) 규칙</strong><br>
     • 빈 칸들을 칠하여 흰 영역과 검은 영역으로 나눕니다.<br>
@@ -139,7 +36,7 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
     • 각 흰 영역은 정확히 두 개의 숫자를 포함합니다.<br>
     • 영역의 넓이(칸 수)는 그 두 숫자의 합과 같습니다.
   </div>
-  <div class="board" id="board"></div>
+  <div class="board paint-grid-board" id="board"></div>
   <div class="bottom-buttons">
     <button class="danger" onclick="resetBoard()">초기화</button>
   </div>
@@ -153,7 +50,7 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
     <div id="leaderboard"></div>
   </div>
 </div>
-<script src="/puzzle/js/common.js?v=5"></script>
+<script src="/puzzle/js/common.js?v=9"></script>
 <script>
 const PUZZLE_ID = '260331_02';
 const SAVE_KEY  = 'puzzle_260331_02';
@@ -334,39 +231,40 @@ function renderBoard() {
 }
 
 function saveProgress() {
-  localStorage.setItem(SAVE_KEY, JSON.stringify(board.map(row => row.map(v => v ? 1 : 0))));
+  saveLocalState(SAVE_KEY, board.map(row => row.map(v => v ? 1 : 0)));
 }
 function loadProgress() {
-  const s = localStorage.getItem(SAVE_KEY);
-  if (!s) return;
-  try {
-    const saved = JSON.parse(s);
-    if (Array.isArray(saved) && saved.length === ROWS) {
-      for (let r = 0; r < ROWS; r++)
-        for (let c = 0; c < COLS; c++)
-          if (PRESETS[`${r},${c}`] === undefined) board[r][c] = !!saved[r][c];
-    }
-  } catch(e) {}
+  const saved = loadLocalState(SAVE_KEY);
+  if (!saved) return;
+  if (Array.isArray(saved) && saved.length === ROWS) {
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++)
+        if (PRESETS[`${r},${c}`] === undefined) board[r][c] = !!saved[r][c];
+  }
 }
 
 async function handleCloudSave() {
   await saveProgressCloud(PUZZLE_ID, board.map(row => row.map(v => v ? 1 : 0)));
 }
 async function handleCloudLoad() {
-  const state = await loadProgressCloud(PUZZLE_ID);
-  if (!state || !Array.isArray(state) || state.length !== ROWS) return;
-  for (let r = 0; r < ROWS; r++)
-    for (let c = 0; c < COLS; c++)
-      if (PRESETS[`${r},${c}`] === undefined) board[r][c] = !!state[r][c];
-  renderBoard(); saveProgress();
-  if (isComplete()) document.getElementById('message').textContent = '축하합니다! 퍼즐을 완성했습니다! 🎉';
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state) || state.length !== ROWS) return;
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++)
+        if (PRESETS[`${r},${c}`] === undefined) board[r][c] = !!state[r][c];
+    renderBoard();
+    saveProgress();
+    if (isComplete()) document.getElementById('message').textContent = '축하합니다! 퍼즐을 완성했습니다! 🎉';
+  });
 }
 
 function resetBoard() {
-  if (!confirm('정말 초기화하시겠습니까?')) return;
-  board = Array.from({length: ROWS}, () => Array(COLS).fill(false));
-  document.getElementById('message').textContent = '';
-  renderBoard(); saveProgress(); resetCompletion(PUZZLE_ID);
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    board = Array.from({length: ROWS}, () => Array(COLS).fill(false));
+    document.getElementById('message').textContent = '';
+    renderBoard();
+    saveProgress();
+  });
 }
 
 buildGrid();

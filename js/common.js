@@ -202,6 +202,40 @@ function initCloudBtns() {
   el.style.display = isGuest() ? 'none' : 'flex';
 }
 
+function toggleRules(id = 'rulesBox') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('open');
+}
+
+function saveLocalState(key, state) {
+  localStorage.setItem(key, JSON.stringify(state));
+}
+
+function loadLocalState(key) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
+}
+
+async function loadCloudState(puzzleId, applyState) {
+  const state = await loadProgressCloud(puzzleId);
+  if (state == null) return false;
+  applyState(state);
+  return true;
+}
+
+function confirmPuzzleReset(puzzleId, resetFn, message = '정말 초기화하시겠습니까?') {
+  if (!confirm(message)) return false;
+  resetFn();
+  resetCompletion(puzzleId);
+  return true;
+}
+
 // ── Leaderboard ──────────────────────────────────────────────────────────────
 async function renderLeaderboard(puzzleId, containerId) {
   const container = document.getElementById(containerId);

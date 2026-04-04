@@ -12,37 +12,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: #ffffff;
-    color: #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    padding: 32px 16px 48px;
-  }
-
-  h1 {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 4px;
-    letter-spacing: -0.01em;
-  }
-
-  .subtitle {
-    font-size: 0.82rem;
-    font-weight: 400;
-    color: #888;
-    margin-bottom: 0;
-    text-align: center;
-    line-height: 1.5;
-  }
-
   .container {
     width: min(94vw, 450px);
     display: flex;
@@ -171,16 +140,16 @@
   .rules-box strong { color: #333; font-size: 0.82rem; font-weight: 700; }
 
   @media (max-width: 540px) {
-    body { padding: 20px 8px 40px; }
+    body { padding: 0 8px 40px; }
     h1 { font-size: 1.25rem; }
     .bottom-buttons { gap: 5px; }
     .bottom-buttons button { height: min(8.5vw, 40px); font-size: min(3.2vw, 13px); }
   }
 </style>
-<link rel="stylesheet" href="/puzzle/css/common.css?v=5">
-<script src="/puzzle/js/common.js?v=5"></script>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=9">
+<script src="/puzzle/js/common.js?v=9"></script>
 </head>
-<body>
+<body class="puzzle-page pad-48">
 
 <header class="site-header">
   <a class="header-back" href="/puzzle/">&lt; puzzles</a>
@@ -455,31 +424,28 @@ function loadProgress() {
 }
 
 function resetBoard() {
-  if (!confirm('정말 초기화하시겠습니까?')) return;
-  rSep = Array.from({length: SIZE-1}, () => Array(SIZE).fill(false));
-  cSep = Array.from({length: SIZE}, () => Array(SIZE-1).fill(false));
-  hasInteracted = false;
-  resetCompletion(PUZZLE_ID);
-  saveProgress();
-  render();
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    rSep = Array.from({length: SIZE-1}, () => Array(SIZE).fill(false));
+    cSep = Array.from({length: SIZE}, () => Array(SIZE-1).fill(false));
+    hasInteracted = false;
+    saveProgress();
+    render();
+  });
 }
 
 /* ── Cloud ── */
 function handleCloudSave() { saveProgressCloud(PUZZLE_ID, getState()); }
 async function handleCloudLoad() {
-  const s = await loadProgressCloud(PUZZLE_ID);
-  if (!s) return;
-  if (s.rSep) { rSep = s.rSep; hasInteracted = true; }
-  if (s.cSep) { cSep = s.cSep; hasInteracted = true; }
-  saveProgress();
-  render();
-  checkComplete();
+  await loadCloudState(PUZZLE_ID, s => {
+    if (s.rSep) { rSep = s.rSep; hasInteracted = true; }
+    if (s.cSep) { cSep = s.cSep; hasInteracted = true; }
+    saveProgress();
+    render();
+    checkComplete();
+  });
 }
 
 /* ── Rules toggle ── */
-function toggleRules() {
-  document.getElementById('rulesBox').classList.toggle('open');
-}
 
 /* ── Init ── */
 loadProgress();

@@ -12,44 +12,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: #ffffff;
-    color: #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    padding: 32px 16px 48px;
-  }
-
-  h1 {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 4px;
-    letter-spacing: -0.01em;
-  }
-
-  .subtitle {
-    font-size: 0.82rem;
-    font-weight: 400;
-    color: #888;
-    margin-bottom: 0;
-    text-align: center;
-    line-height: 1.5;
-  }
-
-  .container {
-    width: min(94vw, 450px);
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
   /* ── Board ── */
   .board-wrap {
     border: 2.5px solid #222;
@@ -182,46 +144,8 @@
 
   .bottom-buttons button.danger:hover { background: #f5e0e0; color: #8c3333; }
 
-  .message {
-    margin-top: 16px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    min-height: 1.5em;
-    color: #2e7d32;
-    text-align: center;
-  }
-
-  .rules-toggle {
-    margin-top: 0;
-    margin-bottom: 8px;
-    font-size: 0.78rem;
-    color: #999;
-    cursor: pointer;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 1px;
-    align-self: center;
-  }
-
-  .rules-toggle:hover { color: #666; border-color: #999; }
-
-  .rules-box {
-    display: none;
-    margin-top: 10px;
-    padding: 14px 18px;
-    background: #faf8f4;
-    border: 1px solid #e0ddd6;
-    border-radius: 3px;
-    font-size: 0.8rem;
-    font-weight: 400;
-    line-height: 1.7;
-    color: #555;
-  }
-
-  .rules-box.open { display: block; }
-  .rules-box strong { color: #333; font-size: 0.82rem; font-weight: 700; }
-
   @media (max-width: 540px) {
-    body { padding: 20px 8px 40px; }
+    body { padding: 0 8px 40px; }
     h1 { font-size: 1.25rem; }
     .numpad { gap: 5px; }
     .numpad button { height: min(9.5vw, 44px); font-size: min(4.4vw, 18px); }
@@ -230,10 +154,10 @@
     .kropki-dot { width: 11px; height: 11px; }
   }
 </style>
-<link rel="stylesheet" href="/puzzle/css/common.css?v=5">
-<script src="/puzzle/js/common.js?v=5"></script>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=9">
+<script src="/puzzle/js/common.js?v=9"></script>
 </head>
-<body>
+<body class="puzzle-page pad-48">
 
 <header class="site-header">
   <a class="header-back" href="/puzzle/">&lt; puzzles</a>
@@ -242,7 +166,7 @@
 <h1>260323 약한 크롭키 스도쿠</h1>
 <p class="subtitle">흰 점: 연속된 두 수 · 검은 점: 한 수가 다른 수의 2배</p>
 
-<div class="container">
+<div class="container puzzle-width-md align-stretch">
   <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
   <div class="rules-box" id="rulesBox">
     <strong>약한 크롭키 스도쿠 규칙</strong><br>
@@ -442,53 +366,46 @@ function checkComplete() {
 
 // ── 저장/복원 ────────────────────────────────────────────────────────────────
 function saveProgress() {
-  localStorage.setItem(SAVE_KEY, JSON.stringify(board));
+  saveLocalState(SAVE_KEY, board);
 }
 
 function loadProgress() {
-  const s = localStorage.getItem(SAVE_KEY);
-  if (!s) return;
-  try {
-    const saved = JSON.parse(s);
-    if (Array.isArray(saved) && saved.length === 9) {
-      // 주어진 셀은 덮어쓰지 않음
-      for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
-          if (!GIVEN.has(`${r},${c}`)) board[r][c] = saved[r][c] || 0;
-        }
+  const saved = loadLocalState(SAVE_KEY);
+  if (!saved) return;
+  if (Array.isArray(saved) && saved.length === 9) {
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (!GIVEN.has(`${r},${c}`)) board[r][c] = saved[r][c] || 0;
       }
     }
-  } catch(e) {}
+  }
 }
 
 function resetBoard() {
-  if (!confirm('정말 초기화하시겠습니까?')) return;
-  for (let r = 0; r < 9; r++)
-    for (let c = 0; c < 9; c++)
-      if (!GIVEN.has(`${r},${c}`)) board[r][c] = 0;
-  sel = null;
-  document.getElementById('message').textContent = '';
-  renderBoard();
-  saveProgress();
-  resetCompletion(PUZZLE_ID);
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    for (let r = 0; r < 9; r++)
+      for (let c = 0; c < 9; c++)
+        if (!GIVEN.has(`${r},${c}`)) board[r][c] = 0;
+    sel = null;
+    document.getElementById('message').textContent = '';
+    renderBoard();
+    saveProgress();
+  });
 }
 
 // ── 클라우드 ─────────────────────────────────────────────────────────────────
 async function handleCloudSave() { await saveProgressCloud(PUZZLE_ID, board); }
 async function handleCloudLoad() {
-  const state = await loadProgressCloud(PUZZLE_ID);
-  if (!state) return;
-  if (Array.isArray(state) && state.length === 9) {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state) || state.length !== 9) return;
     for (let r = 0; r < 9; r++)
       for (let c = 0; c < 9; c++)
         if (!GIVEN.has(`${r},${c}`)) board[r][c] = state[r][c] || 0;
     renderBoard();
     saveProgress();
     checkComplete();
-  }
+  });
 }
-
-function toggleRules() { document.getElementById('rulesBox').classList.toggle('open'); }
 
 // ── 키보드 ───────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {

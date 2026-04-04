@@ -12,19 +12,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: #ffffff;
-    color: #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    padding: 32px 16px 48px;
-  }
-
   .back {
     align-self: flex-start;
     font-size: 0.82rem;
@@ -36,30 +23,6 @@
   }
 
   .back:hover { color: #555; }
-
-  h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 4px;
-    letter-spacing: -0.01em;
-  }
-
-  .subtitle {
-    font-size: 0.82rem;
-    font-weight: 400;
-    color: #888;
-    margin-bottom: 0;
-    text-align: center;
-    line-height: 1.5;
-  }
-
-  .container {
-    width: min(94vw, 450px);
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
 
   .board-wrap {
     border: 2.5px solid #222;
@@ -125,79 +88,8 @@
   .numpad button:hover { background: #e8e4da; }
   .numpad button:active { transform: scale(0.95); background: #ddd9cf; }
 
-  .bottom-buttons {
-    display: flex;
-    gap: 6px;
-    margin-top: 6px;
-  }
-
-  .bottom-buttons button {
-    flex: 1;
-    height: 40px;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    border: 1.5px solid #d0ccc4;
-    border-radius: 3px;
-    background: #faf8f4;
-    color: #777;
-    cursor: pointer;
-    transition: background 0.12s;
-  }
-
-  .bottom-buttons button:hover { background: #eeebe4; color: #555; }
-  .bottom-buttons button:active { transform: scale(0.97); }
-
-  .bottom-buttons button.danger {
-    border-color: #e0bfbf;
-    background: #fdf5f5;
-    color: #b05050;
-  }
-
-  .bottom-buttons button.danger:hover {
-    background: #f5e0e0;
-    color: #8c3333;
-  }
-
-  .message {
-    margin-top: 16px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    min-height: 1.5em;
-    color: #2e7d32;
-    text-align: center;
-  }
-
-  .rules-toggle {
-    margin-top: 14px;
-    font-size: 0.78rem;
-    color: #999;
-    cursor: pointer;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 1px;
-    align-self: center;
-  }
-
-  .rules-toggle:hover { color: #666; border-color: #999; }
-
-  .rules-box {
-    display: none;
-    margin-top: 10px;
-    padding: 14px 18px;
-    background: #faf8f4;
-    border: 1px solid #e0ddd6;
-    border-radius: 3px;
-    font-size: 0.8rem;
-    font-weight: 400;
-    line-height: 1.7;
-    color: #555;
-  }
-
-  .rules-box.open { display: block; }
-  .rules-box strong { color: #333; font-size: 0.82rem; font-weight: 700; }
-
   @media (max-width: 540px) {
-    body { padding: 20px 8px 40px; }
+    body { padding: 0 8px 40px; }
     h1 { font-size: 1.25rem; }
     .numpad { gap: 5px; }
     .numpad button { height: min(9.5vw, 44px); font-size: min(4.4vw, 18px); }
@@ -210,10 +102,10 @@
     .bottom-buttons button { height: 34px; font-size: 11px; }
   }
 </style>
-<link rel="stylesheet" href="/puzzle/css/common.css?v=5">
-<script src="/puzzle/js/common.js?v=5"></script>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=9">
+<script src="/puzzle/js/common.js?v=9"></script>
 </head>
-<body>
+<body class="puzzle-page pad-48">
 
 <header class="site-header">
   <a class="header-back" href="/puzzle/">&lt; puzzles</a>
@@ -222,7 +114,7 @@
 <h1>테스트 스도쿠</h1>
 <p class="subtitle">기능 테스트용 (9칸 비어있음)</p>
 
-<div class="container">
+<div class="container puzzle-width-md align-stretch">
   <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
   <div class="rules-box" id="rulesBox">
     <strong>스도쿠 규칙</strong><br>
@@ -272,16 +164,14 @@ const PUZZLE_ID = 'puzzle_test';
 const SAVE_KEY = 'puzzle_test';
 
 function saveProgress() {
-  localStorage.setItem(SAVE_KEY, JSON.stringify(board));
+  saveLocalState(SAVE_KEY, board);
 }
 
 function loadProgress() {
-  const saved = localStorage.getItem(SAVE_KEY);
-  if (!saved) return initial.map(r => [...r]);
-  try {
-    const parsed = JSON.parse(saved);
-    if (parsed.length === 9 && parsed[0].length === 9) return parsed;
-  } catch (e) {}
+  const saved = loadLocalState(SAVE_KEY);
+  if (Array.isArray(saved) && saved.length === 9 && Array.isArray(saved[0]) && saved[0].length === 9) {
+    return saved;
+  }
   return initial.map(r => [...r]);
 }
 
@@ -405,23 +295,20 @@ function checkComplete() {
 }
 
 function resetBoard() {
-  if (!confirm('정말 초기화하시겠습니까?')) return;
-  board = initial.map(r => [...r]);
-  selected = null;
-  document.getElementById('message').textContent = '';
-  document.querySelectorAll('.cell').forEach(el => {
-    const r = parseInt(el.dataset.r), c = parseInt(el.dataset.c);
-    el.classList.remove('selected', 'error');
-    el.textContent = initial[r][c] || '';
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    board = initial.map(r => [...r]);
+    selected = null;
+    document.getElementById('message').textContent = '';
+    document.querySelectorAll('.cell').forEach(el => {
+      const r = parseInt(el.dataset.r), c = parseInt(el.dataset.c);
+      el.classList.remove('selected', 'error');
+      el.textContent = initial[r][c] || '';
+    });
+    saveProgress();
+    validate();
   });
-  saveProgress();
-  validate();
-  resetCompletion(PUZZLE_ID);
 }
 
-function toggleRules() {
-  document.getElementById('rulesBox').classList.toggle('open');
-}
 
 document.addEventListener('keydown', e => {
   if (!selected) return;
@@ -440,14 +327,13 @@ async function handleCloudSave() {
   await saveProgressCloud(PUZZLE_ID, board);
 }
 async function handleCloudLoad() {
-  const state = await loadProgressCloud(PUZZLE_ID);
-  if (!state) return;
-  if (Array.isArray(state) && state.length === 9) {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state) || state.length !== 9) return;
     board = state;
     renderBoard();
     saveProgress();
     checkComplete();
-  }
+  });
 }
 
 init();

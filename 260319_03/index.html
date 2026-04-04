@@ -12,26 +12,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: 'Noto Sans KR', sans-serif;
-  background: #fff;
-  color: #333;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-  padding: 0 16px 60px;
-  user-select: none;
-  -webkit-user-select: none;
-}
-h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; letter-spacing: -0.01em; margin-top: 20px; }
-.subtitle { font-size: 0.82rem; color: #888; margin-bottom: 0; text-align: center; }
 .container {
-  width: min(94vw, 450px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  --controls-width: calc(6 * min(46px, 11vw));
 }
 .sky-board {
   --cell: min(46px, 11vw);
@@ -69,12 +51,12 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
 .sky-cell:hover { background: #f0efe8; }
 .sky-cell.selected { background: #e8e8d8; }
 .sky-cell.conflict { background: #f5d0d0; color: #c0392b; }
-.numpad {
+.container .numpad {
   display: flex;
   gap: 6px;
   margin-top: 8px;
   margin-bottom: 8px;
-  width: calc(6 * min(46px, 11vw));
+  width: var(--controls-width);
 }
 .numpad button {
   flex: 1;
@@ -90,10 +72,10 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
   transition: background 0.12s;
 }
 .numpad button:hover { background: #ebe8e1; }
-.bottom-buttons {
+.container .bottom-buttons {
   display: flex;
   gap: 6px;
-  width: calc(6 * min(46px, 11vw));
+  width: var(--controls-width);
   margin-bottom: 8px;
 }
 .bottom-buttons button {
@@ -120,37 +102,20 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
   min-height: 1.4em;
   text-align: center;
 }
-.rules-toggle { font-size: 0.82rem; color: #999; cursor: pointer; margin-bottom: 8px; transition: color 0.12s; }
-.rules-toggle:hover { color: #555; }
-.rules-box {
-  display: none;
-  background: #faf8f4;
-  border: 1px solid #e0ddd6;
-  border-radius: 4px;
-  padding: 14px 18px;
-  font-size: 0.82rem;
-  color: #555;
-  line-height: 1.8;
-  width: 100%;
-  margin-bottom: 16px;
-}
-.rules-box.open { display: block; }
 @media (max-width: 540px) {
-  body { padding: 0 8px 48px; }
-  h1 { font-size: 1.2rem; }
 }
 </style>
-<link rel="stylesheet" href="/puzzle/css/common.css?v=5">
-<script src="/puzzle/js/common.js?v=5"></script>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=9">
+<script src="/puzzle/js/common.js?v=9"></script>
 </head>
-<body>
+<body class="puzzle-page">
 <header class="site-header">
   <a class="header-back" href="/puzzle/">&lt; puzzles</a>
   <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
 </header>
 <h1>260319 스카이스크레이퍼 #3</h1>
 <p class="subtitle">6×6 · 각 방향에서 보이는 건물 수를 힌트로 숫자를 채우세요</p>
-<div class="container">
+<div class="container puzzle-width-md align-center">
   <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
   <div class="rules-box" id="rulesBox">
     <p>• 6×6 격자의 각 가로/세로줄에 1~6의 숫자를 하나씩 채워넣으세요.</p>
@@ -363,38 +328,33 @@ function checkComplete() {
   recordCompletion(PUZZLE_ID);
 }
 
-function saveProgress() { localStorage.setItem(SAVE_KEY, JSON.stringify(board)); }
+function saveProgress() { saveLocalState(SAVE_KEY, board); }
 function loadProgress() {
-  const s = localStorage.getItem(SAVE_KEY);
-  if (!s) return;
-  try {
-    const saved = JSON.parse(s);
-    if (Array.isArray(saved) && saved.length === N) board = saved;
-  } catch(e) {}
+  const saved = loadLocalState(SAVE_KEY);
+  if (!saved) return;
+  if (Array.isArray(saved) && saved.length === N) board = saved;
 }
 
 async function handleCloudSave() { await saveProgressCloud(PUZZLE_ID, board); }
 async function handleCloudLoad() {
-  const state = await loadProgressCloud(PUZZLE_ID);
-  if (!state || !Array.isArray(state) || state.length !== N) return;
-  board = state;
-  renderBoard();
-  saveProgress();
-  checkComplete();
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state) || state.length !== N) return;
+    board = state;
+    renderBoard();
+    saveProgress();
+    checkComplete();
+  });
 }
 
 function resetBoard() {
-  if (!confirm('정말 초기화하시겠습니까?')) return;
-  board = Array.from({length: N}, () => Array(N).fill(0));
-  sel = null;
-  document.getElementById('message').textContent = '';
-  renderBoard();
-  saveProgress();
-  resetCompletion(PUZZLE_ID);
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    board = Array.from({length: N}, () => Array(N).fill(0));
+    sel = null;
+    document.getElementById('message').textContent = '';
+    renderBoard();
+    saveProgress();
+  });
 }
-
-function toggleRules() { document.getElementById('rulesBox').classList.toggle('open'); }
-
 document.addEventListener('keydown', e => {
   if (e.key >= '1' && e.key <= String(N)) { input(parseInt(e.key)); return; }
   if (e.key === 'Backspace' || e.key === 'Delete') { input(0); return; }

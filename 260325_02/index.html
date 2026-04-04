@@ -12,37 +12,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: #ffffff;
-    color: #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    padding: 32px 16px 48px;
-  }
-
-  h1 {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 4px;
-    letter-spacing: -0.01em;
-  }
-
-  .subtitle {
-    font-size: 0.82rem;
-    font-weight: 400;
-    color: #888;
-    margin-bottom: 0;
-    text-align: center;
-    line-height: 1.5;
-  }
-
   .container {
     width: min(94vw, 420px);
     display: flex;
@@ -183,9 +152,9 @@
   .rules-box.open { display: block; }
   .rules-box strong { color: #333; font-size: 0.82rem; font-weight: 700; }
 </style>
-<link rel="stylesheet" href="/puzzle/css/common.css?v=5">
+<link rel="stylesheet" href="/puzzle/css/common.css?v=9">
 </head>
-<body>
+<body class="puzzle-page pad-48">
 <header class="site-header">
   <a class="header-back" href="/puzzle/">&lt; puzzles</a>
   <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
@@ -195,7 +164,7 @@
 <p class="subtitle">모든 칸에 1~36을 채우세요<br>연속된 수는 반드시 인접(대각선 포함)해야 합니다</p>
 
 <div class="container">
-  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
   <div class="rules-box" id="rulesBox">
     <strong>Math Path 규칙</strong><br>
     1. 1부터 n(칸의 수)까지 모든 수를 정확히 한 번씩 채웁니다.<br>
@@ -228,7 +197,7 @@
   </div>
 </div>
 
-<script src="/puzzle/js/common.js?v=5"></script>
+<script src="/puzzle/js/common.js?v=9"></script>
 <script>
 const PUZZLE_ID = '260325_02';
 const ROWS = 6, COLS = 6;
@@ -469,56 +438,52 @@ function buildNumpad() {
 
 // ── Save / Load ───────────────────────────────────────────────────────────────
 function saveProgress() {
-  localStorage.setItem(`puzzle_${PUZZLE_ID}`, JSON.stringify(values));
+  saveLocalState(`puzzle_${PUZZLE_ID}`, values);
 }
 
 function loadProgress() {
-  const raw = localStorage.getItem(`puzzle_${PUZZLE_ID}`);
-  if (!raw) return;
-  try {
-    const saved = JSON.parse(raw);
-    for (let r = 0; r < ROWS; r++)
-      for (let c = 0; c < COLS; c++) {
-        values[r][c] = saved[r]?.[c] || 0;
-        updateCellDisplay(r, c);
-      }
-    validate();
-  } catch(e) {}
+  const saved = loadLocalState(`puzzle_${PUZZLE_ID}`);
+  if (!saved) return;
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      values[r][c] = saved[r]?.[c] || 0;
+      updateCellDisplay(r, c);
+    }
+  validate();
 }
 
 function resetBoard() {
-  if (!confirm('정말 초기화하시겠습니까?')) return;
-  if (selectedCell) {
-    const prev = document.getElementById(`cell-${selectedCell.r}-${selectedCell.c}`);
-    if (prev) prev.classList.remove('selected');
-    selectedCell = null;
-  }
-  for (let r = 0; r < ROWS; r++)
-    for (let c = 0; c < COLS; c++) {
-      values[r][c] = 0;
-      updateCellDisplay(r, c);
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    if (selectedCell) {
+      const prev = document.getElementById(`cell-${selectedCell.r}-${selectedCell.c}`);
+      if (prev) prev.classList.remove('selected');
+      selectedCell = null;
     }
-  document.querySelectorAll('.cell').forEach(c => c.classList.remove('cage-ok','cage-err'));
-  document.querySelectorAll('.cell-num').forEach(n => n.classList.remove('path-err'));
-  resetCompletion(PUZZLE_ID);
-  saveProgress();
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++) {
+        values[r][c] = 0;
+        updateCellDisplay(r, c);
+      }
+    document.querySelectorAll('.cell').forEach(c => c.classList.remove('cage-ok','cage-err'));
+    document.querySelectorAll('.cell-num').forEach(n => n.classList.remove('path-err'));
+    saveProgress();
+  });
 }
 
 // ── Cloud ─────────────────────────────────────────────────────────────────────
 function handleCloudSave() {
-  saveProgressCloud(PUZZLE_ID, getGrid()).then(() => showToast('저장했습니다.'));
+  saveProgressCloud(PUZZLE_ID, getGrid());
 }
 async function handleCloudLoad() {
-  const state = await loadProgressCloud(PUZZLE_ID);
-  if (!state) { showToast('불러올 데이터가 없습니다.'); return; }
-  for (let r = 0; r < ROWS; r++)
-    for (let c = 0; c < COLS; c++) {
-      values[r][c] = state[r]?.[c] || 0;
-      updateCellDisplay(r, c);
-    }
-  validate();
-  saveProgress();
-  showToast('불러왔습니다.');
+  await loadCloudState(PUZZLE_ID, state => {
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++) {
+        values[r][c] = state[r]?.[c] || 0;
+        updateCellDisplay(r, c);
+      }
+    validate();
+    saveProgress();
+  });
 }
 
 // ── Keyboard input ────────────────────────────────────────────────────────────

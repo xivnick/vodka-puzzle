@@ -12,26 +12,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: 'Noto Sans KR', sans-serif;
-  background: #fff;
-  color: #333;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-  padding: 0 16px 60px;
-  user-select: none;
-  -webkit-user-select: none;
-}
-h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; letter-spacing: -0.01em; margin-top: 20px; }
-.subtitle { font-size: 0.82rem; color: #888; margin-bottom: 0; text-align: center; }
 .container {
-  width: min(94vw, 450px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  --controls-width: calc(min(94vw, 450px) - 52px);
 }
 .sky-board {
   --clue: 26px;
@@ -69,11 +51,11 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
 .sky-cell.preset.selected { background: #dde0d4; }
 .sky-cell.conflict { background: #f5d0d0; color: #c0392b; }
 .sky-cell.preset.conflict { background: #f0d0d0; color: #c0392b; }
-.numpad {
+.container .numpad {
   display: flex;
   gap: 3px;
   margin-bottom: 6px;
-  width: calc(min(94vw, 450px) - 52px);
+  width: var(--controls-width);
 }
 .numpad button {
   flex: 1;
@@ -90,73 +72,21 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
 }
 .numpad button:hover { background: #e8e4da; }
 .numpad button:active { transform: scale(0.95); background: #ddd9cf; }
-.bottom-buttons {
-  display: flex;
-  gap: 6px;
-  width: 100%;
-  margin-top: 6px;
-  margin-bottom: 6px;
+.container .bottom-buttons {
+  width: var(--controls-width);
 }
-.bottom-buttons button {
-  flex: 1;
-  height: 40px;
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  background: #faf8f4;
-  border: 1.5px solid #d0ccc4;
-  border-radius: 3px;
-  color: #777;
-  cursor: pointer;
-  transition: background 0.12s;
-}
-.bottom-buttons button:hover { background: #f0ede7; }
-.bottom-buttons button.danger { border-color: #e0bfbf; background: #fdf5f5; color: #b05050; }
-.bottom-buttons button.danger:hover { background: #f8e8e8; }
-.message {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #4a6fa5;
-  margin-bottom: 8px;
-  min-height: 1.4em;
-  text-align: center;
-}
-.rules-toggle {
-  font-size: 0.78rem;
-  color: #999;
-  cursor: pointer;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 1px;
-  align-self: center;
-  margin-bottom: 8px;
-}
-.rules-toggle:hover { color: #555; }
-.rules-box {
-  display: none;
-  background: #faf8f4;
-  border: 1px solid #e0ddd6;
-  border-radius: 3px;
-  padding: 14px 18px;
-  font-size: 0.82rem;
-  color: #555;
-  line-height: 1.8;
-  width: 100%;
-  margin-top: 8px;
-  margin-bottom: 8px;
-}
-.rules-box.open { display: block; }
 </style>
-<link rel="stylesheet" href="/puzzle/css/common.css?v=5">
+<link rel="stylesheet" href="/puzzle/css/common.css?v=9">
 </head>
-<body>
+<body class="puzzle-page">
 <header class="site-header">
   <a class="header-back" href="/puzzle/">&lt; puzzles</a>
   <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
 </header>
 <h1>260330 스카이스크레이퍼 스도쿠</h1>
 <p class="subtitle">스도쿠 + 스카이스크레이퍼 규칙을 동시에 만족하도록 채우세요</p>
-<div class="container">
-  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
+<div class="container puzzle-width-md align-center">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
   <div class="rules-box" id="rulesBox">
     <strong>스카이스크레이퍼 스도쿠 규칙</strong><br>
     • 9×9 격자의 각 가로줄, 세로줄, 3×3 박스에 1~9를 하나씩 채우세요.<br>
@@ -179,7 +109,7 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
     <div id="leaderboard"></div>
   </div>
 </div>
-<script src="/puzzle/js/common.js?v=5"></script>
+<script src="/puzzle/js/common.js?v=9"></script>
 <script>
 const PUZZLE_ID = '260330_02';
 const SAVE_KEY  = 'puzzle_260330_02';
@@ -397,32 +327,36 @@ function checkComplete() {
   recordCompletion(PUZZLE_ID);
 }
 
-function saveProgress() { localStorage.setItem(SAVE_KEY, JSON.stringify(board)); }
+function saveProgress() { saveLocalState(SAVE_KEY, board); }
 function loadProgress() {
-  const s = localStorage.getItem(SAVE_KEY);
-  if (!s) return;
-  try {
-    const saved = JSON.parse(s);
-    if (Array.isArray(saved) && saved.length === N) { board = saved; applyPresets(); }
-  } catch(e) {}
+  const saved = loadLocalState(SAVE_KEY);
+  if (Array.isArray(saved) && saved.length === N) {
+    board = saved;
+    applyPresets();
+  }
 }
 
 async function handleCloudSave() { await saveProgressCloud(PUZZLE_ID, board); }
 async function handleCloudLoad() {
-  const state = await loadProgressCloud(PUZZLE_ID);
-  if (!state || !Array.isArray(state) || state.length !== N) return;
-  board = state;
-  applyPresets();
-  renderBoard(); saveProgress(); checkComplete();
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state) || state.length !== N) return;
+    board = state;
+    applyPresets();
+    renderBoard();
+    saveProgress();
+    checkComplete();
+  });
 }
 
 function resetBoard() {
-  if (!confirm('정말 초기화하시겠습니까?')) return;
-  board = Array.from({length: N}, () => Array(N).fill(0));
-  applyPresets();
-  sel = null;
-  document.getElementById('message').textContent = '';
-  renderBoard(); saveProgress(); resetCompletion(PUZZLE_ID);
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    board = Array.from({length: N}, () => Array(N).fill(0));
+    applyPresets();
+    sel = null;
+    document.getElementById('message').textContent = '';
+    renderBoard();
+    saveProgress();
+  });
 }
 
 document.addEventListener('keydown', e => {

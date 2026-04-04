@@ -12,21 +12,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: #ffffff;
-    color: #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    padding: 40px 16px 60px;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-
   .back {
     align-self: flex-start;
     margin-left: max(3vw, calc(50% - 225px));
@@ -37,16 +22,6 @@
     transition: color 0.12s;
   }
   .back:hover { color: #555; }
-
-  h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; letter-spacing: -0.01em; }
-  .subtitle { font-size: 0.82rem; color: #888; margin-bottom: 0; text-align: center; }
-
-  .container {
-    width: min(94vw, 450px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
 
   .board-wrap {
     width: 100%;
@@ -136,17 +111,17 @@
   .rules-box p { margin-bottom: 2px; }
 
   @media (max-width: 540px) {
-    body { padding: 28px 8px 48px; }
+    body { padding: 0 8px 48px; }
     h1 { font-size: 1.2rem; }
     .back { margin-left: 3vw; }
     .bottom-buttons button { height: min(9.5vw, 44px); font-size: 0.82rem; }
   }
 
 </style>
-<link rel="stylesheet" href="/puzzle/css/common.css?v=5">
-<script src="/puzzle/js/common.js?v=5"></script>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=9">
+<script src="/puzzle/js/common.js?v=9"></script>
 </head>
-<body>
+<body class="puzzle-page">
 
 <header class="site-header">
   <a class="header-back" href="/puzzle/">&lt; puzzles</a>
@@ -155,7 +130,7 @@
 <h1>260317 노리노리 - 하</h1>
 <p class="subtitle">변을 눌러 도미노를 배치하세요</p>
 
-<div class="container">
+<div class="container puzzle-width-md align-center">
   <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
   <div class="rules-box" id="rulesBox">
     <p>• 인접한 두 칸 사이의 변을 눌러 도미노를 놓습니다.</p>
@@ -386,27 +361,25 @@ function resetBoard() {
   onStateChange();
   resetCompletion(PUZZLE_ID);
 }
-
-function toggleRules() { document.getElementById('rulesBox').classList.toggle('open'); }
-
-function saveProgress() { localStorage.setItem(SAVE_KEY, JSON.stringify([...dominoes])); }
+function saveProgress() { saveLocalState(SAVE_KEY, [...dominoes]); }
 
 function loadProgress() {
-  const s = localStorage.getItem(SAVE_KEY);
-  if (s) { try { const arr = JSON.parse(s); dominoes = new Set(arr.filter(dk => typeof dk === 'string' && dk.includes('-'))); } catch(e) { dominoes = new Set(); } }
+  const arr = loadLocalState(SAVE_KEY);
+  dominoes = Array.isArray(arr)
+    ? new Set(arr.filter(dk => typeof dk === 'string' && dk.includes('-')))
+    : new Set();
 }
 
 async function handleCloudSave() {
   await saveProgressCloud(PUZZLE_ID, [...dominoes]);
 }
 async function handleCloudLoad() {
-  const state = await loadProgressCloud(PUZZLE_ID);
-  if (!state) return;
-  if (Array.isArray(state)) {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state)) return;
     dominoes = new Set(state.filter(dk => typeof dk === 'string' && dk.includes('-')));
     onStateChange();
     saveProgress();
-  }
+  });
 }
 
 createBoard(); loadProgress(); onStateChange();
