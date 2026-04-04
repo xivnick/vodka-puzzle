@@ -33,6 +33,7 @@
 ## container 내 요소 순서
 - **container 안** 순서: `rules-toggle` → `rules-box` → board → (퍼즐별 요소: numpad 등) → `bottom-buttons` → `cloud-btns` → `message`(있는 경우) → `lb-section`
 - 규칙 박스는 board **위**에 배치한다.
+- `.subtitle`은 `margin-bottom: 0` — 제목 아래 여백은 board의 `margin-top: 20px`으로 처리한다.
 
 ## 퍼즐 목록 관리
 - `puzzle/index.html`이 퍼즐 목록 페이지 역할을 한다.
@@ -50,6 +51,8 @@ puzzle/
   js/common.js        ← 공통 스크립트 (Supabase, 닉네임, 완료 기록, 리더보드, 클라우드 저장)
   nickname/           ← 닉네임 설정 페이지
   tools/              ← 제작 도구 모음
+  puzzle_test/        ← 테스트 스도쿠 (기능 테스트용, 목록에 표시됨)
+    index.html
   {YYMMDD}_{번호}/    ← 개별 퍼즐 폴더
     index.html        ← 퍼즐 페이지
 ```

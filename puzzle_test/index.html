@@ -49,7 +49,7 @@
     font-size: 0.82rem;
     font-weight: 400;
     color: #888;
-    margin-bottom: 20px;
+    margin-bottom: 0;
     text-align: center;
     line-height: 1.5;
   }
@@ -63,6 +63,7 @@
 
   .board-wrap {
     border: 2.5px solid #222;
+    margin-top: 20px;
   }
 
   .board {
@@ -222,6 +223,12 @@
 <p class="subtitle">기능 테스트용 (9칸 비어있음)</p>
 
 <div class="container">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>스도쿠 규칙</strong><br>
+    같은 행, 같은 열, 같은 3×3 박스 안에 1~9가 한 번씩 들어갑니다.
+  </div>
+
   <div class="board-wrap">
     <div class="board" id="board"></div>
   </div>
@@ -238,12 +245,6 @@
   </div>
 
   <div class="message" id="message"></div>
-
-  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
-  <div class="rules-box" id="rulesBox">
-    <strong>스도쿠 규칙</strong><br>
-    같은 행, 같은 열, 같은 3×3 박스 안에 1~9가 한 번씩 들어갑니다.
-  </div>
 
   <div class="lb-section">
     <div class="lb-title">푼 사람</div>
