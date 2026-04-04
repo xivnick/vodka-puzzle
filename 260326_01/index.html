@@ -163,7 +163,7 @@ h1 {
 
 /* ── Rules ── */
 .rules-toggle {
-  margin-top: 14px;
+  margin-bottom: 8px;
   font-size: 0.78rem;
   color: #999;
   cursor: pointer;
@@ -199,6 +199,14 @@ h1 {
 <p class="subtitle">예시 솔루션을 보고 퍼즐을 풀어보세요.</p>
 
 <div class="container">
+  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">예시 솔루션 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <div style="display:flex;gap:8px;">
+      <img src="/puzzle/img/budeungho_ex1.png" style="flex:1;min-width:0;border-radius:2px;">
+      <img src="/puzzle/img/budeungho_ex2.png" style="flex:1;min-width:0;border-radius:2px;">
+    </div>
+  </div>
+
   <div class="board-wrap">
     <div class="board" id="board"></div>
   </div>
@@ -213,14 +221,6 @@ h1 {
   <div class="cloud-btns" id="cloudBtns" style="display:none">
     <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
     <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
-  </div>
-
-  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">예시 솔루션 보기</span>
-  <div class="rules-box" id="rulesBox">
-    <div style="display:flex;gap:8px;">
-      <img src="/puzzle/img/budeungho_ex1.png" style="flex:1;min-width:0;border-radius:2px;">
-      <img src="/puzzle/img/budeungho_ex2.png" style="flex:1;min-width:0;border-radius:2px;">
-    </div>
   </div>
 
   <div class="lb-section">

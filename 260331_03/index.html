@@ -101,7 +101,7 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
   border-bottom: 1px solid #ccc;
   padding-bottom: 1px;
   align-self: center;
-  margin-top: 14px;
+  margin-bottom: 8px;
 }
 .rules-toggle:hover { color: #555; }
 .rules-box {
@@ -129,15 +129,6 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
 <h1>260331 누리카베 (회전대칭)</h1>
 <p class="subtitle">모든 흰 영역이 180° 회전대칭이 되도록 칸을 칠하세요</p>
 <div class="container">
-  <div class="board" id="board"></div>
-  <div class="bottom-buttons">
-    <button class="danger" onclick="resetBoard()">초기화</button>
-  </div>
-  <div class="cloud-btns" id="cloudBtns" style="display:none">
-    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
-    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
-  </div>
-  <div class="message" id="message"></div>
   <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
   <div class="rules-box" id="rulesBox">
     <strong>누리카베 (회전대칭) 규칙</strong><br>
@@ -147,6 +138,15 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
     • 각 흰 영역은 정확히 하나의 숫자를 포함하며, 영역의 넓이(칸 수)는 그 숫자와 같습니다.<br>
     • 각 흰 영역의 모양은 180° 회전대칭입니다 (가운데를 기준으로 180° 돌렸을 때 같은 모양).
   </div>
+  <div class="board" id="board"></div>
+  <div class="bottom-buttons">
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+  <div class="message" id="message"></div>
   <div class="lb-section">
     <div class="lb-title">푼 사람</div>
     <div id="leaderboard"></div>

@@ -58,7 +58,7 @@ h1 { font-size: 1.4rem; font-weight: 700; margin-top: 10px; }
 .bottom-buttons button.danger:hover { background: #f8ebeb; }
 
 /* Rules toggle */
-.rules-toggle { font-size: 0.78rem; color: #999; border-bottom: 1px solid #ccc; padding-bottom: 1px; align-self: center; margin-top: 14px; cursor: pointer; }
+.rules-toggle { font-size: 0.78rem; color: #999; border-bottom: 1px solid #ccc; padding-bottom: 1px; align-self: center; margin-bottom: 8px; cursor: pointer; }
 .rules-toggle:hover { color: #666; }
 .rules-box { display: none; background: #faf8f4; border: 1px solid #e0ddd6; border-radius: 3px; padding: 14px 18px; margin-top: 8px; font-size: 0.82rem; color: #555; line-height: 1.6; width: 100%; }
 .rules-box.open { display: block; }
@@ -78,6 +78,16 @@ h1 { font-size: 1.4rem; font-weight: 700; margin-top: 10px; }
 <div class="container">
   <h1>펜토미노 블리츠 1</h1>
   <p class="subtitle">후 플레이어가 이기는 필승수를 찾아보세요.</p>
+
+  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>펜토미노 블리츠 규칙</strong><br>
+    1. 선수와 후수가 번갈아 펜토미노 조각을 하나씩 판에 배치합니다.<br>
+    2. 조각은 공용이며 종류별로 1개씩 존재합니다.<br>
+    3. 더 이상 조각을 놓지 못하게 된 플레이어가 패배합니다.<br>
+    <br>
+    <em>빈 칸 5개를 클릭해 조각 모양을 만들면 일치하는 조각이 자동으로 인식됩니다.</em>
+  </div>
 
   <div class="board-wrap">
     <div class="col-labels">
@@ -105,16 +115,6 @@ h1 { font-size: 1.4rem; font-weight: 700; margin-top: 10px; }
   <div class="cloud-btns" id="cloudBtns" style="display:none">
     <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
     <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
-  </div>
-
-  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
-  <div class="rules-box" id="rulesBox">
-    <strong>펜토미노 블리츠 규칙</strong><br>
-    1. 선수와 후수가 번갈아 펜토미노 조각을 하나씩 판에 배치합니다.<br>
-    2. 조각은 공용이며 종류별로 1개씩 존재합니다.<br>
-    3. 더 이상 조각을 놓지 못하게 된 플레이어가 패배합니다.<br>
-    <br>
-    <em>빈 칸 5개를 클릭해 조각 모양을 만들면 일치하는 조각이 자동으로 인식됩니다.</em>
   </div>
 
   <div class="lb-section">

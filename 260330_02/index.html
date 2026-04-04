@@ -127,7 +127,7 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
   border-bottom: 1px solid #ccc;
   padding-bottom: 1px;
   align-self: center;
-  margin-top: 14px;
+  margin-bottom: 8px;
 }
 .rules-toggle:hover { color: #555; }
 .rules-box {
@@ -155,6 +155,13 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
 <h1>260330 스카이스크레이퍼 스도쿠</h1>
 <p class="subtitle">스도쿠 + 스카이스크레이퍼 규칙을 동시에 만족하도록 채우세요</p>
 <div class="container">
+  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>스카이스크레이퍼 스도쿠 규칙</strong><br>
+    • 9×9 격자의 각 가로줄, 세로줄, 3×3 박스에 1~9를 하나씩 채우세요.<br>
+    • 격자 바깥의 숫자는 그 방향에서 바라봤을 때 보이는 건물의 수입니다.<br>
+    • 숫자가 클수록 건물이 높으며, 높은 건물은 낮은 건물을 가립니다.
+  </div>
   <div class="sky-board" id="skyBoard"></div>
   <div class="numpad" id="numpad"></div>
   <div class="bottom-buttons">
@@ -166,13 +173,6 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #222; margin-bottom: 4px; lette
     <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
   </div>
   <div class="message" id="message"></div>
-  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
-  <div class="rules-box" id="rulesBox">
-    <strong>스카이스크레이퍼 스도쿠 규칙</strong><br>
-    • 9×9 격자의 각 가로줄, 세로줄, 3×3 박스에 1~9를 하나씩 채우세요.<br>
-    • 격자 바깥의 숫자는 그 방향에서 바라봤을 때 보이는 건물의 수입니다.<br>
-    • 숫자가 클수록 건물이 높으며, 높은 건물은 낮은 건물을 가립니다.
-  </div>
   <div class="lb-section">
     <div class="lb-title">푼 사람</div>
     <div id="leaderboard"></div>

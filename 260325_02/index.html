@@ -158,7 +158,7 @@
   .bottom-buttons button.danger:hover { background: #f5e0e0; color: #8c3333; }
 
   .rules-toggle {
-    margin-top: 14px;
+    margin-bottom: 8px;
     font-size: 0.78rem;
     color: #999;
     cursor: pointer;
@@ -194,6 +194,17 @@
 <p class="subtitle">모든 칸에 1~36을 채우세요<br>연속된 수는 반드시 인접(대각선 포함)해야 합니다</p>
 
 <div class="container">
+  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>Math Path 규칙</strong><br>
+    1. 1부터 n(칸의 수)까지 모든 수를 정확히 한 번씩 채웁니다.<br>
+    2. 차이가 1인 두 수는 서로 변 또는 꼭짓점으로 인접해야 합니다.<br>
+    3. 각 영역의 숫자를 내림차순으로 표시된 연산자로 계산하면 영역의 클루 값이 됩니다.<br>
+    연산자가 없으면 +, -, ×, ÷ 중 하나로 계산 가능하면 됩니다.<br>
+    <br>
+    <em>파란 배경: 영역 정답 / 빨간 글자: 인접 규칙 위반</em>
+  </div>
+
   <div class="board" id="board"></div>
 
   <div class="numpad" id="numpad">
@@ -208,17 +219,6 @@
   <div class="cloud-btns" id="cloudBtns" style="display:none">
     <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
     <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
-  </div>
-
-  <span class="rules-toggle" onclick="document.getElementById('rulesBox').classList.toggle('open')">규칙 보기</span>
-  <div class="rules-box" id="rulesBox">
-    <strong>Math Path 규칙</strong><br>
-    1. 1부터 n(칸의 수)까지 모든 수를 정확히 한 번씩 채웁니다.<br>
-    2. 차이가 1인 두 수는 서로 변 또는 꼭짓점으로 인접해야 합니다.<br>
-    3. 각 영역의 숫자를 내림차순으로 표시된 연산자로 계산하면 영역의 클루 값이 됩니다.<br>
-    연산자가 없으면 +, -, ×, ÷ 중 하나로 계산 가능하면 됩니다.<br>
-    <br>
-    <em>파란 배경: 영역 정답 / 빨간 글자: 인접 규칙 위반</em>
   </div>
 
   <div class="lb-section">
