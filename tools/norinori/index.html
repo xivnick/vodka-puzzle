@@ -11,9 +11,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/puzzle/css/common.css?v=15">
+<script src="/puzzle/js/common.js?v=15"></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
   body {
     font-family: 'Noto Sans KR', sans-serif;
     background: #ffffff;
@@ -26,17 +26,6 @@
     -webkit-user-select: none;
     user-select: none;
   }
-
-  .back {
-    align-self: flex-start;
-    margin-left: max(3vw, calc(50% - 240px));
-    margin-bottom: 18px;
-    color: #999;
-    text-decoration: none;
-    font-size: 0.85rem;
-    transition: color 0.12s;
-  }
-  .back:hover { color: #555; }
 
   h1 {
     font-size: 1.4rem;
@@ -261,7 +250,6 @@
   @media (max-width: 540px) {
     body { padding: 0 8px 48px; }
     h1 { font-size: 1.2rem; }
-    .back { margin-left: 3vw; }
     .bottom-buttons button { height: min(9.5vw, 44px); font-size: 0.82rem; }
     .mode-toggle button { height: 36px; font-size: 0.82rem; }
     .region-swatch { width: 28px; height: 28px; font-size: 0.62rem; }
@@ -271,7 +259,10 @@
 </head>
 <body>
 
-<a class="back" href="/puzzle/tools/">&lt; tools</a>
+<header class="site-header">
+  <a class="header-back" href="/puzzle/tools/">&lt; tools</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
 <h1>노리노리 보드 메이커</h1>
 <p class="subtitle">보드 모양과 영역을 지정하세요</p>
 
@@ -648,6 +639,7 @@ function loadProgress() {
 }
 
 // --- Start ---
+initHeader();
 init();
 </script>
 

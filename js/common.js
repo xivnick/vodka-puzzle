@@ -85,6 +85,160 @@ function initHeader() {
   if (!link) return;
   const saved = getNickname();
   link.textContent = saved || GUEST_NAME;
+  initRecentBanner();
+}
+
+let _recentCompletionCache = null;
+let _puzzleTitleMapPromise = null;
+let _recentBannerTimer = null;
+let _recentBannerInFlight = null;
+const PUZZLE_TITLE_OVERRIDES = {
+  tmp_01: '펜토미노 블리츠 1',
+};
+
+async function getLatestCompletion() {
+  if (_recentCompletionCache) return _recentCompletionCache;
+  try {
+    const rows = await sbSelect(
+      'completions',
+      'select=nickname,puzzle_id,completed_at&order=completed_at.desc&limit=1'
+    );
+    _recentCompletionCache = rows[0] || null;
+  } catch (e) {
+    _recentCompletionCache = null;
+  }
+  return _recentCompletionCache;
+}
+
+async function refreshLatestCompletion(force = false) {
+  if (_recentBannerInFlight) return _recentBannerInFlight;
+  _recentBannerInFlight = (async () => {
+    if (!force && _recentCompletionCache) return _recentCompletionCache;
+    try {
+      const rows = await sbSelect(
+        'completions',
+        'select=nickname,puzzle_id,completed_at&order=completed_at.desc&limit=1'
+      );
+      _recentCompletionCache = rows[0] || null;
+    } catch (e) {
+      if (force) _recentCompletionCache = null;
+    } finally {
+      _recentBannerInFlight = null;
+    }
+    return _recentCompletionCache;
+  })();
+  return _recentBannerInFlight;
+}
+
+async function getPuzzleTitleMap() {
+  if (_puzzleTitleMapPromise) return _puzzleTitleMapPromise;
+  _puzzleTitleMapPromise = (async () => {
+    const map = new Map(Object.entries(PUZZLE_TITLE_OVERRIDES));
+    try {
+      const res = await fetch('/puzzle/');
+      if (!res.ok) throw new Error(`index fetch failed: ${res.status}`);
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      doc.querySelectorAll('[data-puzzle-id]').forEach(el => {
+        const id = el.getAttribute('data-puzzle-id');
+        if (!id || map.has(id)) return;
+        const titleEl = el.querySelector('.title');
+        const title = titleEl ? titleEl.textContent.trim() : '';
+        if (title) map.set(id, title);
+      });
+    } catch (e) {
+      // index를 못 읽으면 override/current page title만 사용
+    }
+    const pageTitle = document.querySelector('h1')?.textContent?.trim();
+    if (typeof PUZZLE_ID !== 'undefined' && pageTitle && !map.has(PUZZLE_ID)) {
+      map.set(PUZZLE_ID, pageTitle);
+    }
+    return map;
+  })();
+  return _puzzleTitleMapPromise;
+}
+
+function buildRecentBannerText(row, puzzleTitle) {
+  const nick = escHtml(row.nickname);
+  const title = escHtml(puzzleTitle || row.puzzle_id);
+  return `<span class="recent-banner-strong">${nick}</span>님이 ` +
+    `<span class="recent-banner-strong">${title}</span>를 풀었습니다!`;
+}
+
+function applyRecentBannerMessage(banner, messageHtml) {
+  banner.classList.remove('is-animated');
+  banner.innerHTML = '';
+  const track = document.createElement('div');
+  track.className = 'recent-banner-track';
+  const first = document.createElement('span');
+  first.className = 'recent-banner-text';
+  first.innerHTML = messageHtml;
+  track.appendChild(first);
+  banner.appendChild(track);
+
+  requestAnimationFrame(() => {
+    const needsAnimation = track.scrollWidth > banner.clientWidth - 8;
+    if (!needsAnimation) return;
+    banner.classList.add('is-animated');
+    const second = first.cloneNode(true);
+    track.appendChild(second);
+  });
+}
+
+async function initRecentBanner() {
+  const header = document.querySelector('.site-header');
+  if (!header) return;
+  let banner = document.getElementById('recentBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'recentBanner';
+    banner.className = 'recent-banner';
+    header.insertAdjacentElement('afterend', banner);
+  }
+
+  const row = await getLatestCompletion();
+  if (!row) {
+    banner.style.display = 'none';
+    return;
+  }
+
+  banner.style.display = 'flex';
+  const titleMap = await getPuzzleTitleMap();
+  const puzzleTitle = titleMap.get(row.puzzle_id) || row.puzzle_id;
+  applyRecentBannerMessage(banner, buildRecentBannerText(row, puzzleTitle));
+}
+
+async function refreshRecentBanner(force = false) {
+  const header = document.querySelector('.site-header');
+  if (!header) return;
+  const row = await refreshLatestCompletion(force);
+  let banner = document.getElementById('recentBanner');
+  if (!banner) {
+    await initRecentBanner();
+    return;
+  }
+  if (!row) {
+    banner.style.display = 'none';
+    return;
+  }
+  banner.style.display = 'flex';
+  const titleMap = await getPuzzleTitleMap();
+  const puzzleTitle = titleMap.get(row.puzzle_id) || row.puzzle_id;
+  applyRecentBannerMessage(banner, buildRecentBannerText(row, puzzleTitle));
+}
+
+function startRecentBannerPolling() {
+  if (_recentBannerTimer || !document.querySelector('.site-header')) return;
+  _recentBannerTimer = setInterval(() => {
+    if (document.visibilityState !== 'visible') return;
+    refreshRecentBanner(true);
+  }, 60000);
+}
+
+function stopRecentBannerPolling() {
+  if (!_recentBannerTimer) return;
+  clearInterval(_recentBannerTimer);
+  _recentBannerTimer = null;
 }
 
 // ── Completion recording ─────────────────────────────────────────────────────
@@ -139,6 +293,12 @@ async function recordCompletion(puzzleId) {
   }
 
   showToast('🎉 완성했습니다!');
+  _recentCompletionCache = {
+    nickname,
+    puzzle_id: puzzleId,
+    completed_at: new Date().toISOString(),
+  };
+  refreshRecentBanner();
   renderLeaderboard(puzzleId, 'leaderboard');
 }
 
@@ -376,9 +536,25 @@ window.addEventListener('pageshow', e => {
   if (!e.persisted) return;
   initHeader();
   initCloudBtns();
+  refreshRecentBanner(true);
   // 퍼즐 페이지에 checkComplete가 있으면 호출 (게스트→닉네임 전환 후 완료 재기록)
   if (typeof checkComplete === 'function') checkComplete();
 });
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    refreshRecentBanner(true);
+    startRecentBannerPolling();
+    return;
+  }
+  stopRecentBannerPolling();
+});
+
+window.addEventListener('focus', () => {
+  if (document.visibilityState === 'visible') refreshRecentBanner(true);
+});
+
+startRecentBannerPolling();
 
 function escHtml(s) {
   return String(s)

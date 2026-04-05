@@ -11,9 +11,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/puzzle/css/common.css?v=15">
+<script src="/puzzle/js/common.js?v=15"></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
   body {
     font-family: 'Noto Sans KR', sans-serif;
     background: #ffffff;
@@ -24,17 +24,6 @@
     min-height: 100vh;
     padding: 0 16px 60px;
   }
-
-  .back {
-    align-self: flex-start;
-    margin-left: max(3vw, calc(50% - 240px));
-    margin-bottom: 18px;
-    color: #999;
-    text-decoration: none;
-    font-size: 0.85rem;
-    transition: color 0.12s;
-  }
-  .back:hover { color: #555; }
 
   h1 {
     font-size: 1.5rem;
@@ -95,13 +84,15 @@
     body { padding: 0 8px 48px; }
     h1 { font-size: 1.3rem; }
     .list a { padding: 12px 14px; }
-    .back { margin-left: 3vw; }
   }
 </style>
 </head>
 <body>
 
-<a class="back" href="/puzzle/">&lt; puzzles</a>
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
 <h1>도구</h1>
 <p class="desc">xivnick.me/puzzle/tools</p>
 
@@ -112,5 +103,8 @@
   </a>
 </div>
 
+<script>
+initHeader();
+</script>
 </body>
 </html>
