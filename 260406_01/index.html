@@ -370,6 +370,7 @@ function resetBoard() {
   confirmPuzzleReset(PUZZLE_ID, () => {
     board = initial.map(row => [...row]);
     selected = null;
+    saveProgress();
     init();
     document.getElementById('message').textContent = '';
   });
@@ -384,6 +385,7 @@ async function handleCloudLoad() {
     if (!Array.isArray(state) || state.length !== 9) return;
     board = state.map(row => Array.isArray(row) ? row.slice(0, 9) : Array(9).fill(0));
     selected = null;
+    saveProgress();
     init();
     checkComplete();
   });
