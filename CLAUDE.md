@@ -30,6 +30,14 @@
 - **규칙 박스** (`.rules-box`):
   - `background: #faf8f4; border: 1px solid #e0ddd6; border-radius: 3px; padding: 14px 18px`
 
+## 입력 UX
+- 스도쿠 계열 퍼즐은 마우스/터치뿐 아니라 **키보드 입력**도 지원한다.
+- 지원 키:
+  - `1`~`9`: 숫자 입력
+  - `0`, `Backspace`, `Delete`: 지우기
+  - `ArrowUp`, `ArrowDown`, `ArrowLeft`, `ArrowRight`: 선택 셀 이동
+- 새 스도쿠 페이지를 만들 때는 기존 `260316_01`, `260316_02`의 `keydown` 처리 패턴을 기본으로 사용한다.
+
 ## container 내 요소 순서
 - **container 안** 순서: `rules-toggle` → `rules-box` → board → (퍼즐별 요소: numpad 등) → `bottom-buttons` → `cloud-btns` → `message`(있는 경우) → `lb-section`
 - 규칙 박스는 board **위**에 배치한다.
@@ -163,3 +171,4 @@ PRESET_GRID.forEach((row, r) => row.forEach((v, c) => { if (v) PRESETS[`${r},${c
     renderLeaderboard(PUZZLE_ID, 'leaderboard');
     ```
 14. `puzzle/index.html`의 `.list` 안에 `data-puzzle-id` 속성과 함께 항목 추가 (최신 퍼즐이 위로)
+15. 스도쿠 계열 퍼즐이면 숫자키/방향키/지우기 키 입력 지원 추가
