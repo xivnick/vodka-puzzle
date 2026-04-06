@@ -140,6 +140,7 @@ body { padding-top: 0; }
   font-weight: 500;
   color: #7b7062;
   letter-spacing: 0.01em;
+  animation: recent-banner-fade 0.45s ease;
 }
 
 .recent-banner.is-animated .recent-banner-text {
@@ -158,6 +159,17 @@ body { padding-top: 0; }
 @keyframes recent-banner-scroll {
   from { transform: translateX(0); }
   to { transform: translateX(calc(-50% - 20px)); }
+}
+
+@keyframes recent-banner-fade {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .rules-toggle {

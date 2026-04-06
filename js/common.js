@@ -92,36 +92,38 @@ let _recentCompletionCache = null;
 let _puzzleTitleMapPromise = null;
 let _recentBannerTimer = null;
 let _recentBannerInFlight = null;
+let _recentBannerRotateTimer = null;
+let _recentBannerIndex = 0;
 const PUZZLE_TITLE_OVERRIDES = {
   tmp_01: '펜토미노 블리츠 1',
 };
 
-async function getLatestCompletion() {
+async function getLatestCompletions() {
   if (_recentCompletionCache) return _recentCompletionCache;
   try {
     const rows = await sbSelect(
       'completions',
-      'select=nickname,puzzle_id,completed_at&order=completed_at.desc&limit=1'
+      'select=nickname,puzzle_id,completed_at&order=completed_at.desc&limit=3'
     );
-    _recentCompletionCache = rows[0] || null;
+    _recentCompletionCache = rows || [];
   } catch (e) {
-    _recentCompletionCache = null;
+    _recentCompletionCache = [];
   }
   return _recentCompletionCache;
 }
 
-async function refreshLatestCompletion(force = false) {
+async function refreshLatestCompletions(force = false) {
   if (_recentBannerInFlight) return _recentBannerInFlight;
   _recentBannerInFlight = (async () => {
     if (!force && _recentCompletionCache) return _recentCompletionCache;
     try {
       const rows = await sbSelect(
         'completions',
-        'select=nickname,puzzle_id,completed_at&order=completed_at.desc&limit=1'
+        'select=nickname,puzzle_id,completed_at&order=completed_at.desc&limit=3'
       );
-      _recentCompletionCache = rows[0] || null;
+      _recentCompletionCache = rows || [];
     } catch (e) {
-      if (force) _recentCompletionCache = null;
+      if (force) _recentCompletionCache = [];
     } finally {
       _recentBannerInFlight = null;
     }
@@ -185,7 +187,23 @@ function applyRecentBannerMessage(banner, messageHtml) {
   });
 }
 
-async function initRecentBanner() {
+function stopRecentBannerRotation() {
+  if (!_recentBannerRotateTimer) return;
+  clearInterval(_recentBannerRotateTimer);
+  _recentBannerRotateTimer = null;
+}
+
+function startRecentBannerRotation(banner, messages) {
+  stopRecentBannerRotation();
+  if (messages.length <= 1) return;
+  _recentBannerRotateTimer = setInterval(() => {
+    if (document.visibilityState !== 'visible') return;
+    _recentBannerIndex = (_recentBannerIndex + 1) % messages.length;
+    applyRecentBannerMessage(banner, messages[_recentBannerIndex]);
+  }, 10000);
+}
+
+async function renderRecentBanner(rows) {
   const header = document.querySelector('.site-header');
   if (!header) return;
   let banner = document.getElementById('recentBanner');
@@ -196,35 +214,31 @@ async function initRecentBanner() {
     header.insertAdjacentElement('afterend', banner);
   }
 
-  const row = await getLatestCompletion();
-  if (!row) {
+  if (!rows || rows.length === 0) {
     banner.style.display = 'none';
+    stopRecentBannerRotation();
     return;
   }
 
   banner.style.display = 'flex';
   const titleMap = await getPuzzleTitleMap();
-  const puzzleTitle = titleMap.get(row.puzzle_id) || row.puzzle_id;
-  applyRecentBannerMessage(banner, buildRecentBannerText(row, puzzleTitle));
+  const messages = rows.map(row => {
+    const puzzleTitle = titleMap.get(row.puzzle_id) || row.puzzle_id;
+    return buildRecentBannerText(row, puzzleTitle);
+  });
+  _recentBannerIndex = Math.min(_recentBannerIndex, messages.length - 1);
+  applyRecentBannerMessage(banner, messages[_recentBannerIndex]);
+  startRecentBannerRotation(banner, messages);
+}
+
+async function initRecentBanner() {
+  const rows = await getLatestCompletions();
+  await renderRecentBanner(rows);
 }
 
 async function refreshRecentBanner(force = false) {
-  const header = document.querySelector('.site-header');
-  if (!header) return;
-  const row = await refreshLatestCompletion(force);
-  let banner = document.getElementById('recentBanner');
-  if (!banner) {
-    await initRecentBanner();
-    return;
-  }
-  if (!row) {
-    banner.style.display = 'none';
-    return;
-  }
-  banner.style.display = 'flex';
-  const titleMap = await getPuzzleTitleMap();
-  const puzzleTitle = titleMap.get(row.puzzle_id) || row.puzzle_id;
-  applyRecentBannerMessage(banner, buildRecentBannerText(row, puzzleTitle));
+  const rows = await refreshLatestCompletions(force);
+  await renderRecentBanner(rows);
 }
 
 function startRecentBannerPolling() {
@@ -293,11 +307,11 @@ async function recordCompletion(puzzleId) {
   }
 
   showToast('🎉 완성했습니다!');
-  _recentCompletionCache = {
-    nickname,
-    puzzle_id: puzzleId,
-    completed_at: new Date().toISOString(),
-  };
+  _recentCompletionCache = [
+    { nickname, puzzle_id: puzzleId, completed_at: new Date().toISOString() },
+    ...(_recentCompletionCache || []).filter(row => !(row.nickname === nickname && row.puzzle_id === puzzleId)),
+  ].slice(0, 3);
+  _recentBannerIndex = 0;
   refreshRecentBanner();
   renderLeaderboard(puzzleId, 'leaderboard');
 }
@@ -548,6 +562,7 @@ document.addEventListener('visibilitychange', () => {
     return;
   }
   stopRecentBannerPolling();
+  stopRecentBannerRotation();
 });
 
 window.addEventListener('focus', () => {
