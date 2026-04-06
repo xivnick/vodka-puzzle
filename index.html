@@ -113,13 +113,13 @@
   /* 완료 체크 */
   .list a { position: relative; }
 </style>
-<link rel="stylesheet" href="/puzzle/css/common.css?v=15">
-<script src="/puzzle/js/common.js?v=15"></script>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=17">
+<script src="/puzzle/js/common.js?v=17"></script>
 </head>
 <body>
 
 <header class="site-header">
-  <span></span>
+  <span class="header-back">vodka puzzle</span>
   <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
 </header>
 <h1>퍼즐</h1>
@@ -302,16 +302,38 @@
         `</div>`;
     }
 
-    let html = '<div class="lb-list">';
-    for (let i = 0; i < top; i++) {
-      html += rowHtml(i + 1, rankings[i].nick, rankings[i].count);
+    function ellipsisRow() {
+      return `<div class="lb-row lb-ellipsis lb-ellipsis-toggle" data-expand-rankings="1">` +
+        `<span class="lb-rank">⋯</span><span class="lb-name"></span><span class="lb-time"></span>` +
+        `</div>`;
     }
-    if (myIdx >= 10) {
-      html += `<div class="lb-row lb-ellipsis"><span class="lb-rank">⋯</span><span class="lb-name"></span><span class="lb-time"></span></div>`;
-      html += rowHtml(myIdx + 1, rankings[myIdx].nick, rankings[myIdx].count);
+
+    function render(expanded = false) {
+      let html = '<div class="lb-list">';
+      if (expanded || rankings.length <= 10) {
+        for (let i = 0; i < rankings.length; i++) {
+          html += rowHtml(i + 1, rankings[i].nick, rankings[i].count);
+        }
+      } else {
+        for (let i = 0; i < top; i++) {
+          html += rowHtml(i + 1, rankings[i].nick, rankings[i].count);
+        }
+        if (myIdx >= 10) {
+          html += ellipsisRow();
+          html += rowHtml(myIdx + 1, rankings[myIdx].nick, rankings[myIdx].count);
+          if (myIdx < rankings.length - 1) html += ellipsisRow();
+        } else if (rankings.length > 10) {
+          html += ellipsisRow();
+        }
+      }
+      html += '</div>';
+      container.innerHTML = html;
+      container.querySelectorAll('[data-expand-rankings]').forEach(el => {
+        el.addEventListener('click', () => render(true), { once: true });
+      });
     }
-    html += '</div>';
-    container.innerHTML = html;
+
+    render(false);
   }
 
   loadSolverRankings();

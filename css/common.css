@@ -298,8 +298,13 @@ body { padding-top: 0; }
 .lb-name { flex: 1; color: #333; }
 .lb-time { color: #888; font-size: 0.82rem; flex-shrink: 0; font-variant-numeric: tabular-nums; }
 .lb-loading, .lb-empty { font-size: 0.82rem; color: #bbb; text-align: center; padding: 16px 0; }
-.lb-ellipsis .lb-rank { color: #ccc; letter-spacing: 0.05em; }
+.lb-ellipsis .lb-rank { color: #ccc; letter-spacing: 0.05em; width: auto; text-align: center; }
 .lb-ellipsis { border-bottom-style: dashed; }
+.lb-ellipsis-toggle { cursor: pointer; user-select: none; }
+.lb-ellipsis-toggle:hover { background: #faf8f4; }
+.lb-ellipsis-toggle .lb-name,
+.lb-ellipsis-toggle .lb-time { display: none; }
+.lb-ellipsis-toggle .lb-rank { flex: 1; }
 
 /* ── Cloud sync buttons ───────────────────────────────────────────────────── */
 .cloud-btns {
