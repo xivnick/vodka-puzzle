@@ -37,9 +37,15 @@
   - `0`, `Backspace`, `Delete`: 지우기
   - `ArrowUp`, `ArrowDown`, `ArrowLeft`, `ArrowRight`: 선택 셀 이동
 - 새 스도쿠 페이지를 만들 때는 기존 `260316_01`, `260316_02`의 `keydown` 처리 패턴을 기본으로 사용한다.
+- 숫자 키패드가 있는 퍼즐은 종류와 관계없이 **물리 키보드 숫자 입력으로 키패드를 대체**할 수 있어야 한다.
+- 이 경우 지원 키는 해당 퍼즐의 실제 입력 범위에 맞춘다.
+  - 예: `1`~`6` 퍼즐이면 `1`~`6`만 입력
+  - `Backspace`, `Delete`는 지우기 동작에 연결
+- 퍼즐 진행 상태나 결과는 가능하면 **퍼즐 보드 자체의 시각 변화로 보여준다.**
+- `tilt-note` 같은 별도 설명 문구는 만들지 않는다. 완료 메시지만 예외로 허용한다.
 
 ## container 내 요소 순서
-- **container 안** 순서: `rules-toggle` → `rules-box` → board → (퍼즐별 요소: numpad 등) → `bottom-buttons` → `cloud-btns` → `message`(있는 경우) → `lb-section`
+- **container 안** 순서: `rules-toggle` → `rules-box` → board → (퍼즐별 요소: numpad 등) → `bottom-buttons` → `cloud-btns` → (사용 현황/보조 패널) → `message`(있는 경우) → `lb-section`
 - 규칙 박스는 board **위**에 배치한다.
 - `.subtitle`은 `margin-bottom: 0` — 제목 아래 여백은 board의 `margin-top: 20px`으로 처리한다.
 
@@ -67,6 +73,8 @@ puzzle/
 
 ## 퍼즐 데이터 컨벤션
 - 프리셋 숫자(주어진 숫자)는 반드시 **2D 배열**로 정의한다. `0` = 빈 칸, 양수 = 프리셋 숫자.
+- 도형 마스크, 고정 숫자, 단서 배치 등 **초기 보드 데이터는 항상 2차원 배열로 먼저 정의**한다.
+- 런타임에서 필요한 `Set`, `Map`, 객체 형태는 2차원 배열에서 파생해서 만든다.
 - 이후 `PRESETS` 객체는 2D 배열에서 자동 생성한다.
 ```js
 const PRESET_GRID = [
@@ -112,13 +120,14 @@ PRESET_GRID.forEach((row, r) => row.forEach((v, c) => { if (v) PRESETS[`${r},${c
 - `saveProgressCloud(PUZZLE_ID, state)` — 현재 상태를 클라우드에 저장
 - `loadProgressCloud(PUZZLE_ID)` — 클라우드에서 상태를 불러와 반환
 - 퍼즐 페이지 하단에 저장하기 / 불러오기 버튼 (`#cloudBtns`) 배치
-- 버튼은 `bottom-buttons` div 밖, 별도 줄로 배치
+- 버튼은 `bottom-buttons` 바로 다음 줄에 배치
 - 게스트일 때 버튼 숨김 (`initCloudBtns()` 호출 필요)
 - 토스트 메시지: "저장했습니다." / "불러왔습니다." / "불러올 데이터가 없습니다."
 
 ## 완료 기록 (Supabase)
 - Supabase `completions` 테이블: `nickname`, `puzzle_id`, `completed_at`
 - 완성 감지 시 `recordCompletion(PUZZLE_ID)` 호출
+- 완료 메시지는 기본적으로 `"축하합니다! 퍼즐을 완성했습니다!"` 로 통일한다.
 - 게스트는 저장 안 됨 → confirm으로 닉네임 설정 유도
 - 초기화 시 `resetCompletion(PUZZLE_ID)` 호출 (세션 플래그 초기화)
 - localStorage 키 `completion_saved_{puzzleId}`로 세션 내 중복 저장 방지
@@ -154,8 +163,9 @@ PRESET_GRID.forEach((row, r) => row.forEach((v, c) => { if (v) PRESETS[`${r},${c
 6. OG 메타 태그 포함 (`og:title`, `og:description`, `og:type`, `og:url`)
 7. `const PUZZLE_ID = '{폴더명}'` 선언
 8. 완성 감지 시 `recordCompletion(PUZZLE_ID)` 호출
+   - 완료 메시지는 기본적으로 `"축하합니다! 퍼즐을 완성했습니다!"`
 9. 초기화 버튼에 `confirm('정말 초기화하시겠습니까?')` 추가, 확인 시 `resetCompletion(PUZZLE_ID)` 호출
-10. 클라우드 버튼 HTML 추가 (`bottom-buttons` div 밖, 별도 줄):
+10. 클라우드 버튼 HTML 추가 (`bottom-buttons` 바로 다음 줄):
     ```html
     <div class="cloud-btns" id="cloudBtns" style="display:none">
       <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>

@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>뽑기 시스템 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<style>
+  body.demo-page {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #fff;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 0 16px 56px;
+  }
+
+  .demo-shell {
+    width: min(94vw, 980px);
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.9fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .demo-main,
+  .demo-side {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .demo-panel {
+    background: #fffdf9;
+    border: 1px solid #dfd8cd;
+    box-shadow: 0 1px 0 rgba(34, 34, 34, 0.03);
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid #ece4d8;
+  }
+
+  .panel-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #3c352d;
+    letter-spacing: -0.01em;
+  }
+
+  .panel-note {
+    font-size: 0.76rem;
+    color: #918574;
+  }
+
+  .gacha-stage {
+    padding: 18px 16px 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 240px;
+    gap: 14px;
+  }
+
+  .ticket-box {
+    border: 1px solid #ddd3c5;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.86), rgba(248,243,234,0.92)),
+      repeating-linear-gradient(
+        90deg,
+        rgba(215, 205, 189, 0.2) 0,
+        rgba(215, 205, 189, 0.2) 1px,
+        transparent 1px,
+        transparent 10px
+      );
+    padding: 18px 18px 16px;
+    min-height: 244px;
+  }
+
+  .ticket-topline {
+    font-size: 0.72rem;
+    color: #9b8d7b;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .machine-name {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #2b2722;
+    letter-spacing: -0.03em;
+    margin-bottom: 6px;
+  }
+
+  .machine-copy {
+    font-size: 0.84rem;
+    color: #6f6558;
+    line-height: 1.7;
+    max-width: 420px;
+  }
+
+  .rate-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .rate-pill {
+    border: 1px solid #ddd4c8;
+    background: #f7f2ea;
+    color: #6a6052;
+    font-size: 0.74rem;
+    padding: 6px 8px;
+  }
+
+  .gacha-display {
+    border: 1px solid #d8cfbf;
+    background:
+      radial-gradient(circle at top, rgba(255,255,255,0.85), transparent 48%),
+      linear-gradient(180deg, #f6f1e8 0%, #efe5d4 100%);
+    min-height: 244px;
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gacha-display::after {
+    content: '';
+    position: absolute;
+    inset: auto -30px -34px auto;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(183, 166, 140, 0.18), transparent 68%);
+    pointer-events: none;
+  }
+
+  .token-balance {
+    font-size: 0.76rem;
+    color: #7c6f5e;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .draw-result {
+    min-height: 126px;
+    border: 1px solid #d8cfbf;
+    background: rgba(255,255,255,0.72);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    backdrop-filter: blur(1px);
+  }
+
+  .draw-result.is-flashing {
+    animation: flash-card 0.55s ease;
+  }
+
+  .result-rarity {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .result-name {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #2a2722;
+  }
+
+  .result-copy {
+    font-size: 0.8rem;
+    line-height: 1.65;
+    color: #695f52;
+  }
+
+  .result-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .draw-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .draw-actions button,
+  .apply-button {
+    flex: 1;
+    height: 42px;
+    border: 1.5px solid #cfc4b3;
+    background: #f5efe6;
+    color: #4d453a;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.08s, border-color 0.15s;
+  }
+
+  .draw-actions button:hover,
+  .apply-button:hover {
+    background: #ece3d6;
+    border-color: #c2b49f;
+  }
+
+  .draw-actions button:active,
+  .apply-button:active {
+    transform: scale(0.98);
+  }
+
+  .draw-actions button.accent {
+    background: #ece3d1;
+    color: #2f2a24;
+    border-color: #bba98f;
+  }
+
+  .sample-grid {
+    padding: 14px 16px 16px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .sample-card {
+    border: 1px solid #e1d8cc;
+    background: #fff;
+    padding: 12px;
+    min-height: 124px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sample-card .label {
+    font-size: 0.72rem;
+    color: #998b79;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .sample-card .name {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #312d27;
+  }
+
+  .sample-card .desc {
+    font-size: 0.78rem;
+    color: #6f6558;
+    line-height: 1.6;
+  }
+
+  .inventory {
+    padding: 14px 16px 16px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .inventory-item {
+    border: 1px solid #dfd6c9;
+    background: #fff;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .inventory-item.active {
+    border-color: #bca98a;
+    background: #fbf6ee;
+  }
+
+  .inventory-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .inventory-name {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: #302b25;
+  }
+
+  .badge-rarity {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #8a7d69;
+  }
+
+  .inventory-preview {
+    font-size: 0.96rem;
+    font-weight: 700;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+  }
+
+  .inventory-copy {
+    font-size: 0.76rem;
+    color: #6e6355;
+    line-height: 1.55;
+    min-height: 38px;
+  }
+
+  .rankings {
+    padding: 6px 0 4px;
+  }
+
+  .rank-row {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 52px;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-top: 1px solid #eee6da;
+    background: #fff;
+  }
+
+  .rank-row:first-child {
+    border-top: none;
+  }
+
+  .rank-row.is-me {
+    background: #fbf7f0;
+  }
+
+  .rank-pos {
+    font-size: 0.8rem;
+    color: #8b7f70;
+    font-weight: 700;
+  }
+
+  .rank-score {
+    text-align: right;
+    font-size: 0.78rem;
+    color: #8a7f71;
+  }
+
+  .nick {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #2f2a24;
+  }
+
+  .nick-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nick-icon,
+  .nick-badge {
+    flex: 0 0 auto;
+    line-height: 1;
+  }
+
+  .nick-badge {
+    font-size: 0.68rem;
+    padding: 2px 5px;
+    border: 1px solid rgba(120, 110, 96, 0.22);
+    background: rgba(255, 250, 241, 0.85);
+    color: #7e705d;
+  }
+
+  .style-midnight {
+    color: #2b4f8a;
+  }
+
+  .style-copper {
+    color: #b56e3b;
+  }
+
+  .style-forest {
+    color: #3a7a56;
+  }
+
+  .style-gradient-aurora {
+    background: linear-gradient(90deg, #4a6fa5 0%, #8bb38a 50%, #d5a35b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .style-gradient-sunset {
+    background: linear-gradient(90deg, #b25555 0%, #d18f4e 52%, #8458b6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .style-glow {
+    color: #785f2b;
+    text-shadow: 0 0 8px rgba(213, 172, 99, 0.2);
+  }
+
+  .style-legend {
+    background: linear-gradient(90deg, #7a5b2a 0%, #dcc07f 45%, #9b7440 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 10px rgba(213, 175, 104, 0.16);
+  }
+
+  .mini-note {
+    padding: 0 16px 16px;
+    font-size: 0.74rem;
+    color: #8a7f70;
+    line-height: 1.65;
+  }
+
+  @keyframes flash-card {
+    0% { transform: translateY(4px); opacity: 0.45; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  @media (max-width: 860px) {
+    .demo-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .gacha-stage {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .sample-grid,
+    .inventory {
+      grid-template-columns: 1fr;
+    }
+
+    .draw-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+</head>
+<body class="demo-page">
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <span class="header-nick-link">demo only</span>
+</header>
+<h1>뽑기 시스템 시안</h1>
+<p class="subtitle">DB를 건드리지 않는 정적 데모입니다. 닉네임 꾸미기와 랭킹 반영 흐름만 보여줍니다.</p>
+
+<div class="demo-shell" style="margin-top: 20px;">
+  <div class="demo-main">
+    <section class="demo-panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">퍼즐마켓 추첨소</div>
+          <div class="panel-note">닉네임 색상, 아이콘, 뱃지를 뽑아 즉시 적용하는 흐름</div>
+        </div>
+        <div class="panel-note" id="ownedCount">보유 꾸미기 4종</div>
+      </div>
+      <div class="gacha-stage">
+        <div class="ticket-box">
+          <div class="ticket-topline">featured machine</div>
+          <div class="machine-name">새벽 퍼즐 장식 컬렉션</div>
+          <div class="machine-copy">
+            랭킹, 전광판, 닉네임 링크에 공통으로 반영되는 꾸미기 전용 뽑기입니다.
+            퍼즐 성능에는 영향이 없고, 같은 아이템이 나오면 조각으로 환급되는 설정을 상정했습니다.
+          </div>
+          <div class="rate-strip">
+            <span class="rate-pill">일반 58%</span>
+            <span class="rate-pill">고급 27%</span>
+            <span class="rate-pill">희귀 11%</span>
+            <span class="rate-pill">전설 4%</span>
+          </div>
+        </div>
+        <div class="gacha-display">
+          <div class="token-balance">
+            <span>보유 코인 1280</span>
+            <span>1회 100 / 10회 900</span>
+          </div>
+          <div class="draw-result" id="drawResult">
+            <div class="result-rarity" id="resultRarity">샘플 결과</div>
+            <div class="result-name" id="resultName">오로라 그라데이션</div>
+            <div class="result-copy" id="resultCopy">닉네임 텍스트에 은은한 3색 그라데이션을 적용합니다.</div>
+            <div class="result-preview" id="resultPreview"></div>
+          </div>
+          <div class="draw-actions">
+            <button onclick="runDraw(1)">1회 뽑기</button>
+            <button class="accent" onclick="runDraw(10)">10회 뽑기</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">예시 보상군</div>
+          <div class="panel-note">이 정도 구성부터 시작하면 구현과 운영 부담이 낮습니다.</div>
+        </div>
+      </div>
+      <div class="sample-grid">
+        <article class="sample-card">
+          <div class="label">일반</div>
+          <div class="name">단색 닉네임</div>
+          <div class="desc">남색, 숲색, 구리색처럼 차분한 단색 테마. 가장 구현이 쉽고 랭킹 가독성도 유지됩니다.</div>
+        </article>
+        <article class="sample-card">
+          <div class="label">희귀</div>
+          <div class="name">그라데이션 닉네임</div>
+          <div class="desc">오로라, 석양 같은 2~3색 그라데이션. 전광판과 랭킹에서 존재감은 있지만 과하지 않게 설계합니다.</div>
+        </article>
+        <article class="sample-card">
+          <div class="label">전설</div>
+          <div class="name">아이콘 + 칭호 배지</div>
+          <div class="desc">닉네임 앞 아이콘과 작은 배지를 함께 지급합니다. 시즌 보상이나 한정 뽑기에 적합합니다.</div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <div class="demo-side">
+    <section class="demo-panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">보유 꾸미기</div>
+          <div class="panel-note">선택 즉시 내 랭킹 행에 반영됩니다.</div>
+        </div>
+      </div>
+      <div class="inventory" id="inventory"></div>
+    </section>
+
+    <section class="demo-panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">샘플 참여자 랭킹</div>
+          <div class="panel-note">닉네임 꾸미기가 적용된 화면 예시</div>
+        </div>
+      </div>
+      <div class="rankings" id="rankings"></div>
+      <div class="mini-note">
+        `XIV`가 내 계정이라는 가정입니다. 선택한 꾸미기가 랭킹과 결과 미리보기에 함께 반영됩니다.
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const COSMETICS = [
+  {
+    id: 'midnight-blue',
+    rarity: '일반',
+    name: '미드나잇 블루',
+    desc: '차분한 남색 닉네임',
+    styleClass: 'style-midnight',
+    icon: '',
+    badge: '',
+    weight: 28,
+  },
+  {
+    id: 'forest-green',
+    rarity: '일반',
+    name: '포레스트 그린',
+    desc: '잔잔한 숲색 닉네임',
+    styleClass: 'style-forest',
+    icon: '',
+    badge: '',
+    weight: 24,
+  },
+  {
+    id: 'copper-name',
+    rarity: '고급',
+    name: '코퍼 네임',
+    desc: '은근한 구리빛 닉네임',
+    styleClass: 'style-copper',
+    icon: '',
+    badge: '',
+    weight: 18,
+  },
+  {
+    id: 'aurora-gradient',
+    rarity: '희귀',
+    name: '오로라 그라데이션',
+    desc: '푸른빛과 황금빛이 흐르는 그라데이션',
+    styleClass: 'style-gradient-aurora',
+    icon: '',
+    badge: '',
+    weight: 11,
+  },
+  {
+    id: 'sunset-gradient',
+    rarity: '희귀',
+    name: '석양 그라데이션',
+    desc: '붉은빛과 보랏빛이 스치는 석양 테마',
+    styleClass: 'style-gradient-sunset',
+    icon: '',
+    badge: '',
+    weight: 8,
+  },
+  {
+    id: 'gold-spark',
+    rarity: '전설',
+    name: '금빛 점등',
+    desc: '은은한 광택이 있는 금빛 닉네임',
+    styleClass: 'style-legend',
+    icon: '✦',
+    badge: 'LIMITED',
+    weight: 4,
+  },
+  {
+    id: 'puzzle-curator',
+    rarity: '전설',
+    name: '퍼즐 큐레이터',
+    desc: '아이콘과 칭호 뱃지가 함께 붙는 장식',
+    styleClass: 'style-glow',
+    icon: '◈',
+    badge: 'CURATOR',
+    weight: 3,
+  },
+];
+
+const rankingRows = [
+  { rank: 1, nick: 'suzume', solved: 42, cosmeticId: 'gold-spark' },
+  { rank: 2, nick: 'logicbean', solved: 39, cosmeticId: 'aurora-gradient' },
+  { rank: 3, nick: 'hexa', solved: 37, cosmeticId: 'forest-green' },
+  { rank: 4, nick: 'XIV', solved: 35, isMe: true },
+  { rank: 5, nick: 'nuru', solved: 31, cosmeticId: 'copper-name' },
+  { rank: 6, nick: 'mori', solved: 28, cosmeticId: 'sunset-gradient' },
+  { rank: 7, nick: 'arco', solved: 26, cosmeticId: '' },
+  { rank: 8, nick: 'tapafox', solved: 22, cosmeticId: 'puzzle-curator' },
+];
+
+const ownedIds = new Set(['midnight-blue', 'aurora-gradient', 'puzzle-curator', 'forest-green']);
+let activeCosmeticId = 'aurora-gradient';
+
+function getCosmetic(id) {
+  return COSMETICS.find(item => item.id === id) || null;
+}
+
+function rarityTone(rarity) {
+  if (rarity === '전설') return '#8f6b2b';
+  if (rarity === '희귀') return '#6b5ca3';
+  if (rarity === '고급') return '#8b6541';
+  return '#7a756c';
+}
+
+function createNickMarkup(nick, cosmetic) {
+  const icon = cosmetic && cosmetic.icon ? `<span class="nick-icon">${cosmetic.icon}</span>` : '';
+  const badge = cosmetic && cosmetic.badge ? `<span class="nick-badge">${cosmetic.badge}</span>` : '';
+  const styleClass = cosmetic && cosmetic.styleClass ? cosmetic.styleClass : '';
+  return `
+    <span class="nick">
+      ${icon}
+      <span class="nick-text ${styleClass}">${nick}</span>
+      ${badge}
+    </span>
+  `;
+}
+
+function renderRankings() {
+  const el = document.getElementById('rankings');
+  el.innerHTML = rankingRows.map(row => {
+    const cosmetic = row.isMe ? getCosmetic(activeCosmeticId) : getCosmetic(row.cosmeticId);
+    return `
+      <div class="rank-row ${row.isMe ? 'is-me' : ''}">
+        <div class="rank-pos">${row.rank}위</div>
+        <div>${createNickMarkup(row.nick, cosmetic)}</div>
+        <div class="rank-score">${row.solved}개</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderInventory() {
+  const inventoryEl = document.getElementById('inventory');
+  const ownedItems = COSMETICS.filter(item => ownedIds.has(item.id));
+  document.getElementById('ownedCount').textContent = `보유 꾸미기 ${ownedItems.length}종`;
+  inventoryEl.innerHTML = ownedItems.map(item => `
+    <article class="inventory-item ${item.id === activeCosmeticId ? 'active' : ''}">
+      <div class="inventory-head">
+        <div class="inventory-name">${item.name}</div>
+        <div class="badge-rarity" style="color:${rarityTone(item.rarity)}">${item.rarity}</div>
+      </div>
+      <div class="inventory-preview">${createNickMarkup('XIV', item)}</div>
+      <div class="inventory-copy">${item.desc}</div>
+      <button class="apply-button" onclick="applyCosmetic('${item.id}')">${item.id === activeCosmeticId ? '적용 중' : '적용하기'}</button>
+    </article>
+  `).join('');
+}
+
+function updateResultPanel(item, draws) {
+  document.getElementById('resultRarity').textContent = draws > 1 ? `${draws}회 결과 중 대표 보상 · ${item.rarity}` : item.rarity;
+  document.getElementById('resultRarity').style.color = rarityTone(item.rarity);
+  document.getElementById('resultName').textContent = item.name;
+  document.getElementById('resultCopy').textContent = ownedIds.has(item.id)
+    ? `${item.desc} · 중복이라면 조각 환급 연출을 넣을 수 있습니다.`
+    : item.desc;
+  document.getElementById('resultPreview').innerHTML = createNickMarkup('XIV', item);
+  const resultBox = document.getElementById('drawResult');
+  resultBox.classList.remove('is-flashing');
+  void resultBox.offsetWidth;
+  resultBox.classList.add('is-flashing');
+}
+
+function applyCosmetic(id) {
+  activeCosmeticId = id;
+  renderInventory();
+  renderRankings();
+  updateResultPanel(getCosmetic(id), 1);
+}
+
+function weightedPick() {
+  const total = COSMETICS.reduce((sum, item) => sum + item.weight, 0);
+  let roll = Math.random() * total;
+  for (const item of COSMETICS) {
+    roll -= item.weight;
+    if (roll <= 0) return item;
+  }
+  return COSMETICS[COSMETICS.length - 1];
+}
+
+function runDraw(count) {
+  let picked = null;
+  let best = null;
+  const rarityOrder = { '일반': 0, '고급': 1, '희귀': 2, '전설': 3 };
+
+  for (let i = 0; i < count; i++) {
+    picked = weightedPick();
+    ownedIds.add(picked.id);
+    if (!best || rarityOrder[picked.rarity] > rarityOrder[best.rarity]) {
+      best = picked;
+    }
+  }
+
+  activeCosmeticId = best.id;
+  renderInventory();
+  renderRankings();
+  updateResultPanel(best, count);
+}
+
+renderInventory();
+renderRankings();
+updateResultPanel(getCosmetic(activeCosmeticId), 1);
+</script>
+</body>
+</html>

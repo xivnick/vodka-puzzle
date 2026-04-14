@@ -19,120 +19,6 @@
     align-items: stretch;
   }
 
-  .domino-bank {
-    margin-top: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .domino-row {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-start;
-  }
-
-  .domino-tile {
-    min-width: 54px;
-    height: 36px;
-    border: 1.5px solid #cfc8bc;
-    background: #fff;
-    color: #333;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    cursor: pointer;
-    position: relative;
-    transition: background 0.12s, border-color 0.12s, transform 0.08s;
-  }
-
-  .domino-tile:hover {
-    background: #faf8f4;
-    border-color: #bfb4a3;
-  }
-
-  .domino-tile:active {
-    transform: scale(0.97);
-  }
-
-  .domino-tile.selected {
-    background: #ece7db;
-    border-color: #a99b84;
-    color: #222;
-  }
-
-  .domino-tile.used {
-    background: #f4f1eb;
-    color: #aaa;
-    border-color: #ddd6c9;
-  }
-
-  .domino-tile.split::after {
-    content: '';
-    position: absolute;
-    top: 6px;
-    bottom: 6px;
-    left: 50%;
-    width: 1px;
-    background: #bcb5aa;
-    transform: translateX(-50%);
-  }
-
-  .domino-tile.flip {
-    outline: 2px solid #4a6fa5;
-    outline-offset: 1px;
-  }
-
-  .domino-tile-label {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    height: 100%;
-    align-items: center;
-    justify-items: center;
-  }
-
-  .domino-toolbar {
-    display: flex;
-    gap: 6px;
-    margin-top: 10px;
-  }
-
-  .domino-toolbar button {
-    flex: 1;
-    height: 40px;
-    border: 1.5px solid #d0ccc4;
-    background: #faf8f4;
-    color: #777;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-  }
-
-  .domino-toolbar button:hover {
-    background: #efeae1;
-    color: #555;
-  }
-
-  .domino-toolbar button.danger {
-    border-color: #e0bfbf;
-    background: #fdf5f5;
-    color: #b05050;
-  }
-
-  .domino-toolbar button.danger:hover {
-    background: #f5e0e0;
-    color: #8c3333;
-  }
-
-  .bank-help {
-    margin-top: 8px;
-    font-size: 0.78rem;
-    color: #888;
-    line-height: 1.6;
-    text-align: center;
-  }
-
   .board-wrap {
     width: 100%;
     position: relative;
@@ -141,10 +27,8 @@
 
   .board {
     width: 100%;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 7 / 9;
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(8, 1fr);
     background: #fff;
   }
 
@@ -171,14 +55,28 @@
     background: #f6f5f0;
   }
 
-  .cell.start {
+  .cell.selected {
+    background: #f2eee4;
+  }
+
+  .cell.focused {
+    box-shadow: inset 0 0 0 2px rgba(74, 111, 165, 0.28);
+  }
+
+  .cell.pending {
     background: #e8e8d8;
+    box-shadow: inset 0 0 0 2px rgba(74, 111, 165, 0.22);
   }
 
-  .cell.blank-error {
-    background: #f7dfdf;
+  .cell.candidate {
+    background: #f6f2ea;
   }
 
+  .cell.blank-ok {
+    background: #dcefd8;
+  }
+
+  .cell.blank-edge-error,
   .cell.touch-error {
     background: #f3d3d3;
   }
@@ -200,7 +98,7 @@
   .domino-overlay {
     position: absolute;
     z-index: 1;
-    background: rgba(189, 183, 170, 0.34);
+    background: transparent;
     border: 2px solid #8d8377;
     pointer-events: none;
   }
@@ -208,6 +106,86 @@
   .domino-overlay.error {
     background: rgba(226, 126, 126, 0.28);
     border-color: #b85e5e;
+  }
+
+  .numpad {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .numpad button {
+    flex: 1;
+    height: 44px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    border: 1.5px solid #c8c3b8;
+    border-radius: 3px;
+    background: #f4f1eb;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.08s;
+  }
+
+  .numpad button:hover { background: #e8e4da; }
+  .numpad button:active { transform: scale(0.95); background: #ddd9cf; }
+
+  .remaining-panel {
+    margin-top: 12px;
+    border: 1px solid #e0ddd6;
+    background: #faf8f4;
+    padding: 14px 16px 16px;
+  }
+
+  .remaining-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 10px;
+  }
+
+  .remaining-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .remaining-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .remaining-domino {
+    min-width: 48px;
+    height: 30px;
+    border: 1.5px solid #cfc8bc;
+    background: #fff;
+    color: #444;
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    justify-items: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .remaining-domino::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 50%;
+    width: 1px;
+    background: #c2b8a9;
+    transform: translateX(-50%);
+  }
+
+  .remaining-domino.used {
+    background: #f1ede6;
+    color: #aaa;
+    border-color: #ddd6c9;
   }
 
   .message {
@@ -222,16 +200,6 @@
 
   @media (max-width: 540px) {
     body { padding: 0 8px 48px; }
-
-    .domino-row {
-      gap: 6px;
-    }
-
-    .domino-tile {
-      min-width: 46px;
-      height: 34px;
-      font-size: 0.88rem;
-    }
   }
 </style>
 <link rel="stylesheet" href="/puzzle/css/common.css?v=19">
@@ -244,7 +212,7 @@
   <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
 </header>
 <h1>260407 블랙아웃 도미노</h1>
-<p class="subtitle">위의 모든 도미노를 아래 도형에 채우세요</p>
+<p class="subtitle">칸을 선택하고 숫자를 입력해 도미노를 배치하세요</p>
 
 <div class="container">
   <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
@@ -254,29 +222,29 @@
     2. 서로 다른 도미노들은 같은 숫자 칸끼리만 변을 맞댑니다.<br>
     3. 도미노로 채워지지 않은 빈칸들은 다른 빈칸 및 도형의 외곽과 변을 맞대지 않습니다.<br>
     4. 숫자가 이미 있는 칸은 반드시 도미노가 들어가는 칸이며, 그 칸의 값은 고정입니다.<br>
-    <br>
-    위의 도미노를 선택한 뒤, 도형에서 인접한 두 칸을 순서대로 클릭해 배치하세요.
+    5. 빈 칸이나 숫자 칸을 선택한 뒤 아래 숫자패드 또는 키보드 숫자키로 값을 입력합니다.<br>
+    6. 첫 번째 숫자를 넣은 뒤 인접한 칸을 선택하고 두 번째 숫자를 입력하면 도미노가 확정됩니다.<br>
+    7. 이미 놓인 도미노를 누르면 그 도미노가 삭제됩니다.<br>
   </div>
-
-  <div class="domino-bank" id="dominoBank"></div>
-  <div class="domino-toolbar">
-    <button onclick="flipSelectedTile()">순서 뒤집기</button>
-    <button class="danger" onclick="resetBoard()">초기화</button>
-  </div>
-  <div class="bank-help" id="bankHelp"></div>
 
   <div class="board-wrap" id="boardWrap">
     <div class="board" id="board"></div>
   </div>
 
+  <div class="numpad" id="numpad"></div>
+
   <div class="bottom-buttons">
-    <button onclick="clearSelectedPlacement()">선택 도미노 해제</button>
-    <button onclick="clearLastPlacement()">마지막 도미노 지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
   </div>
 
   <div class="cloud-btns" id="cloudBtns" style="display:none">
     <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
     <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="remaining-panel">
+    <div class="remaining-title" id="remainingTitle"></div>
+    <div class="remaining-grid" id="remainingGrid"></div>
   </div>
 
   <div class="message" id="message"></div>
@@ -290,26 +258,31 @@
 <script>
 const PUZZLE_ID = '260407_01';
 const SAVE_KEY = 'puzzle_260407_01';
-const SIZE = 8;
-const SHAPE = [
-  '11101100',
-  '11111100',
-  '11111111',
-  '01111111',
-  '11111111',
-  '00111111',
-  '01111011',
-  '01110111',
+const ROWS = 9;
+const COLS = 7;
+const SHAPE_GRID = [
+  [1, 1, 1, 0, 1, 1, 0],
+  [1, 1, 1, 1, 1, 0, 0],
+  [1, 1, 1, 1, 1, 1, 1],
+  [0, 1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1],
+  [0, 0, 1, 1, 1, 1, 1],
+  [0, 1, 1, 1, 0, 1, 1],
+  [0, 1, 1, 1, 0, 1, 0],
+  [0, 1, 1, 0, 0, 1, 1],
 ];
 
-const FIXED = {
-  '3,2': 6,
-  '3,7': 5,
-  '4,6': 4,
-  '5,5': 3,
-  '6,3': 2,
-  '7,2': 1,
-};
+const FIXED_GRID = [
+  [0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 6, 0, 0, 0, 5],
+  [0, 0, 0, 0, 0, 4, 0],
+  [0, 0, 0, 0, 3, 0, 0],
+  [0, 0, 0, 2, 0, 0, 0],
+  [0, 0, 1, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0],
+];
 
 const DOMINOES = [];
 for (let b = 1; b <= 6; b++) {
@@ -322,32 +295,36 @@ const activeSet = new Set();
 const cellEls = {};
 let placements = {};
 let placementOrder = [];
-let selectedTileId = null;
-let selectedFlip = false;
-let startCellKey = null;
+let placementSeq = 0;
+let selectedKey = null;
+let pendingFirstKey = null;
+let pendingFirstValue = null;
+let pendingSecondKey = null;
 
 function inShape(r, c) {
-  return r >= 0 && r < SIZE && c >= 0 && c < SIZE && SHAPE[r][c] === '1';
+  return r >= 0 && r < ROWS && c >= 0 && c < COLS && SHAPE_GRID[r][c] === 1;
 }
 
-for (let r = 0; r < SIZE; r++) {
-  for (let c = 0; c < SIZE; c++) {
+for (let r = 0; r < ROWS; r++) {
+  for (let c = 0; c < COLS; c++) {
     if (inShape(r, c)) activeSet.add(`${r},${c}`);
   }
 }
 
-function getTile(tileId) {
-  return DOMINOES.find(tile => tile.id === tileId) || null;
+function tileIdFromValues(a, b) {
+  const x = Math.min(a, b);
+  const y = Math.max(a, b);
+  return `${x}-${y}`;
 }
 
 function getPlacedCellMap() {
   const cellMap = {};
-  for (const [tileId, placement] of Object.entries(placements)) {
+  for (const [placementId, placement] of Object.entries(placements)) {
     placement.cells.forEach((key, idx) => {
       cellMap[key] = {
-        tileId,
+        placementId,
+        tileId: placement.tileId,
         value: placement.values[idx],
-        other: placement.cells[1 - idx],
       };
     });
   }
@@ -361,23 +338,36 @@ function areAdjacent(k1, k2) {
 }
 
 function cellFixedValue(key) {
-  return FIXED[key] || 0;
+  const [r, c] = key.split(',').map(Number);
+  return FIXED_GRID[r]?.[c] || 0;
 }
 
-function currentTileValues() {
-  const tile = getTile(selectedTileId);
-  if (!tile) return null;
-  return selectedFlip ? [tile.b, tile.a] : [tile.a, tile.b];
+function resetPending() {
+  pendingFirstKey = null;
+  pendingFirstValue = null;
+  pendingSecondKey = null;
+}
+
+function setSelectedKey(key) {
+  if (key && activeSet.has(key)) selectedKey = key;
+}
+
+function beginPending(key) {
+  pendingFirstKey = key;
+  pendingFirstValue = cellFixedValue(key) || null;
+  pendingSecondKey = null;
 }
 
 function saveProgress() {
   saveLocalState(SAVE_KEY, {
-    placements: Object.entries(placements).map(([tileId, placement]) => ({
-      tileId,
+    placements: Object.entries(placements).map(([placementId, placement]) => ({
+      placementId,
+      tileId: placement.tileId,
       cells: placement.cells,
       values: placement.values,
     })),
     order: placementOrder,
+    seq: placementSeq,
   });
 }
 
@@ -386,148 +376,200 @@ function loadProgress() {
   if (!saved || !Array.isArray(saved.placements)) return;
   const nextPlacements = {};
   const nextOrder = Array.isArray(saved.order) ? saved.order.filter(id => typeof id === 'string') : [];
+  let maxSeq = 0;
   for (const item of saved.placements) {
     if (!item || typeof item.tileId !== 'string') continue;
     if (!Array.isArray(item.cells) || item.cells.length !== 2) continue;
     if (!Array.isArray(item.values) || item.values.length !== 2) continue;
-    if (!getTile(item.tileId)) continue;
     if (!item.cells.every(key => activeSet.has(key))) continue;
     if (!areAdjacent(item.cells[0], item.cells[1])) continue;
     const fixedA = cellFixedValue(item.cells[0]);
     const fixedB = cellFixedValue(item.cells[1]);
     if ((fixedA && fixedA !== item.values[0]) || (fixedB && fixedB !== item.values[1])) continue;
-    nextPlacements[item.tileId] = {
+    const placementId = typeof item.placementId === 'string' ? item.placementId : `p${maxSeq + 1}`;
+    nextPlacements[placementId] = {
+      tileId: item.tileId,
       cells: item.cells.slice(),
       values: item.values.slice(),
     };
+    const n = parseInt(String(placementId).replace(/^p/, ''), 10);
+    if (!Number.isNaN(n)) maxSeq = Math.max(maxSeq, n);
   }
   placements = nextPlacements;
   placementOrder = nextOrder.filter(id => placements[id]);
+  placementSeq = Math.max(maxSeq, Number(saved.seq) || 0);
 }
 
-function removePlacement(tileId) {
-  if (!placements[tileId]) return;
-  delete placements[tileId];
-  placementOrder = placementOrder.filter(id => id !== tileId);
+function removePlacement(placementId) {
+  if (!placements[placementId]) return;
+  delete placements[placementId];
+  placementOrder = placementOrder.filter(id => id !== placementId);
 }
 
-function placeSelectedDomino(k1, k2) {
-  const values = currentTileValues();
-  if (!selectedTileId || !values) return false;
+function placeDomino(k1, v1, k2, v2) {
   if (!activeSet.has(k1) || !activeSet.has(k2) || !areAdjacent(k1, k2)) return false;
+  if (v1 < 1 || v1 > 6 || v2 < 1 || v2 > 6) return false;
+
   const cellMap = getPlacedCellMap();
   if (cellMap[k1] || cellMap[k2]) return false;
+
   const fixed1 = cellFixedValue(k1);
   const fixed2 = cellFixedValue(k2);
-  if ((fixed1 && fixed1 !== values[0]) || (fixed2 && fixed2 !== values[1])) return false;
+  if ((fixed1 && fixed1 !== v1) || (fixed2 && fixed2 !== v2)) return false;
 
-  placements[selectedTileId] = {
+  const tileId = tileIdFromValues(v1, v2);
+  const placementId = `p${++placementSeq}`;
+  placements[placementId] = {
+    tileId,
     cells: [k1, k2],
-    values: values.slice(),
+    values: [v1, v2],
   };
-  placementOrder = placementOrder.filter(id => id !== selectedTileId);
-  placementOrder.push(selectedTileId);
-  selectedTileId = null;
-  selectedFlip = false;
-  startCellKey = null;
+  placementOrder.push(placementId);
+  resetPending();
   saveProgress();
   renderAll();
   checkComplete();
   return true;
 }
 
-function handleTileClick(tileId) {
-  if (placements[tileId]) {
-    removePlacement(tileId);
-    selectedTileId = tileId;
-    selectedFlip = false;
-    startCellKey = null;
-    saveProgress();
-    renderAll();
-    return;
-  }
-
-  if (selectedTileId === tileId) {
-    selectedFlip = !selectedFlip;
-  } else {
-    selectedTileId = tileId;
-    selectedFlip = false;
-  }
-  startCellKey = null;
-  renderAll();
-}
-
-function flipSelectedTile() {
-  if (!selectedTileId) return;
-  const tile = getTile(selectedTileId);
-  if (!tile || tile.a === tile.b) return;
-  selectedFlip = !selectedFlip;
-  renderAll();
-}
-
-function clearSelectedPlacement() {
-  selectedTileId = null;
-  selectedFlip = false;
-  startCellKey = null;
-  renderAll();
-}
-
-function clearLastPlacement() {
-  const lastId = placementOrder[placementOrder.length - 1];
-  if (!lastId) return;
-  removePlacement(lastId);
-  saveProgress();
-  renderAll();
-}
-
 function handleCellClick(key) {
+  setSelectedKey(key);
   const cellMap = getPlacedCellMap();
   if (cellMap[key]) {
-    removePlacement(cellMap[key].tileId);
+    removePlacement(cellMap[key].placementId);
+    resetPending();
     saveProgress();
     renderAll();
     return;
   }
 
-  if (!selectedTileId) {
-    document.getElementById('message').textContent = '먼저 위쪽 도미노를 선택하세요.';
+  if (!pendingFirstKey) {
+    beginPending(key);
+    renderAll();
     return;
   }
 
-  const values = currentTileValues();
-  if (!startCellKey) {
-    const fixed = cellFixedValue(key);
-    if (fixed && fixed !== values[0]) {
-      document.getElementById('message').textContent = '첫 번째 숫자와 맞는 칸을 선택하거나 순서를 뒤집으세요.';
+  if (pendingFirstValue == null) {
+    beginPending(key);
+    renderAll();
+    return;
+  }
+
+  if (!pendingSecondKey) {
+    if (key === pendingFirstKey) {
+      resetPending();
+      renderAll();
       return;
     }
-    startCellKey = key;
+    if (!areAdjacent(pendingFirstKey, key)) {
+      beginPending(key);
+      renderAll();
+      return;
+    }
+    pendingSecondKey = key;
+    const fixed = cellFixedValue(key);
+    if (fixed) {
+      placeDomino(pendingFirstKey, pendingFirstValue, key, fixed);
+      return;
+    }
     renderAll();
     return;
   }
 
-  if (startCellKey === key) {
-    startCellKey = null;
+  if (key === pendingSecondKey) {
+    pendingSecondKey = null;
     renderAll();
     return;
   }
 
-  if (!areAdjacent(startCellKey, key)) {
-    document.getElementById('message').textContent = '도미노는 인접한 두 칸에만 놓을 수 있습니다.';
+  if (key === pendingFirstKey) {
+    pendingSecondKey = null;
+    renderAll();
     return;
   }
 
-  const success = placeSelectedDomino(startCellKey, key);
-  if (!success) {
-    document.getElementById('message').textContent = '고정 숫자나 기존 도미노와 충돌합니다.';
+  if (areAdjacent(pendingFirstKey, key)) {
+    pendingSecondKey = key;
+    const fixed = cellFixedValue(key);
+    if (fixed) {
+      placeDomino(pendingFirstKey, pendingFirstValue, key, fixed);
+      return;
+    }
+  } else {
+    beginPending(key);
   }
+  renderAll();
+}
+
+function handleDigitInput(n) {
+  if (!pendingFirstKey) return;
+
+  if (pendingFirstValue == null) {
+    const fixed = cellFixedValue(pendingFirstKey);
+    if (fixed && fixed !== n) return;
+    pendingFirstValue = n;
+    if (pendingSecondKey) {
+      const fixed2 = cellFixedValue(pendingSecondKey);
+      if (fixed2) {
+        placeDomino(pendingFirstKey, pendingFirstValue, pendingSecondKey, fixed2);
+        return;
+      }
+    }
+    renderAll();
+    return;
+  }
+
+  if (!pendingSecondKey) return;
+  const fixed = cellFixedValue(pendingSecondKey);
+  if (fixed && fixed !== n) return;
+  placeDomino(pendingFirstKey, pendingFirstValue, pendingSecondKey, n);
+}
+
+function handleSelectedDigitInput(n) {
+  if (!selectedKey) return;
+  if (!pendingFirstKey) {
+    beginPending(selectedKey);
+  } else if (pendingFirstKey && pendingFirstValue != null && !pendingSecondKey && selectedKey !== pendingFirstKey && areAdjacent(pendingFirstKey, selectedKey)) {
+    pendingSecondKey = selectedKey;
+    const fixed = cellFixedValue(selectedKey);
+    if (fixed) {
+      placeDomino(pendingFirstKey, pendingFirstValue, selectedKey, fixed);
+      return;
+    }
+  }
+  handleDigitInput(n);
+}
+
+function moveSelection(dr, dc) {
+  let baseKey = selectedKey;
+  if (!baseKey) {
+    const first = [...activeSet][0];
+    setSelectedKey(first || null);
+    renderAll();
+    return;
+  }
+
+  let [r, c] = baseKey.split(',').map(Number);
+  while (true) {
+    r += dr;
+    c += dc;
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) break;
+    const key = `${r},${c}`;
+    if (activeSet.has(key)) {
+      setSelectedKey(key);
+      break;
+    }
+  }
+  renderAll();
 }
 
 function buildBoard() {
   const boardEl = document.getElementById('board');
   boardEl.innerHTML = '';
-  for (let r = 0; r < SIZE; r++) {
-    for (let c = 0; c < SIZE; c++) {
+  boardEl.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+  boardEl.style.gridTemplateRows = `repeat(${ROWS}, 1fr)`;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
       const key = `${r},${c}`;
       const cell = document.createElement('div');
       if (!activeSet.has(key)) {
@@ -553,61 +595,81 @@ function buildBoard() {
   }
 }
 
-function renderDominoBank() {
-  const bank = document.getElementById('dominoBank');
-  bank.innerHTML = '';
+function renderNumpad() {
+  const numpad = document.getElementById('numpad');
+  if (numpad.childElementCount) return;
+  for (let n = 1; n <= 6; n++) {
+    const btn = document.createElement('button');
+    btn.textContent = n;
+    btn.addEventListener('click', () => handleDigitInput(n));
+    numpad.appendChild(btn);
+  }
+}
+
+function renderRemaining() {
+  const title = document.getElementById('remainingTitle');
+  const grid = document.getElementById('remainingGrid');
+  title.textContent = `남은 도미노 ${DOMINOES.length - Object.keys(placements).length}개`;
+  grid.innerHTML = '';
+  const usedCounts = {};
+  Object.values(placements).forEach(placement => {
+    usedCounts[placement.tileId] = (usedCounts[placement.tileId] || 0) + 1;
+  });
   for (let row = 1; row <= 6; row++) {
     const rowEl = document.createElement('div');
-    rowEl.className = 'domino-row';
+    rowEl.className = 'remaining-row';
     for (let left = 1; left <= row; left++) {
       const tileId = `${left}-${row}`;
-      const tile = getTile(tileId);
-      const btn = document.createElement('button');
-      btn.className = 'domino-tile split';
-      if (selectedTileId === tileId) btn.classList.add('selected');
-      if (selectedTileId === tileId && selectedFlip && tile.a !== tile.b) btn.classList.add('flip');
-      if (placements[tileId]) btn.classList.add('used');
-      btn.innerHTML = `
-        <span class="domino-tile-label">
-          <span>${selectedTileId === tileId && selectedFlip ? tile.b : tile.a}</span>
-          <span>${selectedTileId === tileId && selectedFlip ? tile.a : tile.b}</span>
-        </span>
-      `;
-      btn.addEventListener('click', () => handleTileClick(tileId));
-      rowEl.appendChild(btn);
+      const el = document.createElement('div');
+      el.className = `remaining-domino${usedCounts[tileId] ? ' used' : ''}`;
+      if ((usedCounts[tileId] || 0) > 1) {
+        el.style.borderColor = '#b85e5e';
+        el.style.background = '#f7e0e0';
+        el.style.color = '#964848';
+      } else {
+        el.style.borderColor = '';
+        el.style.background = '';
+        el.style.color = '';
+      }
+      el.innerHTML = `<span>${left}</span><span>${row}</span>`;
+      rowEl.appendChild(el);
     }
-    bank.appendChild(rowEl);
+    grid.appendChild(rowEl);
   }
-
-  const help = document.getElementById('bankHelp');
-  if (!selectedTileId) {
-    help.textContent = '도미노를 선택하고, 도형에서 첫 번째 칸과 두 번째 칸을 순서대로 클릭하세요.';
-    return;
-  }
-  const values = currentTileValues();
-  help.textContent = startCellKey
-    ? `${values[0]}-${values[1]} 도미노의 두 번째 칸을 선택하세요.`
-    : `${values[0]}-${values[1]} 도미노를 배치할 첫 번째 칸을 선택하세요.`;
 }
 
 function evaluateState() {
   const cellMap = getPlacedCellMap();
   const blankErrors = new Set();
+  const blankOk = new Set();
+  const blankEdgeErrors = new Set();
   const touchErrors = new Set();
   const dominoErrors = new Set();
   const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+  const usedCounts = {};
+  Object.entries(placements).forEach(([placementId, placement]) => {
+    usedCounts[placement.tileId] = (usedCounts[placement.tileId] || 0) + 1;
+  });
+  Object.entries(placements).forEach(([placementId, placement]) => {
+    if ((usedCounts[placement.tileId] || 0) > 1) dominoErrors.add(placementId);
+  });
 
   for (const key of activeSet) {
     if (cellMap[key]) continue;
     const [r, c] = key.split(',').map(Number);
+    let touchesEdge = false;
+    let touchesBlank = false;
     for (const [dr, dc] of dirs) {
       const nr = r + dr;
       const nc = c + dc;
       const neighborKey = `${nr},${nc}`;
-      if (!inShape(nr, nc) || (!cellMap[neighborKey] && activeSet.has(neighborKey))) {
-        blankErrors.add(key);
-      }
+      if (!inShape(nr, nc)) touchesEdge = true;
+      else if (!cellMap[neighborKey] && activeSet.has(neighborKey)) touchesBlank = true;
     }
+
+    if (touchesEdge || touchesBlank) blankErrors.add(key);
+    if (touchesEdge && !touchesBlank) blankEdgeErrors.add(key);
+    else if (!touchesBlank) blankOk.add(key);
   }
 
   for (const key of activeSet) {
@@ -624,24 +686,25 @@ function evaluateState() {
       if (here.tileId !== next.tileId && here.value !== next.value) {
         touchErrors.add(key);
         touchErrors.add(neighborKey);
-        dominoErrors.add(here.tileId);
-        dominoErrors.add(next.tileId);
+        dominoErrors.add(here.placementId);
+        dominoErrors.add(next.placementId);
       }
     }
   }
 
-  return { cellMap, blankErrors, touchErrors, dominoErrors };
+  return { cellMap, blankErrors, blankOk, blankEdgeErrors, touchErrors, dominoErrors };
 }
 
 function renderBoard() {
-  const { cellMap, blankErrors, touchErrors, dominoErrors } = evaluateState();
+  const { cellMap, blankOk, blankEdgeErrors, touchErrors, dominoErrors } = evaluateState();
   document.querySelectorAll('.domino-overlay').forEach(el => el.remove());
 
   for (const key of activeSet) {
     const cell = cellEls[key];
     const valueEl = cell.querySelector('.cell-value');
-    cell.classList.remove('start', 'blank-error', 'touch-error', 'fixed');
+    cell.classList.remove('selected', 'focused', 'pending', 'candidate', 'blank-ok', 'blank-edge-error', 'touch-error', 'fixed');
     const placed = cellMap[key];
+
     if (placed) {
       valueEl.textContent = placed.value;
       if (cellFixedValue(key)) cell.classList.add('fixed');
@@ -651,13 +714,24 @@ function renderBoard() {
     } else {
       valueEl.textContent = '';
     }
-    if (!placed && startCellKey === key) cell.classList.add('start');
-    if (blankErrors.has(key)) cell.classList.add('blank-error');
+
+    if (key === selectedKey) cell.classList.add('focused');
+    if (!placed && key === pendingFirstKey) {
+      cell.classList.add(pendingFirstValue == null ? 'selected' : 'pending');
+      if (pendingFirstValue != null && !cellFixedValue(key)) valueEl.textContent = pendingFirstValue;
+    }
+    if (!placed && key === pendingSecondKey) cell.classList.add('pending');
+    if (!placed && pendingFirstKey && pendingFirstValue != null && !pendingSecondKey && key !== pendingFirstKey && areAdjacent(pendingFirstKey, key)) {
+      cell.classList.add('candidate');
+    }
+
+    if (blankOk.has(key)) cell.classList.add('blank-ok');
+    if (blankEdgeErrors.has(key)) cell.classList.add('blank-edge-error');
     if (touchErrors.has(key)) cell.classList.add('touch-error');
   }
 
   const boardWrap = document.getElementById('boardWrap');
-  for (const [tileId, placement] of Object.entries(placements)) {
+  for (const [placementId, placement] of Object.entries(placements)) {
     const cell1 = cellEls[placement.cells[0]];
     const cell2 = cellEls[placement.cells[1]];
     if (!cell1 || !cell2) continue;
@@ -666,7 +740,7 @@ function renderBoard() {
     const wrapRect = boardWrap.getBoundingClientRect();
     const overlay = document.createElement('div');
     overlay.className = 'domino-overlay';
-    if (dominoErrors.has(tileId)) overlay.classList.add('error');
+    if (dominoErrors.has(placementId)) overlay.classList.add('error');
     overlay.style.left = `${Math.min(rect1.left, rect2.left) - wrapRect.left + 2}px`;
     overlay.style.top = `${Math.min(rect1.top, rect2.top) - wrapRect.top + 2}px`;
     overlay.style.width = `${Math.max(rect1.right, rect2.right) - Math.min(rect1.left, rect2.left) - 4}px`;
@@ -679,15 +753,7 @@ function updateMessage() {
   const { blankErrors, touchErrors } = evaluateState();
   const messageEl = document.getElementById('message');
   if (Object.keys(placements).length === DOMINOES.length && blankErrors.size === 0 && touchErrors.size === 0) {
-    messageEl.textContent = '완성!';
-    return;
-  }
-  if (blankErrors.size > 0) {
-    messageEl.textContent = '빈칸은 서로 또는 도형 외곽과 변을 맞대면 안 됩니다.';
-    return;
-  }
-  if (touchErrors.size > 0) {
-    messageEl.textContent = '서로 다른 도미노가 맞닿는 곳은 같은 숫자여야 합니다.';
+    messageEl.textContent = '축하합니다! 퍼즐을 완성했습니다!';
     return;
   }
   messageEl.textContent = '';
@@ -696,8 +762,18 @@ function updateMessage() {
 function checkComplete() {
   const { cellMap, blankErrors, touchErrors } = evaluateState();
   if (Object.keys(placements).length !== DOMINOES.length) return false;
-  for (const [key, value] of Object.entries(FIXED)) {
-    if (!cellMap[key] || cellMap[key].value !== value) return false;
+  const usedCounts = {};
+  Object.values(placements).forEach(placement => {
+    usedCounts[placement.tileId] = (usedCounts[placement.tileId] || 0) + 1;
+  });
+  if (DOMINOES.some(tile => usedCounts[tile.id] !== 1)) return false;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const fixed = FIXED_GRID[r][c];
+      if (!fixed) continue;
+      const key = `${r},${c}`;
+      if (!cellMap[key] || cellMap[key].value !== fixed) return false;
+    }
   }
   if (blankErrors.size || touchErrors.size) return false;
   updateMessage();
@@ -706,7 +782,7 @@ function checkComplete() {
 }
 
 function renderAll() {
-  renderDominoBank();
+  renderRemaining();
   renderBoard();
   updateMessage();
 }
@@ -715,9 +791,8 @@ function resetBoard() {
   confirmPuzzleReset(PUZZLE_ID, () => {
     placements = {};
     placementOrder = [];
-    selectedTileId = null;
-    selectedFlip = false;
-    startCellKey = null;
+    placementSeq = 0;
+    resetPending();
     saveProgress();
     renderAll();
   });
@@ -725,12 +800,14 @@ function resetBoard() {
 
 function handleCloudSave() {
   saveProgressCloud(PUZZLE_ID, {
-    placements: Object.entries(placements).map(([tileId, placement]) => ({
-      tileId,
+    placements: Object.entries(placements).map(([placementId, placement]) => ({
+      placementId,
+      tileId: placement.tileId,
       cells: placement.cells,
       values: placement.values,
     })),
     order: placementOrder,
+    seq: placementSeq,
   });
 }
 
@@ -739,25 +816,28 @@ async function handleCloudLoad() {
     if (!state || !Array.isArray(state.placements)) return;
     placements = {};
     placementOrder = Array.isArray(state.order) ? state.order.filter(id => typeof id === 'string') : [];
+    let maxSeq = 0;
     for (const item of state.placements) {
       if (!item || typeof item.tileId !== 'string') continue;
       if (!Array.isArray(item.cells) || item.cells.length !== 2) continue;
       if (!Array.isArray(item.values) || item.values.length !== 2) continue;
-      if (!getTile(item.tileId)) continue;
       if (!item.cells.every(key => activeSet.has(key))) continue;
       if (!areAdjacent(item.cells[0], item.cells[1])) continue;
       const fixed1 = cellFixedValue(item.cells[0]);
       const fixed2 = cellFixedValue(item.cells[1]);
       if ((fixed1 && fixed1 !== item.values[0]) || (fixed2 && fixed2 !== item.values[1])) continue;
-      placements[item.tileId] = {
+      const placementId = typeof item.placementId === 'string' ? item.placementId : `p${maxSeq + 1}`;
+      placements[placementId] = {
+        tileId: item.tileId,
         cells: item.cells.slice(),
         values: item.values.slice(),
       };
+      const n = parseInt(String(placementId).replace(/^p/, ''), 10);
+      if (!Number.isNaN(n)) maxSeq = Math.max(maxSeq, n);
     }
     placementOrder = placementOrder.filter(id => placements[id]);
-    selectedTileId = null;
-    selectedFlip = false;
-    startCellKey = null;
+    placementSeq = Math.max(maxSeq, Number(state.seq) || 0);
+    resetPending();
     saveProgress();
     renderAll();
     checkComplete();
@@ -766,6 +846,8 @@ async function handleCloudLoad() {
 
 loadProgress();
 buildBoard();
+renderNumpad();
+setSelectedKey([...activeSet][0] || null);
 renderAll();
 checkComplete();
 initHeader();
@@ -779,6 +861,27 @@ window.addEventListener('pageshow', e => {
   initCloudBtns();
   renderBoard();
   checkComplete();
+});
+
+document.addEventListener('keydown', e => {
+  if (/^[1-6]$/.test(e.key)) {
+    handleSelectedDigitInput(parseInt(e.key, 10));
+  } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
+    resetPending();
+    renderAll();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    moveSelection(-1, 0);
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    moveSelection(1, 0);
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    moveSelection(0, -1);
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    moveSelection(0, 1);
+  }
 });
 </script>
 </body>
