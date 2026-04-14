@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260409 스카이스크레이퍼 (큰 칸)</title>
+<meta property="og:title" content="260409 스카이스크레이퍼 (큰 칸)">
+<meta property="og:description" content="8×8 바탕 격자에서 일부 칸이 병합된 스카이스크레이퍼 퍼즐">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260409_01/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .container {
+    --controls-width: calc(6 * min(50px, 11.8vw));
+    --clue: min(28px, 6.5vw);
+  }
+
+  .bigsky-wrap {
+    width: calc(var(--controls-width) + var(--clue) * 2);
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+
+  .bigsky-board {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .bigsky-grid {
+    position: absolute;
+    left: 8.433735%;
+    top: 8.433735%;
+    width: 83.13253%;
+    height: 83.13253%;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    background: #fff;
+    border: 1.8px solid #222;
+  }
+
+  .mini-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid #aaa;
+    background: #fff;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    user-select: none;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+  }
+
+  .mini-cell:focus,
+  .mini-cell:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .clue {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #333;
+    pointer-events: none;
+  }
+
+  .clue.clue-err {
+    color: #c0392b;
+  }
+
+  .mini-cell.same-right { border-right-color: transparent; }
+  .mini-cell.same-down { border-bottom-color: transparent; }
+
+  .mini-cell.same-left { border-left-color: transparent; }
+  .mini-cell.same-up { border-top-color: transparent; }
+
+  .mini-cell.selected {
+    background: #e8e8d8;
+  }
+
+  .mini-cell.conflict {
+    background: #f5d0d0;
+    color: #c0392b;
+  }
+
+  .region-label {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    color: #4a6fa5;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .container .numpad {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    width: var(--controls-width);
+  }
+
+  .numpad button {
+    flex: 1;
+    height: 44px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    background: #f4f1eb;
+    border: 1px solid #c8c3b8;
+    border-radius: 3px;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+
+  .numpad button:hover { background: #ebe8e1; }
+
+  .container .bottom-buttons {
+    display: flex;
+    gap: 6px;
+    width: var(--controls-width);
+    margin-bottom: 8px;
+  }
+
+  .message {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #4a6fa5;
+    margin-bottom: 18px;
+    min-height: 1.4em;
+    text-align: center;
+  }
+
+  @media (max-width: 540px) {
+    body { padding: 0 8px 48px; }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260409 스카이스크레이퍼 (큰 칸)</h1>
+<p class="subtitle">큰 칸으로 나뉜 정사각형에 1부터 6까지의 높이를 채우세요</p>
+
+<div class="container puzzle-width-md align-center">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>스카이스크레이퍼 (큰 칸) 규칙</strong><br>
+    • 격자 안의 숫자는 그만큼의 높이를 가지는 건물입니다. 격자 바깥의 숫자는 그 방향에서 봤을 때 보이는 그 행이나 열에 있는 건물의 수입니다. 작은 건물은 큰 건물에 가려집니다.<br>
+    • 이 정사각형의 각 가로줄과 세로줄에는 1부터 6까지의 서로 다른 높이를 가지는 건물이 정확히 1개씩 있습니다.
+  </div>
+
+  <div class="bigsky-wrap">
+    <div class="bigsky-board" id="boardWrap">
+      <div class="bigsky-grid" id="bigskyGrid" aria-label="스카이스크레이퍼 큰 칸 구조"></div>
+    </div>
+  </div>
+
+  <div class="numpad" id="numpad"></div>
+
+  <div class="bottom-buttons">
+    <button onclick="input(0)">지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260409_01';
+const SAVE_KEY = 'puzzle_260409_01';
+const GRID_SIZE = 8;
+const VALUE_MAX = 6;
+const CLUES = {
+  top: [null, 3, null, 2, 3, null, 4, null],
+  right: [null, null, 2, 2, 4, 3, null, null],
+  bottom: [null, null, 3, 3, 2, 3, null, null],
+  left: [null, 3, null, 3, 2, null, 4, null]
+};
+
+const BOARD_BOX = {
+  left: 8.433735,
+  top: 8.433735,
+  size: 83.13253
+};
+
+const REGION_GRID = [
+  [1, 1, 2, 3, 4, 5, 6, 6],
+  [1, 7, 7, 8, 9, 10, 10, 6],
+  [11, 7, 12, 12, 13, 13, 10, 14],
+  [15, 16, 12, 12, 13, 13, 17, 18],
+  [33, 34, 30, 30, 31, 31, 35, 36],
+  [29, 25, 30, 30, 31, 31, 28, 32],
+  [19, 25, 25, 26, 27, 28, 28, 24],
+  [19, 19, 20, 21, 22, 23, 24, 24]
+];
+
+const REGION_COUNT = Math.max(...REGION_GRID.flat());
+const regionValues = Array(REGION_COUNT + 1).fill(0);
+let selectedRegion = null;
+
+function getRegionCells(regionId) {
+  const cells = [];
+  for (let r = 0; r < GRID_SIZE; r += 1) {
+    for (let c = 0; c < GRID_SIZE; c += 1) {
+      if (REGION_GRID[r][c] === regionId) cells.push([r, c]);
+    }
+  }
+  return cells;
+}
+
+const REGION_META = Array.from({ length: REGION_COUNT + 1 }, (_, regionId) => {
+  if (!regionId) return null;
+  const cells = getRegionCells(regionId);
+  const rows = cells.map(([r]) => r);
+  const cols = cells.map(([, c]) => c);
+  const minRow = Math.min(...rows);
+  const maxRow = Math.max(...rows);
+  const minCol = Math.min(...cols);
+  const maxCol = Math.max(...cols);
+  const area = (maxRow - minRow + 1) * (maxCol - minCol + 1);
+  const isRectangle = area === cells.length;
+  let anchorRow = minRow + 0.5;
+  let anchorCol = minCol + 0.5;
+  if (isRectangle) {
+    anchorRow = (minRow + maxRow + 1) / 2;
+    anchorCol = (minCol + maxCol + 1) / 2;
+  } else if (cells.length === 3) {
+    const regionCenterRow = (minRow + maxRow + 1) / 2;
+    const regionCenterCol = (minCol + maxCol + 1) / 2;
+    const boardCenterRow = GRID_SIZE / 2;
+    const boardCenterCol = GRID_SIZE / 2;
+    const targetRow = regionCenterRow < boardCenterRow ? Math.min(...rows) : Math.max(...rows);
+    const targetCol = regionCenterCol < boardCenterCol ? Math.min(...cols) : Math.max(...cols);
+    const cornerCell = cells.find(([r, c]) => r === targetRow && c === targetCol);
+    if (cornerCell) {
+      anchorRow = cornerCell[0] + 0.5;
+      anchorCol = cornerCell[1] + 0.5;
+    }
+  }
+  return {
+    anchorRow,
+    anchorCol
+  };
+});
+
+function buildLineRegions(line) {
+  const out = [];
+  for (const regionId of line) {
+    if (out[out.length - 1] !== regionId) out.push(regionId);
+  }
+  return out;
+}
+
+const ROW_REGIONS = REGION_GRID.map(buildLineRegions);
+const COL_REGIONS = Array.from({ length: GRID_SIZE }, (_, c) => buildLineRegions(REGION_GRID.map(row => row[c])));
+
+function countVisible(values) {
+  let count = 0;
+  let max = 0;
+  for (const value of values) {
+    if (value > max) {
+      count += 1;
+      max = value;
+    }
+  }
+  return count;
+}
+
+function countVisiblePrefix(values) {
+  let count = 0;
+  let max = 0;
+  for (const value of values) {
+    if (!value) break;
+    if (value > max) {
+      count += 1;
+      max = value;
+    }
+  }
+  return count;
+}
+
+function getLineValues(regionIds) {
+  return regionIds.map(regionId => regionValues[regionId]);
+}
+
+function getConflicts() {
+  const conflicts = new Set();
+  const lines = [...ROW_REGIONS, ...COL_REGIONS];
+  lines.forEach(regionIds => {
+    const seen = new Map();
+    regionIds.forEach(regionId => {
+      const value = regionValues[regionId];
+      if (!value) return;
+      if (seen.has(value)) {
+        conflicts.add(regionId);
+        conflicts.add(seen.get(value));
+      } else {
+        seen.set(value, regionId);
+      }
+    });
+  });
+  return conflicts;
+}
+
+function getClueErrors() {
+  const errors = new Set();
+  for (let i = 0; i < GRID_SIZE; i += 1) {
+    const row = getLineValues(ROW_REGIONS[i]);
+    const rowComplete = row.every(Boolean);
+    if (CLUES.left[i] !== null) {
+      const prefix = countVisiblePrefix(row);
+      if (prefix > CLUES.left[i] || (rowComplete && countVisible(row) !== CLUES.left[i])) errors.add(`L${i}`);
+    }
+    if (CLUES.right[i] !== null) {
+      const reversed = [...row].reverse();
+      const prefix = countVisiblePrefix(reversed);
+      if (prefix > CLUES.right[i] || (rowComplete && countVisible(reversed) !== CLUES.right[i])) errors.add(`R${i}`);
+    }
+
+    const col = getLineValues(COL_REGIONS[i]);
+    const colComplete = col.every(Boolean);
+    if (CLUES.top[i] !== null) {
+      const prefix = countVisiblePrefix(col);
+      if (prefix > CLUES.top[i] || (colComplete && countVisible(col) !== CLUES.top[i])) errors.add(`T${i}`);
+    }
+    if (CLUES.bottom[i] !== null) {
+      const reversed = [...col].reverse();
+      const prefix = countVisiblePrefix(reversed);
+      if (prefix > CLUES.bottom[i] || (colComplete && countVisible(reversed) !== CLUES.bottom[i])) errors.add(`B${i}`);
+    }
+  }
+  return errors;
+}
+
+function isComplete() {
+  if (regionValues.slice(1).some(value => !value)) return false;
+  if (getConflicts().size > 0) return false;
+  if (getClueErrors().size > 0) return false;
+  return true;
+}
+
+function drawBoard() {
+  const grid = document.getElementById('bigskyGrid');
+  const wrap = document.getElementById('boardWrap');
+  for (let r = 0; r < GRID_SIZE; r += 1) {
+    for (let c = 0; c < GRID_SIZE; c += 1) {
+      const id = REGION_GRID[r][c];
+      const cell = document.createElement('button');
+      cell.type = 'button';
+      const sameUp = r > 0 && REGION_GRID[r - 1][c] === id;
+      const sameDown = r < GRID_SIZE - 1 && REGION_GRID[r + 1][c] === id;
+      const sameLeft = c > 0 && REGION_GRID[r][c - 1] === id;
+      const sameRight = c < GRID_SIZE - 1 && REGION_GRID[r][c + 1] === id;
+      const anchor = !sameUp && !sameLeft;
+      cell.className = `mini-cell${sameUp ? ' same-up' : ''}${sameDown ? ' same-down' : ''}${sameLeft ? ' same-left' : ''}${sameRight ? ' same-right' : ''}${anchor ? ' region-anchor' : ''}`;
+      cell.dataset.regionId = id;
+      cell.addEventListener('click', () => {
+        selectedRegion = id;
+        renderBoard();
+      });
+      grid.appendChild(cell);
+    }
+  }
+
+  for (let regionId = 1; regionId <= REGION_COUNT; regionId += 1) {
+    const meta = REGION_META[regionId];
+    const label = document.createElement('div');
+    label.className = 'region-label';
+    label.dataset.regionLabel = regionId;
+    label.style.left = `${BOARD_BOX.left + (meta.anchorCol / GRID_SIZE) * BOARD_BOX.size}%`;
+    label.style.top = `${BOARD_BOX.top + (meta.anchorRow / GRID_SIZE) * BOARD_BOX.size}%`;
+    wrap.appendChild(label);
+  }
+
+  const cluePositions = {
+    top: CLUES.top.map((value, idx) => ({
+      value,
+      left: BOARD_BOX.left + ((idx + 0.5) / GRID_SIZE) * BOARD_BOX.size,
+      top: BOARD_BOX.top / 2,
+      key: `T${idx}`
+    })),
+    bottom: CLUES.bottom.map((value, idx) => ({
+      value,
+      left: BOARD_BOX.left + ((idx + 0.5) / GRID_SIZE) * BOARD_BOX.size,
+      top: BOARD_BOX.top + BOARD_BOX.size + ((100 - (BOARD_BOX.top + BOARD_BOX.size)) / 2),
+      key: `B${idx}`
+    })),
+    left: CLUES.left.map((value, idx) => ({
+      value,
+      left: BOARD_BOX.left / 2,
+      top: BOARD_BOX.top + ((idx + 0.5) / GRID_SIZE) * BOARD_BOX.size,
+      key: `L${idx}`
+    })),
+    right: CLUES.right.map((value, idx) => ({
+      value,
+      left: BOARD_BOX.left + BOARD_BOX.size + ((100 - (BOARD_BOX.left + BOARD_BOX.size)) / 2),
+      top: BOARD_BOX.top + ((idx + 0.5) / GRID_SIZE) * BOARD_BOX.size,
+      key: `R${idx}`
+    }))
+  };
+
+  Object.values(cluePositions).flat().forEach(({ value, left, top, key }) => {
+    if (value === null) return;
+    const clue = document.createElement('div');
+    clue.className = 'clue';
+    clue.dataset.ckey = key;
+    clue.style.left = `${left}%`;
+    clue.style.top = `${top}%`;
+    clue.textContent = value;
+    wrap.appendChild(clue);
+  });
+}
+
+function renderBoard() {
+  const conflicts = getConflicts();
+  const clueErrors = getClueErrors();
+  document.querySelectorAll('.mini-cell').forEach(cell => {
+    const regionId = Number(cell.dataset.regionId);
+    cell.classList.toggle('selected', regionId === selectedRegion);
+    cell.classList.toggle('conflict', conflicts.has(regionId));
+  });
+  document.querySelectorAll('.region-label').forEach(label => {
+    const regionId = Number(label.dataset.regionLabel);
+    label.textContent = regionValues[regionId] || '';
+  });
+  document.querySelectorAll('.clue').forEach(clue => {
+    clue.classList.toggle('clue-err', clueErrors.has(clue.dataset.ckey));
+  });
+  document.getElementById('message').textContent = isComplete() ? '축하합니다! 퍼즐을 완성했습니다!' : '';
+}
+
+function buildNumpad() {
+  const numpad = document.getElementById('numpad');
+  for (let value = 1; value <= VALUE_MAX; value += 1) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = value;
+    btn.addEventListener('click', () => input(value));
+    numpad.appendChild(btn);
+  }
+}
+
+function input(value) {
+  if (!selectedRegion) return;
+  regionValues[selectedRegion] = value;
+  renderBoard();
+  saveProgress();
+  if (isComplete()) recordCompletion(PUZZLE_ID);
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, regionValues.slice(1));
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (!Array.isArray(saved) || saved.length !== REGION_COUNT) return;
+  for (let i = 1; i <= REGION_COUNT; i += 1) regionValues[i] = saved[i - 1] || 0;
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, regionValues.slice(1));
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state) || state.length !== REGION_COUNT) return;
+    for (let i = 1; i <= REGION_COUNT; i += 1) regionValues[i] = state[i - 1] || 0;
+    renderBoard();
+    saveProgress();
+  });
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    for (let i = 1; i <= REGION_COUNT; i += 1) regionValues[i] = 0;
+    selectedRegion = null;
+    renderBoard();
+    saveProgress();
+    resetCompletion(PUZZLE_ID);
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key >= '1' && e.key <= '6') { input(parseInt(e.key, 10)); return; }
+  if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { input(0); return; }
+});
+
+drawBoard();
+buildNumpad();
+loadProgress();
+renderBoard();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>

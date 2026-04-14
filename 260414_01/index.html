@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260414 주차장</title>
+<meta property="og:title" content="260414 주차장">
+<meta property="og:description" content="숫자가 뜻하는 이동 가능 칸 수에 맞도록 1×2, 1×3 자동차를 배치하세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260414_01/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .container {
+    width: min(94vw, 520px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .board-wrap {
+    width: 100%;
+    position: relative;
+    margin-top: 20px;
+  }
+
+  .board {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    background: #fff;
+    border: 3px solid #222;
+  }
+
+  .cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-right: 1px dashed #cfcfcf;
+    border-bottom: 1px dashed #cfcfcf;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: min(6.8vw, 28px);
+    font-weight: 700;
+    color: #222;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+
+  .cell:nth-child(8n) { border-right: none; }
+  .cell:nth-child(n+57) { border-bottom: none; }
+
+  .cell:hover:not(.occupied) {
+    background: #f6f5f0;
+  }
+
+  .cell.pending {
+    background: #e8e8d8;
+  }
+
+  .cell.pending-end {
+    box-shadow: inset 0 0 0 2px rgba(74, 111, 165, 0.28);
+  }
+
+  .car-overlay {
+    position: absolute;
+    z-index: 2;
+    background: #f1f1ed;
+    border: 3px solid #111;
+    border-radius: 16px;
+    pointer-events: none;
+    box-sizing: border-box;
+  }
+
+  .car-overlay.ok {
+    background: #dcefd8;
+    border-color: #5f8b52;
+  }
+
+  .car-overlay.error {
+    background: #f3d3d3;
+    border-color: #b85e5e;
+  }
+
+  .cell.occupied {
+    background: transparent;
+  }
+
+  .cell-value {
+    position: relative;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .car-wheel {
+    position: absolute;
+    background: #111;
+    border-radius: 2px;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .message {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    min-height: 1.6em;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    color: #777;
+    text-align: center;
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page pad-48">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260414 주차장</h1>
+<p class="subtitle">칸을 골라 자동차를 선택한 뒤 확정하세요</p>
+
+<div class="container">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>주차장 규칙</strong><br>
+    • 자동차는 1×2 크기이거나 1×3 크기입니다.<br>
+    • 자동차끼리는 서로 교차하지 않습니다.<br>
+    • 자동차는 가로나 세로로만 배치될 수 있습니다.<br>
+    • 하나의 자동차는 정확히 한 개의 숫자를 포함합니다.<br>
+    • 자동차의 숫자는 그 자동차가 긴 방향으로 직선 이동할 때 다른 자동차와 부딪히지 않고 이동할 수 있는 앞뒤 빈칸 수의 합입니다.
+  </div>
+
+  <div class="board-wrap" id="boardWrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="bottom-buttons">
+    <button onclick="confirmSelection()">확정</button>
+    <button onclick="clearSelection()">선택 취소</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260414_01';
+const SAVE_KEY = 'puzzle_260414_01';
+const ROWS = 8;
+const COLS = 8;
+
+const SHAPE_GRID = Array.from({ length: ROWS }, () => Array(COLS).fill(1));
+const CLUE_GRID = [
+  [null, null, 3, null, null, null, null, null],
+  [null, 0, null, null, 3, null, 1, null],
+  [null, null, null, 1, null, null, null, 4],
+  [null, 2, null, null, null, 2, null, null],
+  [null, null, 4, null, null, null, 0, null],
+  [6, null, null, null, 3, null, null, null],
+  [null, 2, null, 1, null, null, 2, null],
+  [null, null, null, null, null, 5, null, null]
+];
+
+const ACTIVE_SET = new Set();
+const cellElements = {};
+let cars = [];
+let pending = [];
+
+function cellKey(r, c) {
+  return `${r},${c}`;
+}
+
+function sortCells(cells) {
+  return cells.slice().sort((a, b) => (a[0] - b[0]) || (a[1] - b[1]));
+}
+
+function getCarIndexAt(r, c) {
+  return cars.findIndex(car => car.cells.some(([cr, cc]) => cr === r && cc === c));
+}
+
+function isOccupied(r, c) {
+  return getCarIndexAt(r, c) !== -1;
+}
+
+function isPendingCell(r, c) {
+  return pending.some(([pr, pc]) => pr === r && pc === c);
+}
+
+function getPendingCandidate(cells) {
+  if (!cells.length) return { valid: true, contiguous: true };
+  const sorted = sortCells(cells);
+  const sameRow = sorted.every(([r]) => r === sorted[0][0]);
+  const sameCol = sorted.every(([, c]) => c === sorted[0][1]);
+  if (!sameRow && !sameCol) return { valid: false, contiguous: false };
+  if (sameRow) {
+    const cols = sorted.map(([, c]) => c);
+    const contiguous = cols[cols.length - 1] - cols[0] + 1 === cols.length;
+    return { valid: contiguous && cols.length <= 3, contiguous };
+  }
+  const rows = sorted.map(([r]) => r);
+  const contiguous = rows[rows.length - 1] - rows[0] + 1 === rows.length;
+  return { valid: contiguous && rows.length <= 3, contiguous };
+}
+
+function handleCellClick(r, c) {
+  if (!ACTIVE_SET.has(cellKey(r, c))) return;
+
+  const carIndex = getCarIndexAt(r, c);
+  if (carIndex !== -1) {
+    cars.splice(carIndex, 1);
+    pending = [];
+    onStateChange();
+    return;
+  }
+
+  const exists = isPendingCell(r, c);
+  if (exists) {
+    pending = pending.filter(([pr, pc]) => pr !== r || pc !== c);
+    renderBoard();
+    return;
+  }
+
+  if (pending.length === 1) {
+    const [[sr, sc]] = pending;
+    const dr = r - sr;
+    const dc = c - sc;
+    if ((Math.abs(dr) === 2 && dc === 0) || (Math.abs(dc) === 2 && dr === 0)) {
+      const mr = sr + dr / 2;
+      const mc = sc + dc / 2;
+      if (!isOccupied(mr, mc) && !isOccupied(r, c)) {
+        pending = sortCells([[sr, sc], [mr, mc], [r, c]]);
+        renderBoard();
+        return;
+      }
+    }
+  }
+
+  const next = [...pending, [r, c]];
+  const candidate = getPendingCandidate(next);
+  if (!candidate.valid) {
+    pending = [[r, c]];
+  } else {
+    pending = next;
+  }
+  renderBoard();
+}
+
+function buildBoard() {
+  const board = document.getElementById('board');
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const cell = document.createElement('div');
+      const key = cellKey(r, c);
+      ACTIVE_SET.add(key);
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      const value = document.createElement('span');
+      value.className = 'cell-value';
+      if (CLUE_GRID[r][c] !== null) value.textContent = CLUE_GRID[r][c];
+      cell.appendChild(value);
+      cell.addEventListener('click', () => handleCellClick(r, c));
+      cellElements[key] = cell;
+      board.appendChild(cell);
+    }
+  }
+}
+
+function getCarClues(car) {
+  return car.cells.filter(([r, c]) => CLUE_GRID[r][c] !== null).map(([r, c]) => CLUE_GRID[r][c]);
+}
+
+function getCarAxis(car) {
+  const rows = new Set(car.cells.map(([r]) => r));
+  return rows.size === 1 ? 'h' : 'v';
+}
+
+function getMoveCount(car, occupiedSet) {
+  const axis = getCarAxis(car);
+  const sorted = sortCells(car.cells);
+  let count = 0;
+  if (axis === 'h') {
+    const row = sorted[0][0];
+    let left = sorted[0][1] - 1;
+    while (left >= 0 && !occupiedSet.has(cellKey(row, left))) { count += 1; left -= 1; }
+    let right = sorted[sorted.length - 1][1] + 1;
+    while (right < COLS && !occupiedSet.has(cellKey(row, right))) { count += 1; right += 1; }
+    return count;
+  }
+  const col = sorted[0][1];
+  let up = sorted[0][0] - 1;
+  while (up >= 0 && !occupiedSet.has(cellKey(up, col))) { count += 1; up -= 1; }
+  let down = sorted[sorted.length - 1][0] + 1;
+  while (down < ROWS && !occupiedSet.has(cellKey(down, col))) { count += 1; down += 1; }
+  return count;
+}
+
+function analyzeCars() {
+  const occupied = new Set();
+  cars.forEach(car => car.cells.forEach(([r, c]) => occupied.add(cellKey(r, c))));
+
+  return cars.map(car => {
+    const clues = getCarClues(car);
+    const movement = getMoveCount(car, occupied);
+    let status = 'neutral';
+    if (clues.length !== 1) {
+      status = 'error';
+    } else if (clues[0] > movement) {
+      status = 'error';
+    } else if (clues[0] === movement) {
+      status = 'ok';
+    }
+    return { ...car, clues, movement, status };
+  });
+}
+
+function renderCars() {
+  document.querySelectorAll('.car-overlay, .car-wheel').forEach(el => el.remove());
+  document.querySelectorAll('.cell').forEach(el => {
+    el.classList.remove('occupied', 'pending', 'pending-end');
+  });
+
+  const wrap = document.getElementById('boardWrap');
+  const boardEl = document.getElementById('board');
+  const boardLeft = boardEl.offsetLeft + boardEl.clientLeft;
+  const boardTop = boardEl.offsetTop + boardEl.clientTop;
+  const cellWidth = boardEl.clientWidth / COLS;
+  const cellHeight = boardEl.clientHeight / ROWS;
+  const analyzed = analyzeCars();
+  analyzed.forEach((car, index) => {
+    const sorted = sortCells(car.cells);
+    const axis = getCarAxis(car);
+    const overlay = document.createElement('div');
+    overlay.className = `car-overlay${car.status === 'ok' ? ' ok' : car.status === 'error' ? ' error' : ''}`;
+    const inset = 4.5;
+    let leftPx;
+    let topPx;
+    let widthPx;
+    let heightPx;
+    if (axis === 'h') {
+      leftPx = boardLeft + sorted[0][1] * cellWidth + inset;
+      topPx = boardTop + sorted[0][0] * cellHeight + inset;
+      widthPx = sorted.length * cellWidth - inset * 2;
+      heightPx = cellHeight - inset * 2;
+    } else {
+      leftPx = boardLeft + sorted[0][1] * cellWidth + inset;
+      topPx = boardTop + sorted[0][0] * cellHeight + inset;
+      widthPx = cellWidth - inset * 2;
+      heightPx = sorted.length * cellHeight - inset * 2;
+    }
+    overlay.style.left = `${leftPx}px`;
+    overlay.style.top = `${topPx}px`;
+    overlay.style.width = `${widthPx}px`;
+    overlay.style.height = `${heightPx}px`;
+    wrap.appendChild(overlay);
+
+    const wheelSize = axis === 'h' ? { w: 12, h: 4 } : { w: 4, h: 12 };
+    const wheelGap = 0;
+
+    const wheelPositions = axis === 'h'
+      ? [
+          { left: leftPx + 18, top: topPx - (wheelSize.h + wheelGap) },
+          { left: leftPx + widthPx - 18 - wheelSize.w, top: topPx - (wheelSize.h + wheelGap) },
+          { left: leftPx + 18, top: topPx + heightPx + wheelGap },
+          { left: leftPx + widthPx - 18 - wheelSize.w, top: topPx + heightPx + wheelGap }
+        ]
+      : [
+          { left: leftPx - (wheelSize.w + wheelGap), top: topPx + 18 },
+          { left: leftPx - (wheelSize.w + wheelGap), top: topPx + heightPx - 18 - wheelSize.h },
+          { left: leftPx + widthPx + wheelGap, top: topPx + 18 },
+          { left: leftPx + widthPx + wheelGap, top: topPx + heightPx - 18 - wheelSize.h }
+        ];
+
+    wheelPositions.forEach(({ left, top }) => {
+      const wheel = document.createElement('div');
+      wheel.className = 'car-wheel';
+      wheel.style.left = `${left}px`;
+      wheel.style.top = `${top}px`;
+      wheel.style.width = `${wheelSize.w}px`;
+      wheel.style.height = `${wheelSize.h}px`;
+      wrap.appendChild(wheel);
+    });
+
+    car.cells.forEach(([r, c]) => {
+      cellElements[cellKey(r, c)].classList.add('occupied');
+    });
+  });
+}
+
+function renderPending() {
+  pending.forEach(([r, c], index) => {
+    const cell = cellElements[cellKey(r, c)];
+    cell.classList.add('pending');
+    if (index === pending.length - 1) cell.classList.add('pending-end');
+  });
+}
+
+function renderBoard() {
+  renderCars();
+  renderPending();
+  const complete = isComplete();
+  document.getElementById('message').textContent = complete ? '축하합니다! 퍼즐을 완성했습니다!' : '';
+  if (complete) recordCompletion(PUZZLE_ID);
+}
+
+function confirmSelection() {
+  const candidate = getPendingCandidate(pending);
+  if (!candidate.valid || pending.length < 2 || pending.length > 3) return;
+  if (pending.some(([r, c]) => isOccupied(r, c))) return;
+  cars.push({ cells: sortCells(pending) });
+  pending = [];
+  onStateChange();
+}
+
+function clearSelection() {
+  pending = [];
+  renderBoard();
+}
+
+function isComplete() {
+  const analyzed = analyzeCars();
+  const clueCovered = new Set();
+  analyzed.forEach(car => {
+    car.cells.forEach(([r, c]) => {
+      if (CLUE_GRID[r][c] !== null) clueCovered.add(cellKey(r, c));
+    });
+  });
+  const allClues = [];
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      if (CLUE_GRID[r][c] !== null) allClues.push(cellKey(r, c));
+    }
+  }
+  return pending.length === 0
+    && analyzed.length > 0
+    && analyzed.every(car => car.status === 'ok')
+    && allClues.every(key => clueCovered.has(key));
+}
+
+function onStateChange() {
+  renderBoard();
+  saveProgress();
+}
+
+function serializeState() {
+  return cars.map(car => sortCells(car.cells));
+}
+
+function applyState(state) {
+  if (!Array.isArray(state)) return;
+  const nextCars = [];
+  for (const car of state) {
+    if (!Array.isArray(car) || car.length < 2 || car.length > 3) continue;
+    const cells = car.map(([r, c]) => [Number(r), Number(c)]);
+    const candidate = getPendingCandidate(cells);
+    if (!candidate.valid) continue;
+    nextCars.push({ cells: sortCells(cells) });
+  }
+  cars = nextCars;
+  pending = [];
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, serializeState());
+}
+
+function loadProgress() {
+  applyState(loadLocalState(SAVE_KEY));
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, serializeState());
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    applyState(state);
+    renderBoard();
+    saveProgress();
+  });
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    cars = [];
+    pending = [];
+    renderBoard();
+    saveProgress();
+    resetCompletion(PUZZLE_ID);
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    confirmSelection();
+    return;
+  }
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    e.preventDefault();
+    clearSelection();
+  }
+});
+
+buildBoard();
+loadProgress();
+renderBoard();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>

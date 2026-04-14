@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260414 일본식 합</title>
+<meta property="og:title" content="260414 일본식 합">
+<meta property="og:description" content="행과 열의 연속된 숫자 뭉치 합 단서를 만족하도록 1부터 6까지를 채우는 퍼즐">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260414_03/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .container {
+    width: min(92vw, 580px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .frame {
+    position: relative;
+    width: 100%;
+    padding: 86px 18px 16px 88px;
+    margin-top: 20px;
+    box-sizing: border-box;
+  }
+
+  .board-wrap {
+    width: 100%;
+    position: relative;
+    aspect-ratio: 1 / 1;
+  }
+
+  .board {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(7, 1fr);
+    background: #fff;
+    border: 2.5px solid #222;
+    box-sizing: border-box;
+  }
+
+  .cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-right: 1px solid #888;
+    border-bottom: 1px solid #888;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: min(6vw, 30px);
+    font-weight: 700;
+    color: #4a6fa5;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s;
+  }
+
+  .cell:nth-child(7n) { border-right: none; }
+  .cell:nth-child(n+43) { border-bottom: none; }
+  .cell:hover:not(.blocked):not(.selected):not(.error) { background: #f5f5f0; }
+  .cell.selected { background: #e8e8d8 !important; }
+  .cell.error { background: #f5d0d0 !important; color: #c0392b !important; }
+  .cell.blocked {
+    color: #999;
+    background: #f4f4f1;
+    cursor: default;
+  }
+
+  .cell-num {
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .outside-clues {
+    position: absolute;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .clue-stack {
+    position: absolute;
+    display: flex;
+    color: #111;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: min(4.8vw, 22px);
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .clue-stack.top {
+    flex-direction: column;
+    gap: 8px;
+    transform: translate(-50%, -100%);
+  }
+
+  .clue-stack.left {
+    flex-direction: row;
+    gap: 10px;
+    transform: translate(-100%, -50%);
+    justify-content: flex-end;
+  }
+
+  .clue-stack.ok {
+    color: #5f8b52;
+  }
+
+  .numpad {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .numpad button {
+    flex: 1;
+    height: 44px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    border: 1.5px solid #c8c3b8;
+    border-radius: 3px;
+    background: #f4f1eb;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.08s;
+  }
+
+  .numpad button:hover { background: #e8e4da; }
+  .numpad button:active { transform: scale(0.95); background: #ddd9cf; }
+
+  .message {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    min-height: 1.6em;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    color: #777;
+    text-align: center;
+  }
+
+  @media (max-width: 560px) {
+    .container {
+      width: min(96vw, 540px);
+    }
+
+    .frame {
+      padding: 68px 12px 10px 68px;
+    }
+
+    .cell {
+      font-size: min(5.5vw, 24px);
+    }
+
+    .clue-stack {
+      font-size: min(4.4vw, 19px);
+    }
+
+    .clue-stack.top { gap: 5px; }
+    .clue-stack.left { gap: 7px; }
+
+    .numpad { gap: 5px; }
+    .numpad button {
+      height: min(9.5vw, 44px);
+      font-size: min(4.4vw, 18px);
+    }
+
+    .bottom-buttons { gap: 5px; }
+    .bottom-buttons button {
+      height: min(8.5vw, 40px);
+      font-size: min(3.2vw, 13px);
+    }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page pad-48">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260414 일본식 합</h1>
+<p class="subtitle">행과 열의 연속된 숫자 뭉치 합 단서를 만족하도록 1부터 6까지를 채우세요</p>
+
+<div class="container">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>일본식 합 규칙</strong><br>
+    • 각 행과 열에는 같은 숫자가 두 번 이상 나타나지 않습니다. 한 번도 나타나지 않아도 됩니다.<br>
+    • 칸은 비어있을 수 있습니다.<br>
+    • 격자 바깥의 숫자들은, 연속된 숫자 뭉치들의 숫자 합을 그 방향에서 본 순서대로 나타냅니다.<br>
+    • 물음표(?)는 주어지지 않은 0이 아닌 값을 뜻합니다. X 표시가 있다면 그 칸은 반드시 빈 칸입니다.
+  </div>
+
+  <div class="frame" id="frame">
+    <div class="outside-clues" id="outsideClues"></div>
+    <div class="board-wrap" id="boardWrap">
+      <div class="board" id="board"></div>
+    </div>
+  </div>
+
+  <div class="numpad" id="numpad"></div>
+
+  <div class="bottom-buttons">
+    <button onclick="placeNumber(0)">지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260414_03';
+const SAVE_KEY = 'puzzle_260414_03';
+const ROWS = 7;
+const COLS = 7;
+
+const SHAPE_GRID = Array.from({ length: ROWS }, () => Array(COLS).fill(1));
+const BLOCK_GRID = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+
+const TOP_CLUES = [
+  [6, 8],
+  [9, 11],
+  [8, '?', '?'],
+  [19],
+  [1, '?', '?'],
+  [6, 13],
+  [7, 3]
+];
+
+const LEFT_CLUES = [
+  ['?', '?'],
+  [8, '?'],
+  ['?', '?', '?'],
+  ['?', '?', 4],
+  [15, '?'],
+  [6, 6, 6],
+  [4, 2, 9]
+];
+
+let board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+let sel = [0, 0];
+
+function cellKey(r, c) {
+  return `${r},${c}`;
+}
+
+function buildGrid() {
+  const boardEl = document.getElementById('board');
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const cell = document.createElement('div');
+      cell.className = `cell${BLOCK_GRID[r][c] ? ' blocked' : ''}`;
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.addEventListener('click', () => {
+        if (BLOCK_GRID[r][c]) return;
+        sel = [r, c];
+        renderBoard();
+      });
+      const span = document.createElement('span');
+      span.className = 'cell-num';
+      cell.appendChild(span);
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function buildNumpad() {
+  const numpad = document.getElementById('numpad');
+  for (let n = 1; n <= 6; n += 1) {
+    const btn = document.createElement('button');
+    btn.textContent = n;
+    btn.addEventListener('click', () => placeNumber(n));
+    numpad.appendChild(btn);
+  }
+}
+
+function getCellEl(r, c) {
+  return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+}
+
+function getDuplicateConflicts() {
+  const set = new Set();
+
+  for (let r = 0; r < ROWS; r += 1) {
+    const seen = new Map();
+    for (let c = 0; c < COLS; c += 1) {
+      const v = board[r][c];
+      if (!v) continue;
+      if (seen.has(v)) {
+        set.add(cellKey(r, c));
+        set.add(cellKey(r, seen.get(v)));
+      } else {
+        seen.set(v, c);
+      }
+    }
+  }
+
+  for (let c = 0; c < COLS; c += 1) {
+    const seen = new Map();
+    for (let r = 0; r < ROWS; r += 1) {
+      const v = board[r][c];
+      if (!v) continue;
+      if (seen.has(v)) {
+        set.add(cellKey(r, c));
+        set.add(cellKey(seen.get(v), c));
+      } else {
+        seen.set(v, r);
+      }
+    }
+  }
+
+  return set;
+}
+
+function getLineSums(values) {
+  const sums = [];
+  let run = 0;
+  values.forEach(v => {
+    if (v > 0) {
+      run += v;
+    } else if (run > 0) {
+      sums.push(run);
+      run = 0;
+    }
+  });
+  if (run > 0) sums.push(run);
+  return sums;
+}
+
+function lineMatches(clues, sums) {
+  if (!clues) return true;
+  if (clues.length !== sums.length) return false;
+  for (let i = 0; i < clues.length; i += 1) {
+    if (clues[i] === '?') {
+      if (sums[i] <= 0) return false;
+    } else if (clues[i] !== sums[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function getRowSums(r) {
+  return getLineSums(board[r]);
+}
+
+function getColSums(c) {
+  return getLineSums(Array.from({ length: ROWS }, (_, r) => board[r][c]));
+}
+
+function buildOutsideClues() {
+  const layer = document.getElementById('outsideClues');
+  const boardWrap = document.getElementById('boardWrap');
+  const boardEl = document.getElementById('board');
+  layer.innerHTML = '';
+  layer.style.left = `${boardWrap.offsetLeft}px`;
+  layer.style.top = `${boardWrap.offsetTop}px`;
+  layer.style.width = `${boardWrap.clientWidth}px`;
+  layer.style.height = `${boardWrap.clientHeight}px`;
+
+  const cellWidth = boardEl.clientWidth / COLS;
+  const cellHeight = boardEl.clientHeight / ROWS;
+
+  TOP_CLUES.forEach((clues, c) => {
+    if (!clues) return;
+    const el = document.createElement('div');
+    el.className = 'clue-stack top';
+    if (lineMatches(clues, getColSums(c))) el.classList.add('ok');
+    el.style.left = `${(c + 0.5) * cellWidth}px`;
+    el.style.top = '-12px';
+    clues.forEach(clue => {
+      const span = document.createElement('span');
+      span.textContent = clue;
+      el.appendChild(span);
+    });
+    layer.appendChild(el);
+  });
+
+  LEFT_CLUES.forEach((clues, r) => {
+    if (!clues) return;
+    const el = document.createElement('div');
+    el.className = 'clue-stack left';
+    if (lineMatches(clues, getRowSums(r))) el.classList.add('ok');
+    el.style.left = '-12px';
+    el.style.top = `${(r + 0.5) * cellHeight}px`;
+    clues.forEach(clue => {
+      const span = document.createElement('span');
+      span.textContent = clue;
+      el.appendChild(span);
+    });
+    layer.appendChild(el);
+  });
+}
+
+function renderBoard() {
+  const conflicts = getDuplicateConflicts();
+
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const cell = getCellEl(r, c);
+      const span = cell.querySelector('.cell-num');
+      const blocked = BLOCK_GRID[r][c];
+      cell.classList.toggle('selected', !!sel && sel[0] === r && sel[1] === c && !blocked);
+      cell.classList.toggle('error', conflicts.has(cellKey(r, c)));
+      span.textContent = blocked ? 'X' : (board[r][c] || '');
+    }
+  }
+
+  buildOutsideClues();
+
+  const complete = isComplete();
+  document.getElementById('message').textContent = complete ? '축하합니다! 퍼즐을 완성했습니다!' : '';
+  if (complete) recordCompletion(PUZZLE_ID);
+}
+
+function placeNumber(n) {
+  if (!sel) return;
+  const [r, c] = sel;
+  if (BLOCK_GRID[r][c]) return;
+  board[r][c] = n;
+  renderBoard();
+  saveProgress();
+}
+
+function moveSelection(dr, dc) {
+  if (!sel) {
+    sel = [0, 0];
+    renderBoard();
+    return;
+  }
+  let [r, c] = sel;
+  do {
+    r = (r + dr + ROWS) % ROWS;
+    c = (c + dc + COLS) % COLS;
+  } while (BLOCK_GRID[r][c] && !(r === sel[0] && c === sel[1]));
+  sel = [r, c];
+  renderBoard();
+}
+
+function isComplete() {
+  if (getDuplicateConflicts().size > 0) return false;
+  for (let r = 0; r < ROWS; r += 1) {
+    if (!lineMatches(LEFT_CLUES[r], getRowSums(r))) return false;
+  }
+  for (let c = 0; c < COLS; c += 1) {
+    if (!lineMatches(TOP_CLUES[c], getColSums(c))) return false;
+  }
+  return true;
+}
+
+function serializeState() {
+  return board.map(row => [...row]);
+}
+
+function applyState(state) {
+  if (!Array.isArray(state) || state.length !== ROWS) return;
+  const next = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+  for (let r = 0; r < ROWS; r += 1) {
+    if (!Array.isArray(state[r]) || state[r].length !== COLS) return;
+    for (let c = 0; c < COLS; c += 1) {
+      const raw = Number(state[r][c]) || 0;
+      next[r][c] = BLOCK_GRID[r][c] ? 0 : (raw >= 1 && raw <= 6 ? raw : 0);
+    }
+  }
+  board = next;
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, serializeState());
+}
+
+function loadProgress() {
+  applyState(loadLocalState(SAVE_KEY));
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, serializeState());
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    applyState(state);
+    renderBoard();
+    saveProgress();
+  });
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+    renderBoard();
+    saveProgress();
+    resetCompletion(PUZZLE_ID);
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (/^[1-6]$/.test(e.key)) {
+    placeNumber(Number(e.key));
+    return;
+  }
+  if (e.key === '0' || e.key === 'Backspace' || e.key === 'Delete') {
+    e.preventDefault();
+    placeNumber(0);
+    return;
+  }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    moveSelection(-1, 0);
+    return;
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    moveSelection(1, 0);
+    return;
+  }
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    moveSelection(0, -1);
+    return;
+  }
+  if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    moveSelection(0, 1);
+  }
+});
+
+buildGrid();
+buildNumpad();
+loadProgress();
+renderBoard();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+window.addEventListener('resize', buildOutsideClues);
+</script>
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260413 스도쿠 (XV)</title>
+<meta property="og:title" content="260413 스도쿠 (XV)">
+<meta property="og:description" content="인접한 두 칸 중 합이 5 또는 10인 쌍은 모두 표시되는 XV 스도쿠. 표시가 없으면 그런 쌍이 없습니다">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260413_01/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .board-wrap {
+    border: 2.5px solid #222;
+    position: relative;
+    margin-top: 20px;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(9, 1fr);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: min(6.2vw, 28px);
+    font-weight: 700;
+    background: #fff;
+    color: #4a6fa5;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s;
+    border-right: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+    position: relative;
+  }
+
+  .cell:nth-child(9n) { border-right: none; }
+  .cell:nth-child(n+73) { border-bottom: none; }
+  .cell.box-right { border-right: 2.5px solid #222; }
+  .cell.box-bottom { border-bottom: 2.5px solid #222; }
+  .cell.given { color: #222; }
+  .cell.selected { background: #e8e8d8 !important; }
+  .cell.error { background: #f5d0d0 !important; color: #c0392b !important; }
+  .cell.given.error { color: #c0392b !important; }
+  .cell:hover:not(.selected):not(.error) { background: #f5f5f0; }
+
+  .numpad {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .numpad button {
+    flex: 1;
+    height: 44px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    border: 1.5px solid #c8c3b8;
+    border-radius: 3px;
+    background: #f4f1eb;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.08s;
+  }
+
+  .numpad button:hover { background: #e8e4da; }
+  .numpad button:active { transform: scale(0.95); background: #ddd9cf; }
+
+  @media (max-width: 540px) {
+    body { padding: 0 8px 40px; }
+    h1 { font-size: 1.25rem; }
+    .numpad { gap: 5px; }
+    .numpad button {
+      height: min(9.5vw, 44px);
+      font-size: min(4.4vw, 18px);
+    }
+    .bottom-buttons { gap: 5px; }
+    .bottom-buttons button {
+      height: min(8.5vw, 40px);
+      font-size: min(3.2vw, 13px);
+    }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page pad-48">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260413 스도쿠 (XV)</h1>
+<p class="subtitle">합이 5인 쌍은 V, 합이 10인 쌍은 X로 모두 표시됩니다</p>
+
+<div class="container puzzle-width-md align-stretch">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>XV 스도쿠 규칙</strong><br>
+    1. 일반 스도쿠 규칙: 같은 행, 같은 열, 같은 3×3 박스 안에 1~9가 한 번씩 들어갑니다.<br>
+    2. 이웃한 칸의 숫자 합이 5인 두 칸 사이는 모두 V로 표시됩니다.<br>
+    3. 이웃한 칸의 숫자 합이 10인 두 칸 사이는 모두 X로 표시됩니다.<br>
+    4. 네, 정상입니다.
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="numpad" id="numpad"></div>
+
+  <div class="bottom-buttons">
+    <button onclick="placeNumber(0)">지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260413_01';
+const SAVE_KEY = 'puzzle_260413_01';
+
+const PRESET_GRID = [
+  [0,0,0,0,9,0,0,0,0],
+  [0,1,2,0,0,0,7,5,0],
+  [0,3,0,0,0,0,0,4,0],
+  [0,0,0,0,2,0,0,0,0],
+  [4,0,0,5,0,9,0,0,8],
+  [0,0,0,0,6,0,0,0,0],
+  [0,4,0,0,0,0,0,7,0],
+  [0,5,6,0,0,0,9,8,0],
+  [0,0,0,0,5,0,0,0,0]
+];
+
+const PRESETS = [];
+PRESET_GRID.forEach((row, r) => row.forEach((v, c) => { if (v) PRESETS.push([r, c, v]); }));
+
+let board = PRESET_GRID.map(row => [...row]);
+const GIVEN = new Set(PRESETS.map(([r, c]) => `${r},${c}`));
+let sel = null;
+
+function buildGrid() {
+  const boardEl = document.getElementById('board');
+  for (let r = 0; r < 9; r += 1) {
+    for (let c = 0; c < 9; c += 1) {
+      const cell = document.createElement('div');
+      cell.className = 'cell'
+        + (GIVEN.has(`${r},${c}`) ? ' given' : '')
+        + (c === 2 || c === 5 ? ' box-right' : '')
+        + (r === 2 || r === 5 ? ' box-bottom' : '');
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.addEventListener('click', () => {
+        sel = [r, c];
+        renderBoard();
+      });
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function getConflicts() {
+  const set = new Set();
+
+  for (let r = 0; r < 9; r += 1) {
+    const seen = new Map();
+    for (let c = 0; c < 9; c += 1) {
+      const v = board[r][c];
+      if (!v) continue;
+      if (seen.has(v)) {
+        set.add(`${r},${c}`);
+        set.add(`${r},${seen.get(v)}`);
+      } else {
+        seen.set(v, c);
+      }
+    }
+  }
+
+  for (let c = 0; c < 9; c += 1) {
+    const seen = new Map();
+    for (let r = 0; r < 9; r += 1) {
+      const v = board[r][c];
+      if (!v) continue;
+      if (seen.has(v)) {
+        set.add(`${r},${c}`);
+        set.add(`${seen.get(v)},${c}`);
+      } else {
+        seen.set(v, r);
+      }
+    }
+  }
+
+  for (let br = 0; br < 3; br += 1) {
+    for (let bc = 0; bc < 3; bc += 1) {
+      const seen = new Map();
+      for (let dr = 0; dr < 3; dr += 1) {
+        for (let dc = 0; dc < 3; dc += 1) {
+          const r = br * 3 + dr;
+          const c = bc * 3 + dc;
+          const v = board[r][c];
+          if (!v) continue;
+          if (seen.has(v)) {
+            set.add(`${r},${c}`);
+            set.add(seen.get(v));
+          } else {
+            seen.set(v, `${r},${c}`);
+          }
+        }
+      }
+    }
+  }
+
+  for (let r = 0; r < 9; r += 1) {
+    for (let c = 0; c < 9; c += 1) {
+      const v = board[r][c];
+      if (!v) continue;
+      if (r < 8 && board[r + 1][c]) {
+        const sum = v + board[r + 1][c];
+        if (sum === 5 || sum === 10) {
+          set.add(`${r},${c}`);
+          set.add(`${r + 1},${c}`);
+        }
+      }
+      if (c < 8 && board[r][c + 1]) {
+        const sum = v + board[r][c + 1];
+        if (sum === 5 || sum === 10) {
+          set.add(`${r},${c}`);
+          set.add(`${r},${c + 1}`);
+        }
+      }
+    }
+  }
+
+  return set;
+}
+
+function renderBoard() {
+  const conflicts = getConflicts();
+  document.querySelectorAll('.cell').forEach(cell => {
+    const r = Number(cell.dataset.r);
+    const c = Number(cell.dataset.c);
+    const key = `${r},${c}`;
+    cell.textContent = board[r][c] || '';
+    cell.classList.toggle('selected', !!sel && sel[0] === r && sel[1] === c);
+    cell.classList.toggle('error', conflicts.has(key));
+  });
+}
+
+function placeNumber(v) {
+  if (!sel) return;
+  const [r, c] = sel;
+  if (GIVEN.has(`${r},${c}`)) return;
+  board[r][c] = v;
+  saveProgress();
+  renderBoard();
+  checkComplete();
+}
+
+function buildNumpad() {
+  const numpad = document.getElementById('numpad');
+  for (let i = 1; i <= 9; i += 1) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    btn.addEventListener('click', () => placeNumber(i));
+    numpad.appendChild(btn);
+  }
+}
+
+function isComplete() {
+  if (!board.every(row => row.every(v => v > 0))) return false;
+  return getConflicts().size === 0;
+}
+
+function checkComplete() {
+  const msg = document.getElementById('message');
+  if (!isComplete()) {
+    msg.textContent = '';
+    return;
+  }
+  msg.textContent = '축하합니다! 퍼즐을 완성했습니다!';
+  recordCompletion(PUZZLE_ID);
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, board);
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (!Array.isArray(saved) || saved.length !== 9) return;
+  board = saved;
+  PRESETS.forEach(([r, c, v]) => { board[r][c] = v; });
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, board);
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state) || state.length !== 9) return;
+    board = state;
+    PRESETS.forEach(([r, c, v]) => { board[r][c] = v; });
+    renderBoard();
+    saveProgress();
+    checkComplete();
+  });
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    board = PRESET_GRID.map(row => [...row]);
+    sel = null;
+    renderBoard();
+    saveProgress();
+    resetCompletion(PUZZLE_ID);
+    document.getElementById('message').textContent = '';
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key >= '1' && e.key <= '9') { placeNumber(parseInt(e.key, 10)); return; }
+  if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { placeNumber(0); return; }
+  if (!sel) return;
+  const [r, c] = sel;
+  if (e.key === 'ArrowUp' && r > 0) sel = [r - 1, c];
+  else if (e.key === 'ArrowDown' && r < 8) sel = [r + 1, c];
+  else if (e.key === 'ArrowLeft' && c > 0) sel = [r, c - 1];
+  else if (e.key === 'ArrowRight' && c < 8) sel = [r, c + 1];
+  else return;
+  e.preventDefault();
+  renderBoard();
+});
+
+buildGrid();
+buildNumpad();
+loadProgress();
+renderBoard();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>

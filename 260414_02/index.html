@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260414 일본식 주차장</title>
+<meta property="og:title" content="260414 일본식 주차장">
+<meta property="og:description" content="자동차 이동 거리 단서와 바깥쪽 연속 칸 단서를 함께 만족하도록 자동차를 배치하세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260414_02/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .container {
+    width: min(92vw, 600px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .frame {
+    position: relative;
+    width: 100%;
+    padding: 66px 34px 22px 72px;
+    margin-top: 20px;
+    box-sizing: border-box;
+  }
+
+  .board-wrap {
+    width: 100%;
+    position: relative;
+    aspect-ratio: 1 / 1;
+  }
+
+  .board {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    background: #fff;
+    border: 3px solid #222;
+    box-sizing: border-box;
+  }
+
+  .cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-right: 1px dashed #cfcfcf;
+    border-bottom: 1px dashed #cfcfcf;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: min(5.5vw, 24px);
+    font-weight: 700;
+    color: #222;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+
+  .cell:nth-child(10n) { border-right: none; }
+  .cell:nth-child(n+91) { border-bottom: none; }
+  .cell:hover:not(.occupied) { background: #f6f5f0; }
+  .cell.pending { background: #e8e8d8; }
+  .cell.pending-end { box-shadow: inset 0 0 0 2px rgba(74, 111, 165, 0.28); }
+  .cell.occupied { background: transparent; }
+
+  .cell-value {
+    position: relative;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .car-overlay {
+    position: absolute;
+    z-index: 2;
+    background: #f1f1ed;
+    border: 2.5px solid #111;
+    border-radius: 12px;
+    pointer-events: none;
+    box-sizing: border-box;
+  }
+
+  .car-overlay.ok {
+    background: #dcefd8;
+    border-color: #5f8b52;
+  }
+
+  .car-overlay.error {
+    background: #f3d3d3;
+    border-color: #b85e5e;
+  }
+
+  .car-wheel {
+    position: absolute;
+    background: #111;
+    border-radius: 1.5px;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .outside-clues {
+    position: absolute;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .clue-stack {
+    position: absolute;
+    display: flex;
+    gap: 1px;
+    color: #111;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: min(4.2vw, 19px);
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .clue-stack.top,
+  .clue-stack.bottom {
+    flex-direction: column;
+    transform: translate(-50%, -100%);
+  }
+
+  .clue-stack.left,
+  .clue-stack.right {
+    flex-direction: row;
+    transform: translate(-100%, -50%);
+    justify-content: flex-end;
+  }
+
+  .clue-stack.left {
+    gap: 4px;
+  }
+
+  .clue-stack.ok {
+    color: #5f8b52;
+  }
+
+  .message {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    min-height: 1.6em;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    color: #777;
+    text-align: center;
+  }
+
+  @media (max-width: 560px) {
+    .container {
+      width: min(96vw, 560px);
+    }
+
+    .frame {
+      padding: 48px 18px 14px 44px;
+    }
+
+    .cell {
+      font-size: min(5vw, 20px);
+    }
+
+    .clue-stack {
+      font-size: min(4vw, 17px);
+    }
+
+    .clue-stack.left {
+      gap: 3px;
+    }
+
+    .car-overlay {
+      border-width: 2px;
+      border-radius: 10px;
+    }
+
+    .car-wheel {
+      border-radius: 1px;
+    }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page pad-48">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260414 일본식 주차장</h1>
+<p class="subtitle">기존 주차장 규칙에 행·열의 연속 칸 힌트가 추가되었습니다</p>
+
+<div class="container">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>일본식 주차장 규칙</strong><br>
+    • 기존 주차장 규칙을 모두 따릅니다.<br>
+    • 격자 바깥의 숫자는 그 열이나 행에서 보았을 때 자동차들이 차지하고 있는 연속된 칸 뭉치의 수를 순서대로 나타냅니다.<br>
+    • 물음표(?)는 0이 아닌, 문제에서 주어지지 않은 자연수입니다.
+  </div>
+
+  <div class="frame" id="frame">
+    <div class="outside-clues" id="outsideClues"></div>
+    <div class="board-wrap" id="boardWrap">
+      <div class="board" id="board"></div>
+    </div>
+  </div>
+
+  <div class="bottom-buttons">
+    <button onclick="confirmSelection()">확정</button>
+    <button onclick="clearSelection()">선택 취소</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260414_02';
+const SAVE_KEY = 'puzzle_260414_02';
+const ROWS = 10;
+const COLS = 10;
+
+const SHAPE_GRID = Array.from({ length: ROWS }, () => Array(COLS).fill(1));
+const CLUE_GRID = [
+  [null, null, null, 3, null, null, 1, null, null, null],
+  [null, 2, null, null, null, null, null, null, 1, null],
+  [null, null, 1, null, null, null, null, 0, null, null],
+  [3, null, null, null, 1, null, null, null, null, 1],
+  [null, null, null, null, null, null, 2, null, null, null],
+  [null, null, null, 1, null, null, null, null, null, null],
+  [1, null, null, null, null, 1, null, null, null, 0],
+  [null, null, 4, null, null, null, null, 2, null, null],
+  [null, 1, null, null, null, null, null, null, 2, null],
+  [null, null, null, 0, null, null, 3, null, null, null]
+];
+
+const OUTSIDE_CLUES = {
+  top: [
+    null, null, [3, '?'], null, null, null, null, [2, 5], [2, '?', '?'], null
+  ],
+  left: [
+    null, [2, '?', '?'], [1, '?', '?'], null, [1, '?', '?'], null, null, null, null, [3, 3]
+  ],
+};
+
+const ACTIVE_SET = new Set();
+const cellElements = {};
+let cars = [];
+let pending = [];
+
+function cellKey(r, c) { return `${r},${c}`; }
+function sortCells(cells) { return cells.slice().sort((a, b) => (a[0] - b[0]) || (a[1] - b[1])); }
+function getCarIndexAt(r, c) { return cars.findIndex(car => car.cells.some(([cr, cc]) => cr === r && cc === c)); }
+function isOccupied(r, c) { return getCarIndexAt(r, c) !== -1; }
+function isPendingCell(r, c) { return pending.some(([pr, pc]) => pr === r && pc === c); }
+
+function getPendingCandidate(cells) {
+  if (!cells.length) return { valid: true };
+  const sorted = sortCells(cells);
+  const sameRow = sorted.every(([r]) => r === sorted[0][0]);
+  const sameCol = sorted.every(([, c]) => c === sorted[0][1]);
+  if (!sameRow && !sameCol) return { valid: false };
+  if (sameRow) {
+    const cols = sorted.map(([, c]) => c);
+    const contiguous = cols[cols.length - 1] - cols[0] + 1 === cols.length;
+    return { valid: contiguous && cols.length <= 3 };
+  }
+  const rows = sorted.map(([r]) => r);
+  const contiguous = rows[rows.length - 1] - rows[0] + 1 === rows.length;
+  return { valid: contiguous && rows.length <= 3 };
+}
+
+function handleCellClick(r, c) {
+  const carIndex = getCarIndexAt(r, c);
+  if (carIndex !== -1) {
+    cars.splice(carIndex, 1);
+    pending = [];
+    onStateChange();
+    return;
+  }
+
+  if (isPendingCell(r, c)) {
+    pending = pending.filter(([pr, pc]) => pr !== r || pc !== c);
+    renderBoard();
+    return;
+  }
+
+  if (pending.length === 1) {
+    const [[sr, sc]] = pending;
+    const dr = r - sr;
+    const dc = c - sc;
+    if ((Math.abs(dr) === 2 && dc === 0) || (Math.abs(dc) === 2 && dr === 0)) {
+      const mr = sr + dr / 2;
+      const mc = sc + dc / 2;
+      if (!isOccupied(mr, mc) && !isOccupied(r, c)) {
+        pending = sortCells([[sr, sc], [mr, mc], [r, c]]);
+        renderBoard();
+        return;
+      }
+    }
+  }
+
+  const next = [...pending, [r, c]];
+  const candidate = getPendingCandidate(next);
+  pending = candidate.valid ? next : [[r, c]];
+  renderBoard();
+}
+
+function buildBoard() {
+  const board = document.getElementById('board');
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const key = cellKey(r, c);
+      ACTIVE_SET.add(key);
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      const span = document.createElement('span');
+      span.className = 'cell-value';
+      if (CLUE_GRID[r][c] !== null) span.textContent = CLUE_GRID[r][c];
+      cell.appendChild(span);
+      cell.addEventListener('click', () => handleCellClick(r, c));
+      cellElements[key] = cell;
+      board.appendChild(cell);
+    }
+  }
+}
+
+function buildOutsideClues() {
+  const layer = document.getElementById('outsideClues');
+  const boardWrap = document.getElementById('boardWrap');
+  const boardEl = document.getElementById('board');
+  layer.innerHTML = '';
+  layer.style.left = `${boardWrap.offsetLeft}px`;
+  layer.style.top = `${boardWrap.offsetTop}px`;
+  layer.style.width = `${boardWrap.clientWidth}px`;
+  layer.style.height = `${boardWrap.clientHeight}px`;
+
+  const cellWidth = boardEl.clientWidth / COLS;
+  const cellHeight = boardEl.clientHeight / ROWS;
+
+  ['top', 'bottom'].forEach(side => {
+    const clues = OUTSIDE_CLUES[side];
+    if (!clues) return;
+    clues.forEach((tokens, idx) => {
+      if (!tokens) return;
+      const el = document.createElement('div');
+      el.className = `clue-stack ${side}`;
+      if (clueLineMatches(tokens, getRunsForCol(idx))) el.classList.add('ok');
+      el.style.left = `${(idx + 0.5) * cellWidth}px`;
+      if (side === 'top') {
+        el.style.top = `-8px`;
+      } else {
+        el.style.top = `${boardWrap.clientHeight + 8}px`;
+        el.style.transform = 'translate(-50%, 0)';
+      }
+      tokens.forEach(token => {
+        const span = document.createElement('span');
+        span.textContent = token;
+        el.appendChild(span);
+      });
+      layer.appendChild(el);
+    });
+  });
+
+  ['left', 'right'].forEach(side => {
+    const clues = OUTSIDE_CLUES[side];
+    if (!clues) return;
+    clues.forEach((tokens, idx) => {
+      if (!tokens) return;
+      const el = document.createElement('div');
+      el.className = `clue-stack ${side}`;
+      if (clueLineMatches(tokens, getRunsForRow(idx))) el.classList.add('ok');
+      el.style.top = `${(idx + 0.5) * cellHeight}px`;
+      if (side === 'left') {
+        el.style.left = `-8px`;
+      } else {
+        el.style.left = `${boardWrap.clientWidth + 8}px`;
+        el.style.transform = 'translate(0, -50%)';
+      }
+      tokens.forEach(token => {
+        const span = document.createElement('span');
+        span.textContent = token;
+        el.appendChild(span);
+      });
+      layer.appendChild(el);
+    });
+  });
+}
+
+function getCarClues(car) {
+  return car.cells.filter(([r, c]) => CLUE_GRID[r][c] !== null).map(([r, c]) => CLUE_GRID[r][c]);
+}
+
+function getCarAxis(car) {
+  const rows = new Set(car.cells.map(([r]) => r));
+  return rows.size === 1 ? 'h' : 'v';
+}
+
+function getMoveCount(car, occupiedSet) {
+  const axis = getCarAxis(car);
+  const sorted = sortCells(car.cells);
+  let count = 0;
+  if (axis === 'h') {
+    const row = sorted[0][0];
+    let left = sorted[0][1] - 1;
+    while (left >= 0 && !occupiedSet.has(cellKey(row, left))) { count += 1; left -= 1; }
+    let right = sorted[sorted.length - 1][1] + 1;
+    while (right < COLS && !occupiedSet.has(cellKey(row, right))) { count += 1; right += 1; }
+  } else {
+    const col = sorted[0][1];
+    let up = sorted[0][0] - 1;
+    while (up >= 0 && !occupiedSet.has(cellKey(up, col))) { count += 1; up -= 1; }
+    let down = sorted[sorted.length - 1][0] + 1;
+    while (down < ROWS && !occupiedSet.has(cellKey(down, col))) { count += 1; down += 1; }
+  }
+  return count;
+}
+
+function analyzeCars() {
+  const occupied = new Set();
+  cars.forEach(car => car.cells.forEach(([r, c]) => occupied.add(cellKey(r, c))));
+  return cars.map(car => {
+    const clues = getCarClues(car);
+    const movement = getMoveCount(car, occupied);
+    let status = 'neutral';
+    if (clues.length !== 1) status = 'error';
+    else if (clues[0] > movement) status = 'error';
+    else if (clues[0] === movement) status = 'ok';
+    return { ...car, clues, movement, status };
+  });
+}
+
+function getRunsForLine(lineKeys) {
+  const occupied = lineKeys.map(key => cars.some(car => car.cells.some(([r, c]) => cellKey(r, c) === key)));
+  const runs = [];
+  let count = 0;
+  occupied.forEach(flag => {
+    if (flag) count += 1;
+    else if (count) { runs.push(count); count = 0; }
+  });
+  if (count) runs.push(count);
+  return runs;
+}
+
+function getRunsForRow(r) {
+  return getRunsForLine(Array.from({ length: COLS }, (_, c) => cellKey(r, c)));
+}
+
+function getRunsForCol(c) {
+  return getRunsForLine(Array.from({ length: ROWS }, (_, r) => cellKey(r, c)));
+}
+
+function clueLineMatches(tokens, runs) {
+  if (!tokens) return true;
+  if (tokens.length !== runs.length) return false;
+  for (let i = 0; i < tokens.length; i += 1) {
+    if (tokens[i] === '?') {
+      if (runs[i] <= 0) return false;
+    } else if (tokens[i] !== runs[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function outsideCluesMatch() {
+  for (let c = 0; c < COLS; c += 1) {
+    if (OUTSIDE_CLUES.top && !clueLineMatches(OUTSIDE_CLUES.top[c], getRunsForCol(c))) return false;
+    if (OUTSIDE_CLUES.bottom && !clueLineMatches(OUTSIDE_CLUES.bottom[c], getRunsForCol(c))) return false;
+  }
+  for (let r = 0; r < ROWS; r += 1) {
+    if (OUTSIDE_CLUES.left && !clueLineMatches(OUTSIDE_CLUES.left[r], getRunsForRow(r))) return false;
+    if (OUTSIDE_CLUES.right && !clueLineMatches(OUTSIDE_CLUES.right[r], getRunsForRow(r))) return false;
+  }
+  return true;
+}
+
+function renderCars() {
+  document.querySelectorAll('.car-overlay, .car-wheel').forEach(el => el.remove());
+  document.querySelectorAll('.cell').forEach(el => el.classList.remove('occupied', 'pending', 'pending-end'));
+
+  const wrap = document.getElementById('boardWrap');
+  const boardEl = document.getElementById('board');
+  const boardLeft = boardEl.offsetLeft + boardEl.clientLeft;
+  const boardTop = boardEl.offsetTop + boardEl.clientTop;
+  const cellWidth = boardEl.clientWidth / COLS;
+  const cellHeight = boardEl.clientHeight / ROWS;
+  const analyzed = analyzeCars();
+
+  analyzed.forEach(car => {
+    const sorted = sortCells(car.cells);
+    const axis = getCarAxis(car);
+    const overlay = document.createElement('div');
+    overlay.className = `car-overlay${car.status === 'ok' ? ' ok' : car.status === 'error' ? ' error' : ''}`;
+    const unit = Math.min(cellWidth, cellHeight);
+    const inset = Math.max(3, unit * 0.08);
+    let leftPx;
+    let topPx;
+    let widthPx;
+    let heightPx;
+    if (axis === 'h') {
+      leftPx = boardLeft + sorted[0][1] * cellWidth + inset;
+      topPx = boardTop + sorted[0][0] * cellHeight + inset;
+      widthPx = sorted.length * cellWidth - inset * 2;
+      heightPx = cellHeight - inset * 2;
+    } else {
+      leftPx = boardLeft + sorted[0][1] * cellWidth + inset;
+      topPx = boardTop + sorted[0][0] * cellHeight + inset;
+      widthPx = cellWidth - inset * 2;
+      heightPx = sorted.length * cellHeight - inset * 2;
+    }
+    overlay.style.left = `${leftPx}px`;
+    overlay.style.top = `${topPx}px`;
+    overlay.style.width = `${widthPx}px`;
+    overlay.style.height = `${heightPx}px`;
+    overlay.style.borderRadius = `${Math.max(9, unit * 0.22)}px`;
+    wrap.appendChild(overlay);
+
+    const wheelLongOffset = Math.max(12, unit * 0.34);
+    const wheelSize = axis === 'h'
+      ? { w: Math.max(9, unit * 0.24), h: Math.max(3, unit * 0.07) }
+      : { w: Math.max(3, unit * 0.07), h: Math.max(9, unit * 0.24) };
+    const wheelPositions = axis === 'h'
+      ? [
+          { left: leftPx + wheelLongOffset, top: topPx - wheelSize.h },
+          { left: leftPx + widthPx - wheelLongOffset - wheelSize.w, top: topPx - wheelSize.h },
+          { left: leftPx + wheelLongOffset, top: topPx + heightPx },
+          { left: leftPx + widthPx - wheelLongOffset - wheelSize.w, top: topPx + heightPx }
+        ]
+      : [
+          { left: leftPx - wheelSize.w, top: topPx + wheelLongOffset },
+          { left: leftPx - wheelSize.w, top: topPx + heightPx - wheelLongOffset - wheelSize.h },
+          { left: leftPx + widthPx, top: topPx + wheelLongOffset },
+          { left: leftPx + widthPx, top: topPx + heightPx - wheelLongOffset - wheelSize.h }
+        ];
+
+    wheelPositions.forEach(({ left, top }) => {
+      const wheel = document.createElement('div');
+      wheel.className = 'car-wheel';
+      wheel.style.left = `${left}px`;
+      wheel.style.top = `${top}px`;
+      wheel.style.width = `${wheelSize.w}px`;
+      wheel.style.height = `${wheelSize.h}px`;
+      wrap.appendChild(wheel);
+    });
+
+    car.cells.forEach(([r, c]) => cellElements[cellKey(r, c)].classList.add('occupied'));
+  });
+}
+
+function renderPending() {
+  pending.forEach(([r, c], index) => {
+    const cell = cellElements[cellKey(r, c)];
+    cell.classList.add('pending');
+    if (index === pending.length - 1) cell.classList.add('pending-end');
+  });
+}
+
+function renderBoard() {
+  renderCars();
+  renderPending();
+  buildOutsideClues();
+  const complete = isComplete();
+  document.getElementById('message').textContent = complete ? '축하합니다! 퍼즐을 완성했습니다!' : '';
+  if (complete) recordCompletion(PUZZLE_ID);
+}
+
+function confirmSelection() {
+  const candidate = getPendingCandidate(pending);
+  if (!candidate.valid || pending.length < 2 || pending.length > 3) return;
+  if (pending.some(([r, c]) => isOccupied(r, c))) return;
+  cars.push({ cells: sortCells(pending) });
+  pending = [];
+  onStateChange();
+}
+
+function clearSelection() {
+  pending = [];
+  renderBoard();
+}
+
+function isComplete() {
+  const analyzed = analyzeCars();
+  const clueCovered = new Set();
+  analyzed.forEach(car => car.cells.forEach(([r, c]) => {
+    if (CLUE_GRID[r][c] !== null) clueCovered.add(cellKey(r, c));
+  }));
+  const allClues = [];
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      if (CLUE_GRID[r][c] !== null) allClues.push(cellKey(r, c));
+    }
+  }
+  return pending.length === 0
+    && analyzed.length > 0
+    && analyzed.every(car => car.status === 'ok')
+    && allClues.every(key => clueCovered.has(key))
+    && outsideCluesMatch();
+}
+
+function onStateChange() {
+  renderBoard();
+  saveProgress();
+}
+
+function serializeState() { return cars.map(car => sortCells(car.cells)); }
+
+function applyState(state) {
+  if (!Array.isArray(state)) return;
+  const nextCars = [];
+  for (const car of state) {
+    if (!Array.isArray(car) || car.length < 2 || car.length > 3) continue;
+    const cells = car.map(([r, c]) => [Number(r), Number(c)]);
+    const candidate = getPendingCandidate(cells);
+    if (!candidate.valid) continue;
+    nextCars.push({ cells: sortCells(cells) });
+  }
+  cars = nextCars;
+  pending = [];
+}
+
+function saveProgress() { saveLocalState(SAVE_KEY, serializeState()); }
+function loadProgress() { applyState(loadLocalState(SAVE_KEY)); }
+
+async function handleCloudSave() { await saveProgressCloud(PUZZLE_ID, serializeState()); }
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    applyState(state);
+    renderBoard();
+    saveProgress();
+  });
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    cars = [];
+    pending = [];
+    renderBoard();
+    saveProgress();
+    resetCompletion(PUZZLE_ID);
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    confirmSelection();
+    return;
+  }
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    e.preventDefault();
+    clearSelection();
+  }
+});
+
+buildBoard();
+loadProgress();
+renderBoard();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+window.addEventListener('resize', buildOutsideClues);
+</script>
+</body>
+</html>

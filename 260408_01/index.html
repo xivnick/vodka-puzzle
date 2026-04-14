@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260408 밸런싱</title>
+<meta property="og:title" content="260408 밸런싱">
+<meta property="og:description" content="무게추 1~9를 모두 한 번씩 사용해 모든 저울의 균형을 맞추세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260408_01/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .container {
+    width: min(94vw, 520px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .board-wrap {
+    width: 100%;
+    margin-top: 20px;
+    border: 1px solid #e2ddd4;
+    background: #fff;
+    padding: 10px 8px 10px;
+  }
+
+  .scale-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .beam-line,
+  .support-line,
+  .hanger-line,
+  .tick-line {
+    stroke: #111;
+    fill: none;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .beam-line,
+  .support-line {
+    stroke-width: 3.4;
+  }
+
+  .hanger-line {
+    stroke-width: 2.2;
+  }
+
+  .tick-line {
+    stroke-width: 2;
+  }
+
+  .pivot-dot {
+    fill: #111;
+  }
+
+  .slot-diamond {
+    fill: #fff;
+    stroke: #111;
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .slot-diamond.selected {
+    fill: #f3efe6;
+    stroke: #4a6fa5;
+  }
+
+  .slot-diamond.done {
+    fill: #edf6e7;
+    stroke: #7ea06c;
+  }
+
+  .slot-box {
+    fill: #fff;
+    stroke: #222;
+    stroke-width: 1.8;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .slot-box.selected {
+    fill: #ece7db;
+    stroke: #4a6fa5;
+  }
+
+  .slot-box.done {
+    fill: #edf6e7;
+    stroke: #7ea06c;
+  }
+
+  .slot-box.error {
+    fill: #f7dede;
+    stroke: #b85e5e;
+  }
+
+  .slot-hit {
+    fill: transparent;
+    cursor: pointer;
+  }
+
+  .slot-text {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    fill: #333;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    pointer-events: none;
+  }
+
+  .numpad {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .numpad button {
+    flex: 1;
+    height: 44px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    border: 1.5px solid #c8c3b8;
+    border-radius: 3px;
+    background: #f4f1eb;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.08s;
+  }
+
+  .numpad button:hover { background: #e8e4da; }
+  .numpad button:active { transform: scale(0.95); background: #ddd9cf; }
+
+  .remaining-panel {
+    margin-top: 12px;
+    border: 1px solid #e0ddd6;
+    background: #faf8f4;
+    padding: 14px 16px 16px;
+  }
+
+  .remaining-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 10px;
+  }
+
+  .remaining-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .remaining-pill {
+    min-width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #cfc8bc;
+    background: #fff;
+    color: #333;
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+
+  .remaining-pill.used {
+    background: #f1ede6;
+    color: #aaa;
+    border-color: #ddd6c9;
+  }
+
+  .remaining-pill.dup {
+    background: #f7e0e0;
+    color: #964848;
+    border-color: #b85e5e;
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page pad-48">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260408 밸런싱</h1>
+<p class="subtitle">무게추를 모두 한 번씩 사용해 모든 저울의 균형을 맞추세요</p>
+
+<div class="container">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>밸런싱 규칙</strong><br>
+    1. 아래의 무게추 1~9를 모두 한 번씩 사용합니다.<br>
+    2. 흰 다이아몬드 위치 아래의 네모칸에 숫자를 넣어 추를 겁니다.<br>
+    3. 각 추의 무게 × 중앙 지점으로부터의 거리 의 곱이 그 위치의 무게입니다.<br>
+    4. 각 저울은 좌우 무게의 합이 같아야 균형이 맞습니다.<br>
+    5. 무거운 쪽은 화면에서 실제로 더 기울어집니다.
+  </div>
+
+  <div class="board-wrap">
+    <svg class="scale-svg" id="scaleSvg" viewBox="-60 20 550 340" aria-label="밸런싱 퍼즐 보드"></svg>
+  </div>
+
+  <div class="numpad" id="numpad"></div>
+
+  <div class="bottom-buttons">
+    <button onclick="clearSelected()">지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="remaining-panel">
+    <div class="remaining-title">무게추 사용 현황</div>
+    <div class="remaining-list" id="remainingList"></div>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260408_01';
+const SAVE_KEY = 'puzzle_260408_01';
+const UNIT = 44;
+const SUPPORT_DROP = 84;
+const HANGER_DROP = 24;
+const BOX_W = 34;
+const BOX_H = 34;
+
+const SLOT_ORDER = ['b1', 'b2', 'b3', 'm1', 'm2', 't1', 'r1', 'r2', 'r3'];
+const SLOT_TO_BEAM = {
+  b1: 'bottom', b2: 'bottom', b3: 'bottom',
+  m1: 'middle', m2: 'middle',
+  t1: 'top',
+  r1: 'right', r2: 'right', r3: 'right',
+};
+
+const BEAMS = {
+  top: {
+    id: 'top',
+    support: { x: 230, y: 90 },
+    pivotOffset: 0,
+    minX: -3,
+    maxX: 3,
+    markers: [-2, -1, 1],
+    slots: [{ id: 't1', offset: 2 }],
+    children: [{ id: 'middle', offset: -3 }, { id: 'right', offset: 3 }],
+  },
+  middle: {
+    id: 'middle',
+    parent: 'top',
+    parentOffset: -3,
+    pivotOffset: 0,
+    minX: -1,
+    maxX: 2,
+    markers: [],
+    slots: [{ id: 'm1', offset: 1 }, { id: 'm2', offset: 2 }],
+    children: [{ id: 'bottom', offset: -1 }],
+  },
+  right: {
+    id: 'right',
+    parent: 'top',
+    parentOffset: 3,
+    pivotOffset: 0,
+    minX: -3,
+    maxX: 2,
+    markers: [-2, -1],
+    slots: [{ id: 'r1', offset: -3 }, { id: 'r2', offset: 1 }, { id: 'r3', offset: 2 }],
+    children: [],
+  },
+  bottom: {
+    id: 'bottom',
+    parent: 'middle',
+    parentOffset: -1,
+    pivotOffset: 0,
+    minX: -2,
+    maxX: 1,
+    markers: [],
+    slots: [{ id: 'b1', offset: -2 }, { id: 'b2', offset: -1 }, { id: 'b3', offset: 1 }],
+    children: [],
+  },
+};
+
+let assignments = loadProgress();
+let selectedSlot = SLOT_ORDER[0];
+let currentVisualAngles = null;
+let tiltAnimFrame = null;
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (!saved || typeof saved !== 'object') return {};
+  const next = {};
+  for (const slotId of SLOT_ORDER) {
+    const value = Number(saved[slotId] || 0);
+    next[slotId] = value >= 1 && value <= 9 ? value : 0;
+  }
+  return next;
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, assignments);
+}
+
+function rotatePoint(x, y, angleDeg) {
+  const rad = angleDeg * Math.PI / 180;
+  return {
+    x: x * Math.cos(rad) - y * Math.sin(rad),
+    y: x * Math.sin(rad) + y * Math.cos(rad),
+  };
+}
+
+function slotValue(slotId) {
+  return assignments[slotId] || 0;
+}
+
+function computeWeights() {
+  const weights = {};
+  for (const beamId of ['bottom', 'middle', 'right', 'top']) {
+    const beam = BEAMS[beamId];
+    let total = 0;
+    for (const slot of beam.slots) total += slotValue(slot.id);
+    for (const child of beam.children) total += weights[child.id] || 0;
+    weights[beamId] = total;
+  }
+  return weights;
+}
+
+function computeTorques(weights) {
+  return {
+    bottom:
+      (-2 * slotValue('b1')) +
+      (-1 * slotValue('b2')) +
+      (1 * slotValue('b3')),
+    middle:
+      (-1 * weights.bottom) +
+      (1 * slotValue('m1')) +
+      (2 * slotValue('m2')),
+    right:
+      (-3 * slotValue('r1')) +
+      (1 * slotValue('r2')) +
+      (2 * slotValue('r3')),
+    top:
+      (-3 * weights.middle) +
+      (2 * slotValue('t1')) +
+      (3 * weights.right),
+  };
+}
+
+function angleFromTorque(torque, maxArm, weight) {
+  if (!weight) return 0;
+  const normalized = torque / Math.max(1, maxArm * weight);
+  return Math.max(-9, Math.min(9, normalized * 18));
+}
+
+function computeBeamState(angleOverride = null) {
+  const weights = computeWeights();
+  const torques = computeTorques(weights);
+  const targetAngles = {
+    top: angleFromTorque(torques.top, 3, weights.top),
+    middle: angleFromTorque(torques.middle, 2, weights.middle),
+    right: angleFromTorque(torques.right, 3, weights.right),
+    bottom: angleFromTorque(torques.bottom, 2, weights.bottom),
+  };
+  const angles = angleOverride || targetAngles;
+
+  const pivots = {};
+  pivots.top = { x: BEAMS.top.support.x, y: BEAMS.top.support.y };
+
+  const topLeft = pointOnBeam(pivots.top, angles.top, -3);
+  const topRight = pointOnBeam(pivots.top, angles.top, 3);
+  pivots.middle = { x: topLeft.x, y: topLeft.y + SUPPORT_DROP };
+  pivots.right = { x: topRight.x, y: topRight.y + SUPPORT_DROP };
+
+  const middleLeft = pointOnBeam(pivots.middle, angles.middle, -1);
+  pivots.bottom = { x: middleLeft.x, y: middleLeft.y + SUPPORT_DROP };
+
+  return { weights, torques, angles, targetAngles, pivots };
+}
+
+function pointOnBeam(pivot, angle, offset) {
+  const pt = rotatePoint(offset * UNIT, 0, angle);
+  return { x: pivot.x + pt.x, y: pivot.y + pt.y };
+}
+
+function usedCounts() {
+  const counts = {};
+  for (let n = 1; n <= 9; n++) counts[n] = 0;
+  for (const slotId of SLOT_ORDER) {
+    const v = slotValue(slotId);
+    if (v) counts[v] += 1;
+  }
+  return counts;
+}
+
+function slotErrorSet() {
+  const counts = usedCounts();
+  const errors = new Set();
+  for (const slotId of SLOT_ORDER) {
+    const v = slotValue(slotId);
+    if (v && counts[v] > 1) errors.add(slotId);
+  }
+  return errors;
+}
+
+function completedBeamSet(state) {
+  const completed = new Set();
+  for (const beamId of Object.keys(BEAMS)) {
+    const beam = BEAMS[beamId];
+    const allFilled = beam.slots.every(slot => slotValue(slot.id));
+    if (allFilled && state.torques[beamId] === 0) completed.add(beamId);
+  }
+  return completed;
+}
+
+function render(animate = true) {
+  const svg = document.getElementById('scaleSvg');
+  const state = computeBeamState();
+  const duplicateSlots = slotErrorSet();
+  const completedBeams = completedBeamSet(state);
+  renderRemaining();
+  updateMessage(state, duplicateSlots);
+  animateScale(svg, state, duplicateSlots, completedBeams, animate);
+}
+
+function renderScale(svg, state, duplicateSlots, completedBeams) {
+  svg.innerHTML = '';
+  for (const beamId of ['top', 'middle', 'right', 'bottom']) {
+    renderBeam(svg, beamId, state, duplicateSlots, completedBeams.has(beamId));
+  }
+}
+
+function animateScale(svg, state, duplicateSlots, completedBeams, animate) {
+  const target = state.targetAngles;
+  if (!animate || !currentVisualAngles) {
+    currentVisualAngles = { ...target };
+    renderScale(svg, computeBeamState(currentVisualAngles), duplicateSlots, completedBeams);
+    return;
+  }
+
+  if (tiltAnimFrame) cancelAnimationFrame(tiltAnimFrame);
+  const start = { ...currentVisualAngles };
+  const startAt = performance.now();
+  const duration = 220;
+
+  function step(now) {
+    const t = Math.min(1, (now - startAt) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    currentVisualAngles = {
+      top: start.top + (target.top - start.top) * eased,
+      middle: start.middle + (target.middle - start.middle) * eased,
+      right: start.right + (target.right - start.right) * eased,
+      bottom: start.bottom + (target.bottom - start.bottom) * eased,
+    };
+    renderScale(svg, computeBeamState(currentVisualAngles), duplicateSlots, completedBeams);
+    if (t < 1) {
+      tiltAnimFrame = requestAnimationFrame(step);
+    } else {
+      tiltAnimFrame = null;
+      currentVisualAngles = { ...target };
+    }
+  }
+
+  tiltAnimFrame = requestAnimationFrame(step);
+}
+
+function renderBeam(svg, beamId, state, duplicateSlots, isCompleted) {
+  const beam = BEAMS[beamId];
+  const pivot = state.pivots[beamId];
+  const angle = state.angles[beamId];
+
+  if (beam.parent) {
+    const parentPivot = state.pivots[beam.parent];
+    const parentAngle = state.angles[beam.parent];
+    const attach = pointOnBeam(parentPivot, parentAngle, beam.parentOffset);
+    svg.appendChild(line(attach.x, attach.y, pivot.x, pivot.y, 'support-line'));
+  } else {
+    svg.appendChild(line(pivot.x, pivot.y - 54, pivot.x, pivot.y, 'support-line'));
+  }
+
+  const left = pointOnBeam(pivot, angle, beam.minX);
+  const right = pointOnBeam(pivot, angle, beam.maxX);
+  svg.appendChild(line(left.x, left.y, right.x, right.y, 'beam-line'));
+  svg.appendChild(circle(pivot.x, pivot.y, 5.8, 'pivot-dot'));
+
+  for (const marker of beam.markers) {
+    const mark = pointOnBeam(pivot, angle, marker);
+    const delta = rotatePoint(0, 9, angle);
+    svg.appendChild(line(mark.x - delta.x, mark.y - delta.y, mark.x + delta.x, mark.y + delta.y, 'tick-line'));
+  }
+
+  for (const slot of beam.slots) {
+    renderSlot(svg, pivot, angle, slot, duplicateSlots.has(slot.id), isCompleted);
+  }
+}
+
+function renderSlot(svg, pivot, angle, slot, isDuplicate, isCompleted) {
+  const top = pointOnBeam(pivot, angle, slot.offset);
+  const diamondY = top.y;
+  const boxY = diamondY + HANGER_DROP + 4;
+  const value = slotValue(slot.id);
+  const doneClass = isCompleted && !isDuplicate ? ' done' : '';
+
+  svg.appendChild(line(top.x, top.y, top.x, top.y + HANGER_DROP, 'hanger-line'));
+  svg.appendChild(diamond(top.x, diamondY, 10, `slot-diamond${doneClass}${selectedSlot === slot.id ? ' selected' : ''}`));
+
+  const rect = rectNode(top.x - BOX_W / 2, boxY, BOX_W, BOX_H, `slot-box${doneClass}${selectedSlot === slot.id ? ' selected' : ''}${isDuplicate ? ' error' : ''}`);
+  svg.appendChild(rect);
+
+  const hit = rectNode(top.x - BOX_W / 2 - 4, boxY - 18, BOX_W + 8, BOX_H + 24, 'slot-hit');
+  hit.dataset.slotId = slot.id;
+  hit.addEventListener('click', () => {
+    selectedSlot = slot.id;
+    render();
+  });
+  svg.appendChild(hit);
+
+  if (value) {
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', top.x);
+    text.setAttribute('y', boxY + BOX_H / 2 + 1);
+    text.setAttribute('class', 'slot-text');
+    text.textContent = value;
+    svg.appendChild(text);
+  }
+}
+
+function line(x1, y1, x2, y2, cls) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  el.setAttribute('x1', x1);
+  el.setAttribute('y1', y1);
+  el.setAttribute('x2', x2);
+  el.setAttribute('y2', y2);
+  el.setAttribute('class', cls);
+  return el;
+}
+
+function circle(cx, cy, r, cls) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  el.setAttribute('cx', cx);
+  el.setAttribute('cy', cy);
+  el.setAttribute('r', r);
+  el.setAttribute('class', cls);
+  return el;
+}
+
+function diamond(cx, cy, size, cls) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  el.setAttribute('points', `${cx},${cy - size} ${cx + size},${cy} ${cx},${cy + size} ${cx - size},${cy}`);
+  el.setAttribute('class', cls);
+  return el;
+}
+
+function rectNode(x, y, w, h, cls) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  el.setAttribute('x', x);
+  el.setAttribute('y', y);
+  el.setAttribute('width', w);
+  el.setAttribute('height', h);
+  el.setAttribute('class', cls);
+  return el;
+}
+
+function renderNumpad() {
+  const numpad = document.getElementById('numpad');
+  if (numpad.childElementCount) return;
+  for (let n = 1; n <= 9; n++) {
+    const btn = document.createElement('button');
+    btn.textContent = n;
+    btn.addEventListener('click', () => inputNumber(n));
+    numpad.appendChild(btn);
+  }
+}
+
+function inputNumber(n) {
+  if (!selectedSlot) return;
+  assignments[selectedSlot] = n;
+  saveProgress();
+  render(true);
+  checkComplete();
+}
+
+function clearSelected() {
+  if (!selectedSlot) return;
+  assignments[selectedSlot] = 0;
+  saveProgress();
+  render(true);
+}
+
+function moveSelection(delta) {
+  const idx = SLOT_ORDER.indexOf(selectedSlot);
+  const next = (idx + delta + SLOT_ORDER.length) % SLOT_ORDER.length;
+  selectedSlot = SLOT_ORDER[next];
+  render(false);
+}
+
+function renderRemaining() {
+  const counts = usedCounts();
+  const list = document.getElementById('remainingList');
+  list.innerHTML = '';
+  for (let n = 1; n <= 9; n++) {
+    const pill = document.createElement('span');
+    pill.className = 'remaining-pill';
+    if (counts[n] === 1) pill.classList.add('used');
+    if (counts[n] > 1) pill.classList.add('dup');
+    pill.textContent = n;
+    list.appendChild(pill);
+  }
+}
+
+function checkComplete() {
+  const state = computeBeamState();
+  const counts = usedCounts();
+  if (SLOT_ORDER.some(id => !slotValue(id))) return false;
+  if (Object.values(counts).some(count => count !== 1)) return false;
+  if (Object.values(state.torques).some(t => t !== 0)) return false;
+  recordCompletion(PUZZLE_ID);
+  return true;
+}
+
+function updateMessage(state, duplicateSlots) {
+  const message = document.getElementById('message');
+  const counts = usedCounts();
+  if (
+    SLOT_ORDER.every(id => slotValue(id)) &&
+    [...duplicateSlots].length === 0 &&
+    Object.values(counts).every(count => count === 1) &&
+    Object.values(state.torques).every(t => t === 0)
+  ) {
+    message.textContent = '축하합니다! 퍼즐을 완성했습니다!';
+    return;
+  }
+  message.textContent = '';
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    assignments = {};
+    saveProgress();
+    render(true);
+  });
+}
+
+function handleCloudSave() {
+  saveProgressCloud(PUZZLE_ID, assignments);
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!state || typeof state !== 'object') return;
+    const next = {};
+    for (const slotId of SLOT_ORDER) {
+      const value = Number(state[slotId] || 0);
+      next[slotId] = value >= 1 && value <= 9 ? value : 0;
+    }
+    assignments = next;
+    saveProgress();
+    render(true);
+    checkComplete();
+  });
+}
+
+renderNumpad();
+render(false);
+checkComplete();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+
+window.addEventListener('pageshow', e => {
+  if (!e.persisted) return;
+  initHeader();
+  initCloudBtns();
+  render(false);
+  checkComplete();
+});
+
+document.addEventListener('keydown', e => {
+  if (/^[1-9]$/.test(e.key)) {
+    inputNumber(parseInt(e.key, 10));
+  } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
+    clearSelected();
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    moveSelection(-1);
+  } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    moveSelection(1);
+  }
+});
+</script>
+</body>
+</html>
