@@ -255,7 +255,7 @@ function applyMove(b, move) {
   return nb;
 }
 
-// ─── Minimax ─────────────────────────────────────────────────────────────
+// ─── Expected win rate search ────────────────────────────────────────────
 const memo = new Map();
 let searchStart, searchTimedOut;
 
@@ -266,20 +266,42 @@ function stateKey(b, rem) {
   return boardKey(b) + '~' + [...rem].sort().join('');
 }
 
-function isWinning(b, rem) {
-  if (searchTimedOut) return false;
-  if (Date.now() - searchStart > 2500) { searchTimedOut = true; return false; }
-  const key = stateKey(b, rem);
+function getWinProbability(b, rem, turn) {
+  if (searchTimedOut) return 0;
+  if (Date.now() - searchStart > 2500) {
+    searchTimedOut = true;
+    return 0;
+  }
+  const key = `${stateKey(b, rem)}~${turn}`;
   if (memo.has(key)) return memo.get(key);
   const moves = allMoves(b, rem);
-  if (!moves.length) { memo.set(key, false); return false; }
+  if (!moves.length) {
+    const result = turn === 'player' ? 1 : 0;
+    memo.set(key, result);
+    return result;
+  }
+  if (turn === 'computer') {
+    let best = 0;
+    for (const move of moves) {
+      const nb = applyMove(b, move);
+      const nr = rem.filter(p=>p!==move.piece);
+      best = Math.max(best, getWinProbability(nb, nr, 'player'));
+      if (searchTimedOut) break;
+    }
+    memo.set(key, best);
+    return best;
+  }
+
+  let total = 0;
   for (const move of moves) {
     const nb = applyMove(b, move);
     const nr = rem.filter(p=>p!==move.piece);
-    if (!isWinning(nb, nr)) { memo.set(key, true); return true; }
+    total += getWinProbability(nb, nr, 'computer');
+    if (searchTimedOut) break;
   }
-  memo.set(key, false);
-  return false;
+  const result = total / moves.length;
+  memo.set(key, result);
+  return result;
 }
 
 function bestMove(b, rem) {
@@ -288,14 +310,26 @@ function bestMove(b, rem) {
   memo.clear();
   const moves = allMoves(b, rem);
   if (!moves.length) return null;
-  // Try to find a move that puts opponent in losing position
+
+  let best = null;
+  let bestScore = -1;
+  let tied = [];
   for (const move of moves) {
-    if (searchTimedOut) break;
     const nb = applyMove(b, move);
     const nr = rem.filter(p=>p!==move.piece);
-    if (!isWinning(nb, nr)) return move;
+    const score = getWinProbability(nb, nr, 'player');
+    if (searchTimedOut) break;
+    if (score > bestScore) {
+      bestScore = score;
+      best = move;
+      tied = [move];
+    } else if (score === bestScore) {
+      tied.push(move);
+    }
   }
-  // If timed out or no winning move found, pick random
+
+  if (tied.length) return tied[Math.floor(Math.random() * tied.length)];
+  if (best) return best;
   return moves[Math.floor(Math.random() * moves.length)];
 }
 

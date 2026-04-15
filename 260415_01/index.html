@@ -115,6 +115,7 @@
   }
 
   .equation.error { color: #c0392b; }
+  .equation.ok { color: #5f8b52; }
 
   .message {
     font-size: 0.88rem;
@@ -306,6 +307,7 @@ function getDuplicateSet() {
 function getEquationErrors() {
   const letterValues = getLetterValues();
   const eqErrors = new Set();
+  const eqOk = new Set();
   const cellErrors = new Set();
 
   EQUATIONS.forEach(eq => {
@@ -317,10 +319,12 @@ function getEquationErrors() {
         const [r, c] = LETTER_POS[letter];
         cellErrors.add(cellId(r, c));
       });
+    } else {
+      eqOk.add(eq.id);
     }
   });
 
-  return { eqErrors, cellErrors };
+  return { eqErrors, eqOk, cellErrors };
 }
 
 function getFilledLineErrorSet() {
@@ -346,7 +350,7 @@ function getFilledLineErrorSet() {
 
 function validate() {
   const duplicateSet = getDuplicateSet();
-  const { eqErrors, cellErrors } = getEquationErrors();
+  const { eqErrors, eqOk, cellErrors } = getEquationErrors();
   const lineErrorSet = getFilledLineErrorSet();
 
   for (let r = 0; r < ROWS; r += 1) {
@@ -359,7 +363,9 @@ function validate() {
   }
 
   EQUATIONS.forEach(eq => {
-    document.getElementById(`eq-${eq.id}`).classList.toggle('error', eqErrors.has(eq.id));
+    const el = document.getElementById(`eq-${eq.id}`);
+    el.classList.toggle('error', eqErrors.has(eq.id));
+    el.classList.toggle('ok', eqOk.has(eq.id));
   });
 
   const complete = isComplete(duplicateSet, eqErrors, lineErrorSet);

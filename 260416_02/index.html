@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260416 철로 2</title>
+<meta property="og:title" content="260416 철로 2">
+<meta property="og:description" content="모든 칸을 지나는 순환 철로를 그리고 숫자와 교차 단서를 만족시키는 퍼즐">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260416_02/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .container {
+    width: min(94vw, 580px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .board-wrap {
+    --board-border: 2px;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    margin-top: 20px;
+  }
+
+  .board {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    grid-template-rows: repeat(11, 1fr);
+    background: #fff;
+    border: var(--board-border) solid #222;
+    box-sizing: border-box;
+  }
+
+  .cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid rgba(34, 34, 34, 0.65);
+    border-bottom: 1px solid rgba(34, 34, 34, 0.65);
+    background: #fff;
+    cursor: pointer;
+    transition: background 0.12s;
+    user-select: none;
+  }
+
+  .cell:nth-child(11n) { border-right: none; }
+  .cell:nth-child(n+111) { border-bottom: none; }
+  .cell:hover:not(.blocked):not(.anchor) { background: #f5f5f0; }
+  .cell.anchor { background: #e8e8d8; }
+  .cell.blocked {
+    background: #111;
+    cursor: default;
+  }
+
+  .cell.junction-error {
+    background: #f5d0d0;
+  }
+
+  .cell-mark,
+  .cell-number {
+    position: relative;
+    z-index: 4;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  .cell-mark {
+    font-size: min(7.8vw, 36px);
+    font-weight: 700;
+    color: #111;
+  }
+
+  .cell.junction-error .cell-mark {
+    color: #c0392b;
+  }
+
+  .cell-number {
+    font-size: min(5.4vw, 25px);
+    font-weight: 500;
+    color: #111;
+  }
+
+  .cell-number.ok { color: #5f8b52; }
+  .cell-number.error { color: #c0392b; }
+
+  .wire-layer {
+    position: absolute;
+    inset: var(--board-border);
+    z-index: 2;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .wire-path {
+    fill: none;
+    stroke: #4a6fa5;
+    stroke-width: 0.16;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .wire-path.pending {
+    stroke: #7ea3d4;
+  }
+
+  .message {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    min-height: 1.6em;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    color: #777;
+    text-align: center;
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page pad-48">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260416 철로 2</h1>
+<p class="subtitle">칸의 중심들을 이으며 순환하는 철로를 그리세요</p>
+
+<div class="container">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>철로 규칙</strong><br>
+    ○ 철로는 모든 칸을 가로/세로로 지납니다. 철로가 꺾인다면, 꺾이는 곳은 항상 칸의 정중앙이고, 90°로 꺾입니다.<br>
+    ○ 까만 색으로 칠해진 칸이 있다면, 철로는 그 칸을 지나지 않습니다.<br>
+    ○ + 모양이 있는 칸은 철로의 경로가 교차하는 칸입니다. 즉, 철로가 한 번보다 많이 지나게 됩니다. + 모양이 없는 칸은 철로가 모두 정확히 한 번씩만 지나야 합니다.<br>
+    ○ 철로는 모든 숫자가 있는 칸을 일직선으로 통과해야 하며, 완성된 순환하는 철로 길은 숫자 칸을 1부터 n까지 순서대로 통과할 수 있어야 합니다.
+  </div>
+
+  <div class="board-wrap">
+    <svg class="wire-layer" id="wireLayer" viewBox="0 0 11 11" preserveAspectRatio="none"></svg>
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="bottom-buttons">
+    <button onclick="clearAnchor()">선택 해제</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260416_02';
+const SAVE_KEY = 'puzzle_260416_02';
+const ROWS = 11;
+const COLS = 11;
+
+const SHAPE_GRID = Array.from({ length: ROWS }, () => Array(COLS).fill(1));
+const BLOCK_GRID = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+const PLUS_GRID = [
+  [0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,1,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0],
+  [0,1,0,0,1,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,1,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,1,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,1,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,1,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0]
+];
+const NUMBER_GRID = [
+  [0,0,0,0,0,0,0,0,6,0,0],
+  [0,0,0,0,1,0,0,0,0,0,0],
+  [0,0,0,0,0,2,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,4],
+  [0,0,0,0,0,0,0,0,0,0,0],
+  [10,0,0,0,0,0,0,0,0,5,0],
+  [0,0,0,0,0,0,9,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0],
+  [0,3,0,0,0,8,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,7,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0]
+];
+const MAX_NUMBER = 10;
+
+let wires = [];
+let anchor = null;
+
+function cellKey(r, c) {
+  return `${r},${c}`;
+}
+
+function edgeKey(a, b) {
+  const k1 = cellKey(a[0], a[1]);
+  const k2 = cellKey(b[0], b[1]);
+  return k1 < k2 ? `${k1}|${k2}` : `${k2}|${k1}`;
+}
+
+function sameCell(a, b) {
+  return a && b && a[0] === b[0] && a[1] === b[1];
+}
+
+function isAdjacent(a, b) {
+  return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) === 1;
+}
+
+function getCellEl(r, c) {
+  return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+}
+
+function cloneWires(state) {
+  return state.map(wire => ({ cells: wire.cells.map(([r, c]) => [r, c]), closed: !!wire.closed }));
+}
+
+function getSegmentCells(from, to) {
+  if (!from || !to) return null;
+  if (from[0] !== to[0] && from[1] !== to[1]) return null;
+  const cells = [];
+  if (from[0] === to[0]) {
+    const step = from[1] < to[1] ? 1 : -1;
+    for (let c = from[1]; c !== to[1] + step; c += step) {
+      if (BLOCK_GRID[from[0]][c]) return null;
+      cells.push([from[0], c]);
+    }
+  } else {
+    const step = from[0] < to[0] ? 1 : -1;
+    for (let r = from[0]; r !== to[0] + step; r += step) {
+      if (BLOCK_GRID[r][from[1]]) return null;
+      cells.push([r, from[1]]);
+    }
+  }
+  return cells;
+}
+
+function getUsedEdgeSet(ignoreWireIndex = null) {
+  const set = new Set();
+  wires.forEach((wire, idx) => {
+    if (idx === ignoreWireIndex) return;
+    for (let i = 0; i < wire.cells.length - 1; i += 1) {
+      set.add(edgeKey(wire.cells[i], wire.cells[i + 1]));
+    }
+    if (wire.closed && wire.cells.length >= 2) {
+      set.add(edgeKey(wire.cells[wire.cells.length - 1], wire.cells[0]));
+    }
+  });
+  return set;
+}
+
+function segmentConflicts(cells, ignoreWireIndex = null) {
+  const usedEdges = getUsedEdgeSet(ignoreWireIndex);
+  for (let i = 0; i < cells.length - 1; i += 1) {
+    if (usedEdges.has(edgeKey(cells[i], cells[i + 1]))) return true;
+  }
+  return false;
+}
+
+function clearAnchor() {
+  anchor = null;
+  renderBoard();
+}
+
+function handleCellClick(r, c) {
+  if (BLOCK_GRID[r][c]) return;
+  const clicked = [r, c];
+
+  if (!anchor) {
+    anchor = clicked;
+    renderBoard();
+    return;
+  }
+
+  if (sameCell(anchor, clicked)) {
+    eraseStraightAtCell(clicked);
+    anchor = null;
+    onStateChange();
+    return;
+  }
+
+  const segment = getSegmentCells(anchor, clicked);
+  if (!segment) {
+    anchor = clicked;
+    renderBoard();
+    return;
+  }
+  anchor = null;
+  toggleSegment(segment);
+  onStateChange();
+}
+
+function rebuildWireFromEdges(edges) {
+  if (!edges.length) return [];
+
+  const adjacency = new Map();
+  function ensureNode(key) {
+    if (!adjacency.has(key)) adjacency.set(key, []);
+    return adjacency.get(key);
+  }
+
+  edges.forEach((edge, index) => {
+    ensureNode(edge.a).push({ edgeId: index, to: edge.b });
+    ensureNode(edge.b).push({ edgeId: index, to: edge.a });
+  });
+
+  const visitedEdges = new Set();
+  const components = [];
+
+  function hierholzer(startKey) {
+    const stack = [startKey];
+    const path = [];
+    while (stack.length) {
+      const current = stack[stack.length - 1];
+      const nextEdge = (adjacency.get(current) || []).find(item => !visitedEdges.has(item.edgeId));
+      if (nextEdge) {
+        visitedEdges.add(nextEdge.edgeId);
+        stack.push(nextEdge.to);
+      } else {
+        path.push(stack.pop());
+      }
+    }
+    return path.reverse();
+  }
+
+  const nodeKeys = [...adjacency.keys()];
+  nodeKeys.forEach(startKey => {
+    const hasUnvisited = (adjacency.get(startKey) || []).some(item => !visitedEdges.has(item.edgeId));
+    if (!hasUnvisited) return;
+    const componentNodes = new Set();
+    const queue = [startKey];
+    componentNodes.add(startKey);
+    while (queue.length) {
+      const key = queue.shift();
+      (adjacency.get(key) || []).forEach(item => {
+        if (!componentNodes.has(item.to)) {
+          componentNodes.add(item.to);
+          queue.push(item.to);
+        }
+      });
+    }
+    const odd = [...componentNodes].filter(key => ((adjacency.get(key) || []).filter(item => !visitedEdges.has(item.edgeId)).length % 2) === 1);
+    const start = odd[0] || startKey;
+    const trail = hierholzer(start).map(key => key.split(',').map(Number));
+    if (trail.length >= 2) {
+      const closed = sameCell(trail[0], trail[trail.length - 1]);
+      const cells = closed ? trail.slice(0, -1) : trail;
+      if (cells.length >= 2) components.push({ cells, closed });
+    }
+  });
+
+  return components;
+}
+
+function eraseSegment(segment) {
+  const removeEdges = new Set();
+  for (let i = 0; i < segment.length - 1; i += 1) {
+    removeEdges.add(edgeKey(segment[i], segment[i + 1]));
+  }
+
+  const nextWires = [];
+  wires.forEach(wire => {
+    const edges = [];
+    for (let i = 0; i < wire.cells.length - 1; i += 1) {
+      const a = wire.cells[i];
+      const b = wire.cells[i + 1];
+      if (!removeEdges.has(edgeKey(a, b))) edges.push({ a: cellKey(a[0], a[1]), b: cellKey(b[0], b[1]) });
+    }
+    if (wire.closed && wire.cells.length >= 2) {
+      const a = wire.cells[wire.cells.length - 1];
+      const b = wire.cells[0];
+      if (!removeEdges.has(edgeKey(a, b))) edges.push({ a: cellKey(a[0], a[1]), b: cellKey(b[0], b[1]) });
+    }
+    nextWires.push(...rebuildWireFromEdges(edges));
+  });
+  wires = nextWires;
+}
+
+function getTrackAdjacency() {
+  const adjacency = new Map();
+  function ensure(key) {
+    if (!adjacency.has(key)) adjacency.set(key, new Set());
+    return adjacency.get(key);
+  }
+  getAllEdges().forEach(({ a, b }) => {
+    ensure(a).add(b);
+    ensure(b).add(a);
+  });
+  return adjacency;
+}
+
+function eraseStraightAtCell(cell) {
+  const adjacency = getTrackAdjacency();
+  const startKey = cellKey(cell[0], cell[1]);
+  const neighbors = [...(adjacency.get(startKey) || [])];
+  if (!neighbors.length) return;
+
+  const removeEdges = new Set();
+
+  neighbors.forEach(nextKey => {
+    let prev = startKey;
+    let current = nextKey;
+    let prevCoords = startKey.split(',').map(Number);
+    let currentCoords = current.split(',').map(Number);
+    let axis = prevCoords[0] === currentCoords[0] ? 'h' : 'v';
+    removeEdges.add(edgeKey(prevCoords, currentCoords));
+
+    while (true) {
+      const nextNeighbors = [...(adjacency.get(current) || [])].filter(key => key !== prev);
+      if (!nextNeighbors.length) break;
+
+      const straight = nextNeighbors.filter(key => {
+        const coords = key.split(',').map(Number);
+        return axis === 'h' ? coords[0] === currentCoords[0] : coords[1] === currentCoords[1];
+      });
+
+      if (straight.length !== 1) break;
+
+      const next = straight[0];
+      const nextCoords = next.split(',').map(Number);
+      removeEdges.add(edgeKey(currentCoords, nextCoords));
+      prev = current;
+      current = next;
+      currentCoords = nextCoords;
+    }
+  });
+
+  if (!removeEdges.size) return;
+
+  const nextWires = [];
+  wires.forEach(wire => {
+    const edges = [];
+    for (let i = 0; i < wire.cells.length - 1; i += 1) {
+      const a = wire.cells[i];
+      const b = wire.cells[i + 1];
+      if (!removeEdges.has(edgeKey(a, b))) edges.push({ a: cellKey(a[0], a[1]), b: cellKey(b[0], b[1]) });
+    }
+    if (wire.closed && wire.cells.length >= 2) {
+      const a = wire.cells[wire.cells.length - 1];
+      const b = wire.cells[0];
+      if (!removeEdges.has(edgeKey(a, b))) edges.push({ a: cellKey(a[0], a[1]), b: cellKey(b[0], b[1]) });
+    }
+    nextWires.push(...rebuildWireFromEdges(edges));
+  });
+  wires = nextWires;
+}
+
+function toggleSegment(segment) {
+  const allEdges = new Set(getAllEdges().map(({ a, b }) => (a < b ? `${a}|${b}` : `${b}|${a}`)));
+  const segmentEdges = [];
+  for (let i = 0; i < segment.length - 1; i += 1) {
+    segmentEdges.push(edgeKey(segment[i], segment[i + 1]));
+  }
+
+  const alreadyExists = segmentEdges.every(key => allEdges.has(key));
+  if (alreadyExists) {
+    eraseSegment(segment);
+    return;
+  }
+
+  if (segmentConflicts(segment)) return;
+  wires.push({ cells: segment, closed: false });
+}
+
+function getAllEdges() {
+  const edges = [];
+  wires.forEach(wire => {
+    for (let i = 0; i < wire.cells.length - 1; i += 1) {
+      edges.push({
+        a: cellKey(wire.cells[i][0], wire.cells[i][1]),
+        b: cellKey(wire.cells[i + 1][0], wire.cells[i + 1][1])
+      });
+    }
+    if (wire.closed && wire.cells.length >= 2) {
+      edges.push({
+        a: cellKey(wire.cells[wire.cells.length - 1][0], wire.cells[wire.cells.length - 1][1]),
+        b: cellKey(wire.cells[0][0], wire.cells[0][1])
+      });
+    }
+  });
+  return edges;
+}
+
+function getMergedTracks() {
+  const adjacency = getTrackAdjacency();
+  const edgeList = getAllEdges();
+  const remainingEdges = new Set(edgeList.map(({ a, b }) => (a < b ? `${a}|${b}` : `${b}|${a}`)));
+  const tracks = [];
+
+  function direction(fromKey, toKey) {
+    const [fr, fc] = fromKey.split(',').map(Number);
+    const [tr, tc] = toKey.split(',').map(Number);
+    if (tr === fr - 1) return 'N';
+    if (tr === fr + 1) return 'S';
+    if (tc === fc - 1) return 'W';
+    return 'E';
+  }
+
+  function opposite(dir) {
+    return { N: 'S', S: 'N', E: 'W', W: 'E' }[dir];
+  }
+
+  function nextFrom(currentKey, prevKey) {
+    const neighbors = [...(adjacency.get(currentKey) || [])];
+    if (!prevKey) return null;
+    const currentDir = direction(prevKey, currentKey);
+    const [r, c] = currentKey.split(',').map(Number);
+    if (PLUS_GRID[r][c]) {
+      const targetDir = currentDir;
+      const target = neighbors.find(key => direction(currentKey, key) === targetDir);
+      return target || null;
+    }
+    const candidates = neighbors.filter(key => key !== prevKey);
+    if (candidates.length !== 1) return null;
+    return candidates[0];
+  }
+
+  function consumeTrack(startA, startB) {
+    const path = [startA, startB];
+    const startNext = startB;
+    let prev = startA;
+    let current = startB;
+    remainingEdges.delete(startA < startB ? `${startA}|${startB}` : `${startB}|${startA}`);
+
+    while (true) {
+      const next = nextFrom(current, prev);
+      if (!next) break;
+      if (current === path[0] && next === startNext) {
+        return { cells: path.map(k => k.split(',').map(Number)), closed: true };
+      }
+      const key = current < next ? `${current}|${next}` : `${next}|${current}`;
+      if (!remainingEdges.has(key)) break;
+      remainingEdges.delete(key);
+      path.push(next);
+      prev = current;
+      current = next;
+    }
+
+    return { cells: path.map(k => k.split(',').map(Number)), closed: false };
+  }
+
+  while (remainingEdges.size) {
+    const first = remainingEdges.values().next().value;
+    const [a, b] = first.split('|');
+    const track = consumeTrack(a, b);
+    if (track.cells.length >= 2) tracks.push(track);
+  }
+
+  return tracks;
+}
+
+function getVisitCounts() {
+  const counts = new Map();
+  const dirs = getAdjacencyDirs();
+  dirs.forEach((dirSet, key) => {
+    if (dirSet.size === 4) {
+      counts.set(key, 2);
+      return;
+    }
+    if (dirSet.size >= 2) {
+      counts.set(key, 1);
+    }
+  });
+  return counts;
+}
+
+function getAdjacencyDirs() {
+  const dirs = new Map();
+  function addDir(from, to) {
+    const key = cellKey(from[0], from[1]);
+    if (!dirs.has(key)) dirs.set(key, new Set());
+    if (to[0] === from[0] - 1) dirs.get(key).add('N');
+    else if (to[0] === from[0] + 1) dirs.get(key).add('S');
+    else if (to[1] === from[1] - 1) dirs.get(key).add('W');
+    else if (to[1] === from[1] + 1) dirs.get(key).add('E');
+  }
+  wires.forEach(wire => {
+    for (let i = 0; i < wire.cells.length - 1; i += 1) {
+      addDir(wire.cells[i], wire.cells[i + 1]);
+      addDir(wire.cells[i + 1], wire.cells[i]);
+    }
+    if (wire.closed && wire.cells.length >= 2) {
+      addDir(wire.cells[wire.cells.length - 1], wire.cells[0]);
+      addDir(wire.cells[0], wire.cells[wire.cells.length - 1]);
+    }
+  });
+  return dirs;
+}
+
+function isStraightDirs(dirSet) {
+  if (!dirSet) return false;
+  const dirs = [...dirSet];
+  if (dirs.length === 2) {
+    return (dirSet.has('N') && dirSet.has('S')) || (dirSet.has('E') && dirSet.has('W'));
+  }
+  return dirs.length === 4;
+}
+
+function getJunctionErrorSet() {
+  const errorSet = new Set();
+  const dirs = getAdjacencyDirs();
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      if (BLOCK_GRID[r][c]) continue;
+      const dirSet = dirs.get(cellKey(r, c));
+      if (!dirSet) continue;
+      const degree = dirSet.size;
+      if (PLUS_GRID[r][c]) {
+        const straight = isStraightDirs(dirSet);
+        if (!straight) errorSet.add(cellKey(r, c));
+        continue;
+      }
+      if (degree === 3) {
+        errorSet.add(cellKey(r, c));
+        continue;
+      }
+      if (degree === 4) {
+        errorSet.add(cellKey(r, c));
+      }
+    }
+  }
+  return errorSet;
+}
+
+function isConsecutiveSequence(seq) {
+  if (seq.length <= 1) return true;
+  const stepForward = (a, b) => ((b - a + MAX_NUMBER - 1) % MAX_NUMBER) + 1;
+  const stepBackward = (a, b) => ((a - b + MAX_NUMBER - 1) % MAX_NUMBER) + 1;
+  const forward = seq.every((v, i) => i === 0 || stepForward(seq[i - 1], v) === 1);
+  const backward = seq.every((v, i) => i === 0 || stepBackward(seq[i - 1], v) === 1);
+  return forward || backward;
+}
+
+function isClosedConsecutiveCycle(seq) {
+  if (seq.length <= 1) return true;
+  const stepForward = (a, b) => ((b - a + MAX_NUMBER - 1) % MAX_NUMBER) + 1;
+  const stepBackward = (a, b) => ((a - b + MAX_NUMBER - 1) % MAX_NUMBER) + 1;
+  const forward = seq.every((v, i) => stepForward(v, seq[(i + 1) % seq.length]) === 1);
+  const backward = seq.every((v, i) => stepBackward(v, seq[(i + 1) % seq.length]) === 1);
+  return forward || backward;
+}
+
+function getNumberStateMap() {
+  const states = new Map();
+  const dirs = getAdjacencyDirs();
+  getMergedTracks().forEach(wire => {
+    const seen = new Set();
+    const nums = [];
+    wire.cells.forEach(([r, c]) => {
+      const v = NUMBER_GRID[r][c];
+      const key = cellKey(r, c);
+      if (!v || seen.has(key)) return;
+      seen.add(key);
+      nums.push({ key, value: v });
+    });
+    if (!nums.length) return;
+    if (nums.length === 1) {
+      const item = nums[0];
+      states.set(item.key, isStraightDirs(dirs.get(item.key)) ? 'ok' : 'error');
+      return;
+    }
+    const seq = nums.map(item => item.value);
+    const orderOk = wire.closed ? isClosedConsecutiveCycle(seq) : isConsecutiveSequence(seq);
+    nums.forEach(item => {
+      const straightOk = isStraightDirs(dirs.get(item.key));
+      states.set(item.key, orderOk && straightOk ? 'ok' : 'error');
+    });
+  });
+
+  return states;
+}
+
+function serializeState() {
+  return wires.map(wire => ({
+    cells: wire.cells.map(([r, c]) => [r, c]),
+    closed: !!wire.closed
+  }));
+}
+
+function applyState(state) {
+  if (!Array.isArray(state)) return;
+  wires = state
+    .filter(wire => wire && Array.isArray(wire.cells) && wire.cells.length >= 2)
+    .map(wire => ({
+      cells: wire.cells
+        .map(([r, c]) => [Number(r), Number(c)])
+        .filter(([r, c]) => Number.isInteger(r) && Number.isInteger(c) && r >= 0 && r < ROWS && c >= 0 && c < COLS && !BLOCK_GRID[r][c]),
+      closed: !!wire.closed
+    }))
+    .filter(wire => wire.cells.length >= 2);
+  anchor = null;
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, serializeState());
+}
+
+function loadProgress() {
+  applyState(loadLocalState(SAVE_KEY));
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, serializeState());
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    applyState(state);
+    renderBoard();
+    saveProgress();
+  });
+}
+
+function getPendingPath() {
+  if (!anchor) return null;
+  return `M ${anchor[1] + 0.5} ${anchor[0] + 0.5}`;
+}
+
+function renderWires() {
+  const svg = document.getElementById('wireLayer');
+  svg.innerHTML = '';
+
+  wires.forEach(wire => {
+    if (wire.cells.length < 2) return;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    let d = `M ${wire.cells[0][1] + 0.5} ${wire.cells[0][0] + 0.5}`;
+    for (let i = 1; i < wire.cells.length; i += 1) {
+      d += ` L ${wire.cells[i][1] + 0.5} ${wire.cells[i][0] + 0.5}`;
+    }
+    if (wire.closed) {
+      d += ` L ${wire.cells[0][1] + 0.5} ${wire.cells[0][0] + 0.5}`;
+    }
+    path.setAttribute('d', d);
+    path.setAttribute('class', 'wire-path');
+    svg.appendChild(path);
+  });
+
+  const pending = getPendingPath();
+  if (pending) {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pending);
+    path.setAttribute('class', 'wire-path pending');
+    svg.appendChild(path);
+  }
+}
+
+function renderBoard() {
+  const numberStates = getNumberStateMap();
+  const junctionErrors = getJunctionErrorSet();
+  const message = document.getElementById('message');
+
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const cell = getCellEl(r, c);
+      if (!cell) continue;
+      cell.classList.toggle('anchor', !!anchor && anchor[0] === r && anchor[1] === c);
+      cell.classList.toggle('junction-error', junctionErrors.has(cellKey(r, c)));
+      const numEl = cell.querySelector('.cell-number');
+      if (numEl) {
+        numEl.classList.remove('ok', 'error');
+        const state = numberStates.get(cellKey(r, c));
+        if (state === 'ok') numEl.classList.add('ok');
+        if (state === 'error') numEl.classList.add('error');
+      }
+    }
+  }
+
+  renderWires();
+  const complete = isComplete();
+  message.textContent = complete ? '축하합니다! 퍼즐을 완성했습니다!' : '';
+  if (complete) recordCompletion(PUZZLE_ID);
+}
+
+function isComplete() {
+  const mergedTracks = getMergedTracks();
+  if (mergedTracks.length !== 1) return false;
+  const wire = mergedTracks[0];
+  if (!wire.closed) return false;
+
+  if (getJunctionErrorSet().size > 0) return false;
+  const counts = getVisitCounts();
+  const dirs = getAdjacencyDirs();
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const key = cellKey(r, c);
+      const count = counts.get(key) || 0;
+      if (BLOCK_GRID[r][c]) {
+        if (count !== 0) return false;
+        continue;
+      }
+      if (PLUS_GRID[r][c]) {
+        if (count !== 2) return false;
+      } else if (count !== 1) {
+        return false;
+      }
+      const v = NUMBER_GRID[r][c];
+      if (v && !isStraightDirs(dirs.get(key))) return false;
+    }
+  }
+
+  const numberStates = getNumberStateMap();
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const v = NUMBER_GRID[r][c];
+      if (v && numberStates.get(cellKey(r, c)) !== 'ok') return false;
+    }
+  }
+  return true;
+}
+
+function onStateChange() {
+  renderBoard();
+  saveProgress();
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    wires = [];
+    anchor = null;
+    renderBoard();
+    saveProgress();
+    resetCompletion(PUZZLE_ID);
+  });
+}
+
+function buildBoard() {
+  const board = document.getElementById('board');
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const cell = document.createElement('div');
+      cell.className = `cell${BLOCK_GRID[r][c] ? ' blocked' : ''}`;
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.addEventListener('click', () => handleCellClick(r, c));
+
+      if (PLUS_GRID[r][c]) {
+        const mark = document.createElement('span');
+        mark.className = 'cell-mark';
+        mark.textContent = '+';
+        cell.appendChild(mark);
+      }
+
+      if (NUMBER_GRID[r][c]) {
+        const num = document.createElement('span');
+        num.className = 'cell-number';
+        num.textContent = NUMBER_GRID[r][c];
+        cell.appendChild(num);
+      }
+
+      board.appendChild(cell);
+    }
+  }
+}
+
+buildBoard();
+loadProgress();
+renderBoard();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>
