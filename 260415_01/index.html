@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260415 마방진 논리</title>
+<meta property="og:title" content="260415 마방진 논리">
+<meta property="og:description" content="주어진 격자에 오른쪽에 적힌 조건들을 만족하며 격자가 마방진이 되도록 완성하세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260415_01/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .container {
+    width: min(94vw, 520px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .equations {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, max-content));
+    gap: 10px 24px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    align-self: center;
+    margin-top: 20px;
+  }
+
+  .board-wrap {
+    width: 100%;
+    margin-top: 14px;
+    align-self: center;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border: 2.5px solid #222;
+    background: #fff;
+  }
+
+  .cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #888;
+    border-bottom: 1px solid #888;
+    background: #fff;
+    cursor: pointer;
+    transition: background 0.12s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .cell:nth-child(4n) { border-right: none; }
+  .cell:nth-child(n+13) { border-bottom: none; }
+  .cell:hover:not(.selected):not(.error):not(.line-error) { background: #f5f5f0; }
+  .cell.selected { outline: 2.5px solid #4a6fa5; outline-offset: -3px; z-index: 2; }
+  .cell.error { background: #f5d0d0; }
+  .cell.line-error { background: #f5d0d0; }
+  .cell.line-error.selected,
+  .cell.error.selected { outline-color: #c0392b; }
+
+  .cell-letter {
+    position: absolute;
+    top: 4px;
+    left: 6px;
+    font-size: min(4vw, 19px);
+    font-weight: 500;
+    color: #222;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .cell-num {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: min(9vw, 42px);
+    font-weight: 700;
+    color: #4a6fa5;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .cell.error .cell-num,
+  .cell.line-error .cell-num { color: #c0392b; }
+
+  .equation {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #333;
+    line-height: 1.4;
+  }
+
+  .equation::after {
+    content: none;
+  }
+
+  .equation::before {
+    content: "|";
+    margin-right: 24px;
+    color: #b8b1a5;
+  }
+
+  .equation:nth-child(4n + 1)::before {
+    content: none;
+  }
+
+  .equation.error { color: #c0392b; }
+
+  .message {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    min-height: 1.6em;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    color: #777;
+    text-align: center;
+  }
+
+  .numpad {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .numpad-digits {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+  }
+
+  .numpad-digits button {
+    height: 44px;
+    border-radius: 3px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 1.5px solid #c8c3b8;
+    background: #f4f1eb;
+    color: #333;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .numpad-digits button:hover { background: #e8e4da; }
+  .numpad-digits button:active { transform: scale(0.95); background: #ddd9cf; }
+
+  @media (max-width: 600px) {
+    .equations {
+      grid-template-columns: repeat(2, minmax(0, max-content));
+      gap: 8px 18px;
+      justify-content: center;
+    }
+
+    .equation {
+      font-size: 0.96rem;
+    }
+
+    .equation::before {
+      margin-right: 18px;
+    }
+
+    .equation:nth-child(4n + 1)::before {
+      content: "|";
+    }
+
+    .equation:nth-child(2n + 1)::before {
+      content: none;
+    }
+
+    .numpad-digits button {
+      height: min(10vw, 44px);
+      font-size: min(4vw, 16px);
+    }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page pad-48">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260415 마방진 논리</h1>
+<p class="subtitle">주어진 격자에 오른쪽에 적힌 조건들을 만족하며 격자가 마방진이 되도록 완성하세요</p>
+
+<div class="container">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>마방진 논리 규칙</strong><br>
+    • 주어진 격자에 오른쪽에 적힌 조건들을 만족하며 다음 자연수들을 격자가 마방진이 되도록 완성하세요.<br>
+    • 마방진이란, n×n 형태에 1~n²까지의 자연수가 들어가고, 모든 각각의 행, 열, 그리고 가장 긴 두 대각선의 합이 모두 같다는 특징이 있는 정방형 표입니다.
+  </div>
+
+  <div class="equations" id="equations">
+    <div class="equation" id="eq-0">A × 2 = B</div>
+    <div class="equation" id="eq-1">B × 2 = C</div>
+    <div class="equation" id="eq-2">D − 3 = E</div>
+    <div class="equation" id="eq-3">E − 3 = F</div>
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="numpad" id="numpad">
+    <div class="numpad-digits" id="numpadDigits"></div>
+  </div>
+
+  <div class="bottom-buttons">
+    <button onclick="deleteCell()">지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260415_01';
+const SAVE_KEY = 'puzzle_260415_01';
+const ROWS = 4;
+const COLS = 4;
+const N = 16;
+const MAGIC_SUM = (N * (N + 1) / 2) / ROWS;
+
+const SHAPE_GRID = Array.from({ length: ROWS }, () => Array(COLS).fill(1));
+const LETTER_GRID = [
+  ['A', 'B', 'C', ''],
+  ['', '', '', 'D'],
+  ['', '', '', 'E'],
+  ['', '', '', 'F']
+];
+
+const LETTER_POS = {};
+LETTER_GRID.forEach((row, r) => row.forEach((v, c) => { if (v) LETTER_POS[v] = [r, c]; }));
+
+const EQUATIONS = [
+  { id: 0, text: 'A × 2 = B', vars: ['A', 'B'], check: vals => vals.A * 2 === vals.B },
+  { id: 1, text: 'B × 2 = C', vars: ['B', 'C'], check: vals => vals.B * 2 === vals.C },
+  { id: 2, text: 'D − 3 = E', vars: ['D', 'E'], check: vals => vals.D - 3 === vals.E },
+  { id: 3, text: 'E − 3 = F', vars: ['E', 'F'], check: vals => vals.E - 3 === vals.F }
+];
+
+let values = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+let selectedCell = null;
+let freshlySelected = false;
+
+function cellId(r, c) {
+  return `cell-${r}-${c}`;
+}
+
+function updateCellDisplay(r, c) {
+  const cell = document.getElementById(cellId(r, c));
+  if (!cell) return;
+  cell.querySelector('.cell-num').textContent = values[r][c] || '';
+}
+
+function getLetterValues() {
+  const out = {};
+  Object.entries(LETTER_POS).forEach(([letter, [r, c]]) => {
+    out[letter] = values[r][c];
+  });
+  return out;
+}
+
+function getDuplicateSet() {
+  const seen = new Map();
+  const dup = new Set();
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const v = values[r][c];
+      if (!v) continue;
+      if (seen.has(v)) {
+        dup.add(cellId(r, c));
+        dup.add(cellId(...seen.get(v)));
+      } else {
+        seen.set(v, [r, c]);
+      }
+    }
+  }
+  return dup;
+}
+
+function getEquationErrors() {
+  const letterValues = getLetterValues();
+  const eqErrors = new Set();
+  const cellErrors = new Set();
+
+  EQUATIONS.forEach(eq => {
+    const complete = eq.vars.every(letter => letterValues[letter] > 0);
+    if (!complete) return;
+    if (!eq.check(letterValues)) {
+      eqErrors.add(eq.id);
+      eq.vars.forEach(letter => {
+        const [r, c] = LETTER_POS[letter];
+        cellErrors.add(cellId(r, c));
+      });
+    }
+  });
+
+  return { eqErrors, cellErrors };
+}
+
+function getFilledLineErrorSet() {
+  const errorSet = new Set();
+  const lines = [];
+
+  for (let r = 0; r < ROWS; r += 1) lines.push(Array.from({ length: COLS }, (_, c) => [r, c]));
+  for (let c = 0; c < COLS; c += 1) lines.push(Array.from({ length: ROWS }, (_, r) => [r, c]));
+  lines.push(Array.from({ length: ROWS }, (_, i) => [i, i]));
+  lines.push(Array.from({ length: ROWS }, (_, i) => [i, COLS - 1 - i]));
+
+  lines.forEach(line => {
+    const lineValues = line.map(([r, c]) => values[r][c]);
+    if (lineValues.some(v => !v)) return;
+    const sum = lineValues.reduce((acc, v) => acc + v, 0);
+    if (sum !== MAGIC_SUM) {
+      line.forEach(([r, c]) => errorSet.add(cellId(r, c)));
+    }
+  });
+
+  return errorSet;
+}
+
+function validate() {
+  const duplicateSet = getDuplicateSet();
+  const { eqErrors, cellErrors } = getEquationErrors();
+  const lineErrorSet = getFilledLineErrorSet();
+
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const cell = document.getElementById(cellId(r, c));
+      const id = cellId(r, c);
+      cell.classList.toggle('error', duplicateSet.has(id) || cellErrors.has(id));
+      cell.classList.toggle('line-error', lineErrorSet.has(id) && !duplicateSet.has(id) && !cellErrors.has(id));
+    }
+  }
+
+  EQUATIONS.forEach(eq => {
+    document.getElementById(`eq-${eq.id}`).classList.toggle('error', eqErrors.has(eq.id));
+  });
+
+  const complete = isComplete(duplicateSet, eqErrors, lineErrorSet);
+  document.getElementById('message').textContent = complete ? '축하합니다! 퍼즐을 완성했습니다!' : '';
+  if (complete) recordCompletion(PUZZLE_ID);
+}
+
+function isComplete(duplicateSet = getDuplicateSet(), eqErrors = getEquationErrors().eqErrors, lineErrorSet = getFilledLineErrorSet()) {
+  const nums = values.flat();
+  if (nums.some(v => v < 1 || v > N)) return false;
+  if (new Set(nums).size !== N) return false;
+  if (duplicateSet.size > 0) return false;
+  if (eqErrors.size > 0) return false;
+  if (lineErrorSet.size > 0) return false;
+  return true;
+}
+
+function selectCell(r, c) {
+  if (selectedCell) {
+    const prev = document.getElementById(cellId(selectedCell.r, selectedCell.c));
+    if (prev) prev.classList.remove('selected');
+  }
+  if (selectedCell && selectedCell.r === r && selectedCell.c === c) {
+    selectedCell = null;
+    freshlySelected = false;
+    return;
+  }
+  selectedCell = { r, c };
+  freshlySelected = true;
+  document.getElementById(cellId(r, c)).classList.add('selected');
+}
+
+function deleteCell() {
+  if (!selectedCell) return;
+  const { r, c } = selectedCell;
+  values[r][c] = 0;
+  updateCellDisplay(r, c);
+  validate();
+  saveProgress();
+}
+
+function inputDigit(digit) {
+  if (!selectedCell) return;
+  const { r, c } = selectedCell;
+  let next;
+  if (freshlySelected) {
+    next = digit;
+    freshlySelected = false;
+  } else {
+    const appended = values[r][c] * 10 + digit;
+    next = appended >= 1 && appended <= N ? appended : digit;
+  }
+  values[r][c] = next >= 1 && next <= N ? next : 0;
+  updateCellDisplay(r, c);
+  validate();
+  saveProgress();
+}
+
+function buildBoard() {
+  const board = document.getElementById('board');
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.id = cellId(r, c);
+      cell.addEventListener('click', () => selectCell(r, c));
+
+      if (LETTER_GRID[r][c]) {
+        const letter = document.createElement('span');
+        letter.className = 'cell-letter';
+        letter.textContent = LETTER_GRID[r][c];
+        cell.appendChild(letter);
+      }
+
+      const num = document.createElement('span');
+      num.className = 'cell-num';
+      cell.appendChild(num);
+      board.appendChild(cell);
+    }
+  }
+}
+
+function buildNumpad() {
+  const digitsEl = document.getElementById('numpadDigits');
+  [...Array(9).keys()].map(i => i + 1).concat([0]).forEach(n => {
+    const btn = document.createElement('button');
+    btn.textContent = n;
+    btn.addEventListener('click', () => inputDigit(n));
+    digitsEl.appendChild(btn);
+  });
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, values);
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (!Array.isArray(saved) || saved.length !== ROWS) return;
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const v = Number(saved[r]?.[c]) || 0;
+      values[r][c] = v >= 1 && v <= N ? v : 0;
+      updateCellDisplay(r, c);
+    }
+  }
+  validate();
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, values);
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state) || state.length !== ROWS) return;
+    for (let r = 0; r < ROWS; r += 1) {
+      for (let c = 0; c < COLS; c += 1) {
+        const v = Number(state[r]?.[c]) || 0;
+        values[r][c] = v >= 1 && v <= N ? v : 0;
+        updateCellDisplay(r, c);
+      }
+    }
+    validate();
+    saveProgress();
+  });
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    values = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+    if (selectedCell) {
+      const prev = document.getElementById(cellId(selectedCell.r, selectedCell.c));
+      if (prev) prev.classList.remove('selected');
+    }
+    selectedCell = null;
+    freshlySelected = false;
+    for (let r = 0; r < ROWS; r += 1) {
+      for (let c = 0; c < COLS; c += 1) {
+        updateCellDisplay(r, c);
+      }
+    }
+    validate();
+    saveProgress();
+    resetCompletion(PUZZLE_ID);
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key >= '0' && e.key <= '9') {
+    inputDigit(Number(e.key));
+    return;
+  }
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    e.preventDefault();
+    deleteCell();
+    return;
+  }
+  if (!selectedCell) return;
+  const dirs = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+  const d = dirs[e.key];
+  if (!d) return;
+  e.preventDefault();
+  const nr = selectedCell.r + d[0];
+  const nc = selectedCell.c + d[1];
+  if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) selectCell(nr, nc);
+});
+
+buildBoard();
+buildNumpad();
+loadProgress();
+validate();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>
