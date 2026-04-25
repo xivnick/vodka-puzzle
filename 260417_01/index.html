@@ -224,8 +224,8 @@ const PIECES = [
   { id: 'P', src: '/puzzle/img/chess/Chess_plt45.svg', label: '폰' }
 ];
 const PIECE_MAP = Object.fromEntries(PIECES.map(piece => [piece.id, piece]));
-const BOX_H = 2;
-const BOX_W = 3;
+const BOX_H = 3;
+const BOX_W = 2;
 
 const PRESET_GRID = [
   ['', '', '', '', '', ''],
@@ -255,8 +255,8 @@ function buildGrid() {
       cell.className = 'cell'
         + (((r + c) % 2 === 1) ? ' dark' : '')
         + (GIVEN.has(`${r},${c}`) ? ' given' : '')
-        + (c === 2 ? ' box-right' : '')
-        + (r === 1 || r === 3 ? ' box-bottom' : '');
+        + (c === 1 || c === 3 ? ' box-right' : '')
+        + (r === 2 ? ' box-bottom' : '');
       cell.dataset.r = r;
       cell.dataset.c = c;
       cell.addEventListener('click', () => {
