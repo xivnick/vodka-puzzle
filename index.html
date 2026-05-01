@@ -104,10 +104,52 @@
   }
   .tools-link:hover { color: #555; }
 
+  .pager {
+    width: min(94vw, 480px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .pager button {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border: 1.5px solid #d0ccc4;
+    border-radius: 3px;
+    background: #faf8f4;
+    color: #777;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+
+  .pager button:hover { background: #eeebe4; color: #555; }
+  .pager button.active {
+    background: #e8e4da;
+    color: #333;
+    border-color: #bdb7ad;
+    font-weight: 700;
+  }
+
+  .pager button:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
   @media (max-width: 540px) {
     body { padding: 0 8px 48px; }
     h1 { font-size: 1.3rem; }
     .list a { padding: 12px 14px; }
+    .pager { gap: 5px; }
+    .pager button {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 8px;
+      font-size: 0.78rem;
+    }
   }
 
   .list a { position: relative; }
@@ -125,6 +167,46 @@
 <p class="desc">xivnick.me/puzzle</p>
 
 <div class="list">
+  <a href="/puzzle/260430_01/" data-puzzle-id="260430_01">
+    <span class="title">260430 스타배틀</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/260429_02/" data-puzzle-id="260429_02">
+    <span class="title">260429 SkyTomTom</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/260429_01/" data-puzzle-id="260429_01">
+    <span class="title">260429 TomTom</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/260428_03/" data-puzzle-id="260428_03">
+    <span class="title">260428 나선은하 배틀쉽</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/260428_02/" data-puzzle-id="260428_02">
+    <span class="title">260428 나선은하</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/260428_01/" data-puzzle-id="260428_01">
+    <span class="title">260428 Battleship</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/260427_02/" data-puzzle-id="260427_02">
+    <span class="title">260427 스도쿠(매스랙스)</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/260427_01/" data-puzzle-id="260427_01">
+    <span class="title">260427 스도쿠(시계)</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/260425_02/" data-puzzle-id="260425_02">
+    <span class="title">260425 타파(정육면체) 2</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/260425_01/" data-puzzle-id="260425_01">
+    <span class="title">260425 타파(정육면체) 1</span>
+    <span class="tag">논리</span>
+  </a>
   <a href="/puzzle/260423_01/" data-puzzle-id="260423_01">
     <span class="title">260423 스도쿠(안티-나이트)</span>
     <span class="tag">스도쿠</span>
@@ -295,6 +377,8 @@
   </a>
 </div>
 
+<div class="pager" id="pager"></div>
+
 <a class="tools-link" href="/puzzle/tools/">도구</a>
 
 <div style="width: min(94vw, 480px);">
@@ -305,7 +389,75 @@
 </div>
 
 <script>
+  const PAGE_SIZE = 10;
+
   initHeader();
+
+  function getCurrentPage(totalPages) {
+    const hash = window.location.hash.match(/^#page-(\d+)$/);
+    const page = hash ? parseInt(hash[1], 10) : 1;
+    return Math.min(Math.max(page, 1), totalPages);
+  }
+
+  function setCurrentPage(page) {
+    if (page <= 1) {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    } else {
+      history.replaceState(null, '', `${window.location.pathname}${window.location.search}#page-${page}`);
+    }
+  }
+
+  function renderPagination() {
+    const links = [...document.querySelectorAll('.list a[data-puzzle-id]')];
+    const totalPages = Math.max(1, Math.ceil(links.length / PAGE_SIZE));
+    const currentPage = getCurrentPage(totalPages);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+
+    links.forEach((link, index) => {
+      link.style.display = index >= start && index < end ? '' : 'none';
+    });
+
+    const pager = document.getElementById('pager');
+    pager.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const prev = document.createElement('button');
+    prev.textContent = '‹';
+    prev.disabled = currentPage === 1;
+    prev.addEventListener('click', () => {
+      if (currentPage === 1) return;
+      setCurrentPage(currentPage - 1);
+      renderPagination();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+    pager.appendChild(prev);
+
+    for (let page = 1; page <= totalPages; page += 1) {
+      const btn = document.createElement('button');
+      btn.textContent = page;
+      btn.className = page === currentPage ? 'active' : '';
+      btn.addEventListener('click', () => {
+        setCurrentPage(page);
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      });
+      pager.appendChild(btn);
+    }
+
+    const next = document.createElement('button');
+    next.textContent = '›';
+    next.disabled = currentPage === totalPages;
+    next.addEventListener('click', () => {
+      if (currentPage === totalPages) return;
+      setCurrentPage(currentPage + 1);
+      renderPagination();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+    pager.appendChild(next);
+  }
+
+  renderPagination();
 
   async function loadCompletions() {
     const completed = await getMyCompletedPuzzles();
@@ -407,9 +559,12 @@
   window.addEventListener('pageshow', e => {
     if (!e.persisted) return;
     document.querySelectorAll('.check-mark').forEach(el => el.remove());
+    renderPagination();
     loadCompletions();
     loadSolverRankings();
   });
+
+  window.addEventListener('hashchange', renderPagination);
 </script>
 </body>
 </html>

@@ -22,6 +22,11 @@
   .cell.active:hover { background: #f0efe8; }
   .cell.satisfied { background: #d8f0d8; }
   .cell.satisfied:hover { background: #c8e8c8; }
+  .cross-mark { position: absolute; top: 50%; left: 50%; width: 56%; height: 56%; transform: translate(-50%, -50%); pointer-events: none; z-index: 2; }
+  .cross-mark::before,
+  .cross-mark::after { content: ""; position: absolute; top: 50%; left: 50%; width: 100%; height: 2px; background: #8d8d8d; border-radius: 999px; }
+  .cross-mark::before { transform: translate(-50%, -50%) rotate(45deg); }
+  .cross-mark::after { transform: translate(-50%, -50%) rotate(-45deg); }
   .domino-overlay { position: absolute; z-index: 5; background: #b0b0b0; border: 2px solid #888; border-radius: 5px; pointer-events: none; }
   .domino-overlay.error { background: #cc6666; border-color: #aa4444; }
   .bottom-buttons { display: flex; gap: 6px; width: 100%; margin-bottom: 14px; }
@@ -110,8 +115,13 @@ const regionMap = {};
 REGIONS.forEach((region, i) => { region.forEach(([r, c]) => { regionMap[`${r},${c}`] = i; }); });
 
 let dominoes = new Set();
+let xMarks = new Set();
 const cellElements = {};
 const boardWrap = document.getElementById('boardWrap');
+let pressTimer = null;
+let pressTargetKey = null;
+let longPressTriggered = false;
+let suppressNextClick = false;
 
 function dominoKey(k1, k2) { return k1 < k2 ? `${k1}-${k2}` : `${k2}-${k1}`; }
 
@@ -121,6 +131,21 @@ function dominoAt(cellKey) {
     if (dk.substring(0, sep) === cellKey || dk.substring(sep + 1) === cellKey) return dk;
   }
   return null;
+}
+
+function clearPressState() {
+  if (pressTimer) clearTimeout(pressTimer);
+  pressTimer = null;
+  pressTargetKey = null;
+  longPressTriggered = false;
+}
+
+function toggleX(cellKey) {
+  const existing = dominoAt(cellKey);
+  if (existing) dominoes.delete(existing);
+  if (xMarks.has(cellKey)) xMarks.delete(cellKey);
+  else xMarks.add(cellKey);
+  onStateChange();
 }
 
 function createBoard() {
@@ -134,7 +159,34 @@ function createBoard() {
       cell.className = 'cell active';
       cell.dataset.r = r; cell.dataset.c = c;
       applyBorders(cell, r, c);
-      cell.addEventListener('click', (e) => handleCellClick(e, cell, r, c, key));
+      cell.addEventListener('click', (e) => {
+        if (longPressTriggered || suppressNextClick) {
+          e.preventDefault();
+          suppressNextClick = false;
+          clearPressState();
+          return;
+        }
+        handleCellClick(e, cell, r, c, key);
+      });
+      cell.addEventListener('pointerdown', event => {
+        if (event.button !== 0) return;
+        clearPressState();
+        pressTargetKey = key;
+        pressTimer = setTimeout(() => {
+          if (pressTargetKey !== key) return;
+          longPressTriggered = true;
+          suppressNextClick = true;
+          toggleX(key);
+        }, 420);
+      });
+      cell.addEventListener('pointerup', () => clearPressState());
+      cell.addEventListener('pointerleave', () => clearPressState());
+      cell.addEventListener('pointercancel', () => clearPressState());
+      cell.addEventListener('contextmenu', event => {
+        event.preventDefault();
+        clearPressState();
+        toggleX(key);
+      });
       cellElements[key] = cell;
       board.appendChild(cell);
     }
@@ -159,6 +211,7 @@ function applyBorders(cell, r, c) {
 }
 
 function handleCellClick(e, cell, r, c, key) {
+  if (xMarks.has(key)) xMarks.delete(key);
   const existing = dominoAt(key);
   if (existing) { dominoes.delete(existing); onStateChange(); return; }
 
@@ -176,6 +229,7 @@ function handleCellClick(e, cell, r, c, key) {
   const best = edges[0];
   const nk = `${r + best.dr},${c + best.dc}`;
   if (!activeSet.has(nk) || dominoAt(nk)) return;
+  xMarks.delete(nk);
   dominoes.add(dominoKey(key, nk));
   onStateChange();
 }
@@ -225,6 +279,13 @@ function renderBoard() {
     const count = region.filter(([r, c]) => filled.has(`${r},${c}`)).length;
     const cell = cellElements[key];
     if (count === 2) { cell.classList.add('satisfied'); } else { cell.classList.remove('satisfied'); }
+    const existingMark = cell.querySelector('.cross-mark');
+    if (existingMark) existingMark.remove();
+    if (xMarks.has(key) && !filled.has(key)) {
+      const mark = document.createElement('div');
+      mark.className = 'cross-mark';
+      cell.appendChild(mark);
+    }
   }
 
   for (const dk of dominoes) {
@@ -280,29 +341,47 @@ function checkComplete() {
 }
 
 function resetBoard() {
-  if (dominoes.size === 0) return;
+  if (dominoes.size === 0 && xMarks.size === 0) return;
   if (!confirm('모든 도미노를 지울까요?')) return;
   dominoes = new Set();
+  xMarks = new Set();
   document.getElementById('message').textContent = '';
   onStateChange();
   resetCompletion(PUZZLE_ID);
 }
 
-function saveProgress() { saveLocalState(SAVE_KEY, [...dominoes]); }
+function saveProgress() { saveLocalState(SAVE_KEY, { dominoes: [...dominoes], xMarks: [...xMarks] }); }
 function loadProgress() {
-  const arr = loadLocalState(SAVE_KEY);
-  dominoes = Array.isArray(arr)
-    ? new Set(arr.filter(dk => typeof dk === 'string' && dk.includes('-')))
+  const state = loadLocalState(SAVE_KEY);
+  if (Array.isArray(state)) {
+    dominoes = new Set(state.filter(dk => typeof dk === 'string' && dk.includes('-')));
+    xMarks = new Set();
+    return;
+  }
+  dominoes = Array.isArray(state?.dominoes)
+    ? new Set(state.dominoes.filter(dk => typeof dk === 'string' && dk.includes('-')))
+    : new Set();
+  xMarks = Array.isArray(state?.xMarks)
+    ? new Set(state.xMarks.filter(key => typeof key === 'string' && activeSet.has(key)))
     : new Set();
 }
 
 async function handleCloudSave() {
-  await saveProgressCloud(PUZZLE_ID, [...dominoes]);
+  await saveProgressCloud(PUZZLE_ID, { dominoes: [...dominoes], xMarks: [...xMarks] });
 }
 async function handleCloudLoad() {
   await loadCloudState(PUZZLE_ID, state => {
-    if (!Array.isArray(state)) return;
-    dominoes = new Set(state.filter(dk => typeof dk === 'string' && dk.includes('-')));
+    if (Array.isArray(state)) {
+      dominoes = new Set(state.filter(dk => typeof dk === 'string' && dk.includes('-')));
+      xMarks = new Set();
+    } else {
+      dominoes = Array.isArray(state?.dominoes)
+        ? new Set(state.dominoes.filter(dk => typeof dk === 'string' && dk.includes('-')))
+        : new Set();
+      xMarks = Array.isArray(state?.xMarks)
+        ? new Set(state.xMarks.filter(key => typeof key === 'string' && activeSet.has(key)))
+        : new Set();
+    }
     onStateChange();
     saveProgress();
   });

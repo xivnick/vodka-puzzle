@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>260425 타파(정육면체) 1</title>
+<meta property="og:title" content="260425 타파(정육면체) 1">
+<meta property="og:description" content="물음표 단서와 정육면체 전개도 규칙이 추가된 타파 퍼즐">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260425_01/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .board-wrap {
+    position: relative;
+    width: min(92vw, 560px);
+    margin-top: 18px;
+    margin-bottom: 12px;
+    flex: 0 0 auto;
+  }
+
+  .board {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    width: 100%;
+    z-index: 1;
+    overflow: visible;
+  }
+
+  .board-lines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .board-line {
+    position: absolute;
+    background: #4a4a4a;
+  }
+
+  .board-line.h {
+    height: 1px;
+    transform: translateY(-0.5px);
+  }
+
+  .board-line.v {
+    width: 1px;
+    transform: translateX(-0.5px);
+  }
+
+  .cell {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    user-select: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background 0.12s, color 0.12s;
+    z-index: 1;
+    border: none;
+    outline: none;
+    background-clip: padding-box;
+  }
+
+  .cell::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 0.5px #585858;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .cell.hole {
+    background: transparent;
+    cursor: default;
+  }
+
+  .cell.hole::after {
+    content: none;
+  }
+
+  .cell.clue {
+    background: #fff;
+    color: #111;
+  }
+
+  .cell.painted-connected { background: #111; }
+  .cell.painted-disconnected { background: #9a9a9a; }
+  .cross-mark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 56%;
+    height: 56%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .cross-mark::before,
+  .cross-mark::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: #9d9d9d;
+    border-radius: 999px;
+  }
+
+  .cross-mark::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .cross-mark::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  .cell.err-painted,
+  .cell.err-painted.painted-connected,
+  .cell.err-painted.painted-disconnected {
+    background: #f5d0d0;
+  }
+
+  .q-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-items: center;
+    padding: 6px;
+    font-size: clamp(0.9rem, 4.8vw, 2rem);
+    line-height: 1;
+    color: inherit;
+    box-sizing: border-box;
+    z-index: 3;
+  }
+
+  .q-grid.one {
+    grid-template-columns: 1fr;
+    font-size: clamp(1.1rem, 5.2vw, 2.3rem);
+  }
+
+  .cell.clue.correct {
+    color: #5f8b52;
+  }
+
+  .cube-corner {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    z-index: 6;
+    pointer-events: none;
+    background: #b6b6b6;
+  }
+
+  .cube-corner.tl {
+    top: 0;
+    left: 0;
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+  }
+
+  .cube-corner.tr {
+    top: 0;
+    right: 0;
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+  }
+
+  .cube-corner.bl {
+    bottom: 0;
+    left: 0;
+    clip-path: polygon(0 0, 0 100%, 100% 100%);
+  }
+
+  .cube-corner.br {
+    bottom: 0;
+    right: 0;
+    clip-path: polygon(100% 0, 0 100%, 100% 100%);
+  }
+
+  .message {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    min-height: 1.6em;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    color: #777;
+    text-align: center;
+  }
+
+  .controls-wrap {
+    width: min(92vw, 560px);
+  }
+
+  .container .bottom-buttons {
+    width: 100%;
+    margin-top: 0;
+  }
+
+  @media (max-width: 560px) {
+    .board-wrap,
+    .controls-wrap {
+      width: min(94vw, 520px);
+    }
+
+    .q-grid {
+      padding: 5px;
+      font-size: clamp(0.82rem, 4vw, 1.3rem);
+    }
+
+    .q-grid.one {
+      font-size: clamp(1rem, 4.5vw, 1.55rem);
+    }
+
+    .cube-corner.tl,
+    .cube-corner.tr {
+      width: 12px;
+      height: 12px;
+    }
+
+    .cube-corner.bl,
+    .cube-corner.br {
+      width: 12px;
+      height: 12px;
+    }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+</head>
+<body class="puzzle-page">
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260425 타파(정육면체) 1</h1>
+<p class="subtitle">정육면체 전개도 위에서 타파를 푸세요</p>
+<div class="container puzzle-width-xl align-center">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>타파(정육면체) 규칙</strong><br>
+    • 칠해진 모든 칸은 상하좌우로 이어지는 하나의 덩어리를 구성합니다.<br>
+    • 격자의 모든 2x2 모양의 부분은 완전히 칠해질 수 없습니다.<br>
+    • 칸에 적힌 숫자의 의미는, 그 칸의 주변 8칸에 연속으로 칠해진 칸 수의 목록을 의미합니다. 단, 하나의 칸에 여러 개의 숫자가 있다고 해서 그것이 특정한 순서를 나타내지는 않습니다.<br>
+    • 숫자가 있는 칸은 색칠할 수 없습니다.<br>
+    • 물음표는 문제에 공개되지는 않은 어떤 자연수를 뜻합니다.<br>
+    • 전개도를 접었을 때 정육면체의 꼭짓점과 맞닿아있는 칸은 주변 칸이 7칸이 되며, 그 기준으로 단서를 적용합니다.<br>
+    • 접었을 때 정육면체의 한 꼭짓점과 맞닿아있는 세 칸은 전부 다 칠해질 수 없습니다.
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+    <div class="board-lines" id="boardLines" aria-hidden="true"></div>
+  </div>
+  <div class="controls-wrap">
+    <div class="bottom-buttons">
+    <button class="danger" onclick="resetBoard()">초기화</button>
+    </div>
+  </div>
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+  <div class="message" id="message"></div>
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+<script src="/puzzle/js/common.js?v=19"></script>
+<script>
+const PUZZLE_ID = '260425_01';
+const SAVE_KEY = 'puzzle_260425_01';
+const ROWS = 6;
+const COLS = 8;
+const EMPTY = 0;
+const PAINTED = 1;
+const CROSSED = 2;
+
+const FACE_POS = {
+  U: [1, 0],
+  L: [0, 1],
+  F: [1, 1],
+  R: [2, 1],
+  B: [3, 1],
+  D: [1, 2]
+};
+
+const FACE_BY_POS = Object.fromEntries(Object.entries(FACE_POS).map(([face, pos]) => [`${pos[1]},${pos[0]}`, face]));
+
+const OCCUPIED = Array.from({ length: ROWS }, (_, r) => Array.from({ length: COLS }, (_, c) => {
+  const fy = Math.floor(r / 2);
+  const fx = Math.floor(c / 2);
+  return !!FACE_BY_POS[`${fy},${fx}`];
+}));
+
+const CLUE_COUNTS = {
+  '0,2': 3,
+  '2,0': 2,
+  '2,2': 2,
+  '2,4': 2,
+  '2,6': 2,
+  '4,2': 1
+};
+
+let board = Array.from({ length: ROWS }, () => Array(COLS).fill(EMPTY));
+let pressTimer = null;
+let pressTargetKey = null;
+let longPressTriggered = false;
+
+function vAdd(a, b) { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
+function vSub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+function vScale(a, k) { return [a[0] * k, a[1] * k, a[2] * k]; }
+function vNeg(a) { return [-a[0], -a[1], -a[2]]; }
+function vDot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+function vKey(a) { return a.join(','); }
+function pairKey(a, b) { return [a, b].sort().join('|'); }
+
+function buildFaceGeometry() {
+  const netAdj = {};
+  Object.entries(FACE_POS).forEach(([face, [fx, fy]]) => {
+    netAdj[face] = {};
+    const dirs = { right: [1, 0], left: [-1, 0], down: [0, 1], up: [0, -1] };
+    Object.entries(dirs).forEach(([dir, [dx, dy]]) => {
+      const next = FACE_BY_POS[`${fy + dy},${fx + dx}`];
+      if (next) netAdj[face][dir] = next;
+    });
+  });
+
+  const geom = {
+    F: {
+      o: [-1, -1, 1],
+      u: [1, 0, 0],
+      v: [0, 1, 0],
+      n: [0, 0, 1]
+    }
+  };
+  const queue = ['F'];
+
+  while (queue.length) {
+    const face = queue.shift();
+    const { o, u, v, n } = geom[face];
+    const candidates = {
+      right: { n: u, u: vNeg(n), v, o: vAdd(o, vScale(u, 2)) },
+      left: { n: vNeg(u), u: n, v, o: vSub(o, vScale(n, 2)) },
+      down: { n: v, u, v: vNeg(n), o: vAdd(o, vScale(v, 2)) },
+      up: { n: vNeg(v), u, v: n, o: vSub(o, vScale(n, 2)) }
+    };
+
+    Object.entries(netAdj[face]).forEach(([dir, nextFace]) => {
+      if (!geom[nextFace]) {
+        geom[nextFace] = candidates[dir];
+        queue.push(nextFace);
+      }
+    });
+  }
+  return geom;
+}
+
+const FACE_GEOM = buildFaceGeometry();
+const CELL_INFO = {};
+const TOUCH_ADJ = {};
+const EDGE_ADJ = {};
+const CORNER_MARKS = {};
+const SQUARE_BLOCKS = [];
+const VERTEX_TRIPLES = [];
+
+function buildCellGeometry() {
+  const cellKeys = [];
+  Object.entries(FACE_POS).forEach(([face, [fx, fy]]) => {
+    const geom = FACE_GEOM[face];
+    for (let lr = 0; lr < 2; lr += 1) {
+      for (let lc = 0; lc < 2; lc += 1) {
+        const r = fy * 2 + lr;
+        const c = fx * 2 + lc;
+        const o = geom.o;
+        const u = geom.u;
+        const v = geom.v;
+        const tl = vAdd(vAdd(o, vScale(u, lc)), vScale(v, lr));
+        const tr = vAdd(vAdd(o, vScale(u, lc + 1)), vScale(v, lr));
+        const bl = vAdd(vAdd(o, vScale(u, lc)), vScale(v, lr + 1));
+        const br = vAdd(vAdd(o, vScale(u, lc + 1)), vScale(v, lr + 1));
+        const center = vScale(vAdd(vAdd(tl, tr), vAdd(bl, br)), 0.25);
+        const key = `${r},${c}`;
+        CELL_INFO[key] = {
+          r, c, face,
+          center,
+          corners: { tl, tr, bl, br },
+          cornerKeys: [vKey(tl), vKey(tr), vKey(bl), vKey(br)]
+        };
+        cellKeys.push(key);
+      }
+    }
+  });
+
+  cellKeys.forEach(key => {
+    TOUCH_ADJ[key] = new Set();
+    EDGE_ADJ[key] = new Set();
+    CORNER_MARKS[key] = [];
+  });
+
+  for (let i = 0; i < cellKeys.length; i += 1) {
+    for (let j = i + 1; j < cellKeys.length; j += 1) {
+      const a = cellKeys[i];
+      const b = cellKeys[j];
+      const inter = CELL_INFO[a].cornerKeys.filter(corner => CELL_INFO[b].cornerKeys.includes(corner));
+      if (!inter.length) continue;
+      TOUCH_ADJ[a].add(b);
+      TOUCH_ADJ[b].add(a);
+      if (inter.length >= 2) {
+        EDGE_ADJ[a].add(b);
+        EDGE_ADJ[b].add(a);
+      }
+    }
+  }
+
+  const cornerToCells = {};
+  cellKeys.forEach(key => {
+    Object.entries(CELL_INFO[key].corners).forEach(([cornerName, point]) => {
+      const k = vKey(point);
+      if (!cornerToCells[k]) cornerToCells[k] = [];
+      cornerToCells[k].push({ key, cornerName, point });
+      if (point.every(v => Math.abs(v) === 1)) {
+        CORNER_MARKS[key].push(cornerName);
+      }
+    });
+  });
+
+  const seenSquares = new Set();
+  Object.entries(cornerToCells).forEach(([pointKey, entries]) => {
+    const uniqueCells = [...new Set(entries.map(entry => entry.key))];
+    if (uniqueCells.length === 4) {
+      const squareKey = [...uniqueCells].sort().join('|');
+      if (!seenSquares.has(squareKey)) {
+        seenSquares.add(squareKey);
+        SQUARE_BLOCKS.push(uniqueCells);
+      }
+    }
+
+    const point = pointKey.split(',').map(Number);
+    if (!point.every(v => Math.abs(v) === 1)) return;
+    if (uniqueCells.length === 3) {
+      VERTEX_TRIPLES.push(uniqueCells);
+    }
+  });
+}
+
+buildCellGeometry();
+
+function bfs(startKey, passable, adjacency) {
+  const seen = new Set([startKey]);
+  const queue = [startKey];
+  while (queue.length) {
+    const current = queue.shift();
+    adjacency[current].forEach(next => {
+      if (!seen.has(next) && passable(next)) {
+        seen.add(next);
+        queue.push(next);
+      }
+    });
+  }
+  return seen;
+}
+
+function getNeighborGroups(key) {
+  const info = CELL_INFO[key];
+  const geom = FACE_GEOM[info.face];
+  const neighbors = [...TOUCH_ADJ[key]].sort((a, b) => {
+    const da = vSub(CELL_INFO[a].center, info.center);
+    const db = vSub(CELL_INFO[b].center, info.center);
+    const ax = vDot(da, geom.u);
+    const ay = vDot(da, geom.v);
+    const bx = vDot(db, geom.u);
+    const by = vDot(db, geom.v);
+    return Math.atan2(ay, ax) - Math.atan2(by, bx);
+  });
+  const painted = neighbors.map(nk => boardState(nk) === PAINTED);
+  if (painted.every(v => !v)) return 0;
+  if (painted.every(v => v)) return 1;
+
+  let start = painted.findIndex(v => !v);
+  if (start < 0) start = 0;
+  let groups = 0;
+  let inRun = false;
+  for (let i = 0; i < painted.length; i += 1) {
+    const value = painted[(start + i) % painted.length];
+    if (value && !inRun) {
+      groups += 1;
+      inRun = true;
+    } else if (!value) {
+      inRun = false;
+    }
+  }
+  return groups;
+}
+
+function boardState(key) {
+  const [r, c] = key.split(',').map(Number);
+  return board[r][c];
+}
+
+function setBoardState(key, value) {
+  const [r, c] = key.split(',').map(Number);
+  board[r][c] = value;
+}
+
+function getPaintedKeys() {
+  const list = [];
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      if (board[r][c] === PAINTED) list.push(`${r},${c}`);
+    }
+  }
+  return list;
+}
+
+function getConnectivityInfo() {
+  const painted = getPaintedKeys();
+  if (!painted.length) return { connected: false, painted, largest: new Set(), componentByKey: new Map() };
+
+  const remaining = new Set(painted);
+  const components = [];
+  while (remaining.size) {
+    const start = remaining.values().next().value;
+    const seen = bfs(start, key => boardState(key) === PAINTED, EDGE_ADJ);
+    seen.forEach(key => remaining.delete(key));
+    components.push(seen);
+  }
+
+  let largest = components[0];
+  components.forEach(component => {
+    if (component.size > largest.size) largest = component;
+  });
+
+  const componentByKey = new Map();
+  components.forEach((component, index) => {
+    component.forEach(key => componentByKey.set(key, index));
+  });
+
+  return {
+    connected: components.length === 1,
+    painted,
+    components,
+    largest,
+    componentByKey
+  };
+}
+
+function getErrorPaintedSet() {
+  const err = new Set();
+
+  SQUARE_BLOCKS.forEach(block => {
+    if (block.every(key => boardState(key) === PAINTED)) {
+      block.forEach(key => err.add(key));
+    }
+  });
+
+  VERTEX_TRIPLES.forEach(triple => {
+    if (triple.every(key => boardState(key) === PAINTED)) {
+      triple.forEach(key => err.add(key));
+    }
+  });
+
+  return err;
+}
+
+function getClueStatus(key) {
+  const need = CLUE_COUNTS[key];
+  const groups = getNeighborGroups(key);
+  if (groups === need) return 'correct';
+  return 'normal';
+}
+
+function addBoardLine(kind, x, y, size) {
+  const line = document.createElement('span');
+  line.className = `board-line ${kind}`;
+  if (kind === 'h') {
+    line.style.left = `${x}%`;
+    line.style.top = `${y}%`;
+    line.style.width = `${size}%`;
+  } else {
+    line.style.left = `${x}%`;
+    line.style.top = `${y}%`;
+    line.style.height = `${size}%`;
+  }
+  return line;
+}
+
+function buildBoardLines() {
+  const linesEl = document.getElementById('boardLines');
+  linesEl.innerHTML = '';
+  const cellW = 100 / COLS;
+  const cellH = 100 / ROWS;
+
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const key = `${r},${c}`;
+      if (!CELL_INFO[key]) continue;
+
+      if (r === 0 || !CELL_INFO[`${r - 1},${c}`]) {
+        linesEl.appendChild(addBoardLine('h', c * cellW, r * cellH, cellW));
+      }
+      if (c === 0 || !CELL_INFO[`${r},${c - 1}`]) {
+        linesEl.appendChild(addBoardLine('v', c * cellW, r * cellH, cellH));
+      }
+      if (r === ROWS - 1 || !CELL_INFO[`${r + 1},${c}`]) {
+        linesEl.appendChild(addBoardLine('h', c * cellW, (r + 1) * cellH, cellW));
+      }
+      if (c === COLS - 1 || !CELL_INFO[`${r},${c + 1}`]) {
+        linesEl.appendChild(addBoardLine('v', (c + 1) * cellW, r * cellH, cellH));
+      }
+    }
+  }
+}
+
+function buildGrid() {
+  const boardEl = document.getElementById('board');
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const key = `${r},${c}`;
+      const cell = document.createElement('div');
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      if (!CELL_INFO[key]) {
+        cell.className = 'cell hole';
+        boardEl.appendChild(cell);
+        continue;
+      }
+
+      cell.className = 'cell';
+      const clueCount = CLUE_COUNTS[key];
+      if (clueCount) {
+        cell.classList.add('clue');
+        const qGrid = document.createElement('div');
+        qGrid.className = `q-grid${clueCount === 1 ? ' one' : ''}`;
+        for (let i = 0; i < clueCount; i += 1) {
+          const span = document.createElement('span');
+          span.textContent = '?';
+          qGrid.appendChild(span);
+        }
+        cell.appendChild(qGrid);
+      } else {
+        cell.addEventListener('pointerdown', event => {
+          if (event.button !== 0) return;
+          clearPressState();
+          pressTargetKey = key;
+          pressTimer = setTimeout(() => {
+            if (pressTargetKey !== key) return;
+            longPressTriggered = true;
+            toggleCrossCell(r, c);
+          }, 420);
+        });
+        cell.addEventListener('pointerup', event => {
+          if (event.button !== 0) return;
+          const sameTarget = pressTargetKey === key;
+          const didLongPress = longPressTriggered;
+          clearPressState();
+          if (sameTarget && !didLongPress) togglePaintCell(r, c);
+        });
+        cell.addEventListener('pointerleave', clearPressState);
+        cell.addEventListener('pointercancel', clearPressState);
+        cell.addEventListener('contextmenu', event => {
+          event.preventDefault();
+          clearPressState();
+          toggleCrossCell(r, c);
+        });
+      }
+
+      [...new Set(CORNER_MARKS[key])].forEach(cornerName => {
+        const mark = document.createElement('span');
+        mark.className = `cube-corner ${cornerName}`;
+        cell.appendChild(mark);
+      });
+
+      cell.dataset.baseClass = cell.className;
+
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function clearPressState() {
+  if (pressTimer) clearTimeout(pressTimer);
+  pressTimer = null;
+  pressTargetKey = null;
+  longPressTriggered = false;
+}
+
+function updateAfterInput() {
+  renderBoard();
+  saveProgress();
+  if (isComplete()) {
+    document.getElementById('message').textContent = '축하합니다! 퍼즐을 완성했습니다!';
+    recordCompletion(PUZZLE_ID);
+  } else {
+    document.getElementById('message').textContent = '';
+  }
+}
+
+function togglePaintCell(r, c) {
+  const key = `${r},${c}`;
+  if (!CELL_INFO[key] || CLUE_COUNTS[key]) return;
+  board[r][c] = board[r][c] === PAINTED ? EMPTY : PAINTED;
+  updateAfterInput();
+}
+
+function toggleCrossCell(r, c) {
+  const key = `${r},${c}`;
+  if (!CELL_INFO[key] || CLUE_COUNTS[key]) return;
+  board[r][c] = board[r][c] === CROSSED ? EMPTY : CROSSED;
+  updateAfterInput();
+}
+
+function renderBoard() {
+  const clueCorrect = new Set();
+  const errorPainted = getErrorPaintedSet();
+  const connectivity = getConnectivityInfo();
+
+  Object.keys(CLUE_COUNTS).forEach(key => {
+    if (getClueStatus(key) === 'correct') clueCorrect.add(key);
+  });
+
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      const key = `${r},${c}`;
+      const cell = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+      if (!cell || !CELL_INFO[key]) continue;
+
+      let cls = cell.dataset.baseClass || 'cell';
+      if (CLUE_COUNTS[key]) {
+        if (clueCorrect.has(key)) cls += ' correct';
+      } else {
+        if (board[r][c] === PAINTED) {
+          cls += connectivity.largest.has(key) ? ' painted-connected' : ' painted-disconnected';
+          if (errorPainted.has(key)) cls += ' err-painted';
+        }
+      }
+      cell.className = cls;
+
+      const existingCross = cell.querySelector('.cross-mark');
+      if (board[r][c] === CROSSED) {
+        if (!existingCross) {
+          const mark = document.createElement('span');
+          mark.className = 'cross-mark';
+          cell.appendChild(mark);
+        }
+      } else if (existingCross) {
+        existingCross.remove();
+      }
+
+      [...new Set(CORNER_MARKS[key])].forEach(cornerName => {
+        if (!cell.querySelector(`.cube-corner.${cornerName}`)) {
+          const mark = document.createElement('span');
+          mark.className = `cube-corner ${cornerName}`;
+          cell.appendChild(mark);
+        }
+      });
+    }
+  }
+}
+
+function isComplete() {
+  const painted = getPaintedKeys();
+  if (!painted.length) return false;
+  if (!getConnectivityInfo().connected) return false;
+  if (getErrorPaintedSet().size > 0) return false;
+  return Object.keys(CLUE_COUNTS).every(key => getClueStatus(key) === 'correct');
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, board);
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (!Array.isArray(saved) || saved.length !== ROWS) return;
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) {
+      if (!CELL_INFO[`${r},${c}`] || CLUE_COUNTS[`${r},${c}`]) continue;
+      const value = Number(saved[r][c]);
+      board[r][c] = [EMPTY, PAINTED, CROSSED].includes(value) ? value : EMPTY;
+    }
+  }
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, board);
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state) || state.length !== ROWS) return;
+    for (let r = 0; r < ROWS; r += 1) {
+      for (let c = 0; c < COLS; c += 1) {
+        if (!CELL_INFO[`${r},${c}`] || CLUE_COUNTS[`${r},${c}`]) continue;
+        const value = Number(state[r][c]);
+        board[r][c] = [EMPTY, PAINTED, CROSSED].includes(value) ? value : EMPTY;
+      }
+    }
+    renderBoard();
+    saveProgress();
+    document.getElementById('message').textContent = isComplete() ? '축하합니다! 퍼즐을 완성했습니다!' : '';
+  });
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    board = Array.from({ length: ROWS }, () => Array(COLS).fill(EMPTY));
+    document.getElementById('message').textContent = '';
+    renderBoard();
+    saveProgress();
+    resetCompletion(PUZZLE_ID);
+  });
+}
+
+buildGrid();
+buildBoardLines();
+loadProgress();
+renderBoard();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>

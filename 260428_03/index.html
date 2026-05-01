@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260428 나선은하 배틀쉽</title>
+<meta property="og:title" content="260428 나선은하 배틀쉽">
+<meta property="og:description" content="배를 배치한 뒤 남은 칸들을 회전대칭 은하들로 분할하세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260428_03/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .hybrid-wrap {
+    --board-shell-width: min(92vw, 500px);
+    --left-clue-pad: 34px;
+    --top-clue-pad: 42px;
+    --controls-width: var(--board-shell-width);
+  }
+
+  .board-shell {
+    width: var(--board-shell-width);
+    margin-top: 16px;
+  }
+
+  .clue-frame {
+    position: relative;
+    width: 100%;
+    padding-top: var(--top-clue-pad);
+    padding-left: var(--left-clue-pad);
+    box-sizing: border-box;
+  }
+
+  .board-wrap {
+    position: relative;
+    border: 2px solid #333;
+    background: #fff;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #fff;
+  }
+
+  .cell {
+    position: relative;
+    border-right: 1px dashed #c9c9c9;
+    border-bottom: 1px dashed #c9c9c9;
+    background: #fff;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+
+  .cell:nth-child(10n) { border-right: none; }
+  .cell:nth-child(n+91) { border-bottom: none; }
+  .cell.ship-selected,
+  .cell.galaxy-selected-cell { box-shadow: inset 0 0 0 2px #ccb261; }
+  .cell.region-assigned { background: #dedede; }
+  .cell.region-valid { background: #dcefd8; }
+  .cell.region-error { background: #f3d4d4; }
+  .cell.region-selected,
+  .cell.region-valid.region-selected,
+  .cell.region-error.region-selected { background: #e8e0c6; }
+  .cell.ship-error,
+  .cell.partial-circle { background: #f3d4d4; }
+
+  .row-clue,
+  .col-clue {
+    position: absolute;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: min(4.6vw, 18px);
+    font-weight: 700;
+    color: #222;
+    line-height: 1;
+  }
+
+  .row-clue {
+    left: 0;
+    width: 26px;
+    text-align: center;
+    transform: translateY(-50%);
+  }
+
+  .col-clue {
+    top: 0;
+    transform: translateX(-50%);
+  }
+
+  .clue-ok { color: #5f8b52; }
+  .clue-over { color: #c0392b; }
+
+  .circle-marker {
+    position: absolute;
+    width: min(4.8vw, 26px);
+    height: min(4.8vw, 26px);
+    border: 2px solid #222;
+    border-radius: 50%;
+    background: #fff;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .circle-marker.covered {
+    background: transparent;
+    border-color: #fff;
+  }
+
+  .circle-marker.error {
+    border-color: #bb4d4d;
+    box-shadow: 0 0 0 1px rgba(187, 77, 77, 0.08);
+  }
+
+  .circle-marker.ok {
+    border-color: #5f8b52;
+  }
+
+  .region-border {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .region-border.top { box-shadow: inset 0 2px 0 #454545; }
+  .region-border.right { box-shadow: inset -2px 0 0 #454545; }
+  .region-border.bottom { box-shadow: inset 0 -2px 0 #454545; }
+  .region-border.left { box-shadow: inset 2px 0 0 #454545; }
+
+  .token {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .part-body {
+    position: absolute;
+    background: #111;
+  }
+
+  .h-left .part-body {
+    left: 12%;
+    top: 20%;
+    width: 76%;
+    height: 60%;
+    border-radius: 999px 6px 6px 999px;
+  }
+
+  .h-mid .part-body,
+  .v-mid .part-body,
+  .mid .part-body {
+    left: 18%;
+    top: 18%;
+    width: 64%;
+    height: 64%;
+    border-radius: 4px;
+  }
+
+  .h-right .part-body {
+    left: 12%;
+    top: 20%;
+    width: 76%;
+    height: 60%;
+    border-radius: 6px 999px 999px 6px;
+  }
+
+  .v-top .part-body {
+    left: 20%;
+    top: 12%;
+    width: 60%;
+    height: 76%;
+    border-radius: 999px 999px 6px 6px;
+  }
+
+  .v-bottom .part-body {
+    left: 20%;
+    top: 12%;
+    width: 60%;
+    height: 76%;
+    border-radius: 6px 6px 999px 999px;
+  }
+
+  .single .part-body {
+    left: 18%;
+    top: 18%;
+    width: 64%;
+    height: 64%;
+    border-radius: 50%;
+  }
+
+  .water-mark::before,
+  .water-mark::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 54%;
+    height: 2px;
+    background: #8a8a8a;
+    border-radius: 999px;
+    transform-origin: center;
+  }
+
+  .water-mark::before { transform: translate(-50%, -50%) rotate(45deg); }
+  .water-mark::after { transform: translate(-50%, -50%) rotate(-45deg); }
+
+  .mode-row,
+  .toolbar-bottom,
+  .galaxy-buttons,
+  .fleet {
+    width: var(--controls-width);
+    align-self: center;
+  }
+
+  #shipControls,
+  #galaxyControls {
+    width: var(--controls-width);
+    align-self: center;
+  }
+
+  .mode-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .mode-btn,
+  .toolbar-bottom button,
+  .galaxy-buttons button {
+    position: relative;
+    width: 100%;
+    height: 42px;
+    border: 1.5px solid #c8c3b8;
+    border-radius: 3px;
+    background: #f4f1eb;
+    cursor: pointer;
+    box-sizing: border-box;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+  }
+
+  .mode-btn.active {
+    background: #e8e4da;
+    border-color: #b7ae9f;
+    color: #444;
+  }
+
+  .toolbar-bottom,
+  .galaxy-buttons {
+    display: grid;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .toolbar-bottom { grid-template-columns: repeat(2, 1fr); }
+  .galaxy-buttons { grid-template-columns: repeat(3, 1fr); }
+
+  .danger {
+    border-color: #e0bfbf !important;
+    background: #fdf5f5 !important;
+    color: #b05050 !important;
+  }
+
+  .fleet {
+    margin-top: 10px;
+  }
+
+  .fleet-title {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  .fleet-row {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .fleet-ship {
+    position: relative;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .fleet-ship.used { opacity: 0.28; }
+
+  .fleet-ship .seg,
+  .fleet-ship .cap-l,
+  .fleet-ship .cap-r,
+  .fleet-ship .single-dot {
+    height: 22px;
+    background: #111;
+  }
+
+  .fleet-ship .cap-l,
+  .fleet-ship .cap-r,
+  .fleet-ship .seg {
+    width: 20px;
+  }
+
+  .fleet-ship .cap-l {
+    border-radius: 999px 4px 4px 999px;
+    margin-right: 2px;
+  }
+
+  .fleet-ship .seg {
+    border-radius: 0;
+    margin: 0 2px;
+  }
+
+  .fleet-ship .cap-r {
+    border-radius: 4px 999px 999px 4px;
+    margin-left: 2px;
+  }
+
+  .fleet-ship .single-dot {
+    width: 22px;
+    border-radius: 50%;
+  }
+
+  @media (max-width: 540px) {
+    body { padding: 0 8px 40px; }
+    .hybrid-wrap {
+      --board-shell-width: min(94vw, 460px);
+      --left-clue-pad: 28px;
+      --top-clue-pad: 36px;
+    }
+    .board-shell,
+    .mode-row,
+    .toolbar-bottom,
+    .galaxy-buttons,
+    .fleet { width: min(94vw, 460px); }
+    .circle-marker {
+      width: min(5vw, 22px);
+      height: min(5vw, 22px);
+    }
+    .fleet-row { gap: 10px; }
+    .fleet-ship { height: 18px; }
+    .fleet-ship .seg,
+    .fleet-ship .cap-l,
+    .fleet-ship .cap-r { width: 16px; height: 18px; }
+    .fleet-ship .single-dot { width: 18px; height: 18px; }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page pad-48">
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260428 나선은하 배틀쉽</h1>
+<p class="subtitle">배를 먼저 배치하고, 남은 칸들을 은하들로 분할하세요</p>
+
+<div class="container puzzle-width-lg align-center">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>나선은하 배틀쉽 규칙</strong><br>
+    1. 먼저 Battleship 규칙으로 배를 배치합니다.<br>
+    2. 이 단계에서는 은하 규칙을 무시하며, 원이 배로 온전히 덮일 수 있습니다.<br>
+    3. 그 후 배가 차지하지 않는 모든 칸과 남아 있는 원들에 대해 나선은하 규칙을 적용합니다.<br>
+    4. 원의 일부분만 남아 있을 수는 없습니다.
+  </div>
+
+  <div class="hybrid-wrap">
+    <div class="board-shell">
+      <div class="clue-frame" id="clueFrame">
+        <div class="board-wrap" id="boardWrap">
+          <div class="board" id="board"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mode-row">
+      <button class="mode-btn active" id="modeShipBtn" onclick="setMode('ship')">배 배치</button>
+      <button class="mode-btn" id="modeGalaxyBtn" onclick="setMode('galaxy')">은하 분할</button>
+    </div>
+
+    <div id="shipControls">
+      <div class="toolbar-bottom">
+        <button onclick="clearSelectedShip()">지우기</button>
+        <button class="danger" onclick="resetBoard()">초기화</button>
+      </div>
+    </div>
+
+    <div id="galaxyControls" style="display:none">
+      <div class="galaxy-buttons">
+        <button onclick="startNewRegion()">새 영역</button>
+        <button onclick="clearSelectedGalaxyCell()">지우기</button>
+        <button class="danger" onclick="resetBoard()">초기화</button>
+      </div>
+    </div>
+
+    <div class="cloud-btns" id="cloudBtns" style="display:none">
+      <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+      <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+    </div>
+
+    <div class="fleet">
+      <div class="fleet-title">남은 배</div>
+      <div id="fleet"></div>
+    </div>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260428_03';
+const SAVE_KEY = 'puzzle_260428_03';
+const SIZE = 10;
+
+const ROW_CLUES = [5, 2, null, null, 4, 4, null, 1, 1, 1];
+const COL_CLUES = [3, 1, 1, 1, 5, 1, 2, 2, 1, 3];
+const FLEET = { 4: 1, 3: 2, 2: 3, 1: 4 };
+
+const TOKENS = {
+  EMPTY: '',
+  H_LEFT: 'h-left',
+  H_MID: 'h-mid',
+  H_RIGHT: 'h-right',
+  V_TOP: 'v-top',
+  V_MID: 'v-mid',
+  V_BOTTOM: 'v-bottom',
+  MID: 'mid',
+  SINGLE: 'single',
+  WATER: 'water'
+};
+
+const OCCUPIED_TOKENS = new Set([
+  TOKENS.H_LEFT, TOKENS.H_MID, TOKENS.H_RIGHT,
+  TOKENS.V_TOP, TOKENS.V_MID, TOKENS.V_BOTTOM,
+  TOKENS.MID, TOKENS.SINGLE
+]);
+
+// Image-based approximation, all at cell centers for this puzzle.
+const CIRCLES = [
+  { x: 5, y: 1 }, { x: 11, y: 1 }, { x: 19, y: 1 },
+  { x: 9, y: 2 }, { x: 13, y: 2 },
+  { x: 1, y: 3 }, { x: 17, y: 3 },
+  { x: 4, y: 4 }, { x: 11, y: 5 },
+  { x: 5, y: 7 }, { x: 9, y: 7 }, { x: 18, y: 7 },
+  { x: 9, y: 9 },
+  { x: 15, y: 13 }, { x: 17, y: 13 },
+  { x: 10, y: 14 }, { x: 19, y: 14 },
+  { x: 2, y: 16 }, { x: 17, y: 17 },
+  { x: 1, y: 19 }, { x: 10, y: 18 }, { x: 13, y: 19 }, { x: 18, y: 19 }
+];
+
+let ships = Array.from({ length: SIZE }, () => Array(SIZE).fill(TOKENS.EMPTY));
+let regions = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+let nextRegionId = 1;
+let selectedShipCell = null;
+let selectedGalaxyCell = null;
+let selectedRegionId = null;
+let mode = 'ship';
+let pressTimer = null;
+let pressTargetKey = null;
+let longPressTriggered = false;
+
+function keyOf(r, c) {
+  return `${r},${c}`;
+}
+
+function parseKey(key) {
+  return key.split(',').map(Number);
+}
+
+function inBounds(r, c) {
+  return r >= 0 && r < SIZE && c >= 0 && c < SIZE;
+}
+
+function isOccupied(token) {
+  return OCCUPIED_TOKENS.has(token);
+}
+
+function orthNeighbors(r, c) {
+  return [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].filter(([nr, nc]) => inBounds(nr, nc));
+}
+
+function buildBoard() {
+  const boardEl = document.getElementById('board');
+  const wrapEl = document.getElementById('boardWrap');
+
+  for (let c = 0; c < SIZE; c += 1) {
+    if (COL_CLUES[c] == null) continue;
+    const el = document.createElement('div');
+    el.className = 'col-clue';
+    el.dataset.col = c;
+    el.style.left = `${((c + 0.5) / SIZE) * 100}%`;
+    el.style.top = '-28px';
+    el.textContent = COL_CLUES[c];
+    wrapEl.appendChild(el);
+  }
+
+  for (let r = 0; r < SIZE; r += 1) {
+    if (ROW_CLUES[r] == null) continue;
+    const el = document.createElement('div');
+    el.className = 'row-clue';
+    el.dataset.row = r;
+    el.style.top = `${((r + 0.5) / SIZE) * 100}%`;
+    el.style.left = '-30px';
+    el.textContent = ROW_CLUES[r];
+    wrapEl.appendChild(el);
+  }
+
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      const key = `${r},${c}`;
+      cell.addEventListener('pointerdown', event => {
+        if (mode !== 'ship' || event.button !== 0) return;
+        clearPressState();
+        selectedShipCell = [r, c];
+        pressTargetKey = key;
+        pressTimer = setTimeout(() => {
+          if (pressTargetKey !== key || mode !== 'ship') return;
+          longPressTriggered = true;
+          toggleWaterAt(r, c);
+        }, 420);
+      });
+      cell.addEventListener('pointerup', event => {
+        if (mode !== 'ship' || event.button !== 0) return;
+        const sameTarget = pressTargetKey === key;
+        const didLongPress = longPressTriggered;
+        clearPressState();
+        if (sameTarget && !didLongPress) handleCellClick(r, c);
+      });
+      cell.addEventListener('pointerleave', clearPressState);
+      cell.addEventListener('pointercancel', clearPressState);
+      cell.addEventListener('contextmenu', event => {
+        if (mode !== 'ship') return;
+        event.preventDefault();
+        clearPressState();
+        selectedShipCell = [r, c];
+        toggleWaterAt(r, c);
+      });
+      cell.addEventListener('click', () => {
+        if (mode === 'galaxy') handleCellClick(r, c);
+      });
+      boardEl.appendChild(cell);
+    }
+  }
+
+  CIRCLES.forEach((circle, index) => {
+    const marker = document.createElement('div');
+    marker.className = 'circle-marker';
+    marker.dataset.circle = index;
+    marker.style.left = `${(circle.x / (SIZE * 2)) * 100}%`;
+    marker.style.top = `${(circle.y / (SIZE * 2)) * 100}%`;
+    wrapEl.appendChild(marker);
+  });
+}
+
+function clearPressState() {
+  if (pressTimer) clearTimeout(pressTimer);
+  pressTimer = null;
+  pressTargetKey = null;
+  longPressTriggered = false;
+}
+
+function createTokenEl(token) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'token ' + token;
+  if (token === TOKENS.WATER) {
+    const x = document.createElement('div');
+    x.className = 'water-mark';
+    wrapper.appendChild(x);
+    return wrapper;
+  }
+  if (isOccupied(token)) {
+    const body = document.createElement('div');
+    body.className = 'part-body';
+    wrapper.appendChild(body);
+  }
+  return wrapper;
+}
+
+function setMode(nextMode) {
+  mode = nextMode;
+  document.getElementById('modeShipBtn').classList.toggle('active', mode === 'ship');
+  document.getElementById('modeGalaxyBtn').classList.toggle('active', mode === 'galaxy');
+  document.getElementById('shipControls').style.display = mode === 'ship' ? '' : 'none';
+  document.getElementById('galaxyControls').style.display = mode === 'galaxy' ? '' : 'none';
+  render();
+}
+
+function clearRegionCell(r, c) {
+  const regionId = regions[r][c];
+  if (regionId == null) return;
+  regions[r][c] = null;
+  splitRegion(regionId);
+}
+
+function setShipTokenAt(r, c, token) {
+  const wasOccupied = isOccupied(ships[r][c]);
+  const willOccupied = isOccupied(token);
+  ships[r][c] = token;
+  if (!wasOccupied && willOccupied) {
+    clearRegionCell(r, c);
+  }
+}
+
+function placeShipToken(token) {
+  if (!selectedShipCell) return;
+  const [r, c] = selectedShipCell;
+  setShipTokenAt(r, c, token);
+  normalizeShips();
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+function clearSelectedShip() {
+  if (!selectedShipCell) return;
+  const [r, c] = selectedShipCell;
+  ships[r][c] = TOKENS.EMPTY;
+  normalizeShips();
+  saveProgress();
+  render();
+}
+
+function handleCellClick(r, c) {
+  if (mode === 'ship') {
+    selectedShipCell = [r, c];
+    toggleShipAt(r, c);
+    return;
+  }
+  handleGalaxyClick(r, c);
+}
+
+function toggleShipAt(r, c) {
+  ships[r][c] = isOccupied(ships[r][c]) ? TOKENS.EMPTY : TOKENS.MID;
+  if (isOccupied(ships[r][c])) {
+    clearRegionCell(r, c);
+  }
+  normalizeShips();
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+function toggleWaterAt(r, c) {
+  ships[r][c] = ships[r][c] === TOKENS.WATER ? TOKENS.EMPTY : TOKENS.WATER;
+  normalizeShips();
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+function normalizeShips() {
+  const next = ships.map(row => [...row]);
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      if (!isOccupied(ships[r][c])) continue;
+      const neighbors = [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]]
+        .filter(([nr, nc]) => inBounds(nr, nc) && isOccupied(ships[nr][nc]));
+      if (neighbors.length === 0) {
+        next[r][c] = TOKENS.SINGLE;
+      } else if (neighbors.length === 1) {
+        const [nr, nc] = neighbors[0];
+        if (nr < r) next[r][c] = TOKENS.V_BOTTOM;
+        else if (nr > r) next[r][c] = TOKENS.V_TOP;
+        else if (nc < c) next[r][c] = TOKENS.H_RIGHT;
+        else next[r][c] = TOKENS.H_LEFT;
+      } else {
+        next[r][c] = TOKENS.MID;
+      }
+    }
+  }
+  ships = next;
+}
+
+function createRegionAt(r, c) {
+  const id = nextRegionId++;
+  regions[r][c] = id;
+  return id;
+}
+
+function regionCells(regionId) {
+  const cells = [];
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      if (regions[r][c] === regionId) cells.push([r, c]);
+    }
+  }
+  return cells;
+}
+
+function regionSet(regionId) {
+  return new Set(regionCells(regionId).map(([r, c]) => keyOf(r, c)));
+}
+
+function isAdjacentToRegion(r, c, regionId) {
+  return orthNeighbors(r, c).some(([nr, nc]) => !isOccupied(ships[nr][nc]) && regions[nr][nc] === regionId);
+}
+
+function areRegionsAdjacent(a, b) {
+  if (a == null || b == null || a === b) return false;
+  return regionCells(a).some(([r, c]) =>
+    orthNeighbors(r, c).some(([nr, nc]) => regions[nr][nc] === b)
+  );
+}
+
+function mergeRegions(a, b) {
+  if (!areRegionsAdjacent(a, b)) return a;
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      if (regions[r][c] === b) regions[r][c] = a;
+    }
+  }
+  return a;
+}
+
+function handleGalaxyClick(r, c) {
+  if (isOccupied(ships[r][c])) {
+    selectedGalaxyCell = null;
+    selectedRegionId = null;
+    render();
+    return;
+  }
+
+  const clickedRegion = regions[r][c];
+  if (selectedGalaxyCell && selectedGalaxyCell[0] === r && selectedGalaxyCell[1] === c && clickedRegion != null) {
+    clearSelectedGalaxyCell();
+    return;
+  }
+
+  if (clickedRegion == null) {
+    if (selectedRegionId != null && isAdjacentToRegion(r, c, selectedRegionId)) {
+      regions[r][c] = selectedRegionId;
+    } else {
+      selectedRegionId = createRegionAt(r, c);
+    }
+    selectedGalaxyCell = [r, c];
+    saveProgress();
+    render();
+    checkComplete();
+    return;
+  }
+
+  if (selectedRegionId != null && clickedRegion !== selectedRegionId && areRegionsAdjacent(selectedRegionId, clickedRegion)) {
+    selectedRegionId = mergeRegions(selectedRegionId, clickedRegion);
+    selectedGalaxyCell = [r, c];
+    saveProgress();
+    render();
+    checkComplete();
+    return;
+  }
+
+  selectedRegionId = clickedRegion;
+  selectedGalaxyCell = [r, c];
+  render();
+}
+
+function startNewRegion() {
+  selectedGalaxyCell = null;
+  selectedRegionId = null;
+  render();
+}
+
+function splitRegion(regionId) {
+  const cells = regionCells(regionId);
+  const remaining = new Set(cells.map(([r, c]) => keyOf(r, c)));
+  const components = [];
+
+  while (remaining.size) {
+    const start = remaining.values().next().value;
+    const stack = [parseKey(start)];
+    const comp = [];
+    remaining.delete(start);
+    while (stack.length) {
+      const [r, c] = stack.pop();
+      comp.push([r, c]);
+      orthNeighbors(r, c).forEach(([nr, nc]) => {
+        const nk = keyOf(nr, nc);
+        if (remaining.has(nk) && regions[nr][nc] === regionId) {
+          remaining.delete(nk);
+          stack.push([nr, nc]);
+        }
+      });
+    }
+    components.push(comp);
+  }
+
+  if (components.length <= 1) return;
+  components.forEach((comp, index) => {
+    const id = index === 0 ? regionId : nextRegionId++;
+    comp.forEach(([r, c]) => { regions[r][c] = id; });
+  });
+}
+
+function clearSelectedGalaxyCell() {
+  if (!selectedGalaxyCell) return;
+  const [r, c] = selectedGalaxyCell;
+  if (regions[r][c] == null) return;
+  const regionId = regions[r][c];
+  regions[r][c] = null;
+  splitRegion(regionId);
+  selectedGalaxyCell = null;
+  selectedRegionId = null;
+  saveProgress();
+  render();
+}
+
+function getShipOrthNeighbors(r, c) {
+  return orthNeighbors(r, c).filter(([nr, nc]) => isOccupied(ships[nr][nc]));
+}
+
+function analyzeShips() {
+  const visited = new Set();
+  const shipsInfo = [];
+  const tokenErrors = new Set();
+  const adjacencyErrors = new Set();
+  const componentByCell = new Map();
+
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      const key = keyOf(r, c);
+      if (visited.has(key) || !isOccupied(ships[r][c])) continue;
+      const stack = [[r, c]];
+      const cells = [];
+      visited.add(key);
+      while (stack.length) {
+        const [cr, cc] = stack.pop();
+        cells.push([cr, cc]);
+        getShipOrthNeighbors(cr, cc).forEach(([nr, nc]) => {
+          const nk = keyOf(nr, nc);
+          if (!visited.has(nk)) {
+            visited.add(nk);
+            stack.push([nr, nc]);
+          }
+        });
+      }
+      const index = shipsInfo.length;
+      cells.forEach(([cr, cc]) => componentByCell.set(keyOf(cr, cc), index));
+      shipsInfo.push({ cells });
+    }
+  }
+
+  shipsInfo.forEach(ship => {
+    const rows = [...new Set(ship.cells.map(([r]) => r))];
+    const cols = [...new Set(ship.cells.map(([, c]) => c))];
+    ship.length = ship.cells.length;
+    ship.orientation = ship.length === 1 ? 'single'
+      : rows.length === 1 ? 'h'
+      : cols.length === 1 ? 'v'
+      : 'invalid';
+    ship.invalid = ship.length < 1 || ship.length > 4 || ship.orientation === 'invalid';
+    ship.complete = false;
+
+    if (!ship.invalid && ship.length > 1) {
+      if (ship.orientation === 'h') {
+        const sorted = [...ship.cells].sort((a, b) => a[1] - b[1]);
+        for (let i = 1; i < sorted.length; i += 1) {
+          if (sorted[i][1] !== sorted[i - 1][1] + 1) ship.invalid = true;
+        }
+        if (!ship.invalid) {
+          const [fr, fc] = sorted[0];
+          const [lr, lc] = sorted[sorted.length - 1];
+          const endsOk = ships[fr][fc] === TOKENS.H_LEFT && ships[lr][lc] === TOKENS.H_RIGHT;
+          const midsOk = sorted.slice(1, -1).every(([r, c]) => [TOKENS.H_MID, TOKENS.MID].includes(ships[r][c]));
+          ship.complete = endsOk && midsOk;
+        }
+      } else if (ship.orientation === 'v') {
+        const sorted = [...ship.cells].sort((a, b) => a[0] - b[0]);
+        for (let i = 1; i < sorted.length; i += 1) {
+          if (sorted[i][0] !== sorted[i - 1][0] + 1) ship.invalid = true;
+        }
+        if (!ship.invalid) {
+          const [fr, fc] = sorted[0];
+          const [lr, lc] = sorted[sorted.length - 1];
+          const endsOk = ships[fr][fc] === TOKENS.V_TOP && ships[lr][lc] === TOKENS.V_BOTTOM;
+          const midsOk = sorted.slice(1, -1).every(([r, c]) => [TOKENS.V_MID, TOKENS.MID].includes(ships[r][c]));
+          ship.complete = endsOk && midsOk;
+        }
+      }
+    } else if (!ship.invalid && ship.length === 1) {
+      ship.complete = ships[ship.cells[0][0]][ship.cells[0][1]] === TOKENS.SINGLE;
+    }
+
+    if (ship.invalid) ship.cells.forEach(([r, c]) => tokenErrors.add(keyOf(r, c)));
+  });
+
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      if (!isOccupied(ships[r][c])) continue;
+      for (let dr = -1; dr <= 1; dr += 1) {
+        for (let dc = -1; dc <= 1; dc += 1) {
+          if (dr === 0 && dc === 0) continue;
+          const nr = r + dr;
+          const nc = c + dc;
+          if (!inBounds(nr, nc) || !isOccupied(ships[nr][nc])) continue;
+          const a = componentByCell.get(keyOf(r, c));
+          const b = componentByCell.get(keyOf(nr, nc));
+          if (a !== b) {
+            adjacencyErrors.add(keyOf(r, c));
+            adjacencyErrors.add(keyOf(nr, nc));
+          }
+        }
+      }
+    }
+  }
+
+  const usedCounts = { 1: 0, 2: 0, 3: 0, 4: 0 };
+  shipsInfo.filter(ship => ship.complete).forEach(ship => {
+    if (usedCounts[ship.length] < FLEET[ship.length]) usedCounts[ship.length] += 1;
+  });
+
+  return { shipsInfo, tokenErrors, adjacencyErrors, usedCounts };
+}
+
+function updateFleet(usedCounts) {
+  const fleet = document.getElementById('fleet');
+  fleet.innerHTML = '';
+  [[4, 1], [3, 2], [2, 3], [1, 4]].forEach(([len, count], rowIndex) => {
+    if (rowIndex === 0 || rowIndex === 2) {
+      const row = document.createElement('div');
+      row.className = 'fleet-row';
+      fleet.appendChild(row);
+    }
+    const row = fleet.lastElementChild;
+    for (let i = 0; i < count; i += 1) {
+      const ship = document.createElement('div');
+      ship.className = 'fleet-ship' + (i < usedCounts[len] ? ' used' : '');
+      if (len === 1) {
+        const dot = document.createElement('span');
+        dot.className = 'single-dot';
+        ship.appendChild(dot);
+      } else {
+        const capL = document.createElement('span');
+        capL.className = 'cap-l';
+        ship.appendChild(capL);
+        for (let j = 0; j < len - 2; j += 1) {
+          const seg = document.createElement('span');
+          seg.className = 'seg';
+          ship.appendChild(seg);
+        }
+        const capR = document.createElement('span');
+        capR.className = 'cap-r';
+        ship.appendChild(capR);
+      }
+      row.appendChild(ship);
+    }
+  });
+}
+
+function renderShipClues() {
+  const rowCounts = ships.map(row => row.filter(isOccupied).length);
+  const colCounts = Array.from({ length: SIZE }, (_, c) => ships.map(row => row[c]).filter(isOccupied).length);
+  document.querySelectorAll('.row-clue').forEach(el => {
+    const r = Number(el.dataset.row);
+    el.className = 'row-clue';
+    if (rowCounts[r] === ROW_CLUES[r]) el.classList.add('clue-ok');
+    else if (rowCounts[r] > ROW_CLUES[r]) el.classList.add('clue-over');
+  });
+  document.querySelectorAll('.col-clue').forEach(el => {
+    const c = Number(el.dataset.col);
+    el.className = 'col-clue';
+    if (colCounts[c] === COL_CLUES[c]) el.classList.add('clue-ok');
+    else if (colCounts[c] > COL_CLUES[c]) el.classList.add('clue-over');
+  });
+}
+
+function incidentCells(circle) {
+  const xs = circle.x % 2 === 0 ? [circle.x / 2 - 1, circle.x / 2] : [(circle.x - 1) / 2];
+  const ys = circle.y % 2 === 0 ? [circle.y / 2 - 1, circle.y / 2] : [(circle.y - 1) / 2];
+  const cells = [];
+  ys.forEach(r => xs.forEach(c => { if (inBounds(r, c)) cells.push([r, c]); }));
+  return cells;
+}
+
+function analyzeCircles() {
+  const visible = [];
+  const covered = [];
+  const partial = [];
+  const partialCells = new Set();
+
+  CIRCLES.forEach((circle, index) => {
+    const cells = incidentCells(circle);
+    const occupiedCount = cells.filter(([r, c]) => isOccupied(ships[r][c])).length;
+    if (occupiedCount === 0) visible.push({ ...circle, index, cells });
+    else if (occupiedCount === cells.length) covered.push({ ...circle, index, cells });
+    else {
+      partial.push({ ...circle, index, cells });
+      cells.forEach(([r, c]) => partialCells.add(keyOf(r, c)));
+    }
+  });
+
+  return { visible, covered, partial, partialCells };
+}
+
+function isSymmetricRegion(regionId, circle) {
+  const set = regionSet(regionId);
+  if (!set.size) return false;
+  for (const key of set) {
+    const [r, c] = parseKey(key);
+    const rx = 2 * circle.x - (2 * c + 1);
+    const ry = 2 * circle.y - (2 * r + 1);
+    if (rx % 2 === 0 || ry % 2 === 0) return false;
+    const nc = (rx - 1) / 2;
+    const nr = (ry - 1) / 2;
+    if (!inBounds(nr, nc) || isOccupied(ships[nr][nc]) || !set.has(keyOf(nr, nc))) return false;
+  }
+  return true;
+}
+
+function analyzeRegions(circleState) {
+  const ids = new Set();
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      if (!isOccupied(ships[r][c]) && regions[r][c] != null) ids.add(regions[r][c]);
+    }
+  }
+
+  const info = new Map();
+  ids.forEach(id => {
+    const circles = circleState.visible.filter(circle =>
+      circle.cells.every(([r, c]) => regions[r][c] === id)
+    );
+    const valid = circles.length === 1 && isSymmetricRegion(id, circles[0]);
+    const error = circles.length >= 2;
+    info.set(id, { circles, valid, error });
+  });
+  return info;
+}
+
+function renderCircles(circleState, regionInfo) {
+  const validCircleIndexes = new Set();
+  regionInfo.forEach(region => {
+    if (region.valid) validCircleIndexes.add(region.circles[0].index);
+  });
+  const partialIndexes = new Set(circleState.partial.map(circle => circle.index));
+  const coveredIndexes = new Set(circleState.covered.map(circle => circle.index));
+  document.querySelectorAll('.circle-marker').forEach(marker => {
+    const index = Number(marker.dataset.circle);
+    marker.className = 'circle-marker';
+    if (coveredIndexes.has(index)) marker.classList.add('covered');
+    if (partialIndexes.has(index)) marker.classList.add('error');
+    else if (validCircleIndexes.has(index)) marker.classList.add('ok');
+  });
+}
+
+function render() {
+  const shipInfo = analyzeShips();
+  const circleState = analyzeCircles();
+  const regionInfo = analyzeRegions(circleState);
+
+  document.querySelectorAll('.cell').forEach(cell => {
+    const r = Number(cell.dataset.r);
+    const c = Number(cell.dataset.c);
+    const shipToken = ships[r][c];
+    const regionId = regions[r][c];
+    const key = keyOf(r, c);
+
+    cell.className = 'cell';
+    cell.innerHTML = '';
+
+    if (!isOccupied(shipToken)) {
+      if (regionId != null) {
+        cell.classList.add('region-assigned');
+        if (selectedRegionId === regionId) cell.classList.add('region-selected');
+        const region = regionInfo.get(regionId);
+        if (region?.error) cell.classList.add('region-error');
+        else if (region?.valid) cell.classList.add('region-valid');
+
+        const neighbors = {
+          top: r === 0 || regions[r - 1][c] !== regionId || isOccupied(ships[r - 1][c]),
+          right: c === SIZE - 1 || regions[r][c + 1] !== regionId || isOccupied(ships[r][c + 1]),
+          bottom: r === SIZE - 1 || regions[r + 1][c] !== regionId || isOccupied(ships[r + 1][c]),
+          left: c === 0 || regions[r][c - 1] !== regionId || isOccupied(ships[r][c - 1])
+        };
+        Object.entries(neighbors).forEach(([side, on]) => {
+          if (!on) return;
+          const border = document.createElement('div');
+          border.className = `region-border ${side}`;
+          cell.appendChild(border);
+        });
+      }
+    }
+
+    if (circleState.partialCells.has(key)) cell.classList.add('partial-circle');
+    if (shipInfo.tokenErrors.has(key) || shipInfo.adjacencyErrors.has(key)) cell.classList.add('ship-error');
+    if (mode === 'ship' && selectedShipCell && selectedShipCell[0] === r && selectedShipCell[1] === c) cell.classList.add('ship-selected');
+    if (mode === 'galaxy' && selectedGalaxyCell && selectedGalaxyCell[0] === r && selectedGalaxyCell[1] === c) cell.classList.add('galaxy-selected-cell');
+
+    if (shipToken) cell.appendChild(createTokenEl(shipToken));
+  });
+
+  renderCircles(circleState, regionInfo);
+  renderShipClues();
+  updateFleet(shipInfo.usedCounts);
+}
+
+function galaxiesComplete(circleState, regionInfo) {
+  if (circleState.partial.length) return false;
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      if (!isOccupied(ships[r][c]) && regions[r][c] == null) return false;
+    }
+  }
+  for (const region of regionInfo.values()) {
+    if (!region.valid) return false;
+  }
+  return true;
+}
+
+function shipsComplete(shipInfo) {
+  if (shipInfo.tokenErrors.size || shipInfo.adjacencyErrors.size) return false;
+  for (let r = 0; r < SIZE; r += 1) {
+    if (ROW_CLUES[r] != null && ships[r].filter(isOccupied).length !== ROW_CLUES[r]) return false;
+  }
+  for (let c = 0; c < SIZE; c += 1) {
+    if (COL_CLUES[c] != null) {
+      const count = ships.map(row => row[c]).filter(isOccupied).length;
+      if (count !== COL_CLUES[c]) return false;
+    }
+  }
+  return [1, 2, 3, 4].every(len => shipInfo.usedCounts[len] === FLEET[len]);
+}
+
+function checkComplete() {
+  const shipInfo = analyzeShips();
+  const circleState = analyzeCircles();
+  const regionInfo = analyzeRegions(circleState);
+  const msg = document.getElementById('message');
+  if (!(shipsComplete(shipInfo) && galaxiesComplete(circleState, regionInfo))) {
+    msg.textContent = '';
+    return;
+  }
+  msg.textContent = '축하합니다! 퍼즐을 완성했습니다!';
+  recordCompletion(PUZZLE_ID);
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, {
+    ships,
+    regions,
+    nextRegionId,
+    mode
+  });
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (!saved || typeof saved !== 'object') return;
+  if (Array.isArray(saved.ships) && saved.ships.length === SIZE) {
+    ships = saved.ships.map(row => Array.isArray(row) && row.length === SIZE ? row.map(v => typeof v === 'string' ? v : TOKENS.EMPTY) : Array(SIZE).fill(TOKENS.EMPTY));
+  }
+  if (Array.isArray(saved.regions) && saved.regions.length === SIZE) {
+    regions = saved.regions.map(row => Array.isArray(row) && row.length === SIZE ? row.map(v => Number.isInteger(v) ? v : null) : Array(SIZE).fill(null));
+  }
+  nextRegionId = Number.isInteger(saved.nextRegionId) ? saved.nextRegionId : 1;
+  mode = saved.mode === 'galaxy' ? 'galaxy' : 'ship';
+  normalizeShips();
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, { ships, regions, nextRegionId, mode });
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!state || typeof state !== 'object') return;
+    if (Array.isArray(state.ships) && state.ships.length === SIZE) {
+      ships = state.ships.map(row => Array.isArray(row) && row.length === SIZE ? row.map(v => typeof v === 'string' ? v : TOKENS.EMPTY) : Array(SIZE).fill(TOKENS.EMPTY));
+    }
+    if (Array.isArray(state.regions) && state.regions.length === SIZE) {
+      regions = state.regions.map(row => Array.isArray(row) && row.length === SIZE ? row.map(v => Number.isInteger(v) ? v : null) : Array(SIZE).fill(null));
+    }
+    nextRegionId = Number.isInteger(state.nextRegionId) ? state.nextRegionId : 1;
+    mode = state.mode === 'galaxy' ? 'galaxy' : 'ship';
+    selectedShipCell = null;
+    selectedGalaxyCell = null;
+    selectedRegionId = null;
+    render();
+    setMode(mode);
+    saveProgress();
+    checkComplete();
+  });
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    ships = Array.from({ length: SIZE }, () => Array(SIZE).fill(TOKENS.EMPTY));
+    regions = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+    nextRegionId = 1;
+    selectedShipCell = null;
+    selectedGalaxyCell = null;
+    selectedRegionId = null;
+    mode = 'ship';
+    render();
+    setMode('ship');
+    saveProgress();
+    resetCompletion(PUZZLE_ID);
+    document.getElementById('message').textContent = '';
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (mode !== 'ship' || !selectedShipCell) return;
+  if (e.key === 'Backspace' || e.key === 'Delete') { clearSelectedShip(); return; }
+});
+
+buildBoard();
+loadProgress();
+render();
+setMode(mode);
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>

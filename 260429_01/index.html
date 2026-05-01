@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260429 TomTom</title>
+<meta property="og:title" content="260429 TomTom">
+<meta property="og:description" content="1~7 라틴 규칙과 영역 연산 단서를 만족하도록 숫자를 채우세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260429_01/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .container {
+    width: min(94vw, 460px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .board-wrap {
+    border: 2.5px solid #222;
+    position: relative;
+    margin-top: 18px;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(7, 1fr);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #fff;
+  }
+
+  .cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+    border-right: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+    transition: background 0.12s;
+  }
+
+  .cell.selected { background: #e8e8d8 !important; }
+  .cell.error { background: #f5d0d0 !important; }
+  .cell:hover:not(.selected):not(.error) { background: #f5f5f0; }
+
+  .cell-num {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: min(7vw, 30px);
+    font-weight: 700;
+    color: #4a6fa5;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .cell-num.error {
+    color: #c0392b;
+  }
+
+  .cage-clue {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    font-size: min(3.2vw, 12px);
+    font-weight: 700;
+    color: #222;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 1;
+    white-space: nowrap;
+  }
+
+  .cage-clue.error { color: #c0392b; }
+
+  .numpad {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .numpad button {
+    height: 44px;
+    border-radius: 3px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 1.5px solid #c8c3b8;
+    background: #f4f1eb;
+    color: #333;
+    cursor: pointer;
+  }
+
+  .numpad button:hover { background: #e8e4da; }
+  .numpad button:active { transform: scale(0.95); background: #ddd9cf; }
+
+  @media (max-width: 540px) {
+    .container { width: min(94vw, 430px); }
+    .numpad { gap: 5px; }
+    .numpad button {
+      height: min(10vw, 44px);
+      font-size: min(4.3vw, 17px);
+    }
+    .bottom-buttons button {
+      height: min(9vw, 40px);
+      font-size: min(3.2vw, 13px);
+    }
+    .cage-clue {
+      font-size: min(3vw, 11px);
+    }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page pad-48">
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+
+<h1>260429 TomTom</h1>
+<p class="subtitle">각 행과 열에 1~7을 한 번씩 넣고, 단서가 있는 영역의 계산 조건을 만족하세요</p>
+
+<div class="container">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>TomTom 규칙</strong><br>
+    1. 각 가로/세로줄에는 1부터 7까지의 숫자가 한 번씩 모두 등장합니다.<br>
+    2. 굵은 선으로 나누어진 영역 중 일부에는 왼쪽 위에 숫자 단서가 있습니다.<br>
+    3. 단서에 연산 기호가 있으면 그 연산을 영역의 모든 숫자에 적용합니다.<br>
+    4. 단서에 연산 기호가 없으면 +, -, ×, ÷ 중 하나가 가능하면 됩니다.<br>
+    5. 뺄셈과 나눗셈은 영역의 숫자를 내림차순으로 적용합니다.<br>
+    6. 한 영역 안에는 같은 숫자가 여러 번 등장할 수도 있습니다.
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="numpad" id="numpad"></div>
+
+  <div class="bottom-buttons">
+    <button onclick="placeNumber(0)">지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260429_01';
+const SAVE_KEY = 'puzzle_260429_01';
+const SIZE = 7;
+
+const REGION_GRID = [
+  ['A','A','B','B','C','C','X'],
+  ['A','D','B','E','C','F','G'],
+  ['H','H','I','I','J','G','G'],
+  ['H','K','I','L','M','Y','N'],
+  ['O','O','P','M','M','N','N'],
+  ['O','Q','R','S','T','Z','U'],
+  ['V','R','R','T','T','U','U']
+];
+
+const CAGES = {
+  A: { clue: '20', target: 20, op: null },
+  B: { clue: '20', target: 20, op: null },
+  C: { clue: '11', target: 11, op: null },
+  G: { clue: '20', target: 20, op: null },
+  H: { clue: '12', target: 12, op: null },
+  I: { clue: '16', target: 16, op: null },
+  M: { clue: '17', target: 17, op: null },
+  N: { clue: '40', target: 40, op: null },
+  O: { clue: '15', target: 15, op: null },
+  R: { clue: '13', target: 13, op: null },
+  T: { clue: '50', target: 50, op: null },
+  U: { clue: '20', target: 20, op: null }
+};
+
+const regionCells = {};
+const regionLeader = {};
+for (let r = 0; r < SIZE; r += 1) {
+  for (let c = 0; c < SIZE; c += 1) {
+    const id = REGION_GRID[r][c];
+    if (!regionCells[id]) regionCells[id] = [];
+    regionCells[id].push([r, c]);
+  }
+}
+Object.entries(regionCells).forEach(([id, cells]) => {
+  const [r, c] = [...cells].sort((a, b) => a[0] - b[0] || a[1] - b[1])[0];
+  regionLeader[`${r},${c}`] = id;
+});
+
+let board = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+let selected = null;
+
+function calcOp(op, vals) {
+  const s = [...vals].sort((a, b) => b - a);
+  let result = s[0];
+  for (let i = 1; i < s.length; i += 1) {
+    if (op === '+') result += s[i];
+    else if (op === '-') result -= s[i];
+    else if (op === '×') result *= s[i];
+    else if (op === '÷') result /= s[i];
+  }
+  return result;
+}
+
+function evalCage(cage, vals) {
+  const ops = cage.op ? [cage.op] : ['+', '-', '×', '÷'];
+  return ops.some(op => Math.abs(calcOp(op, vals) - cage.target) < 0.0001);
+}
+
+function buildBoard() {
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+  const THICK = '2px solid #222';
+  const THIN = '1px solid #aaa';
+
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.id = `cell-${r}-${c}`;
+      cell.addEventListener('click', () => selectCell(r, c));
+
+      const myRegion = REGION_GRID[r][c];
+      const dirs = [
+        [-1, 0, 'borderTop'],
+        [1, 0, 'borderBottom'],
+        [0, -1, 'borderLeft'],
+        [0, 1, 'borderRight']
+      ];
+      dirs.forEach(([dr, dc, prop]) => {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) {
+          cell.style[prop] = THICK;
+        } else if (REGION_GRID[nr][nc] !== myRegion) {
+          cell.style[prop] = THICK;
+        } else {
+          cell.style[prop] = THIN;
+        }
+      });
+
+      const clueRegion = regionLeader[`${r},${c}`];
+      if (clueRegion && CAGES[clueRegion]?.clue) {
+        const clue = document.createElement('span');
+        clue.className = 'cage-clue';
+        clue.dataset.region = clueRegion;
+        clue.textContent = CAGES[clueRegion].clue;
+        cell.appendChild(clue);
+      }
+
+      const num = document.createElement('span');
+      num.className = 'cell-num';
+      num.textContent = '';
+      cell.appendChild(num);
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function buildNumpad() {
+  const pad = document.getElementById('numpad');
+  for (let n = 1; n <= SIZE; n += 1) {
+    const btn = document.createElement('button');
+    btn.textContent = n;
+    btn.addEventListener('click', () => placeNumber(n));
+    pad.appendChild(btn);
+  }
+}
+
+function selectCell(r, c) {
+  if (selected) {
+    document.getElementById(`cell-${selected[0]}-${selected[1]}`).classList.remove('selected');
+  }
+  if (selected && selected[0] === r && selected[1] === c) {
+    selected = null;
+    return;
+  }
+  selected = [r, c];
+  document.getElementById(`cell-${r}-${c}`).classList.add('selected');
+}
+
+function placeNumber(n) {
+  if (!selected) return;
+  const [r, c] = selected;
+  board[r][c] = n;
+  validate();
+  saveProgress();
+}
+
+function validate() {
+  const cellError = new Set();
+  const regionError = new Set();
+
+  for (let r = 0; r < SIZE; r += 1) {
+    const seen = new Map();
+    for (let c = 0; c < SIZE; c += 1) {
+      const v = board[r][c];
+      if (!v) continue;
+      if (seen.has(v)) {
+        cellError.add(`${r},${c}`);
+        cellError.add(`${r},${seen.get(v)}`);
+      } else {
+        seen.set(v, c);
+      }
+    }
+  }
+
+  for (let c = 0; c < SIZE; c += 1) {
+    const seen = new Map();
+    for (let r = 0; r < SIZE; r += 1) {
+      const v = board[r][c];
+      if (!v) continue;
+      if (seen.has(v)) {
+        cellError.add(`${r},${c}`);
+        cellError.add(`${seen.get(v)},${c}`);
+      } else {
+        seen.set(v, r);
+      }
+    }
+  }
+
+  Object.entries(CAGES).forEach(([id, cage]) => {
+    const vals = regionCells[id].map(([r, c]) => board[r][c]);
+    if (vals.some(v => v === 0)) return;
+    if (!evalCage(cage, vals)) {
+      regionError.add(id);
+      regionCells[id].forEach(([r, c]) => cellError.add(`${r},${c}`));
+    }
+  });
+
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      const cell = document.getElementById(`cell-${r}-${c}`);
+      const num = cell.querySelector('.cell-num');
+      cell.classList.remove('error');
+      num.classList.remove('error');
+      num.textContent = board[r][c] || '';
+      if (cellError.has(`${r},${c}`)) {
+        cell.classList.add('error');
+        num.classList.add('error');
+      }
+    }
+  }
+
+  document.querySelectorAll('.cage-clue').forEach(clue => {
+    clue.classList.toggle('error', regionError.has(clue.dataset.region));
+  });
+
+  checkComplete(cellError, regionError);
+}
+
+function checkComplete(cellError, regionError) {
+  const msg = document.getElementById('message');
+  const allFilled = board.every(row => row.every(v => v >= 1 && v <= SIZE));
+  const allCagesOk = Object.keys(CAGES).every(id => {
+    const vals = regionCells[id].map(([r, c]) => board[r][c]);
+    return vals.every(v => v) && evalCage(CAGES[id], vals);
+  });
+  if (allFilled && cellError.size === 0 && regionError.size === 0 && allCagesOk) {
+    msg.textContent = '축하합니다! 퍼즐을 완성했습니다!';
+    recordCompletion(PUZZLE_ID);
+  } else {
+    msg.textContent = '';
+  }
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, board);
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (!Array.isArray(saved) || saved.length !== SIZE) return;
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      board[r][c] = Number(saved[r]?.[c]) || 0;
+    }
+  }
+  validate();
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    if (selected) {
+      document.getElementById(`cell-${selected[0]}-${selected[1]}`).classList.remove('selected');
+      selected = null;
+    }
+    board = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+    validate();
+    saveProgress();
+    resetCompletion(PUZZLE_ID);
+  });
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, board);
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state) || state.length !== SIZE) return;
+    for (let r = 0; r < SIZE; r += 1) {
+      for (let c = 0; c < SIZE; c += 1) {
+        board[r][c] = Number(state[r]?.[c]) || 0;
+      }
+    }
+    validate();
+    saveProgress();
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key >= '1' && e.key <= '7') {
+    placeNumber(Number(e.key));
+    return;
+  }
+  if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
+    placeNumber(0);
+    return;
+  }
+  if (!selected) return;
+  const [r, c] = selected;
+  const dirs = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+  const d = dirs[e.key];
+  if (!d) return;
+  e.preventDefault();
+  const nr = r + d[0];
+  const nc = c + d[1];
+  if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE) selectCell(nr, nc);
+});
+
+buildBoard();
+buildNumpad();
+validate();
+loadProgress();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>

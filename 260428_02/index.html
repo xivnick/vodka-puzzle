@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260428 나선은하</title>
+<meta property="og:title" content="260428 나선은하">
+<meta property="og:description" content="원을 중심으로 회전대칭인 은하들로 격자를 분할하세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260428_02/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .board-wrap {
+    position: relative;
+    width: min(90vw, 580px);
+    margin-top: 14px;
+    border: 2px solid #333;
+    background: #fff;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #fff;
+  }
+
+  .cell {
+    position: relative;
+    border-right: 1px dashed #c8c8c8;
+    border-bottom: 1px dashed #c8c8c8;
+    background: #fff;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+
+  .cell:nth-child(12n) { border-right: none; }
+  .cell:nth-child(n+133) { border-bottom: none; }
+  .cell.assigned { background: #dedede; }
+  .cell.valid { background: #dcefd8; }
+  .cell.error { background: #f3d4d4; }
+  .cell.region-selected,
+  .cell.valid.region-selected,
+  .cell.error.region-selected { background: #e8e0c6; }
+  .cell.selected { box-shadow: inset 0 0 0 2px #d0b86a; }
+
+  .circle-marker {
+    position: absolute;
+    width: min(5vw, 28px);
+    height: min(5vw, 28px);
+    border: 2px solid #222;
+    border-radius: 50%;
+    background: #fff;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .region-border {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .region-border.top { box-shadow: inset 0 2px 0 #454545; }
+  .region-border.right { box-shadow: inset -2px 0 0 #454545; }
+  .region-border.bottom { box-shadow: inset 0 -2px 0 #454545; }
+  .region-border.left { box-shadow: inset 2px 0 0 #454545; }
+  .bottom-buttons {
+    width: min(90vw, 580px);
+  }
+
+  @media (max-width: 540px) {
+    .board-wrap,
+    .bottom-buttons { width: min(94vw, 500px); }
+    .circle-marker {
+      width: min(5.2vw, 20px);
+      height: min(5.2vw, 20px);
+    }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page pad-48">
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260428 나선은하</h1>
+<p class="subtitle">원을 중심으로 회전대칭인 은하들로 격자를 분할하세요</p>
+
+<div class="container puzzle-width-lg align-center">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>나선은하 규칙</strong><br>
+    1. 도형은 은하들로 완전히 분할됩니다.<br>
+    2. 각 은하는 원을 정확히 1개 포함하며, 그 원을 중심으로 회전대칭입니다.
+  </div>
+
+  <div class="board-wrap" id="boardWrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="bottom-buttons">
+    <button onclick="startNewRegion()">새 영역</button>
+    <button onclick="clearSelectedCell()">지우기</button>
+    <button onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260428_02';
+const SAVE_KEY = 'puzzle_260428_02';
+const SIZE = 12;
+
+// Circle positions in doubled coordinates.
+// odd,odd: cell center / odd,even: horizontal edge midpoint / even,odd: vertical edge midpoint / even,even: vertex.
+const CIRCLES = [
+  { x: 10, y: 1 }, { x: 13, y: 1 }, { x: 17, y: 1 },
+  { x: 3, y: 3 }, { x: 11, y: 3 }, { x: 18, y: 4 }, { x: 23, y: 4 },
+  { x: 1, y: 5 }, { x: 12, y: 6 }, { x: 15, y: 5 },
+  { x: 7, y: 7 }, { x: 21, y: 7 },
+  { x: 3, y: 9 },
+  { x: 13, y: 11 }, { x: 17, y: 11 },
+  { x: 1, y: 13 }, { x: 11, y: 13 }, { x: 23, y: 13 },
+  { x: 1, y: 15 }, { x: 3, y: 15 }, { x: 17, y: 15 },
+  { x: 5, y: 17 },
+  { x: 17, y: 19 },
+  { x: 11, y: 21 }, { x: 21, y: 21 },
+  { x: 1, y: 22 }, { x: 6, y: 22 }, { x: 17, y: 23 }, { x: 23, y: 22 }
+];
+
+let board = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+let nextRegionId = 1;
+let selectedCell = null;
+let selectedRegionId = null;
+
+function keyOf(r, c) {
+  return `${r},${c}`;
+}
+
+function parseKey(key) {
+  return key.split(',').map(Number);
+}
+
+function inBounds(r, c) {
+  return r >= 0 && r < SIZE && c >= 0 && c < SIZE;
+}
+
+function orthNeighbors(r, c) {
+  return [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].filter(([nr, nc]) => inBounds(nr, nc));
+}
+
+function buildBoard() {
+  const boardEl = document.getElementById('board');
+  const wrap = document.getElementById('boardWrap');
+
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.addEventListener('click', () => handleCellClick(r, c));
+      boardEl.appendChild(cell);
+    }
+  }
+
+  CIRCLES.forEach(circle => {
+    const marker = document.createElement('div');
+    marker.className = 'circle-marker';
+    marker.style.left = `${(circle.x / (SIZE * 2)) * 100}%`;
+    marker.style.top = `${(circle.y / (SIZE * 2)) * 100}%`;
+    wrap.appendChild(marker);
+  });
+}
+
+function createRegionAt(r, c) {
+  const id = nextRegionId++;
+  board[r][c] = id;
+  return id;
+}
+
+function regionCells(regionId) {
+  const cells = [];
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      if (board[r][c] === regionId) cells.push([r, c]);
+    }
+  }
+  return cells;
+}
+
+function regionSet(regionId) {
+  return new Set(regionCells(regionId).map(([r, c]) => keyOf(r, c)));
+}
+
+function areRegionsAdjacent(a, b) {
+  if (a == null || b == null || a === b) return false;
+  const cells = regionCells(a);
+  return cells.some(([r, c]) => orthNeighbors(r, c).some(([nr, nc]) => board[nr][nc] === b));
+}
+
+function mergeRegions(a, b) {
+  if (!areRegionsAdjacent(a, b)) return a;
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      if (board[r][c] === b) board[r][c] = a;
+    }
+  }
+  return a;
+}
+
+function isAdjacentToRegion(r, c, regionId) {
+  return orthNeighbors(r, c).some(([nr, nc]) => board[nr][nc] === regionId);
+}
+
+function handleCellClick(r, c) {
+  const clickedRegion = board[r][c];
+
+  if (selectedCell && selectedCell[0] === r && selectedCell[1] === c && clickedRegion != null) {
+    clearSelectedCell();
+    return;
+  }
+
+  if (clickedRegion == null) {
+    if (selectedRegionId != null && isAdjacentToRegion(r, c, selectedRegionId)) {
+      board[r][c] = selectedRegionId;
+    } else {
+      selectedRegionId = createRegionAt(r, c);
+    }
+    selectedCell = [r, c];
+    saveProgress();
+    render();
+    checkComplete();
+    return;
+  }
+
+  if (selectedRegionId != null && clickedRegion !== selectedRegionId && areRegionsAdjacent(selectedRegionId, clickedRegion)) {
+    selectedRegionId = mergeRegions(selectedRegionId, clickedRegion);
+    selectedCell = [r, c];
+    saveProgress();
+    render();
+    checkComplete();
+    return;
+  }
+
+  selectedRegionId = clickedRegion;
+  selectedCell = [r, c];
+  render();
+}
+
+function startNewRegion() {
+  selectedCell = null;
+  selectedRegionId = null;
+  render();
+}
+
+function splitRegion(regionId) {
+  const cells = regionCells(regionId);
+  const remaining = new Set(cells.map(([r, c]) => keyOf(r, c)));
+  const components = [];
+
+  while (remaining.size) {
+    const startKey = remaining.values().next().value;
+    const stack = [parseKey(startKey)];
+    const comp = [];
+    remaining.delete(startKey);
+    while (stack.length) {
+      const [r, c] = stack.pop();
+      comp.push([r, c]);
+      orthNeighbors(r, c).forEach(([nr, nc]) => {
+        const nk = keyOf(nr, nc);
+        if (remaining.has(nk) && board[nr][nc] === regionId) {
+          remaining.delete(nk);
+          stack.push([nr, nc]);
+        }
+      });
+    }
+    components.push(comp);
+  }
+
+  if (components.length <= 1) return;
+  components.forEach((comp, index) => {
+    const id = index === 0 ? regionId : nextRegionId++;
+    comp.forEach(([r, c]) => {
+      board[r][c] = id;
+    });
+  });
+}
+
+function clearSelectedCell() {
+  if (!selectedCell) return;
+  const [r, c] = selectedCell;
+  const regionId = board[r][c];
+  if (regionId == null) return;
+  board[r][c] = null;
+  splitRegion(regionId);
+  selectedCell = null;
+  selectedRegionId = null;
+  saveProgress();
+  render();
+}
+
+function incidentCells(circle) {
+  const xs = circle.x % 2 === 0 ? [circle.x / 2 - 1, circle.x / 2] : [(circle.x - 1) / 2];
+  const ys = circle.y % 2 === 0 ? [circle.y / 2 - 1, circle.y / 2] : [(circle.y - 1) / 2];
+  const cells = [];
+  ys.forEach(r => {
+    xs.forEach(c => {
+      if (inBounds(r, c)) cells.push([r, c]);
+    });
+  });
+  return cells;
+}
+
+function regionCircleCount(regionId) {
+  const set = regionSet(regionId);
+  return CIRCLES.filter(circle =>
+    incidentCells(circle).length > 0 &&
+    incidentCells(circle).every(([r, c]) => set.has(keyOf(r, c)))
+  );
+}
+
+function isSymmetric(regionId, circle) {
+  const set = regionSet(regionId);
+  if (!set.size) return false;
+  for (const key of set) {
+    const [r, c] = parseKey(key);
+    const rx = 2 * circle.x - (2 * c + 1);
+    const ry = 2 * circle.y - (2 * r + 1);
+    if (rx % 2 === 0 || ry % 2 === 0) return false;
+    const nc = (rx - 1) / 2;
+    const nr = (ry - 1) / 2;
+    if (!inBounds(nr, nc) || !set.has(keyOf(nr, nc))) return false;
+  }
+  return true;
+}
+
+function analyzeRegions() {
+  const ids = new Set();
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      if (board[r][c] != null) ids.add(board[r][c]);
+    }
+  }
+
+  const regionInfo = new Map();
+  ids.forEach(id => {
+    const circles = regionCircleCount(id);
+    const valid = circles.length === 1 && isSymmetric(id, circles[0]);
+    const error = circles.length >= 2;
+    regionInfo.set(id, { circles, valid, error });
+  });
+  return regionInfo;
+}
+
+function render() {
+  const info = analyzeRegions();
+  document.querySelectorAll('.cell').forEach(cell => {
+    const r = Number(cell.dataset.r);
+    const c = Number(cell.dataset.c);
+    const id = board[r][c];
+    cell.className = 'cell';
+    cell.innerHTML = '';
+
+    if (id != null) {
+      cell.classList.add('assigned');
+      if (selectedRegionId === id) cell.classList.add('region-selected');
+      const region = info.get(id);
+      if (region?.error) cell.classList.add('error');
+      else if (region?.valid) cell.classList.add('valid');
+
+      const neighbors = {
+        top: r === 0 || board[r - 1][c] !== id,
+        right: c === SIZE - 1 || board[r][c + 1] !== id,
+        bottom: r === SIZE - 1 || board[r + 1][c] !== id,
+        left: c === 0 || board[r][c - 1] !== id
+      };
+      Object.entries(neighbors).forEach(([side, on]) => {
+        if (!on) return;
+        const border = document.createElement('div');
+        border.className = `region-border ${side}`;
+        cell.appendChild(border);
+      });
+    }
+
+    if (selectedCell && selectedCell[0] === r && selectedCell[1] === c) {
+      cell.classList.add('selected');
+    }
+  });
+}
+
+function isComplete() {
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      if (board[r][c] == null) return false;
+    }
+  }
+  const info = analyzeRegions();
+  if (!info.size) return false;
+  for (const region of info.values()) {
+    if (!region.valid) return false;
+  }
+  return true;
+}
+
+function checkComplete() {
+  const msg = document.getElementById('message');
+  if (!isComplete()) {
+    msg.textContent = '';
+    return;
+  }
+  msg.textContent = '축하합니다! 퍼즐을 완성했습니다!';
+  recordCompletion(PUZZLE_ID);
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, board);
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (!Array.isArray(saved) || saved.length !== SIZE) return;
+  board = saved.map(row => Array.isArray(row) && row.length === SIZE ? row.map(v => Number.isInteger(v) ? v : null) : Array(SIZE).fill(null));
+  let maxId = 0;
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      if (board[r][c] != null) maxId = Math.max(maxId, board[r][c]);
+    }
+  }
+  nextRegionId = maxId + 1;
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, board);
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state) || state.length !== SIZE) return;
+    board = state.map(row => Array.isArray(row) && row.length === SIZE ? row.map(v => Number.isInteger(v) ? v : null) : Array(SIZE).fill(null));
+    let maxId = 0;
+    for (let r = 0; r < SIZE; r += 1) {
+      for (let c = 0; c < SIZE; c += 1) {
+        if (board[r][c] != null) maxId = Math.max(maxId, board[r][c]);
+      }
+    }
+    nextRegionId = maxId + 1;
+    selectedCell = null;
+    selectedRegionId = null;
+    render();
+    saveProgress();
+    checkComplete();
+  });
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    board = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+    nextRegionId = 1;
+    selectedCell = null;
+    selectedRegionId = null;
+    render();
+    saveProgress();
+    resetCompletion(PUZZLE_ID);
+    document.getElementById('message').textContent = '';
+  });
+}
+
+buildBoard();
+loadProgress();
+render();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>
