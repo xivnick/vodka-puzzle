@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260503 스타배틀(2☆)</title>
+<meta property="og:title" content="260503 스타배틀(2☆)">
+<meta property="og:description" content="각 가로줄, 세로줄, 영역에 별이 2개씩 있도록 배치하세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260503_02/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .board-wrap {
+    width: min(92vw, 680px);
+    margin-top: 16px;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: transparent;
+  }
+
+  .cell {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    box-sizing: border-box;
+  }
+
+  .cell.hole {
+    background: transparent;
+    cursor: default;
+  }
+
+  .cell.error {
+    background: #f4d4d4;
+  }
+
+  .star-svg {
+    position: absolute;
+    inset: 14%;
+    width: 72%;
+    height: 72%;
+    display: block;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .cross-mark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 52%;
+    height: 52%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .cross-mark::before,
+  .cross-mark::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: #8d8d8d;
+    border-radius: 999px;
+  }
+
+  .cross-mark::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .cross-mark::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  .input-mode-content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.86rem;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+  }
+
+  .input-mode-icon {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+  }
+
+  .input-mode-icon.star::before {
+    content: "★";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #b8b8b8;
+    font-size: 16px;
+    line-height: 1;
+    text-shadow:
+      -0.6px 0 #111,
+      0 0.6px #111,
+      0.6px 0 #111,
+      0 -0.6px #111;
+  }
+
+  .input-mode-icon.x::before,
+  .input-mode-icon.x::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 78%;
+    height: 2px;
+    background: #8d8d8d;
+    border-radius: 999px;
+  }
+
+  .input-mode-icon.x::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .input-mode-icon.x::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  .container .bottom-buttons {
+    width: min(92vw, 680px);
+    margin-top: 12px;
+  }
+
+  .message {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    min-height: 1.6em;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    color: #777;
+    text-align: center;
+  }
+
+  @media (max-width: 560px) {
+    .board-wrap,
+    .container .bottom-buttons {
+      width: min(94vw, 560px);
+    }
+
+    .star-svg {
+      inset: 16%;
+    }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page">
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260503 스타배틀(2☆)</h1>
+<p class="subtitle">각 가로줄, 세로줄, 영역에 별이 2개씩 있도록 배치하세요</p>
+
+<div class="container puzzle-width-xl align-center">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>스타배틀 규칙</strong><br>
+    • 각 가로줄, 세로줄, 영역에 별이 2개씩 있습니다.<br>
+    • 별끼리는 변으로도, 대각선으로도 닿지 않습니다.
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="bottom-buttons">
+    <button id="inputModeBtn" onclick="toggleInputMode()"></button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260503_02';
+const SAVE_KEY = 'puzzle_260503_02';
+const SIZE = 10;
+const EMPTY = 0;
+const STAR = 1;
+const MARK = 2;
+
+const SHAPE = {
+  size: 10,
+  cells: [
+    [0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[0,8],[0,9],
+    [1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8],[1,9],
+    [2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[2,6],[2,7],[2,8],[2,9],
+    [3,0],[3,1],[3,2],[3,3],[3,4],[3,5],[3,6],[3,7],[3,8],[3,9],
+    [4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6],[4,7],[4,8],[4,9],
+    [5,0],[5,1],[5,2],[5,3],[5,4],[5,5],[5,6],[5,7],[5,8],[5,9],
+    [6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6],[6,7],[6,8],[6,9],
+    [7,0],[7,1],[7,2],[7,3],[7,4],[7,5],[7,6],[7,7],[7,8],[7,9],
+    [8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,6],[8,7],[8,8],[8,9],
+    [9,0],[9,1],[9,2],[9,3],[9,4],[9,5],[9,6],[9,7],[9,8],[9,9]
+  ],
+  regions: [
+    [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[2,7]],
+    [[1,1],[2,1],[2,2],[2,3],[2,4],[2,5],[2,6],[3,5],[3,6]],
+    [[3,2],[3,3],[3,4],[4,2],[4,3],[4,4],[5,4]],
+    [[1,0],[2,0],[3,0],[3,1],[4,0],[4,1],[5,0],[5,1],[5,2],[5,3],[6,1],[6,2],[6,3],[7,2],[7,3],[8,1],[8,2],[8,3]],
+    [[6,0],[7,0],[7,1],[8,0]],
+    [[9,0],[9,1],[9,2],[9,3],[9,4]],
+    [[6,4],[6,5],[6,6],[6,7],[7,4],[7,5],[7,6],[7,7],[8,4],[8,5],[8,6],[8,7],[9,5],[9,6],[9,7]],
+    [[0,7],[0,8],[0,9],[1,8],[1,9],[2,8],[2,9]],
+    [[3,8],[3,9],[4,8],[4,9],[5,8],[5,9],[6,8],[6,9],[7,8],[7,9],[8,8],[8,9],[9,8],[9,9]],
+    [[3,7],[4,5],[4,6],[4,7],[5,5],[5,6],[5,7]]
+  ]
+};
+
+const VALID_SET = new Set(SHAPE.cells.map(([r, c]) => `${r},${c}`));
+const REGION_GRID = Array.from({ length: SIZE }, () => Array(SIZE).fill(-1));
+SHAPE.regions.forEach((region, index) => {
+  region.forEach(([r, c]) => {
+    REGION_GRID[r][c] = index;
+  });
+});
+
+let board = Array.from({ length: SIZE }, (_, r) =>
+  Array.from({ length: SIZE }, (_, c) => VALID_SET.has(`${r},${c}`) ? EMPTY : null)
+);
+
+let pressTimer = null;
+let pressTargetKey = null;
+let longPressTriggered = false;
+let suppressNextClick = false;
+const cellElements = {};
+let inputModeSwapped = false;
+
+function inBounds(r, c) {
+  return r >= 0 && r < SIZE && c >= 0 && c < SIZE;
+}
+
+function isValidCell(r, c) {
+  return inBounds(r, c) && board[r][c] != null;
+}
+
+function clearPressState() {
+  if (pressTimer) clearTimeout(pressTimer);
+  pressTimer = null;
+  pressTargetKey = null;
+  longPressTriggered = false;
+}
+
+function secondaryInputLabel() {
+  return window.matchMedia('(pointer: coarse)').matches ? '길게 누르기' : '우클릭';
+}
+
+function modeIconHtml(type) {
+  return `<span class="input-mode-icon ${type}" aria-hidden="true"></span>`;
+}
+
+function updateInputModeButton() {
+  const button = document.getElementById('inputModeBtn');
+  if (!button) return;
+  const secondary = secondaryInputLabel();
+  button.innerHTML = inputModeSwapped
+    ? `<span class="input-mode-content">클릭: ${modeIconHtml('x')} / ${secondary}: ${modeIconHtml('star')}</span>`
+    : `<span class="input-mode-content">클릭: ${modeIconHtml('star')} / ${secondary}: ${modeIconHtml('x')}</span>`;
+}
+
+function toggleInputMode() {
+  inputModeSwapped = !inputModeSwapped;
+  updateInputModeButton();
+}
+
+function starSvg() {
+  return `
+    <svg class="star-svg" viewBox="0 0 100 100" aria-hidden="true">
+      <polygon
+        points="50,8 61,36 91,36 67,54 76,84 50,66 24,84 33,54 9,36 39,36"
+        fill="#bbbbbb"
+        stroke="#111111"
+        stroke-width="6"
+        stroke-linejoin="round"
+      />
+    </svg>
+  `;
+}
+
+function buildBoard() {
+  const boardEl = document.getElementById('board');
+  boardEl.addEventListener('contextmenu', event => {
+    event.preventDefault();
+    const cell = event.target.closest('.cell');
+    if (!cell || !boardEl.contains(cell) || cell.classList.contains('hole')) return;
+    const r = Number(cell.dataset.r);
+    const c = Number(cell.dataset.c);
+    if (inputModeSwapped) toggleStar(r, c);
+    else toggleMark(r, c);
+  });
+
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      const cell = document.createElement('div');
+      cell.className = VALID_SET.has(`${r},${c}`) ? 'cell' : 'cell hole';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      if (VALID_SET.has(`${r},${c}`)) {
+        applyBorders(cell, r, c);
+        cell.addEventListener('click', event => {
+          if (longPressTriggered || suppressNextClick) {
+            event.preventDefault();
+            suppressNextClick = false;
+            clearPressState();
+            return;
+          }
+          if (inputModeSwapped) toggleMark(r, c);
+          else toggleStar(r, c);
+        });
+        cell.addEventListener('pointerdown', event => {
+          if (event.button !== 0) return;
+          clearPressState();
+          pressTargetKey = `${r},${c}`;
+          pressTimer = setTimeout(() => {
+            if (pressTargetKey !== `${r},${c}`) return;
+            longPressTriggered = true;
+            suppressNextClick = true;
+            if (inputModeSwapped) toggleStar(r, c);
+            else toggleMark(r, c);
+          }, 420);
+        });
+        cell.addEventListener('pointerup', () => clearPressState());
+        cell.addEventListener('pointerleave', () => clearPressState());
+        cell.addEventListener('pointercancel', () => clearPressState());
+        cell.addEventListener('contextmenu', event => {
+          event.preventDefault();
+          event.stopPropagation();
+          clearPressState();
+          if (inputModeSwapped) toggleStar(r, c);
+          else toggleMark(r, c);
+        });
+        cellElements[`${r},${c}`] = cell;
+      }
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function applyBorders(cell, r, c) {
+  const regionId = REGION_GRID[r][c];
+  const shadows = [];
+  for (const [dr, dc, prop] of [[-1, 0, 'borderTop'], [1, 0, 'borderBottom'], [0, -1, 'borderLeft'], [0, 1, 'borderRight']]) {
+    const nr = r + dr;
+    const nc = c + dc;
+    if (!isValidCell(nr, nc)) {
+      cell.style[prop] = '2px solid #111';
+      if (dr === -1) shadows.push('0 -2px 0 0 #111');
+      else if (dr === 1) shadows.push('0 2px 0 0 #111');
+      else if (dc === -1) shadows.push('-2px 0 0 0 #111');
+      else shadows.push('2px 0 0 0 #111');
+    } else if (REGION_GRID[nr][nc] !== regionId) {
+      cell.style[prop] = '2px solid #111';
+    } else {
+      cell.style[prop] = '1px solid #aaa';
+    }
+  }
+  cell.style.boxShadow = shadows.join(', ');
+}
+
+function toggleStar(r, c) {
+  if (!isValidCell(r, c)) return;
+  board[r][c] = board[r][c] === STAR ? EMPTY : STAR;
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+function toggleMark(r, c) {
+  if (!isValidCell(r, c)) return;
+  board[r][c] = board[r][c] === MARK ? EMPTY : MARK;
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+function getRegionCells(regionId) {
+  return SHAPE.regions[regionId];
+}
+
+function countStars(cells) {
+  return cells.reduce((sum, [r, c]) => sum + (board[r][c] === STAR ? 1 : 0), 0);
+}
+
+function getRowCells(r) {
+  return SHAPE.cells.filter(([rr]) => rr === r);
+}
+
+function getColCells(c) {
+  return SHAPE.cells.filter(([, cc]) => cc === c);
+}
+
+function getErrorStarSet() {
+  const errors = new Set();
+
+  for (let r = 0; r < SIZE; r += 1) {
+    const cells = getRowCells(r);
+    if (countStars(cells) > 2) {
+      cells.forEach(([rr, cc]) => {
+        if (board[rr][cc] === STAR) errors.add(`${rr},${cc}`);
+      });
+    }
+  }
+
+  for (let c = 0; c < SIZE; c += 1) {
+    const cells = getColCells(c);
+    if (countStars(cells) > 2) {
+      cells.forEach(([rr, cc]) => {
+        if (board[rr][cc] === STAR) errors.add(`${rr},${cc}`);
+      });
+    }
+  }
+
+  for (let regionId = 0; regionId < SHAPE.regions.length; regionId += 1) {
+    const cells = getRegionCells(regionId);
+    if (countStars(cells) > 2) {
+      cells.forEach(([rr, cc]) => {
+        if (board[rr][cc] === STAR) errors.add(`${rr},${cc}`);
+      });
+    }
+  }
+
+  const dirs = [-1, 0, 1];
+  SHAPE.cells.forEach(([r, c]) => {
+    if (board[r][c] !== STAR) return;
+    dirs.forEach(dr => {
+      dirs.forEach(dc => {
+        if (dr === 0 && dc === 0) return;
+        const nr = r + dr;
+        const nc = c + dc;
+        if (isValidCell(nr, nc) && board[nr][nc] === STAR) {
+          errors.add(`${r},${c}`);
+          errors.add(`${nr},${nc}`);
+        }
+      });
+    });
+  });
+
+  return errors;
+}
+
+function isComplete() {
+  const errors = getErrorStarSet();
+  if (errors.size) return false;
+
+  for (let r = 0; r < SIZE; r += 1) {
+    if (countStars(getRowCells(r)) !== 2) return false;
+  }
+  for (let c = 0; c < SIZE; c += 1) {
+    if (countStars(getColCells(c)) !== 2) return false;
+  }
+  for (let regionId = 0; regionId < SHAPE.regions.length; regionId += 1) {
+    if (countStars(getRegionCells(regionId)) !== 2) return false;
+  }
+  return true;
+}
+
+function render() {
+  const errors = getErrorStarSet();
+  Object.entries(cellElements).forEach(([key, cell]) => {
+    const [r, c] = key.split(',').map(Number);
+    cell.className = 'cell';
+    if (errors.has(`${r},${c}`) && board[r][c] === STAR) {
+      cell.classList.add('error');
+    }
+    cell.innerHTML = '';
+
+    if (board[r][c] === STAR) {
+      cell.innerHTML = starSvg();
+    } else if (board[r][c] === MARK) {
+      const mark = document.createElement('div');
+      mark.className = 'cross-mark';
+      cell.appendChild(mark);
+    }
+  });
+}
+
+function checkComplete() {
+  const message = document.getElementById('message');
+  if (!isComplete()) {
+    message.textContent = '';
+    return;
+  }
+  message.textContent = '축하합니다! 퍼즐을 완성했습니다!';
+  recordCompletion(PUZZLE_ID);
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, board);
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (!Array.isArray(saved) || saved.length !== SIZE) return;
+  board = saved.map((row, r) =>
+    Array.isArray(row) && row.length === SIZE
+      ? row.map((value, c) => {
+          if (!VALID_SET.has(`${r},${c}`)) return null;
+          return value === STAR || value === MARK ? value : EMPTY;
+        })
+      : Array.from({ length: SIZE }, (_, c) => VALID_SET.has(`${r},${c}`) ? EMPTY : null)
+  );
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, board);
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state) || state.length !== SIZE) return;
+    board = state.map((row, r) =>
+      Array.isArray(row) && row.length === SIZE
+        ? row.map((value, c) => {
+            if (!VALID_SET.has(`${r},${c}`)) return null;
+            return value === STAR || value === MARK ? value : EMPTY;
+          })
+        : Array.from({ length: SIZE }, (_, c) => VALID_SET.has(`${r},${c}`) ? EMPTY : null)
+    );
+    render();
+    saveProgress();
+    checkComplete();
+  });
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    board = Array.from({ length: SIZE }, (_, r) =>
+      Array.from({ length: SIZE }, (_, c) => VALID_SET.has(`${r},${c}`) ? EMPTY : null)
+    );
+    render();
+    saveProgress();
+    resetCompletion(PUZZLE_ID);
+    document.getElementById('message').textContent = '';
+  });
+}
+
+buildBoard();
+loadProgress();
+render();
+checkComplete();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+updateInputModeButton();
+window.matchMedia('(pointer: coarse)').addEventListener?.('change', updateInputModeButton);
+</script>
+</body>
+</html>

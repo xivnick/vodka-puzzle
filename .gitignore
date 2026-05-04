@@ -1,1 +1,3 @@
 .claude/
+sftp-config*.json
+sftp-settings.json
