@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260507 낚시꾼</title>
+<meta property="og:title" content="260507 낚시꾼">
+<meta property="og:description" content="낚시꾼과 물고기를 낚싯대로 연결하세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260507_01/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .container {
+    width: min(94vw, 620px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .board-shell {
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
+    grid-template-rows: 44px 1fr 44px;
+    gap: 0;
+    margin-top: 18px;
+    align-items: center;
+  }
+
+  .top-clues,
+  .bottom-clues {
+    grid-column: 2;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    height: 44px;
+    align-items: center;
+    justify-items: center;
+  }
+
+  .top-clues { grid-row: 1; }
+  .bottom-clues { grid-row: 3; }
+
+  .left-clues,
+  .right-clues {
+    display: grid;
+    grid-template-rows: repeat(8, 1fr);
+    width: 44px;
+    height: 100%;
+    align-items: center;
+    justify-items: center;
+  }
+
+  .left-clues { grid-column: 1; grid-row: 2; }
+  .right-clues { grid-column: 3; grid-row: 2; }
+
+  .clue {
+    font-size: clamp(1.35rem, 6vw, 2.7rem);
+    font-weight: 700;
+    color: #111;
+    line-height: 1;
+  }
+
+  .clue.ok { color: #5f8b52; }
+  .clue.error { color: #c0392b; }
+
+  .board-wrap {
+    grid-column: 2;
+    grid-row: 2;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .board {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    background: #fff;
+    border: 2px dashed #aaa;
+    box-sizing: border-box;
+  }
+
+  .cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 2px dashed #aaa;
+    border-bottom: 2px dashed #aaa;
+    box-sizing: border-box;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s;
+  }
+
+  .cell:nth-child(8n) { border-right: none; }
+  .cell:nth-child(n+57) { border-bottom: none; }
+  .cell:hover { background: #f5f5f0; }
+  .cell.anchor { background: #e8e8d8; }
+  .cell.rod { background: #fff; }
+  .cell.error { background: #f5d0d0; }
+  .cell.ok { background: #dcefd8; }
+
+  .fish {
+    position: relative;
+    z-index: 2;
+    width: 64%;
+    height: 44%;
+    border: 4px solid #5f5f5f;
+    border-radius: 56% 42% 42% 56%;
+    background: #fff;
+    pointer-events: none;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.05);
+  }
+
+  .fish::after {
+    content: "";
+    position: absolute;
+    right: -23%;
+    top: 50%;
+    width: 34%;
+    height: 56%;
+    border-top: 4px solid #5f5f5f;
+    border-right: 4px solid #5f5f5f;
+    transform: translateY(-50%) rotate(45deg) skew(-6deg, -6deg);
+    background: #fff;
+  }
+
+  .fish::before {
+    content: "";
+    position: absolute;
+    left: 18%;
+    top: 30%;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #5f5f5f;
+  }
+
+  .wire-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    overflow: visible;
+  }
+
+  .rod-line {
+    stroke: #111;
+    stroke-width: 0.15;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .rod-line.error { stroke: #c0392b; }
+  .rod-line.ok { stroke: #5f8b52; }
+
+  .rod-dot {
+    fill: #111;
+  }
+
+  .rod-dot.error { fill: #c0392b; }
+  .rod-dot.ok { fill: #5f8b52; }
+
+  .message {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    min-height: 1.6em;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    color: #777;
+    text-align: center;
+  }
+
+  @media (max-width: 540px) {
+    .board-shell {
+      grid-template-columns: 34px 1fr 34px;
+      grid-template-rows: 34px 1fr 34px;
+    }
+
+    .top-clues,
+    .bottom-clues { height: 34px; }
+
+    .left-clues,
+    .right-clues { width: 34px; }
+
+    .fish { border-width: 3px; }
+    .fish::after { border-width: 3px; }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page pad-48">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260507 낚시꾼</h1>
+<p class="subtitle">낚시꾼과 물고기를 낚싯대로 연결하세요</p>
+
+<div class="container">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>낚시꾼 규칙</strong><br>
+    • 격자 바깥의 숫자는 낚시꾼입니다.<br>
+    • 낚싯대는 낚시꾼에서 물고기까지 칸 중심을 상하좌우로 이어 도달합니다.<br>
+    • 숫자는 물고기 칸을 포함한 낚싯대의 칸 수입니다.<br>
+    • 낚싯대끼리는 서로 교차하거나 같은 선분을 공유할 수 없습니다.<br>
+    • 모든 물고기는 정확히 한 명의 낚시꾼에게 잡혀야 하며, 빈 칸이 남아도 됩니다.
+  </div>
+
+  <div class="board-shell">
+    <div class="top-clues" id="topClues"></div>
+    <div class="left-clues" id="leftClues"></div>
+    <div class="board-wrap">
+      <svg class="wire-layer" id="wireLayer" viewBox="0 0 8 8" preserveAspectRatio="none"></svg>
+      <div class="board" id="board"></div>
+    </div>
+    <div class="right-clues" id="rightClues"></div>
+    <div class="bottom-clues" id="bottomClues"></div>
+  </div>
+
+  <div class="bottom-buttons">
+    <button onclick="clearAnchor()">선택 해제</button>
+    <button onclick="clearRods()">전체 지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260507_01';
+const SAVE_KEY = 'puzzle_260507_01';
+const SIZE = 8;
+const FISH = [[1,1],[1,6],[3,3],[3,4],[4,3],[4,4],[6,1],[6,6]];
+const FISH_SET = new Set(FISH.map(([r, c]) => key(r, c)));
+const FISHERS = [
+  { id: 'top-3', side: 'top', index: 3, value: 8 },
+  { id: 'top-4', side: 'top', index: 4, value: 6 },
+  { id: 'left-3', side: 'left', index: 3, value: 11 },
+  { id: 'left-4', side: 'left', index: 4, value: 8 },
+  { id: 'right-3', side: 'right', index: 3, value: 9 },
+  { id: 'right-4', side: 'right', index: 4, value: 9 },
+  { id: 'bottom-3', side: 'bottom', index: 3, value: 5 },
+  { id: 'bottom-4', side: 'bottom', index: 4, value: 8 }
+];
+
+let rodEdges = new Set();
+let anchor = null;
+
+function key(r, c) {
+  return `${r},${c}`;
+}
+
+function edgeKey(a, b) {
+  const ka = key(a[0], a[1]);
+  const kb = key(b[0], b[1]);
+  return ka < kb ? `${ka}|${kb}` : `${kb}|${ka}`;
+}
+
+function inBounds(r, c) {
+  return r >= 0 && r < SIZE && c >= 0 && c < SIZE;
+}
+
+function neighbors(r, c) {
+  return [[-1,0],[1,0],[0,-1],[0,1]]
+    .map(([dr, dc]) => [r + dr, c + dc])
+    .filter(([nr, nc]) => inBounds(nr, nc));
+}
+
+function fisherCell(fisher) {
+  if (fisher.side === 'top') return [0, fisher.index];
+  if (fisher.side === 'bottom') return [SIZE - 1, fisher.index];
+  if (fisher.side === 'left') return [fisher.index, 0];
+  return [fisher.index, SIZE - 1];
+}
+
+function buildClues() {
+  const groups = {
+    top: document.getElementById('topClues'),
+    bottom: document.getElementById('bottomClues'),
+    left: document.getElementById('leftClues'),
+    right: document.getElementById('rightClues')
+  };
+
+  Object.values(groups).forEach(group => {
+    for (let i = 0; i < SIZE; i += 1) {
+      const el = document.createElement('div');
+      group.appendChild(el);
+    }
+  });
+
+  FISHERS.forEach(fisher => {
+    const el = groups[fisher.side].children[fisher.index];
+    el.className = 'clue';
+    el.id = `clue-${fisher.id}`;
+    el.textContent = fisher.value;
+  });
+}
+
+function buildBoard() {
+  const board = document.getElementById('board');
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.addEventListener('click', event => {
+        event.preventDefault();
+        handleCellClick(r, c);
+      });
+      if (FISH_SET.has(key(r, c))) {
+        const fish = document.createElement('div');
+        fish.className = 'fish';
+        cell.appendChild(fish);
+      }
+      board.appendChild(cell);
+    }
+  }
+}
+
+function sameCell(a, b) {
+  return a && b && a[0] === b[0] && a[1] === b[1];
+}
+
+function segmentCells(from, to) {
+  if (!from || !to) return null;
+  if (from[0] !== to[0] && from[1] !== to[1]) return null;
+  const cells = [];
+  if (from[0] === to[0]) {
+    const step = from[1] < to[1] ? 1 : -1;
+    for (let c = from[1]; c !== to[1] + step; c += step) cells.push([from[0], c]);
+  } else {
+    const step = from[0] < to[0] ? 1 : -1;
+    for (let r = from[0]; r !== to[0] + step; r += step) cells.push([r, from[1]]);
+  }
+  return cells;
+}
+
+function segmentEdges(cells) {
+  const edges = [];
+  for (let i = 0; i < cells.length - 1; i += 1) {
+    edges.push(edgeKey(cells[i], cells[i + 1]));
+  }
+  return edges;
+}
+
+function handleCellClick(r, c) {
+  const clicked = [r, c];
+  if (!anchor) {
+    anchor = clicked;
+    render();
+    return;
+  }
+  if (sameCell(anchor, clicked)) {
+    eraseStraightAtCell(clicked);
+    anchor = null;
+    render();
+    saveProgress();
+    return;
+  }
+  const cells = segmentCells(anchor, clicked);
+  if (!cells) {
+    anchor = clicked;
+    render();
+    return;
+  }
+  const edges = segmentEdges(cells);
+  const alreadyDrawn = edges.length > 0 && edges.every(edge => rodEdges.has(edge));
+  edges.forEach(edge => {
+    if (alreadyDrawn) rodEdges.delete(edge);
+    else rodEdges.add(edge);
+  });
+  anchor = null;
+  render();
+  saveProgress();
+}
+
+function clearAnchor() {
+  anchor = null;
+  render();
+}
+
+function eraseStraightAtCell(cell) {
+  const incident = [...rodEdges].filter(edge => edge.split('|').some(part => part === key(cell[0], cell[1])));
+  incident.forEach(edge => rodEdges.delete(edge));
+}
+
+function getComponents() {
+  const rodCells = getRodCellSet();
+  const seen = new Set();
+  const components = [];
+  const adjacency = getRodAdjacency();
+  rodCells.forEach(startKey => {
+    if (seen.has(startKey)) return;
+    const queue = [startKey];
+    const cells = [];
+    seen.add(startKey);
+    while (queue.length) {
+      const current = queue.shift();
+      cells.push(current.split(',').map(Number));
+      (adjacency.get(current) || new Set()).forEach(next => {
+        if (seen.has(next)) return;
+        seen.add(next);
+        queue.push(next);
+      });
+    }
+    components.push(cells);
+  });
+  return components;
+}
+
+function getRodCellSet() {
+  const set = new Set();
+  rodEdges.forEach(edge => {
+    edge.split('|').forEach(part => set.add(part));
+  });
+  return set;
+}
+
+function getRodAdjacency() {
+  const adjacency = new Map();
+  function ensure(k) {
+    if (!adjacency.has(k)) adjacency.set(k, new Set());
+    return adjacency.get(k);
+  }
+  rodEdges.forEach(edge => {
+    const [a, b] = edge.split('|');
+    ensure(a).add(b);
+    ensure(b).add(a);
+  });
+  return adjacency;
+}
+
+function componentFishers(cells) {
+  const set = new Set(cells.map(([r, c]) => key(r, c)));
+  return FISHERS.filter(fisher => {
+    const [r, c] = fisherCell(fisher);
+    return set.has(key(r, c));
+  });
+}
+
+function componentFishCount(cells) {
+  return cells.filter(([r, c]) => FISH_SET.has(key(r, c))).length;
+}
+
+function hasBranch(cells) {
+  const adjacency = getRodAdjacency();
+  return cells.some(([r, c]) => (adjacency.get(key(r, c)) || new Set()).size > 2);
+}
+
+function hasFishPassThrough(cells) {
+  const adjacency = getRodAdjacency();
+  return cells.some(([r, c]) => FISH_SET.has(key(r, c)) && (adjacency.get(key(r, c)) || new Set()).size > 1);
+}
+
+function adjacentDifferentComponents(componentOf) {
+  const bad = new Set();
+  for (let r = 0; r < SIZE; r += 1) {
+    for (let c = 0; c < SIZE; c += 1) {
+      const id = componentOf.get(key(r, c));
+      if (id == null) continue;
+      neighbors(r, c).forEach(([nr, nc]) => {
+        const other = componentOf.get(key(nr, nc));
+        if (other != null && other !== id) {
+          bad.add(id);
+          bad.add(other);
+        }
+      });
+    }
+  }
+  return bad;
+}
+
+function renderLines() {
+  const svg = document.getElementById('wireLayer');
+  svg.innerHTML = '';
+  const { edgeStatus, componentOf } = analyze(false);
+  rodEdges.forEach(edge => {
+    const [a, b] = edge.split('|').map(part => part.split(',').map(Number));
+    const status = edgeStatus.get(edge) || '';
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('class', `rod-line${status ? ` ${status}` : ''}`);
+    line.setAttribute('x1', a[1] + 0.5);
+    line.setAttribute('y1', a[0] + 0.5);
+    line.setAttribute('x2', b[1] + 0.5);
+    line.setAttribute('y2', b[0] + 0.5);
+    svg.appendChild(line);
+  });
+  FISHERS.forEach(fisher => {
+    const [r, c] = fisherCell(fisher);
+    const cellId = key(r, c);
+    if (!componentOf.has(cellId)) return;
+    const incident = [...rodEdges].filter(edge => edge.split('|').includes(cellId));
+    const status = incident.some(edge => edgeStatus.get(edge) === 'error') ? 'error' :
+      incident.some(edge => edgeStatus.get(edge) === 'ok') ? 'ok' : '';
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('class', `rod-line${status ? ` ${status}` : ''}`);
+    line.setAttribute('x2', c + 0.5);
+    line.setAttribute('y2', r + 0.5);
+    if (fisher.side === 'top') {
+      line.setAttribute('x1', c + 0.5);
+      line.setAttribute('y1', -0.48);
+    } else if (fisher.side === 'bottom') {
+      line.setAttribute('x1', c + 0.5);
+      line.setAttribute('y1', SIZE + 0.48);
+    } else if (fisher.side === 'left') {
+      line.setAttribute('x1', -0.48);
+      line.setAttribute('y1', r + 0.5);
+    } else {
+      line.setAttribute('x1', SIZE + 0.48);
+      line.setAttribute('y1', r + 0.5);
+    }
+    svg.insertBefore(line, svg.firstChild);
+  });
+  getRodCellSet().forEach(cellKey => {
+    const [r, c] = cellKey.split(',').map(Number);
+    const status = [...rodEdges].some(edge => edge.includes(cellKey) && edgeStatus.get(edge) === 'error') ? 'error' :
+      [...rodEdges].some(edge => edge.includes(cellKey) && edgeStatus.get(edge) === 'ok') ? 'ok' : '';
+    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    dot.setAttribute('class', `rod-dot${status ? ` ${status}` : ''}`);
+    dot.setAttribute('cx', c + 0.5);
+    dot.setAttribute('cy', r + 0.5);
+    dot.setAttribute('r', 0.075);
+    svg.appendChild(dot);
+  });
+}
+
+function analyze(includeRenderData = true) {
+  const components = getComponents();
+  const componentOf = new Map();
+  const edgeStatus = new Map();
+  components.forEach((cells, index) => {
+    cells.forEach(([r, c]) => componentOf.set(key(r, c), index));
+  });
+  const cellStatus = new Map();
+  const clueStatus = new Map();
+  FISHERS.forEach(fisher => clueStatus.set(fisher.id, ''));
+
+  components.forEach((cells, index) => {
+    const fishers = componentFishers(cells);
+    const fishCount = componentFishCount(cells);
+    const invalid =
+      hasBranch(cells) ||
+      hasFishPassThrough(cells) ||
+      fishers.length > 1 ||
+      fishCount > 1 ||
+      (fishers.length === 1 && fishCount === 1 && cells.length !== fishers[0].value);
+    const complete = !invalid && fishers.length === 1 && fishCount === 1 && cells.length === fishers[0].value;
+    cells.forEach(([r, c]) => cellStatus.set(key(r, c), invalid ? 'error' : complete ? 'ok' : 'rod'));
+    rodEdges.forEach(edge => {
+      const [a] = edge.split('|');
+      if (componentOf.get(a) === index) edgeStatus.set(edge, invalid ? 'error' : complete ? 'ok' : '');
+    });
+    if (fishers.length === 1) clueStatus.set(fishers[0].id, invalid ? 'error' : complete ? 'ok' : '');
+    else if (fishers.length > 1) fishers.forEach(fisher => clueStatus.set(fisher.id, 'error'));
+  });
+
+  const allFishCaught = FISH.every(([r, c]) => {
+    const idx = componentOf.get(key(r, c));
+    if (idx == null) return false;
+    const cells = components[idx];
+    return componentFishers(cells).length === 1 && componentFishCount(cells) === 1;
+  });
+  const allFishersUsed = FISHERS.every(fisher => clueStatus.get(fisher.id) === 'ok');
+  const noErrors = [...cellStatus.values()].every(status => status !== 'error');
+  const complete = allFishCaught && allFishersUsed && noErrors;
+  return { cellStatus, clueStatus, edgeStatus, componentOf, complete };
+}
+
+function render() {
+  const { cellStatus, clueStatus, complete } = analyze();
+  document.querySelectorAll('.cell').forEach(cell => {
+    const r = Number(cell.dataset.r);
+    const c = Number(cell.dataset.c);
+    const status = cellStatus.get(key(r, c)) || '';
+    cell.classList.toggle('rod', status === 'rod');
+    cell.classList.toggle('ok', status === 'ok');
+    cell.classList.toggle('error', status === 'error');
+    cell.classList.toggle('anchor', !!anchor && anchor[0] === r && anchor[1] === c);
+  });
+  FISHERS.forEach(fisher => {
+    const el = document.getElementById(`clue-${fisher.id}`);
+    const status = clueStatus.get(fisher.id);
+    el.classList.toggle('ok', status === 'ok');
+    el.classList.toggle('error', status === 'error');
+  });
+  renderLines();
+  document.getElementById('message').textContent = complete ? '축하합니다! 퍼즐을 완성했습니다!' : '';
+  if (complete) recordCompletion(PUZZLE_ID);
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, Array.from(rodEdges).sort());
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (!Array.isArray(saved)) return;
+  rodEdges = new Set(saved.filter(edge => typeof edge === 'string' && edge.includes('|')));
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, Array.from(rodEdges).sort());
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state)) return;
+    rodEdges = new Set(state.filter(edge => typeof edge === 'string' && edge.includes('|')));
+    anchor = null;
+    render();
+    saveProgress();
+  });
+}
+
+function clearRods() {
+  rodEdges = new Set();
+  anchor = null;
+  render();
+  saveProgress();
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    clearRods();
+    resetCompletion(PUZZLE_ID);
+  });
+}
+
+buildClues();
+buildBoard();
+loadProgress();
+render();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>

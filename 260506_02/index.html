@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260506 동시 발발 수식</title>
+<meta property="og:title" content="260506 동시 발발 수식">
+<meta property="og:description" content="1~9를 하나씩 넣어 모든 수식을 동시에 성립시키세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260506_02/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .container {
+    width: min(96vw, 980px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .formula-wrap {
+    width: 100%;
+    margin-top: 18px;
+    overflow: visible;
+    padding: 10px 4px 6px;
+    box-sizing: border-box;
+  }
+
+  .formula {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1080 / 470;
+    background: #fff;
+  }
+
+  .slot {
+    position: absolute;
+    border: 2px solid #777;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: clamp(1.5rem, 4vw, 3rem);
+    font-weight: 700;
+    color: #4a6fa5;
+    cursor: pointer;
+    user-select: none;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .slot.selected {
+    outline: 3px solid #4a6fa5;
+    outline-offset: 2px;
+  }
+
+  .slot.error {
+    background: #f5d0d0;
+    color: #c0392b;
+    border-color: #b76b6b;
+  }
+
+  .slot.ok {
+    background: #dcefd8;
+  }
+
+  .op {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: clamp(1.3rem, 3vw, 2.2rem);
+    font-weight: 500;
+    color: #111;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .op.error {
+    color: #c0392b;
+    font-weight: 700;
+  }
+
+  .numpad {
+    width: min(100%, 520px);
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 4px;
+  }
+
+  .numpad button {
+    height: 44px;
+    border-radius: 3px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 1.5px solid #c8c3b8;
+    background: #f4f1eb;
+    color: #333;
+    cursor: pointer;
+  }
+
+  .numpad button:hover { background: #e8e4da; }
+  .numpad button:active { transform: scale(0.95); background: #ddd9cf; }
+
+  .message {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    min-height: 1.6em;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    color: #777;
+    text-align: center;
+  }
+
+  @media (max-width: 540px) {
+    .numpad button {
+      height: min(10vw, 44px);
+      font-size: min(4vw, 16px);
+    }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=19">
+<script src="/puzzle/js/common.js?v=19"></script>
+</head>
+<body class="puzzle-page pad-48">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260506 동시 발발 수식</h1>
+<p class="subtitle">1~9를 하나씩 넣어 모든 수식을 동시에 성립시키세요</p>
+
+<div class="container">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>동시 발발 수식 규칙</strong><br>
+    • 주어진 칸 9개에 1~9의 자연수를 하나씩 넣습니다.<br>
+    • 각각의 수식이 모두 성립해야 합니다.<br>
+    • 각 수식은 사칙연산의 순서를 고려하여 계산합니다.
+  </div>
+
+  <div class="formula-wrap">
+    <div class="formula" id="formula"></div>
+  </div>
+
+  <div class="numpad" id="numpad"></div>
+
+  <div class="bottom-buttons">
+    <button onclick="deleteCell()">지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260506_02';
+const SAVE_KEY = 'puzzle_260506_02';
+const LETTERS = ['A','B','C','D','E','F','G','H','I'];
+
+const SLOTS = [
+  { id: 'A', x: 12, y: 2, w: 48, h: 100 },
+  { id: 'B', x: 126, y: 3, w: 48, h: 156 },
+  { id: 'C', x: 254, y: 3, w: 48, h: 156 },
+  { id: 'D', x: 382, y: 58, w: 48, h: 272 },
+  { id: 'E', x: 508, y: 116, w: 48, h: 214 },
+  { id: 'F', x: 636, y: 116, w: 48, h: 272 },
+  { id: 'G', x: 762, y: 174, w: 48, h: 270 },
+  { id: 'H', x: 890, y: 174, w: 48, h: 270 },
+  { id: 'I', x: 1018, y: 232, w: 48, h: 212 }
+];
+
+const OPS = [
+  ['=', 92, 27, [0]], ['−', 220, 27, [0]],
+  ['+', 92, 86, [1]], ['=', 220, 86, [1]], ['+', 348, 86, [1]],
+  ['×', 220, 143, [2]], ['=', 348, 143, [2]], ['×', 476, 143, [2]], ['−', 604, 143, [2]],
+  ['+', 476, 200, [3]], ['=', 604, 200, [3]], ['+', 732, 200, [3]], ['÷', 860, 200, [3]],
+  ['+', 476, 255, [4]], ['×', 604, 255, [4]], ['=', 732, 255, [4]], ['−', 860, 255, [4]], ['+', 988, 255, [4]],
+  ['+', 476, 312, [5]], ['−', 604, 312, [5]], ['×', 732, 312, [5]], ['=', 860, 312, [5]], ['−', 988, 312, [5]],
+  ['−', 732, 370, [6]], ['=', 860, 370, [6]], ['−', 988, 370, [6]],
+  ['−', 860, 428, [7]], ['=', 988, 428, [7]]
+];
+
+const EQUATIONS = [
+  { id: 0, left: ['A'], right: ['B','-','C'] },
+  { id: 1, left: ['A','+','B'], right: ['C','+','D'] },
+  { id: 2, left: ['B','*','C'], right: ['D','*','E','-','F'] },
+  { id: 3, left: ['D','+','E'], right: ['F','+','G','/','H'] },
+  { id: 4, left: ['D','+','E','*','F'], right: ['G','-','H','+','I'] },
+  { id: 5, left: ['D','+','E','-','F','*','G'], right: ['H','-','I'] },
+  { id: 6, left: ['F','-','G'], right: ['H','-','I'] },
+  { id: 7, left: ['G','-','H'], right: ['I'] }
+];
+
+const values = {};
+LETTERS.forEach(letter => { values[letter] = 0; });
+let selected = null;
+
+function pct(value, basis) {
+  return `${(value / basis) * 100}%`;
+}
+
+function gcd(a, b) {
+  a = Math.abs(a);
+  b = Math.abs(b);
+  while (b) [a, b] = [b, a % b];
+  return a || 1;
+}
+
+function frac(n, d = 1) {
+  if (d === 0) return null;
+  if (d < 0) { n = -n; d = -d; }
+  const g = gcd(n, d);
+  return { n: n / g, d: d / g };
+}
+
+function applyOp(a, op, b) {
+  if (!a || !b) return null;
+  if (op === '+') return frac(a.n * b.d + b.n * a.d, a.d * b.d);
+  if (op === '-') return frac(a.n * b.d - b.n * a.d, a.d * b.d);
+  if (op === '*') return frac(a.n * b.n, a.d * b.d);
+  if (op === '/') return b.n === 0 ? null : frac(a.n * b.d, a.d * b.n);
+  return null;
+}
+
+function evalExpr(tokens) {
+  const valuesAndOps = tokens.map(token => LETTERS.includes(token) ? frac(values[token]) : token);
+  for (let i = 1; i < valuesAndOps.length - 1; i += 2) {
+    if (valuesAndOps[i] !== '*' && valuesAndOps[i] !== '/') continue;
+    const result = applyOp(valuesAndOps[i - 1], valuesAndOps[i], valuesAndOps[i + 1]);
+    valuesAndOps.splice(i - 1, 3, result);
+    i -= 2;
+  }
+  let result = valuesAndOps[0];
+  for (let i = 1; i < valuesAndOps.length - 1; i += 2) {
+    result = applyOp(result, valuesAndOps[i], valuesAndOps[i + 1]);
+  }
+  return result;
+}
+
+function equationVars(eq) {
+  return [...new Set([...eq.left, ...eq.right].filter(token => LETTERS.includes(token)))];
+}
+
+function equationComplete(eq) {
+  return equationVars(eq).every(letter => values[letter] > 0);
+}
+
+function fractionsEqual(a, b) {
+  return !!a && !!b && a.n === b.n && a.d === b.d;
+}
+
+function getDuplicateLetters() {
+  const seen = new Map();
+  const duplicates = new Set();
+  LETTERS.forEach(letter => {
+    const value = values[letter];
+    if (!value) return;
+    if (seen.has(value)) {
+      duplicates.add(letter);
+      duplicates.add(seen.get(value));
+    } else {
+      seen.set(value, letter);
+    }
+  });
+  return duplicates;
+}
+
+function buildFormula() {
+  const formula = document.getElementById('formula');
+  SLOTS.forEach(slot => {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'slot';
+    el.id = `slot-${slot.id}`;
+    el.dataset.letter = slot.id;
+    el.style.left = pct(slot.x, 1080);
+    el.style.top = pct(slot.y, 470);
+    el.style.width = pct(slot.w, 1080);
+    el.style.height = pct(slot.h, 470);
+    el.addEventListener('click', () => selectSlot(slot.id));
+    formula.appendChild(el);
+  });
+
+  OPS.forEach(([text, x, y, equationIds], index) => {
+    const el = document.createElement('span');
+    el.className = 'op';
+    el.id = `op-${index}`;
+    el.dataset.equations = equationIds.join(',');
+    el.textContent = text;
+    el.style.left = pct(x, 1080);
+    el.style.top = pct(y, 470);
+    formula.appendChild(el);
+  });
+}
+
+function buildNumpad() {
+  const numpad = document.getElementById('numpad');
+  for (let n = 1; n <= 9; n += 1) {
+    const btn = document.createElement('button');
+    btn.textContent = n;
+    btn.addEventListener('click', () => inputNumber(n));
+    numpad.appendChild(btn);
+  }
+}
+
+function selectSlot(letter) {
+  if (selected) document.getElementById(`slot-${selected}`).classList.remove('selected');
+  selected = selected === letter ? null : letter;
+  if (selected) document.getElementById(`slot-${selected}`).classList.add('selected');
+}
+
+function inputNumber(n) {
+  if (!selected) return;
+  values[selected] = n;
+  render();
+  saveProgress();
+}
+
+function deleteCell() {
+  if (!selected) return;
+  values[selected] = 0;
+  render();
+  saveProgress();
+}
+
+function validate() {
+  const duplicateLetters = getDuplicateLetters();
+  const errorLetters = new Set(duplicateLetters);
+  const okLetters = new Set();
+
+  const equationErrors = new Set();
+  EQUATIONS.forEach(eq => {
+    if (!equationComplete(eq)) return;
+    const ok = fractionsEqual(evalExpr(eq.left), evalExpr(eq.right));
+    equationVars(eq).forEach(letter => {
+      if (ok) okLetters.add(letter);
+      else errorLetters.add(letter);
+    });
+    if (!ok) equationErrors.add(eq.id);
+  });
+
+  LETTERS.forEach(letter => {
+    const el = document.getElementById(`slot-${letter}`);
+    el.classList.toggle('error', errorLetters.has(letter));
+    el.classList.toggle('ok', !errorLetters.has(letter) && okLetters.has(letter));
+  });
+
+  document.querySelectorAll('.op').forEach(el => {
+    const ids = el.dataset.equations.split(',').map(Number);
+    el.classList.toggle('error', ids.some(id => equationErrors.has(id)));
+  });
+
+  const complete =
+    LETTERS.every(letter => values[letter] >= 1 && values[letter] <= 9) &&
+    new Set(LETTERS.map(letter => values[letter])).size === 9 &&
+    EQUATIONS.every(eq => equationComplete(eq) && fractionsEqual(evalExpr(eq.left), evalExpr(eq.right)));
+
+  document.getElementById('message').textContent = complete ? '축하합니다! 퍼즐을 완성했습니다!' : '';
+  if (complete) recordCompletion(PUZZLE_ID);
+}
+
+function render() {
+  LETTERS.forEach(letter => {
+    document.getElementById(`slot-${letter}`).textContent = values[letter] || '';
+  });
+  validate();
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, { ...values });
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (!saved || typeof saved !== 'object') return;
+  LETTERS.forEach(letter => {
+    const value = Number(saved[letter]) || 0;
+    values[letter] = value >= 1 && value <= 9 ? value : 0;
+  });
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, { ...values });
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!state || typeof state !== 'object') return;
+    LETTERS.forEach(letter => {
+      const value = Number(state[letter]) || 0;
+      values[letter] = value >= 1 && value <= 9 ? value : 0;
+    });
+    render();
+    saveProgress();
+  });
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    LETTERS.forEach(letter => { values[letter] = 0; });
+    if (selected) document.getElementById(`slot-${selected}`).classList.remove('selected');
+    selected = null;
+    render();
+    saveProgress();
+    resetCompletion(PUZZLE_ID);
+  });
+}
+
+document.addEventListener('keydown', event => {
+  if (event.key >= '1' && event.key <= '9') {
+    inputNumber(Number(event.key));
+  } else if (event.key === 'Backspace' || event.key === 'Delete' || event.key === '0') {
+    deleteCell();
+  }
+});
+
+buildFormula();
+buildNumpad();
+loadProgress();
+render();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>
