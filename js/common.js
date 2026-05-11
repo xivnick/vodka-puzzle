@@ -460,9 +460,9 @@ async function renderLeaderboard(puzzleId, containerId) {
       `</div>`;
   }
 
-  function ellipsisHtml(label) {
-    return `<div class="lb-row lb-ellipsis lb-ellipsis-toggle lb-expand-row" role="button" tabindex="0" data-leaderboard-toggle="1">` +
-      `<span class="lb-rank">⋯</span><span class="lb-name">${label}</span><span class="lb-time"></span>` +
+  function ellipsisHtml() {
+    return `<div class="lb-row lb-ellipsis lb-ellipsis-toggle" role="button" tabindex="0" data-leaderboard-toggle="1">` +
+      `<span class="lb-rank">⋯</span><span class="lb-name"></span><span class="lb-time"></span>` +
       `</div>`;
   }
 
@@ -473,11 +473,9 @@ async function renderLeaderboard(puzzleId, containerId) {
   }
 
   if (total > 10 && !expanded) {
-    html += ellipsisHtml(`전체 ${total}명 보기`);
+    html += ellipsisHtml();
     const last = sorted[total - 1];
     html += rowHtml(total, last[0], last[1]);
-  } else if (total > 10) {
-    html += ellipsisHtml('접기');
   }
 
   html += '</div>';
