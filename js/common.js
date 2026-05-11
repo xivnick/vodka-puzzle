@@ -520,14 +520,16 @@ async function getMyCompletedPuzzles() {
 }
 
 // ── Solver rankings (for index page) ────────────────────────────────────────
-async function getSolverRankings() {
+async function getSolverRankings(puzzleIds = null) {
   try {
     const rows = await sbSelect('completions', 'select=nickname,puzzle_id,completed_at');
     const EXCLUDE = new Set(['puzzle_test']);
+    const includeSet = Array.isArray(puzzleIds) ? new Set(puzzleIds) : null;
     const nickPuzzles = new Map(); // nickname -> Set of puzzle_ids
     const nickLastAt = new Map(); // nickname -> 가장 최근 completed_at
     for (const row of rows) {
       if (EXCLUDE.has(row.puzzle_id)) continue;
+      if (includeSet && !includeSet.has(row.puzzle_id)) continue;
       if (!nickPuzzles.has(row.nickname)) {
         nickPuzzles.set(row.nickname, new Set());
         nickLastAt.set(row.nickname, row.completed_at);

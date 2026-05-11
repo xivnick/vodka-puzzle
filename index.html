@@ -95,15 +95,6 @@
     margin-top: 40px;
   }
 
-  .tools-link {
-    margin-top: 28px;
-    font-size: 0.82rem;
-    color: #999;
-    text-decoration: none;
-    transition: color 0.12s;
-  }
-  .tools-link:hover { color: #555; }
-
   .pager {
     width: min(94vw, 480px);
     display: flex;
@@ -139,6 +130,41 @@
     cursor: default;
   }
 
+  .rank-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .rank-head .lb-title { margin-bottom: 0; }
+
+  .rank-tabs {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .rank-tab {
+    height: 28px;
+    padding: 0 10px;
+    border: 1px solid #ddd8cf;
+    border-radius: 3px;
+    background: #fff;
+    color: #999;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.74rem;
+    cursor: pointer;
+  }
+
+  .rank-tab.active {
+    background: #faf8f4;
+    color: #555;
+    border-color: #cfc8bd;
+    font-weight: 700;
+  }
+
   @media (max-width: 540px) {
     body { padding: 0 8px 48px; }
     h1 { font-size: 1.3rem; }
@@ -155,7 +181,7 @@
   .list a { position: relative; }
 </style>
 <link rel="stylesheet" href="/puzzle/css/common.css?v=21">
-<script src="/puzzle/js/common.js?v=21"></script>
+<script src="/puzzle/js/common.js?v=22"></script>
 </head>
 <body>
 
@@ -423,11 +449,15 @@
 
 <div class="pager" id="pager"></div>
 
-<a class="tools-link" href="/puzzle/tools/">도구</a>
-
 <div style="width: min(94vw, 480px);">
   <div class="lb-section">
-    <div class="lb-title" id="rankTitle">참여자</div>
+    <div class="rank-head">
+      <div class="lb-title" id="rankTitle">랭킹</div>
+      <div class="rank-tabs">
+        <button class="rank-tab active" id="recentRankBtn" onclick="setRankMode('recent')">최신 문제</button>
+        <button class="rank-tab" id="allRankBtn" onclick="setRankMode('all')">전체</button>
+      </div>
+    </div>
     <div id="solverRank"><div class="lb-loading">불러오는 중...</div></div>
   </div>
 </div>
@@ -539,18 +569,37 @@
 
   loadCounts();
 
+  let rankMode = 'recent';
+
+  function getRecentPuzzleIds(limit = 10) {
+    return [...document.querySelectorAll('.list a[data-puzzle-id]')]
+      .map(a => a.dataset.puzzleId)
+      .filter(id => id && id !== 'puzzle_test')
+      .slice(0, limit);
+  }
+
+  function setRankMode(nextMode) {
+    rankMode = nextMode === 'all' ? 'all' : 'recent';
+    document.getElementById('recentRankBtn').classList.toggle('active', rankMode === 'recent');
+    document.getElementById('allRankBtn').classList.toggle('active', rankMode === 'all');
+    loadSolverRankings();
+  }
+
   async function loadSolverRankings() {
-    const rankings = await getSolverRankings();
+    const scopeIds = rankMode === 'recent' ? getRecentPuzzleIds(10) : null;
+    const rankings = await getSolverRankings(scopeIds);
     const myNick = getNickname();
     const container = document.getElementById('solverRank');
     const titleEl = document.getElementById('rankTitle');
+    const titlePrefix = rankMode === 'recent' ? '최신 문제 랭킹' : '전체 랭킹';
 
     if (rankings.length === 0) {
+      titleEl.textContent = `${titlePrefix} (0)`;
       container.innerHTML = '<div class="lb-empty">아직 기록이 없습니다.</div>';
       return;
     }
 
-    titleEl.textContent = `참여자 (${rankings.length})`;
+    titleEl.textContent = `${titlePrefix} (${rankings.length})`;
 
     const myIdx = (!myNick || isGuest()) ? -1 : rankings.findIndex(r => r.nick === myNick);
     const top = Math.min(10, rankings.length);
