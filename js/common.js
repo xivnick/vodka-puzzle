@@ -416,8 +416,6 @@ async function renderLeaderboard(puzzleId, containerId) {
   if (!container) return;
 
   const titleEl = container.closest('.lb-section')?.querySelector('.lb-title');
-  const expanded = container.dataset.expanded === '1';
-
   container.innerHTML = '<div class="lb-loading">불러오는 중...</div>';
 
   let rows;
@@ -450,6 +448,8 @@ async function renderLeaderboard(puzzleId, containerId) {
   }
 
   const myNick = getNickname();
+  const myIdx = (!myNick || isGuest()) ? -1 : sorted.findIndex(([nick]) => nick === myNick);
+  const top = Math.min(10, total);
 
   function rowHtml(rank, nick, completedAt, extra) {
     const isMe = myNick && nick === myNick;
@@ -466,34 +466,42 @@ async function renderLeaderboard(puzzleId, containerId) {
       `</div>`;
   }
 
-  let html = '<div class="lb-list">';
-  const visibleCount = expanded ? total : Math.min(10, total);
-  for (let i = 0; i < visibleCount; i++) {
-    html += rowHtml(i + 1, sorted[i][0], sorted[i][1]);
-  }
+  function render(expanded = false) {
+    let html = '<div class="lb-list">';
+    if (expanded || total <= 10) {
+      for (let i = 0; i < total; i++) {
+        html += rowHtml(i + 1, sorted[i][0], sorted[i][1]);
+      }
+    } else {
+      for (let i = 0; i < top; i++) {
+        html += rowHtml(i + 1, sorted[i][0], sorted[i][1]);
+      }
+      if (myIdx >= 10) {
+        html += ellipsisHtml();
+        html += rowHtml(myIdx + 1, sorted[myIdx][0], sorted[myIdx][1]);
+        if (myIdx < total - 1) html += ellipsisHtml();
+        if (myIdx < total - 1) html += rowHtml(total, sorted[total - 1][0], sorted[total - 1][1]);
+      } else {
+        html += ellipsisHtml();
+        html += rowHtml(total, sorted[total - 1][0], sorted[total - 1][1]);
+      }
+    }
 
-  if (total > 10 && !expanded) {
-    html += ellipsisHtml();
-    const last = sorted[total - 1];
-    html += rowHtml(total, last[0], last[1]);
-  }
+    html += '</div>';
+    container.innerHTML = html;
 
-  html += '</div>';
-  container.innerHTML = html;
-
-  const toggle = container.querySelector('[data-leaderboard-toggle]');
-  if (toggle) {
-    const toggleExpanded = () => {
-      container.dataset.expanded = expanded ? '0' : '1';
-      renderLeaderboard(puzzleId, containerId);
-    };
-    toggle.addEventListener('click', toggleExpanded);
-    toggle.addEventListener('keydown', e => {
-      if (e.key !== 'Enter' && e.key !== ' ') return;
-      e.preventDefault();
-      toggleExpanded();
+    container.querySelectorAll('[data-leaderboard-toggle]').forEach(toggle => {
+      const toggleExpanded = () => render(true);
+      toggle.addEventListener('click', toggleExpanded, { once: true });
+      toggle.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        toggleExpanded();
+      }, { once: true });
     });
   }
+
+  render(container.dataset.expanded === '1');
 }
 
 // ── My completed puzzles ─────────────────────────────────────────────────────
