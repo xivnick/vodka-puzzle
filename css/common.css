@@ -317,6 +317,8 @@ body { padding-top: 0; }
 .lb-ellipsis-toggle .lb-name,
 .lb-ellipsis-toggle .lb-time { display: none; }
 .lb-ellipsis-toggle .lb-rank { flex: 1; }
+.lb-expand-row .lb-rank { flex: 0 0 24px; }
+.lb-expand-row .lb-name { display: block; color: #aaa; text-align: center; }
 
 /* ── Cloud sync buttons ───────────────────────────────────────────────────── */
 .cloud-btns {

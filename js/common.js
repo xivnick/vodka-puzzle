@@ -416,6 +416,7 @@ async function renderLeaderboard(puzzleId, containerId) {
   if (!container) return;
 
   const titleEl = container.closest('.lb-section')?.querySelector('.lb-title');
+  const expanded = container.dataset.expanded === '1';
 
   container.innerHTML = '<div class="lb-loading">불러오는 중...</div>';
 
@@ -459,20 +460,42 @@ async function renderLeaderboard(puzzleId, containerId) {
       `</div>`;
   }
 
+  function ellipsisHtml(label) {
+    return `<div class="lb-row lb-ellipsis lb-ellipsis-toggle lb-expand-row" role="button" tabindex="0" data-leaderboard-toggle="1">` +
+      `<span class="lb-rank">⋯</span><span class="lb-name">${label}</span><span class="lb-time"></span>` +
+      `</div>`;
+  }
+
   let html = '<div class="lb-list">';
-  const top = Math.min(10, total);
-  for (let i = 0; i < top; i++) {
+  const visibleCount = expanded ? total : Math.min(10, total);
+  for (let i = 0; i < visibleCount; i++) {
     html += rowHtml(i + 1, sorted[i][0], sorted[i][1]);
   }
-  if (total > 10) {
-    html += `<div class="lb-row lb-ellipsis">` +
-      `<span class="lb-rank">⋯</span><span class="lb-name"></span><span class="lb-time"></span>` +
-      `</div>`;
+
+  if (total > 10 && !expanded) {
+    html += ellipsisHtml(`전체 ${total}명 보기`);
     const last = sorted[total - 1];
     html += rowHtml(total, last[0], last[1]);
+  } else if (total > 10) {
+    html += ellipsisHtml('접기');
   }
+
   html += '</div>';
   container.innerHTML = html;
+
+  const toggle = container.querySelector('[data-leaderboard-toggle]');
+  if (toggle) {
+    const toggleExpanded = () => {
+      container.dataset.expanded = expanded ? '0' : '1';
+      renderLeaderboard(puzzleId, containerId);
+    };
+    toggle.addEventListener('click', toggleExpanded);
+    toggle.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      toggleExpanded();
+    });
+  }
 }
 
 // ── My completed puzzles ─────────────────────────────────────────────────────
