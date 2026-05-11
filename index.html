@@ -46,6 +46,46 @@
     gap: 0;
   }
 
+  .list-tools {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .list-head {
+    width: min(94vw, 480px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .list-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #555;
+  }
+
+  .filter-btn {
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid #ddd8cf;
+    border-radius: 3px;
+    background: #fff;
+    color: #999;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.76rem;
+    cursor: pointer;
+  }
+
+  .filter-btn.active {
+    background: #faf8f4;
+    color: #555;
+    border-color: #cfc8bd;
+    font-weight: 700;
+  }
+
   .list a {
     display: flex;
     align-items: center;
@@ -57,7 +97,7 @@
     transition: background 0.12s;
   }
 
-  .list a:first-child {
+  .list a.first-visible {
     border-top: 1px solid #e8e5df;
   }
 
@@ -191,6 +231,14 @@
 </header>
 <h1>퍼즐</h1>
 <p class="desc">xivnick.me/puzzle</p>
+
+<div class="list-head">
+  <div class="list-title">문제</div>
+  <div class="list-tools" id="listTools">
+    <button class="filter-btn" id="unsolvedFilterBtn" onclick="toggleUnsolvedOnly()">미해결</button>
+    <button class="filter-btn" id="solverSortBtn" onclick="toggleSolverSort()">인기순</button>
+  </div>
+</div>
 
 <div class="list">
   <a href="/puzzle/260511_02/" data-puzzle-id="260511_02">
@@ -441,15 +489,11 @@
     <span class="title">260316 노 터치 스도쿠</span>
     <span class="tag">스도쿠</span>
   </a>
-  <a href="/puzzle/puzzle_test/" data-puzzle-id="puzzle_test">
-    <span class="title">테스트 스도쿠</span>
-    <span class="tag">테스트</span>
-  </a>
 </div>
 
 <div class="pager" id="pager"></div>
 
-<div style="width: min(94vw, 480px);">
+<div style="width: min(94vw, 480px); margin-top: 24px;">
   <div class="lb-section">
     <div class="rank-head">
       <div class="lb-title" id="rankTitle">랭킹</div>
@@ -464,6 +508,10 @@
 
 <script>
   const PAGE_SIZE = 10;
+  let completedPuzzles = new Set();
+  let solverCounts = new Map();
+  let showUnsolvedOnly = false;
+  let sortBySolverCount = false;
 
   initHeader();
 
@@ -483,14 +531,32 @@
 
   function renderPagination() {
     const links = [...document.querySelectorAll('.list a[data-puzzle-id]')];
-    const totalPages = Math.max(1, Math.ceil(links.length / PAGE_SIZE));
+    const originalIndex = new Map(links.map((link, index) => [link, index]));
+    let visibleLinks = showUnsolvedOnly
+      ? links.filter(link => !completedPuzzles.has(link.dataset.puzzleId))
+      : [...links];
+
+    if (sortBySolverCount) {
+      visibleLinks = visibleLinks.sort((a, b) => {
+        const byCount = (solverCounts.get(b.dataset.puzzleId) || 0) - (solverCounts.get(a.dataset.puzzleId) || 0);
+        return byCount || originalIndex.get(a) - originalIndex.get(b);
+      });
+    }
+    const totalPages = Math.max(1, Math.ceil(visibleLinks.length / PAGE_SIZE));
     const currentPage = getCurrentPage(totalPages);
     const start = (currentPage - 1) * PAGE_SIZE;
     const end = start + PAGE_SIZE;
 
-    links.forEach((link, index) => {
-      link.style.display = index >= start && index < end ? '' : 'none';
+    links.forEach(link => {
+      link.style.display = 'none';
+      link.style.order = '';
+      link.classList.remove('first-visible');
     });
+    visibleLinks.forEach((link, index) => {
+      link.style.display = index >= start && index < end ? '' : 'none';
+      link.style.order = index;
+    });
+    if (visibleLinks[start]) visibleLinks[start].classList.add('first-visible');
 
     const pager = document.getElementById('pager');
     pager.innerHTML = '';
@@ -533,8 +599,43 @@
 
   renderPagination();
 
+  function initUnsolvedFilter() {
+    const unsolvedBtn = document.getElementById('unsolvedFilterBtn');
+    if (!unsolvedBtn) return;
+    if (isGuest()) {
+      showUnsolvedOnly = false;
+      unsolvedBtn.style.display = 'none';
+      updateListModeButtons();
+      return;
+    }
+    unsolvedBtn.style.display = '';
+  }
+
+  function updateListModeButtons() {
+    document.getElementById('unsolvedFilterBtn').classList.toggle('active', showUnsolvedOnly);
+    document.getElementById('solverSortBtn').classList.toggle('active', sortBySolverCount);
+  }
+
+  function toggleUnsolvedOnly() {
+    if (isGuest()) return;
+    showUnsolvedOnly = !showUnsolvedOnly;
+    updateListModeButtons();
+    setCurrentPage(1);
+    renderPagination();
+  }
+
+  function toggleSolverSort() {
+    sortBySolverCount = !sortBySolverCount;
+    updateListModeButtons();
+    setCurrentPage(1);
+    renderPagination();
+  }
+
+  initUnsolvedFilter();
+
   async function loadCompletions() {
     const completed = await getMyCompletedPuzzles();
+    completedPuzzles = completed;
     document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
       const pid = a.dataset.puzzleId;
       if (completed.has(pid)) {
@@ -546,12 +647,14 @@
         }
       }
     });
+    renderPagination();
   }
 
   loadCompletions();
 
   async function loadCounts() {
     const counts = await getSolverCounts();
+    solverCounts = counts;
     document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
       const pid = a.dataset.puzzleId;
       const n = counts.get(pid);
@@ -565,6 +668,7 @@
         }
       }
     });
+    if (sortBySolverCount) renderPagination();
   }
 
   loadCounts();
@@ -652,6 +756,7 @@
   window.addEventListener('pageshow', e => {
     if (!e.persisted) return;
     document.querySelectorAll('.check-mark').forEach(el => el.remove());
+    initUnsolvedFilter();
     renderPagination();
     loadCompletions();
     loadSolverRankings();
