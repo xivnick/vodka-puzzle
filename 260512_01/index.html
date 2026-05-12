@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260512 아카리</title>
+<meta property="og:title" content="260512 아카리">
+<meta property="og:description" content="흰 칸에 전구를 배치해 모든 칸을 밝히세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260512_01/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .board-wrap {
+    width: min(94vw, 520px);
+    aspect-ratio: 1 / 1;
+    margin-top: 18px;
+    border: 2.5px solid #111;
+    background: #fff;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1 / 1;
+    min-height: 0;
+    border-right: 1px solid #222;
+    border-bottom: 1px solid #222;
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.1s;
+  }
+
+  .cell:nth-child(10n) { border-right: none; }
+  .cell:nth-child(n+91) { border-bottom: none; }
+  .cell.white:hover { background: #faf8f4; }
+  .cell.lit { background: #fff4bd; }
+  .cell.black {
+    background: #000;
+    color: #fff;
+    cursor: default;
+    font-size: clamp(1.05rem, 5vw, 1.95rem);
+    font-weight: 700;
+    line-height: 1;
+  }
+  .cell.black.clue-ok { color: #83c27a; }
+  .cell.black.clue-error { color: #ff6b6b; }
+
+  .clue-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding-bottom: 0.05em;
+  }
+
+  .bulb {
+    width: 44%;
+    height: 44%;
+    border: 3px solid #d59a00;
+    border-radius: 50%;
+    background: rgba(255, 220, 90, 0.18);
+    position: relative;
+    z-index: 2;
+  }
+
+  .cell.bulb-error .bulb {
+    border-color: #c0392b;
+    background: rgba(192, 57, 43, 0.12);
+  }
+
+  .mark {
+    position: relative;
+    width: 46%;
+    height: 46%;
+  }
+
+  .mark::before,
+  .mark::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 110%;
+    height: 3px;
+    border-radius: 3px;
+    background: #777;
+  }
+
+  .mark::before { transform: translate(-50%, -50%) rotate(45deg); }
+  .mark::after { transform: translate(-50%, -50%) rotate(-45deg); }
+
+  .message {
+    min-height: 1.5em;
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: #777;
+    text-align: center;
+  }
+
+  @media (max-width: 540px) {
+    body { padding-left: 8px; padding-right: 8px; }
+    h1 { font-size: 1.25rem; }
+    .bulb { border-width: 2.5px; }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=21">
+<script src="/puzzle/js/common.js?v=22"></script>
+</head>
+<body class="puzzle-page pad-48">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260512 아카리</h1>
+<p class="subtitle">흰 칸에 전구를 배치해 모든 칸을 밝히세요</p>
+
+<div class="container align-center">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>아카리 규칙</strong><br>
+    다음 규칙에 따라 격자 안의 흰 칸에 전구를 배치해 모든 칸을 밝히세요.<br>
+    전구는 흰 칸 하나를 차지합니다.<br>
+    전구의 빛은 자기 자신이 있는 칸을 밝히며, 그 칸을 기준으로 상하좌우 4방향으로 검은 칸이나 격자의 끝에 막힐때까지 퍼집니다.<br>
+    서로 다른 전구가 서로를 비추어서는 안됩니다.<br>
+    모든 흰 칸은 적어도 하나의 전구에 의해 밝혀져야 합니다.<br>
+    검은 칸에 적힌 숫자는 그 칸과 상하좌우로 인접한 네 칸 중 전구가 놓인 칸의 개수를 의미합니다.
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="bottom-buttons">
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260512_01';
+const SAVE_KEY = 'puzzle_260512_01';
+const SIZE = 10;
+const BLACK_CELLS = {
+  '0,0': 1, '0,7': null,
+  '1,3': null, '1,9': null,
+  '2,6': 3,
+  '3,1': 2, '3,4': null, '3,8': 3,
+  '4,3': null,
+  '5,0': null, '5,5': 1, '5,8': null,
+  '6,7': 1,
+  '7,2': 1, '7,9': null,
+  '8,1': null, '8,6': 2,
+  '9,4': 2, '9,8': null,
+};
+
+let bulbs = new Set();
+let marks = new Set();
+let suppressNextClick = false;
+let longPressTimer = null;
+let longPressTriggered = false;
+
+function key(r, c) {
+  return `${r},${c}`;
+}
+
+function parseKey(cellKey) {
+  return cellKey.split(',').map(Number);
+}
+
+function isBlack(r, c) {
+  return Object.prototype.hasOwnProperty.call(BLACK_CELLS, key(r, c));
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, { bulbs: [...bulbs], marks: [...marks] });
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (!saved || !Array.isArray(saved.bulbs) || !Array.isArray(saved.marks)) return;
+  bulbs = new Set(saved.bulbs.filter(k => {
+    const [r, c] = parseKey(k);
+    return r >= 0 && r < SIZE && c >= 0 && c < SIZE && !isBlack(r, c);
+  }));
+  marks = new Set(saved.marks.filter(k => {
+    const [r, c] = parseKey(k);
+    return r >= 0 && r < SIZE && c >= 0 && c < SIZE && !isBlack(r, c) && !bulbs.has(k);
+  }));
+}
+
+function buildBoard() {
+  loadProgress();
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      if (isBlack(r, c)) {
+        cell.classList.add('black');
+        const clue = BLACK_CELLS[key(r, c)];
+        if (clue !== null) {
+          const clueEl = document.createElement('span');
+          clueEl.className = 'clue-number';
+          clueEl.textContent = clue;
+          cell.appendChild(clueEl);
+        }
+      } else {
+        cell.classList.add('white');
+        cell.addEventListener('click', event => {
+          if (longPressTriggered || suppressNextClick) {
+            event.preventDefault();
+            longPressTriggered = false;
+            suppressNextClick = false;
+            return;
+          }
+          toggleBulb(r, c);
+        });
+        cell.addEventListener('contextmenu', event => {
+          event.preventDefault();
+          toggleMark(r, c);
+        });
+        cell.addEventListener('touchstart', () => {
+          longPressTriggered = false;
+          clearTimeout(longPressTimer);
+          longPressTimer = setTimeout(() => {
+            longPressTriggered = true;
+            suppressNextClick = true;
+            toggleMark(r, c);
+          }, 480);
+        }, { passive: true });
+        cell.addEventListener('touchend', () => clearTimeout(longPressTimer));
+        cell.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
+      }
+      boardEl.appendChild(cell);
+    }
+  }
+  render();
+}
+
+function toggleBulb(r, c) {
+  const cellKey = key(r, c);
+  if (marks.has(cellKey)) marks.delete(cellKey);
+  if (bulbs.has(cellKey)) bulbs.delete(cellKey);
+  else bulbs.add(cellKey);
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+function toggleMark(r, c) {
+  const cellKey = key(r, c);
+  if (bulbs.has(cellKey)) return;
+  if (marks.has(cellKey)) marks.delete(cellKey);
+  else marks.add(cellKey);
+  saveProgress();
+  render();
+}
+
+function getLitCells() {
+  const lit = new Set();
+  const bulbErrors = new Set();
+  for (const bulbKey of bulbs) {
+    const [r, c] = parseKey(bulbKey);
+    lit.add(bulbKey);
+    for (const [dr, dc] of [[-1,0], [1,0], [0,-1], [0,1]]) {
+      let nr = r + dr;
+      let nc = c + dc;
+      while (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && !isBlack(nr, nc)) {
+        const cur = key(nr, nc);
+        lit.add(cur);
+        if (bulbs.has(cur)) {
+          bulbErrors.add(bulbKey);
+          bulbErrors.add(cur);
+        }
+        nr += dr;
+        nc += dc;
+      }
+    }
+  }
+  return { lit, bulbErrors };
+}
+
+function adjacentBulbCount(r, c) {
+  let count = 0;
+  for (const [dr, dc] of [[-1,0], [1,0], [0,-1], [0,1]]) {
+    const nr = r + dr;
+    const nc = c + dc;
+    if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && bulbs.has(key(nr, nc))) count += 1;
+  }
+  return count;
+}
+
+function getClueStatuses() {
+  const statuses = new Map();
+  for (const [cellKey, clue] of Object.entries(BLACK_CELLS)) {
+    if (clue === null) continue;
+    const [r, c] = parseKey(cellKey);
+    const count = adjacentBulbCount(r, c);
+    if (count === clue) statuses.set(cellKey, 'ok');
+    else if (count > clue) statuses.set(cellKey, 'error');
+  }
+  return statuses;
+}
+
+function render() {
+  const { lit, bulbErrors } = getLitCells();
+  const clueStatuses = getClueStatuses();
+  document.querySelectorAll('.cell').forEach(cell => {
+    const r = parseInt(cell.dataset.r);
+    const c = parseInt(cell.dataset.c);
+    const cellKey = key(r, c);
+    cell.classList.toggle('lit', lit.has(cellKey) && !isBlack(r, c));
+    cell.classList.toggle('bulb-error', bulbErrors.has(cellKey));
+    cell.classList.toggle('clue-ok', clueStatuses.get(cellKey) === 'ok');
+    cell.classList.toggle('clue-error', clueStatuses.get(cellKey) === 'error');
+    if (!isBlack(r, c)) {
+      cell.innerHTML = '';
+      if (bulbs.has(cellKey)) {
+        const bulb = document.createElement('span');
+        bulb.className = 'bulb';
+        cell.appendChild(bulb);
+      } else if (marks.has(cellKey)) {
+        const mark = document.createElement('span');
+        mark.className = 'mark';
+        cell.appendChild(mark);
+      }
+    }
+  });
+}
+
+function isComplete() {
+  const { lit, bulbErrors } = getLitCells();
+  if (bulbErrors.size > 0) return false;
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (!isBlack(r, c) && !lit.has(key(r, c))) return false;
+    }
+  }
+  for (const [cellKey, clue] of Object.entries(BLACK_CELLS)) {
+    if (clue === null) continue;
+    const [r, c] = parseKey(cellKey);
+    if (adjacentBulbCount(r, c) !== clue) return false;
+  }
+  return true;
+}
+
+function checkComplete() {
+  if (!isComplete()) return;
+  document.getElementById('message').textContent = '축하합니다! 퍼즐을 완성했습니다!';
+  recordCompletion(PUZZLE_ID);
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    bulbs = new Set();
+    marks = new Set();
+    document.getElementById('message').textContent = '';
+    saveProgress();
+    render();
+  });
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, { bulbs: [...bulbs], marks: [...marks] });
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!state || !Array.isArray(state.bulbs) || !Array.isArray(state.marks)) return;
+    bulbs = new Set(state.bulbs);
+    marks = new Set(state.marks.filter(k => !bulbs.has(k)));
+    saveProgress();
+    render();
+    checkComplete();
+  });
+}
+
+buildBoard();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>
