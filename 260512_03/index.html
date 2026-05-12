@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260512 스크래블(아카리)</title>
+<meta property="og:title" content="260512 스크래블(아카리)">
+<meta property="og:description" content="스크래블 규칙과 O 전구 아카리 규칙을 함께 만족하도록 알파벳을 배치하세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260512_03/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .container { width: min(94vw, 680px); }
+
+  .word-bank {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 0.75fr 1fr 1.25fr;
+    gap: 7px 28px;
+    margin-top: 12px;
+    margin-bottom: 16px;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+
+  .word {
+    font-size: clamp(0.9rem, 3.2vw, 1.35rem);
+    line-height: 1;
+    letter-spacing: 0.28em;
+    color: #111;
+    white-space: nowrap;
+  }
+
+  .word.ok { color: #5f8b52; }
+  .word.error { color: #c0392b; }
+
+  .board-wrap {
+    width: min(94vw, 660px);
+    aspect-ratio: 1 / 1;
+    border: 2px solid #222;
+    background: #fff;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1 / 1;
+    min-height: 0;
+    border-right: 1px solid #444;
+    border-bottom: 1px solid #444;
+    font-size: clamp(1rem, 5vw, 1.85rem);
+    font-weight: 500;
+    line-height: 1;
+    color: #222;
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.1s;
+  }
+
+  .cell:nth-child(12n) { border-right: none; }
+  .cell:nth-child(n+133) { border-bottom: none; }
+  .cell:hover:not(.given):not(.error) { background: #faf8f4; }
+  .cell.lit { background: #fff6c7; }
+  .cell.selected { background: #e8e8d8; }
+  .cell.given { color: #111; font-weight: 700; }
+  .cell.error { background: #f5d0d0; color: #c0392b; }
+
+  .letter-pad {
+    width: min(94vw, 660px);
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    gap: 4px;
+    margin-top: 12px;
+  }
+
+  .letter-pad button {
+    height: 34px;
+    border: 1.5px solid #c8c3b8;
+    border-radius: 3px;
+    background: #f4f1eb;
+    color: #333;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .letter-pad button:hover { background: #e8e4da; }
+
+  .message {
+    min-height: 1.5em;
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: #777;
+    text-align: center;
+  }
+
+  @media (max-width: 540px) {
+    body { padding-left: 8px; padding-right: 8px; }
+    h1 { font-size: 1.25rem; }
+    .word-bank { grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+    .word { font-size: min(4vw, 1rem); letter-spacing: 0.18em; }
+    .letter-pad { grid-template-columns: repeat(9, 1fr); }
+    .letter-pad button { height: 32px; font-size: 0.82rem; }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=21">
+<script src="/puzzle/js/common.js?v=22"></script>
+</head>
+<body class="puzzle-page pad-48">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260512 스크래블(아카리)</h1>
+<p class="subtitle">스크래블 규칙과 O 전구 아카리 규칙을 함께 만족하도록 알파벳을 배치하세요</p>
+
+<div class="container align-center">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>스크래블 규칙</strong><br>
+    다음 규칙에 따라 격자에 알파벳을 배치해, 주어진 단어들이 모두 왼쪽에서 오른쪽 방향이나 위쪽에서 아래쪽 방향으로 연속되게 나타나도록 배치하세요.<br>
+    각 칸에는 최대 한 개의 글자만 넣을 수 있습니다.<br>
+    모든 단어는 격자 안에 정확히 한 번씩만 등장해야 합니다.<br>
+    주어진 단어 이외의 다른 단어가 만들어져서는 안 됩니다. 두 글자가 상하좌우로 인접해 있다면, 반드시 어떤 하나의 단어가 그 두 칸을 연속해서 사용해야 합니다.<br>
+    각 단어의 앞뒤에는 반드시 빈 칸이나 격자의 경계가 있어야 합니다.<br>
+    모든 글자 칸은 상하좌우로 연결되어 하나의 연결된 그룹을 이루어야 합니다.<br>
+    일부 글자는 미리 격자에 주어질 수 있습니다. 어떤 글자가 미리 주어진 경우, 그 글자가 등장하는 모든 위치가 표시된 것입니다.<br><br>
+    <strong>아카리 규칙</strong><br>
+    알파벳 O는 아카리의 전구 역할을 합니다. O 전구는 자기 자신이 있는 칸을 밝히며, 그 칸을 기준으로 상하좌우 4방향으로 다른 알파벳 칸이나 격자의 끝에 막힐 때까지 퍼집니다.<br>
+    O 전구끼리는 서로를 밝힐 수 없고, 비어있는 모든 칸은 적어도 하나의 O 전구에 의해 밝혀져야 합니다.
+  </div>
+
+  <div class="word-bank" id="wordBank"></div>
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+  <div class="letter-pad" id="letterPad"></div>
+
+  <div class="bottom-buttons">
+    <button onclick="placeLetter('')">지우기</button>
+    <button class="danger" onclick="resetBoard()">초기화</button>
+  </div>
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260512_03';
+const SAVE_KEY = 'puzzle_260512_03';
+const SIZE = 12;
+const WORDS = [
+  'EO', 'IN', 'OZ', 'SD',
+  'DOS', 'IVO', 'KVS', 'OET', 'SOS', 'STO',
+  'ENSO', 'IVAN', 'KOLO', 'OEZK', 'OREO', 'ROLS',
+  'DEYAN', 'EOKZO', 'ZORKO', 'ZOROS',
+  'OEDROD', 'OLOVEN', 'SVILEN',
+  'ONSALKO', 'RADOSLAV', 'ALEXANDER',
+];
+const WORD_SET = new Set(WORDS);
+const WORD_COUNTS = WORDS.reduce((map, word) => {
+  map.set(word, (map.get(word) || 0) + 1);
+  return map;
+}, new Map());
+const PREFIXES = new Set();
+WORDS.forEach(word => {
+  for (let i = 1; i <= word.length; i++) PREFIXES.add(word.slice(0, i));
+});
+const GIVEN = {
+  '1,2': 'N',
+  '2,1': 'N',
+  '3,7': 'N',
+  '6,4': 'N',
+  '7,3': 'N',
+  '7,10': 'N',
+  '9,1': 'N',
+};
+const FIXED_LETTERS = new Set(Object.values(GIVEN));
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+let grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(''));
+let selected = null;
+
+function key(r, c) {
+  return `${r},${c}`;
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, grid);
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (Array.isArray(saved) && saved.length === SIZE && Array.isArray(saved[0]) && saved[0].length === SIZE) {
+    grid = saved.map(row => row.map(v => typeof v === 'string' && /^[A-Z]$/.test(v) ? v : ''));
+  }
+  Object.entries(GIVEN).forEach(([cellKey, letter]) => {
+    const [r, c] = cellKey.split(',').map(Number);
+    grid[r][c] = letter;
+  });
+}
+
+function buildWordBank() {
+  const bank = document.getElementById('wordBank');
+  bank.innerHTML = '';
+  WORDS.forEach(word => {
+    const el = document.createElement('div');
+    el.className = 'word';
+    el.id = `word-${word}`;
+    el.textContent = word;
+    bank.appendChild(el);
+  });
+}
+
+function buildBoard() {
+  loadProgress();
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      if (GIVEN[key(r, c)]) cell.classList.add('given');
+      cell.addEventListener('click', () => selectCell(r, c));
+      boardEl.appendChild(cell);
+    }
+  }
+  render();
+}
+
+function buildLetterPad() {
+  const pad = document.getElementById('letterPad');
+  ALPHABET.forEach(letter => {
+    const btn = document.createElement('button');
+    btn.textContent = letter;
+    btn.addEventListener('click', () => placeLetter(letter));
+    pad.appendChild(btn);
+  });
+}
+
+function selectCell(r, c) {
+  selected = { r, c };
+  render();
+}
+
+function placeLetter(letter) {
+  if (!selected) return;
+  const { r, c } = selected;
+  if (GIVEN[key(r, c)]) return;
+  grid[r][c] = letter;
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+function collectRuns() {
+  const runs = [];
+  for (let r = 0; r < SIZE; r++) {
+    let c = 0;
+    while (c < SIZE) {
+      if (!grid[r][c]) { c++; continue; }
+      const start = c;
+      let text = '';
+      const cells = [];
+      while (c < SIZE && grid[r][c]) {
+        text += grid[r][c];
+        cells.push(key(r, c));
+        c++;
+      }
+      if (text.length >= 2) runs.push({ text, cells, dir: 'across', start: [r, start] });
+    }
+  }
+  for (let c = 0; c < SIZE; c++) {
+    let r = 0;
+    while (r < SIZE) {
+      if (!grid[r][c]) { r++; continue; }
+      const start = r;
+      let text = '';
+      const cells = [];
+      while (r < SIZE && grid[r][c]) {
+        text += grid[r][c];
+        cells.push(key(r, c));
+        r++;
+      }
+      if (text.length >= 2) runs.push({ text, cells, dir: 'down', start: [start, c] });
+    }
+  }
+  return runs;
+}
+
+function isConnected() {
+  const filled = [];
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (grid[r][c]) filled.push(key(r, c));
+    }
+  }
+  if (filled.length === 0) return false;
+  const filledSet = new Set(filled);
+  const seen = new Set([filled[0]]);
+  const queue = [filled[0]];
+  while (queue.length) {
+    const [r, c] = queue.shift().split(',').map(Number);
+    for (const [dr, dc] of [[-1,0], [1,0], [0,-1], [0,1]]) {
+      const next = key(r + dr, c + dc);
+      if (filledSet.has(next) && !seen.has(next)) {
+        seen.add(next);
+        queue.push(next);
+      }
+    }
+  }
+  return seen.size === filled.length;
+}
+
+function getAkariAnalysis() {
+  const lit = new Set();
+  const errors = new Set();
+  const directions = [[-1,0], [1,0], [0,-1], [0,1]];
+
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (grid[r][c] !== 'O') continue;
+      const origin = key(r, c);
+      lit.add(origin);
+
+      directions.forEach(([dr, dc]) => {
+        let nr = r + dr;
+        let nc = c + dc;
+        while (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE) {
+          const letter = grid[nr][nc];
+          const cellKey = key(nr, nc);
+          if (letter) {
+            if (letter === 'O') {
+              errors.add(origin);
+              errors.add(cellKey);
+            }
+            break;
+          }
+          lit.add(cellKey);
+          nr += dr;
+          nc += dc;
+        }
+      });
+    }
+  }
+
+  let allEmptyLit = true;
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (!grid[r][c] && !lit.has(key(r, c))) allEmptyLit = false;
+    }
+  }
+
+  return { lit, errors, complete: errors.size === 0 && allEmptyLit };
+}
+
+function getValidation() {
+  const errors = new Set();
+  const runs = collectRuns();
+  const found = new Map();
+  const akari = getAkariAnalysis();
+  akari.errors.forEach(cell => errors.add(cell));
+
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const letter = grid[r][c];
+      const cellKey = key(r, c);
+      if (letter && FIXED_LETTERS.has(letter) && GIVEN[cellKey] !== letter) errors.add(cellKey);
+    }
+  }
+
+  runs.forEach(run => {
+    if (WORD_SET.has(run.text)) {
+      found.set(run.text, (found.get(run.text) || 0) + 1);
+    } else if (!PREFIXES.has(run.text)) {
+      run.cells.forEach(cell => errors.add(cell));
+    }
+  });
+
+  found.forEach((count, word) => {
+    if (count > (WORD_COUNTS.get(word) || 0)) {
+      runs.filter(run => run.text === word).forEach(run => run.cells.forEach(cell => errors.add(cell)));
+    }
+  });
+
+  const completeWords = WORDS.every(word => (found.get(word) || 0) === WORD_COUNTS.get(word));
+  const noExtraRuns = runs.every(run => WORD_SET.has(run.text));
+  const allLettersConnected = isConnected();
+  return { errors, found, lit: akari.lit, complete: errors.size === 0 && completeWords && noExtraRuns && allLettersConnected && akari.complete };
+}
+
+function render() {
+  const { errors, found, lit } = getValidation();
+  document.querySelectorAll('.cell').forEach(cell => {
+    const r = parseInt(cell.dataset.r);
+    const c = parseInt(cell.dataset.c);
+    const cellKey = key(r, c);
+    cell.textContent = grid[r][c];
+    cell.classList.toggle('lit', lit.has(cellKey));
+    cell.classList.toggle('selected', !!selected && selected.r === r && selected.c === c);
+    cell.classList.toggle('error', errors.has(cellKey));
+  });
+  WORDS.forEach(word => {
+    const el = document.getElementById(`word-${word}`);
+    const count = found.get(word) || 0;
+    el.classList.toggle('ok', count === WORD_COUNTS.get(word));
+    el.classList.toggle('error', count > WORD_COUNTS.get(word));
+  });
+}
+
+function checkComplete() {
+  if (!getValidation().complete) return;
+  document.getElementById('message').textContent = '축하합니다! 퍼즐을 완성했습니다!';
+  recordCompletion(PUZZLE_ID);
+}
+
+function resetBoard() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(''));
+    Object.entries(GIVEN).forEach(([cellKey, letter]) => {
+      const [r, c] = cellKey.split(',').map(Number);
+      grid[r][c] = letter;
+    });
+    selected = null;
+    document.getElementById('message').textContent = '';
+    saveProgress();
+    render();
+  });
+}
+
+document.addEventListener('keydown', event => {
+  if (!selected) return;
+  if (/^[a-zA-Z]$/.test(event.key)) {
+    placeLetter(event.key.toUpperCase());
+  } else if (event.key === 'Backspace' || event.key === 'Delete') {
+    placeLetter('');
+  } else if (event.key === 'ArrowUp' && selected.r > 0) selectCell(selected.r - 1, selected.c);
+  else if (event.key === 'ArrowDown' && selected.r < SIZE - 1) selectCell(selected.r + 1, selected.c);
+  else if (event.key === 'ArrowLeft' && selected.c > 0) selectCell(selected.r, selected.c - 1);
+  else if (event.key === 'ArrowRight' && selected.c < SIZE - 1) selectCell(selected.r, selected.c + 1);
+});
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, grid);
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!Array.isArray(state) || state.length !== SIZE) return;
+    grid = state.map(row => Array.isArray(row) && row.length === SIZE ? row.map(v => typeof v === 'string' && /^[A-Z]$/.test(v) ? v : '') : Array(SIZE).fill(''));
+    Object.entries(GIVEN).forEach(([cellKey, letter]) => {
+      const [r, c] = cellKey.split(',').map(Number);
+      grid[r][c] = letter;
+    });
+    saveProgress();
+    render();
+    checkComplete();
+  });
+}
+
+buildWordBank();
+buildBoard();
+buildLetterPad();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>
