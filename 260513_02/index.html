@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260513 수식완성 2</title>
+<meta property="og:title" content="260513 수식완성 2">
+<meta property="og:description" content="주어진 숫자를 모두 사용해 타겟 숫자를 만드는 수식을 완성하세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260513_02/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .container { width: min(94vw, 560px); }
+
+  .formula-card {
+    width: 100%;
+    margin-top: 20px;
+    border: 1px solid #e0ddd6;
+    border-radius: 6px;
+    background: #fff;
+    padding: 18px;
+  }
+
+  .problem-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .given-numbers,
+  .target {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    font-weight: 700;
+    color: #222;
+  }
+
+  .given-numbers {
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .target {
+    flex-shrink: 0;
+  }
+
+  .given-numbers span:first-child,
+  .target span:first-child {
+    font-size: 0.76rem;
+    color: #999;
+  }
+
+  .given-numbers span:last-child,
+  .target span:last-child {
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  .keypad button.used {
+    border-color: #7fa972;
+    background: #f0f7ed;
+    color: #4f7d45;
+  }
+
+  .keypad button:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+  }
+
+  .formula-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .expression-box {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+    min-height: 52px;
+    border: 1.5px solid #c8c3b8;
+    border-radius: 4px;
+    padding: 7px 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 1.05rem;
+    color: #222;
+    background: #fff;
+    cursor: default;
+  }
+
+  .expression-box.solved {
+    border-color: #6b9b5f;
+    background: #fbfff8;
+  }
+
+  .expr-placeholder {
+    color: #aaa;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.9rem;
+  }
+
+  .expr-token {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 32px;
+    padding: 0 9px;
+    border-radius: 4px;
+    background: #f4f1eb;
+    color: #222;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .expr-token.number {
+    background: #faf8f4;
+    border: 1px solid #d9d4ca;
+  }
+
+  .expr-token.operator {
+    color: #555;
+  }
+
+  .result {
+    min-width: 76px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #333;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .keypad button {
+    height: 38px;
+    border: 1.5px solid #c8c3b8;
+    border-radius: 4px;
+    background: #f4f1eb;
+    color: #333;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .keypad button:hover { background: #e8e4da; }
+  .keypad .wide { grid-column: span 2; }
+
+  .message {
+    min-height: 1.5em;
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: #6b9b5f;
+    text-align: center;
+  }
+
+  @media (max-width: 540px) {
+    body { padding-left: 8px; padding-right: 8px; }
+    h1 { font-size: 1.25rem; }
+    .formula-card { padding: 14px; }
+    .problem-line { gap: 8px; }
+    .formula-row { grid-template-columns: 1fr; gap: 6px; }
+    .result { min-height: 1.4em; padding-left: 2px; }
+    .keypad { grid-template-columns: repeat(4, 1fr); }
+    .keypad button { height: 36px; }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=23">
+<script src="/puzzle/js/common.js?v=26"></script>
+</head>
+<body class="puzzle-page pad-48">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260513 수식완성 2</h1>
+<p class="subtitle">주어진 숫자를 모두 사용해 타겟 숫자를 만드는 수식을 완성하세요</p>
+
+<div class="container align-center">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>수식완성 규칙</strong><br>
+    주어진 4개의 숫자를 한번씩, 모두 사용하여 타겟 숫자를 만드는 수식을 완성하세요.<br>
+    사용할 수 있는 연산 기호는 사칙연산(덧셈, 뺄셈, 곱셈, 나눗셈)과 괄호입니다.<br>
+    주어진 숫자 외의 다른 숫자는 일체 사용이 불가능합니다.<br>
+    숫자의 순서는 자유롭게 바꿀 수 있습니다.<br>
+    숫자 이어붙이기, 숫자 돌리기 같은 그 어떠한 트릭도 사용되지 않습니다.<br>
+    연산 기호는 원하는 것만 자유롭게 사용하면 됩니다.<br>
+    빼기는 부호로 사용할 수 없습니다.
+  </div>
+
+  <div class="formula-card">
+    <div class="problem-line">
+      <div class="given-numbers"><span>Numbers</span><span>1, 4, 5, 9</span></div>
+      <div class="target"><span>Target</span><span>4</span></div>
+    </div>
+    <div class="formula-row">
+      <div class="expression-box" id="expressionBox" aria-label="수식"></div>
+      <div class="result" id="result"></div>
+    </div>
+    <div class="keypad" id="keypad"></div>
+  </div>
+
+  <div class="bottom-buttons">
+    <button class="danger" onclick="resetFormula()">초기화</button>
+  </div>
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260513_02';
+const SAVE_KEY = 'puzzle_260513_02';
+const NUMBERS = ['1', '4', '5', '9'];
+const TARGET = makeFraction(4, 1);
+const NUMBER_COUNTS = NUMBERS.reduce((map, n) => {
+  map.set(n, (map.get(n) || 0) + 1);
+  return map;
+}, new Map());
+const KEYS = [...NUMBERS, '+', '-', '*', '/', '(', ')', 'Backspace'];
+let formulaTokens = [];
+
+function gcd(a, b) {
+  a = a < 0n ? -a : a;
+  b = b < 0n ? -b : b;
+  while (b !== 0n) {
+    const t = b;
+    b = a % b;
+    a = t;
+  }
+  return a || 1n;
+}
+
+function makeFraction(n, d) {
+  n = BigInt(n);
+  d = BigInt(d);
+  if (d === 0n) throw new Error('divide by zero');
+  if (d < 0n) {
+    n = -n;
+    d = -d;
+  }
+  const g = gcd(n, d);
+  return { n: n / g, d: d / g };
+}
+
+function add(a, b) {
+  return makeFraction(a.n * b.d + b.n * a.d, a.d * b.d);
+}
+
+function sub(a, b) {
+  return makeFraction(a.n * b.d - b.n * a.d, a.d * b.d);
+}
+
+function mul(a, b) {
+  return makeFraction(a.n * b.n, a.d * b.d);
+}
+
+function div(a, b) {
+  return makeFraction(a.n * b.d, a.d * b.n);
+}
+
+function sameFraction(a, b) {
+  return a.n === b.n && a.d === b.d;
+}
+
+function tokenize(text) {
+  const tokens = [];
+  let i = 0;
+  while (i < text.length) {
+    const ch = text[i];
+    if (/\s/.test(ch)) {
+      i++;
+      continue;
+    }
+    if (/[0-9]/.test(ch)) {
+      let value = ch;
+      i++;
+      while (i < text.length && /[0-9]/.test(text[i])) {
+        value += text[i];
+        i++;
+      }
+      tokens.push({ type: 'number', value });
+      continue;
+    }
+    if ('+-*/()'.includes(ch)) {
+      tokens.push({ type: ch, value: ch });
+      i++;
+      continue;
+    }
+    throw new Error('invalid token');
+  }
+  return tokens;
+}
+
+function parseExpression(tokens) {
+  let index = 0;
+  const used = [];
+
+  function peek() {
+    return tokens[index];
+  }
+
+  function consume(type) {
+    if (!peek() || peek().type !== type) throw new Error('syntax');
+    return tokens[index++];
+  }
+
+  function parseFactor() {
+    const token = peek();
+    if (!token) throw new Error('syntax');
+    if (token.type === 'number') {
+      consume('number');
+      used.push(token.value);
+      return makeFraction(token.value, 1);
+    }
+    if (token.type === '(') {
+      consume('(');
+      const value = parseAddSub();
+      consume(')');
+      return value;
+    }
+    throw new Error('syntax');
+  }
+
+  function parseMulDiv() {
+    let value = parseFactor();
+    while (peek() && (peek().type === '*' || peek().type === '/')) {
+      const op = consume(peek().type).type;
+      const right = parseFactor();
+      value = op === '*' ? mul(value, right) : div(value, right);
+    }
+    return value;
+  }
+
+  function parseAddSub() {
+    let value = parseMulDiv();
+    while (peek() && (peek().type === '+' || peek().type === '-')) {
+      const op = consume(peek().type).type;
+      const right = parseMulDiv();
+      value = op === '+' ? add(value, right) : sub(value, right);
+    }
+    return value;
+  }
+
+  const value = parseAddSub();
+  if (index !== tokens.length) throw new Error('syntax');
+  return { value, used };
+}
+
+function evaluateFormula(text) {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  const tokens = tokenize(trimmed);
+  if (!tokens.length) return null;
+  return parseExpression(tokens);
+}
+
+function hasExactNumbers(used) {
+  const counts = used.reduce((map, n) => {
+    map.set(n, (map.get(n) || 0) + 1);
+    return map;
+  }, new Map());
+  if (counts.size !== NUMBER_COUNTS.size) return false;
+  for (const [number, count] of NUMBER_COUNTS) {
+    if (counts.get(number) !== count) return false;
+  }
+  return true;
+}
+
+function formatFraction(value) {
+  if (value.d === 1n) return value.n.toString();
+  const negative = value.n < 0n;
+  let n = negative ? -value.n : value.n;
+  const integer = n / value.d;
+  let remainder = n % value.d;
+  let decimals = '';
+  for (let i = 0; i < 3 && remainder !== 0n; i++) {
+    remainder *= 10n;
+    decimals += (remainder / value.d).toString();
+    remainder %= value.d;
+  }
+  if (decimals.length <= 2 && remainder === 0n) {
+    return `${negative ? '-' : ''}${integer}.${decimals}`;
+  }
+  return `${negative ? '-' : ''}${integer}.${decimals.padEnd(3, '0').slice(0, 2)}...`;
+}
+
+function getFormula() {
+  return formulaTokens.join('');
+}
+
+function setFormula(value) {
+  formulaTokens = Array.isArray(value) ? value.filter(isValidToken) : tokensFromString(String(value || ''));
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, formulaTokens);
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (Array.isArray(saved)) formulaTokens = saved.filter(isValidToken);
+  else if (typeof saved === 'string') formulaTokens = tokensFromString(saved);
+}
+
+function buildKeypad() {
+  const keypad = document.getElementById('keypad');
+  KEYS.forEach(value => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = value === '*' ? '×' : value === '/' ? '÷' : value === 'Backspace' ? '지우기' : value;
+    if (NUMBER_COUNTS.has(value)) button.dataset.number = value;
+    if ('+-*/'.includes(value)) button.dataset.operator = value;
+    if (value === '(') button.dataset.action = 'open';
+    if (value === ')') button.dataset.action = 'close';
+    if (value === 'Backspace') button.dataset.action = 'backspace';
+    if (value === 'Backspace') button.classList.add('wide');
+    button.addEventListener('click', () => {
+      if (value === 'Backspace') backspace();
+      else if (NUMBER_COUNTS.has(value) || '+-*/()'.includes(value)) insertToken(value);
+    });
+    keypad.appendChild(button);
+  });
+}
+
+function getUsedCounts() {
+  return formulaTokens.filter(token => NUMBER_COUNTS.has(token)).reduce((map, number) => {
+    map.set(number, (map.get(number) || 0) + 1);
+    return map;
+  }, new Map());
+}
+
+function isValidToken(token) {
+  return NUMBER_COUNTS.has(token) || ['+', '-', '*', '/', '(', ')'].includes(token);
+}
+
+function tokensFromString(text) {
+  try {
+    return tokenize(text).map(token => token.value || token.type).filter(isValidToken);
+  } catch (e) {
+    return [];
+  }
+}
+
+function getTokenState() {
+  const last = formulaTokens[formulaTokens.length - 1] || '';
+  const open = formulaTokens.filter(token => token === '(').length;
+  const close = formulaTokens.filter(token => token === ')').length;
+  const needsValue = !last || ['+', '-', '*', '/', '('].includes(last);
+  const canUseOperator = NUMBER_COUNTS.has(last) || last === ')';
+  return { needsValue, canUseOperator, canClose: canUseOperator && open > close };
+}
+
+function insertToken(token) {
+  const state = getTokenState();
+  if (NUMBER_COUNTS.has(token)) {
+    const used = getUsedCounts();
+    if (!state.needsValue || (used.get(token) || 0) >= (NUMBER_COUNTS.get(token) || 0)) return;
+  } else if ('+-*/'.includes(token)) {
+    if (!state.canUseOperator) return;
+  } else if (token === '(') {
+    if (!state.needsValue) return;
+  } else if (token === ')') {
+    if (!state.canClose) return;
+  }
+  formulaTokens.push(token);
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+function backspace() {
+  formulaTokens.pop();
+  saveProgress();
+  render();
+  checkComplete();
+}
+
+function render() {
+  const expressionBox = document.getElementById('expressionBox');
+  const resultEl = document.getElementById('result');
+  const message = document.getElementById('message');
+  let solved = false;
+  expressionBox.innerHTML = '';
+  if (!formulaTokens.length) {
+    const placeholder = document.createElement('span');
+    placeholder.className = 'expr-placeholder';
+    placeholder.textContent = '수식을 완성하세요';
+    expressionBox.appendChild(placeholder);
+  } else {
+    formulaTokens.forEach(token => {
+      const span = document.createElement('span');
+      span.className = `expr-token ${NUMBER_COUNTS.has(token) ? 'number' : 'operator'}`;
+      span.textContent = token === '*' ? '×' : token === '/' ? '÷' : token;
+      expressionBox.appendChild(span);
+    });
+  }
+  try {
+    const result = evaluateFormula(getFormula());
+    if (!result) {
+      resultEl.textContent = '';
+    } else {
+      resultEl.textContent = `= ${formatFraction(result.value)}`;
+      solved = sameFraction(result.value, TARGET) && hasExactNumbers(result.used);
+    }
+  } catch (e) {
+    resultEl.textContent = '';
+  }
+  expressionBox.classList.toggle('solved', solved);
+  message.textContent = solved ? '정답입니다!' : '';
+  updateNumberButtons();
+}
+
+function updateNumberButtons() {
+  const used = getUsedCounts();
+  const state = getTokenState();
+  document.querySelectorAll('[data-number]').forEach(button => {
+    const number = button.dataset.number;
+    const count = used.get(number) || 0;
+    const allowed = NUMBER_COUNTS.get(number) || 0;
+    button.classList.toggle('used', count === allowed);
+    button.disabled = !state.needsValue || count >= allowed;
+  });
+  document.querySelectorAll('[data-operator]').forEach(button => {
+    button.disabled = !state.canUseOperator;
+  });
+  document.querySelector('[data-action="open"]').disabled = !state.needsValue;
+  document.querySelector('[data-action="close"]').disabled = !state.canClose;
+  document.querySelector('[data-action="backspace"]').disabled = formulaTokens.length === 0;
+}
+
+function checkComplete() {
+  try {
+    const result = evaluateFormula(getFormula());
+    if (!result || !sameFraction(result.value, TARGET) || !hasExactNumbers(result.used)) return;
+    recordCompletion(PUZZLE_ID);
+  } catch (e) {
+    // 계산할 수 없는 식은 완료 처리하지 않는다.
+  }
+}
+
+function resetFormula() {
+  confirmPuzzleReset(PUZZLE_ID, () => {
+    setFormula('');
+    document.getElementById('message').textContent = '';
+  });
+}
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, formulaTokens);
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    setFormula(state);
+  });
+}
+
+buildKeypad();
+loadProgress();
+render();
+checkComplete();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>

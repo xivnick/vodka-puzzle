@@ -2,6 +2,52 @@
 const SUPABASE_URL = 'https://hlhrzbylbwebtoytmmpd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_YHte_s6VgQOQlU91hdsOoA_sDJ4_03y';
 
+// 퍼즐 페이지에서 방향키 입력이 보드 이동과 페이지 스크롤을 동시에 일으키지 않게 한다.
+function preventPuzzleArrowScroll(event) {
+  if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+  if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+  const isPuzzlePage = document.body?.classList.contains('puzzle-page') || !!document.querySelector('.board');
+  if (!isPuzzlePage) return;
+
+  const target = event.target instanceof Element ? event.target : null;
+  if (target && target.closest('input, textarea, select, [contenteditable="true"]')) return;
+
+  event.preventDefault();
+}
+
+window.addEventListener('keydown', preventPuzzleArrowScroll, { capture: true });
+
+// iOS Safari 등에서 남는 더블탭 확대를 막는다. 서로 다른 버튼을 빠르게 누르는
+// 동작은 유지하기 위해 짧은 시간 + 거의 같은 좌표인 경우만 차단한다.
+let _lastTapZoomGuard = { time: 0, x: 0, y: 0 };
+
+function isPuzzleInteractionPage() {
+  return document.body?.classList.contains('puzzle-page') || !!document.querySelector('.board, .keypad, .expression-box');
+}
+
+function guardDoubleTapZoom(event) {
+  if (!isPuzzleInteractionPage() || event.changedTouches.length !== 1) return;
+  const touch = event.changedTouches[0];
+  const now = Date.now();
+  const dx = touch.clientX - _lastTapZoomGuard.x;
+  const dy = touch.clientY - _lastTapZoomGuard.y;
+  const isNearPreviousTap = dx * dx + dy * dy < 24 * 24;
+  if (now - _lastTapZoomGuard.time < 360 && isNearPreviousTap) {
+    event.preventDefault();
+  }
+  _lastTapZoomGuard = { time: now, x: touch.clientX, y: touch.clientY };
+}
+
+document.addEventListener('touchstart', guardDoubleTapZoom, { capture: true, passive: false });
+
+document.addEventListener('dblclick', event => {
+  if (isPuzzleInteractionPage()) event.preventDefault();
+}, { capture: true });
+
+document.addEventListener('gesturestart', event => {
+  if (isPuzzleInteractionPage()) event.preventDefault();
+}, { capture: true, passive: false });
+
 // ── Supabase REST helpers ────────────────────────────────────────────────────
 async function sbSelect(table, qs) {
   const url = `${SUPABASE_URL}/rest/v1/${table}${qs ? '?' + qs : ''}`;

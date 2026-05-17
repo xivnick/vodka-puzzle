@@ -1,5 +1,24 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+button,
+a,
+.cell,
+.board,
+.puzzle-page {
+  touch-action: manipulation;
+}
+
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+
 /* ── Site header ──────────────────────────────────────────────────────────── */
 .site-header {
   align-self: stretch;
