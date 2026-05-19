@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>260518 Rat Run 2</title>
+<meta property="og:title" content="260518 Rat Run 2">
+<meta property="og:description" content="쥐의 경로와 8×8 스도쿠를 함께 완성하세요">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/260518_02/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  .container { width: min(94vw, 620px); }
+
+  .mode-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .mode-btn {
+    flex: 1;
+    height: 38px;
+    border: 1.5px solid #c8c3b8;
+    border-radius: 3px;
+    background: #faf8f4;
+    color: #777;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .mode-btn.active {
+    background: #f6eed9;
+    border-color: #b99a37;
+    color: #80611a;
+  }
+
+  .maze-frame {
+    margin-top: 18px;
+    padding: 16px;
+    border-radius: 16px;
+    background: #efd29b;
+  }
+
+  .board-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #fff;
+    overflow: visible;
+  }
+
+  .board {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+  }
+
+  .cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: clamp(1.25rem, 7.2vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1;
+    color: #4a6fa5;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s, color 0.12s;
+  }
+
+  .cell:nth-child(8n) { border-right: none; }
+  .cell:nth-child(n+57) { border-bottom: none; }
+  .cell.box-right { border-right: 3px solid #bdbdbd; }
+  .cell.box-bottom { border-bottom: 3px solid #bdbdbd; }
+  .cell:hover { background: #faf8f4; }
+  .cell.selected { background: #e8e8d8; }
+  .cell.path-cell::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #9c7a21;
+    transform: translate(-50%, -50%);
+    opacity: 0.35;
+  }
+  .cell.error { background: #f5d0d0; color: #c0392b; }
+
+  .critter {
+    position: absolute;
+    z-index: 5;
+    width: 7.5%;
+    height: 7.5%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(0.95rem, 4.2vw, 1.65rem);
+    pointer-events: none;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.18));
+  }
+
+  .rat { left: 18%; top: 78.3%; }
+  .cupcake { left: 92.6%; top: 92.3%; }
+
+  .wall-layer,
+  .path-layer,
+  .hit-layer {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+  }
+
+  .wall-layer,
+  .path-layer { pointer-events: none; }
+  .hit-layer { pointer-events: none; z-index: 6; }
+  body.path-mode .hit-layer { pointer-events: auto; }
+  body:not(.path-mode) .edge-preview { display: none; }
+  .path-layer { z-index: 3; }
+  .wall-layer { z-index: 4; }
+  .board { z-index: 1; }
+
+  .maze-wall {
+    stroke: #b99a37;
+    stroke-width: 0.16;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .maze-wall-dot {
+    fill: #846916;
+    opacity: 0.72;
+  }
+
+  .path-edge {
+    stroke: #222;
+    stroke-width: 0.09;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.42;
+  }
+
+  .path-edge.error { stroke: #c0392b; }
+  .path-node {
+    fill: #222;
+    opacity: 0.42;
+  }
+  .path-node.error { fill: #c0392b; }
+
+  .edge-hit {
+    pointer-events: none;
+    stroke: transparent;
+    stroke-width: 0.28;
+    cursor: pointer;
+  }
+
+  body.path-mode .edge-hit { pointer-events: auto; }
+
+  .edge-hit:hover + .edge-preview {
+    opacity: 1;
+  }
+
+  .edge-preview {
+    pointer-events: none;
+    stroke: #b99a37;
+    stroke-width: 0.05;
+    stroke-linecap: round;
+    opacity: 0;
+  }
+
+  .numpad {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .numpad button {
+    flex: 1;
+    height: 44px;
+    border: 1.5px solid #c8c3b8;
+    border-radius: 3px;
+    background: #f4f1eb;
+    color: #333;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .numpad button:hover { background: #e8e4da; }
+  .path-mode-help {
+    display: none;
+    margin-top: 10px;
+    font-size: 0.82rem;
+    color: #888;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  body.path-mode .numpad { display: none; }
+  body.path-mode .path-mode-help { display: block; }
+
+  .message {
+    min-height: 1.5em;
+    margin-top: 8px;
+    font-size: 0.88rem;
+    color: #777;
+    text-align: center;
+  }
+
+  @media (max-width: 540px) {
+    body { padding-left: 8px; padding-right: 8px; }
+    h1 { font-size: 1.25rem; }
+    .maze-frame { padding: 12px; border-radius: 13px; }
+    .numpad button { height: min(9.5vw, 44px); font-size: min(4.4vw, 18px); }
+    .bottom-buttons button,
+    .mode-btn { height: min(8.8vw, 38px); font-size: min(3.2vw, 13px); }
+  }
+</style>
+<link rel="stylesheet" href="/puzzle/css/common.css?v=23">
+<script src="/puzzle/js/common.js?v=26"></script>
+</head>
+<body class="puzzle-page pad-48">
+
+<header class="site-header">
+  <a class="header-back" href="/puzzle/">&lt; puzzles</a>
+  <a class="header-nick-link" id="nicknameLink" href="/puzzle/nickname/"></a>
+</header>
+<h1>260518 Rat Run 2</h1>
+<p class="subtitle">경로를 찾고 잃어버린 숫자를 되찾으세요</p>
+
+<div class="container align-stretch">
+  <span class="rules-toggle" onclick="toggleRules()">규칙 보기</span>
+  <div class="rules-box" id="rulesBox">
+    <strong>Rat Run 2 규칙</strong><br>
+    기본적인 8×8 스도쿠 규칙을 따릅니다. 각 행, 열, 2×4 박스에는 1~8이 한 번씩 들어갑니다.<br>
+    쥐는 미로 벽을 뚫지 않고 컵케이크까지 이동합니다. 경로는 칸 중심을 잇고, 지나간 칸을 다시 방문하거나 다른 경로와 교차할 수 없습니다.<br>
+    보통은 상하좌우로 이동하지만, 2×2 공간이 벽 없이 비어 있으면 대각선 이동도 가능합니다.<br>
+    경로 위의 인접한 두 칸은 각각 그 쌍의 합이 10 이상이어야 합니다.
+  </div>
+
+  <div class="mode-row">
+    <button class="mode-btn active" id="numberModeBtn" onclick="setMode('number')">숫자 채우기</button>
+    <button class="mode-btn" id="pathModeBtn" onclick="setMode('path')">경로 찾기</button>
+  </div>
+
+  <div class="maze-frame">
+    <div class="board-wrap">
+      <svg class="path-layer" id="pathLayer" viewBox="0 0 8 8" preserveAspectRatio="none"></svg>
+      <div class="board" id="board"></div>
+      <div class="critter rat" aria-hidden="true">🐀</div>
+      <div class="critter cupcake" aria-hidden="true">🧁</div>
+      <svg class="wall-layer" id="wallLayer" viewBox="0 0 8 8" preserveAspectRatio="none"></svg>
+      <svg class="hit-layer" id="hitLayer" viewBox="0 0 8 8" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+
+  <div class="numpad" id="numpad"></div>
+  <div class="path-mode-help">경로 모드에서는 선을 누르거나, 칸을 차례로 눌러 경로를 잇습니다.</div>
+
+  <div class="bottom-buttons">
+    <button onclick="placeNumber(0)">지우기</button>
+    <button class="danger" onclick="resetNumbers()">숫자 초기화</button>
+    <button class="danger" onclick="resetPath()">경로 초기화</button>
+  </div>
+  <div class="cloud-btns" id="cloudBtns" style="display:none">
+    <button class="cloud-btn" onclick="handleCloudSave()">저장하기</button>
+    <button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID = '260518_02';
+const SAVE_KEY = 'puzzle_260518_02';
+const SIZE = 8;
+const START = [6, 1];
+const GOAL = [7, 7];
+const initial = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+const wallSet = buildWalls();
+
+let board = initial.map(r => [...r]);
+let pathEdges = new Set();
+let selected = null;
+let pathAnchor = null;
+let mode = 'number';
+
+function key(r, c) {
+  return `${r},${c}`;
+}
+
+function edgeKey(a, b) {
+  const ak = key(a[0], a[1]);
+  const bk = key(b[0], b[1]);
+  return ak < bk ? `${ak}|${bk}` : `${bk}|${ak}`;
+}
+
+function parseCell(k) {
+  return k.split(',').map(Number);
+}
+
+function parseEdge(edge) {
+  return edge.split('|').map(parseCell);
+}
+
+function wallKey(type, a, b) {
+  return `${type}:${a},${b}`;
+}
+
+function addWall(set, type, a, b) {
+  set.add(wallKey(type, a, b));
+}
+
+function buildWalls() {
+  const set = new Set();
+  for (let i = 0; i < SIZE; i++) {
+    addWall(set, 'h', 0, i);
+    addWall(set, 'h', SIZE, i);
+    addWall(set, 'v', 0, i);
+    addWall(set, 'v', SIZE, i);
+  }
+
+  [
+    [4,0], [6,0],
+    [1,1], [2,1], [3,1], [5,1],
+    [1,2],
+    [1,3], [4,3],
+    [4,5], [5,5],
+    [2,6], [4,6],
+  ].forEach(([x, y]) => addWall(set, 'v', x, y));
+
+  [
+    [2,3], [2,4], [2,5], [2,6],
+    [3,3], [3,4], [3,5], [3,6],
+    [4,1], [4,2], [4,5], [4,6], [4,7],
+    [5,1], [5,2], [5,3], [5,6],
+    [6,0], [6,1], [6,5], [6,7],
+    [7,1], [7,2], [7,4], [7,5], [7,6],
+  ].forEach(([y, x]) => addWall(set, 'h', y, x));
+
+  return set;
+}
+
+function hasWall(type, a, b) {
+  return wallSet.has(wallKey(type, a, b));
+}
+
+function boxIndex(r, c) {
+  return Math.floor(r / 2) * 2 + Math.floor(c / 4);
+}
+
+function canMove(a, b) {
+  const [r1, c1] = a;
+  const [r2, c2] = b;
+  const dr = r2 - r1;
+  const dc = c2 - c1;
+  if (Math.abs(dr) > 1 || Math.abs(dc) > 1 || (dr === 0 && dc === 0)) return false;
+
+  if (dr === 0) {
+    const x = Math.max(c1, c2);
+    return !hasWall('v', x, r1);
+  }
+  if (dc === 0) {
+    const y = Math.max(r1, r2);
+    return !hasWall('h', y, c1);
+  }
+
+  const vertexX = dc === 1 ? c1 + 1 : c1;
+  const vertexY = dr === 1 ? r1 + 1 : r1;
+  return !hasWall('v', vertexX, vertexY - 1) &&
+    !hasWall('v', vertexX, vertexY) &&
+    !hasWall('h', vertexY, vertexX - 1) &&
+    !hasWall('h', vertexY, vertexX);
+}
+
+function allAllowedEdges() {
+  const edges = [];
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      for (const [dr, dc] of [[0,1], [1,0], [1,1], [1,-1]]) {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+        const a = [r, c], b = [nr, nc];
+        if (canMove(a, b)) edges.push([a, b]);
+      }
+    }
+  }
+  return edges;
+}
+
+function saveProgress() {
+  saveLocalState(SAVE_KEY, {
+    board,
+    pathEdges: [...pathEdges],
+    mode,
+  });
+}
+
+function loadProgress() {
+  const saved = loadLocalState(SAVE_KEY);
+  if (!saved || !Array.isArray(saved.board) || saved.board.length !== SIZE) return;
+  board = saved.board.map((row, r) => {
+    if (!Array.isArray(row) || row.length !== SIZE) return [...initial[r]];
+    return row.map(v => Number.isInteger(v) && v >= 0 && v <= SIZE ? v : 0);
+  });
+  if (Array.isArray(saved.pathEdges)) {
+    const allowed = new Set(allAllowedEdges().map(([a, b]) => edgeKey(a, b)));
+    pathEdges = new Set(saved.pathEdges.filter(edge => allowed.has(edge)));
+  }
+  mode = saved.mode === 'path' ? 'path' : 'number';
+}
+
+function init() {
+  loadProgress();
+  renderBoard();
+  renderWalls();
+  renderHitLayer();
+  renderNumpad();
+  setMode(mode);
+  validate();
+}
+
+function renderBoard() {
+  const el = document.getElementById('board');
+  el.innerHTML = '';
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      if (c === 3) cell.classList.add('box-right');
+      if (r === 1 || r === 3 || r === 5) cell.classList.add('box-bottom');
+      cell.textContent = board[r][c] || '';
+      cell.addEventListener('click', () => handleCellClick(r, c));
+      el.appendChild(cell);
+    }
+  }
+}
+
+function renderNumpad() {
+  const pad = document.getElementById('numpad');
+  pad.innerHTML = '';
+  for (let n = 1; n <= SIZE; n++) {
+    const btn = document.createElement('button');
+    btn.textContent = n;
+    btn.addEventListener('click', () => placeNumber(n));
+    pad.appendChild(btn);
+  }
+}
+
+function center(cell) {
+  return [cell[1] + 0.5, cell[0] + 0.5];
+}
+
+function svgLine(cls, a, b) {
+  const [x1, y1] = a;
+  const [x2, y2] = b;
+  return `<line class="${cls}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"></line>`;
+}
+
+function renderWalls() {
+  const svg = document.getElementById('wallLayer');
+  let html = '';
+  wallSet.forEach(wall => {
+    const [type, coords] = wall.split(':');
+    const [a, b] = coords.split(',').map(Number);
+    if (type === 'h') html += svgLine('maze-wall', [b, a], [b + 1, a]);
+    else html += svgLine('maze-wall', [a, b], [a, b + 1]);
+  });
+
+  wallSet.forEach(wall => {
+    const [type, coords] = wall.split(':');
+    const [a, b] = coords.split(',').map(Number);
+    if (type === 'h') {
+      html += `<circle class="maze-wall-dot" cx="${b}" cy="${a}" r="0.045"></circle>`;
+      html += `<circle class="maze-wall-dot" cx="${b + 1}" cy="${a}" r="0.045"></circle>`;
+    } else {
+      html += `<circle class="maze-wall-dot" cx="${a}" cy="${b}" r="0.045"></circle>`;
+      html += `<circle class="maze-wall-dot" cx="${a}" cy="${b + 1}" r="0.045"></circle>`;
+    }
+  });
+  svg.innerHTML = html;
+}
+
+function renderHitLayer() {
+  const svg = document.getElementById('hitLayer');
+  let html = '';
+  allAllowedEdges().forEach(([a, b]) => {
+    const edge = edgeKey(a, b);
+    const ca = center(a);
+    const cb = center(b);
+    html += svgLine('edge-hit', ca, cb).replace('<line ', `<line data-edge="${edge}" `);
+    html += svgLine('edge-preview', ca, cb);
+  });
+  svg.innerHTML = html;
+  svg.querySelectorAll('.edge-hit').forEach(line => {
+    line.addEventListener('click', e => {
+      if (mode !== 'path') return;
+      e.stopPropagation();
+      toggleEdge(line.dataset.edge);
+    });
+  });
+}
+
+function setMode(nextMode) {
+  mode = nextMode === 'path' ? 'path' : 'number';
+  document.body.classList.toggle('path-mode', mode === 'path');
+  document.getElementById('numberModeBtn').classList.toggle('active', mode === 'number');
+  document.getElementById('pathModeBtn').classList.toggle('active', mode === 'path');
+  pathAnchor = null;
+  validate();
+  saveProgress();
+}
+
+function handleCellClick(r, c) {
+  if (mode === 'number') {
+    selectCell(r, c);
+    return;
+  }
+  const cell = [r, c];
+  if (!pathAnchor) {
+    pathAnchor = cell;
+    refresh();
+    return;
+  }
+  if (key(pathAnchor[0], pathAnchor[1]) === key(r, c)) {
+    pathAnchor = null;
+    refresh();
+    return;
+  }
+  if (canMove(pathAnchor, cell)) {
+    toggleEdge(edgeKey(pathAnchor, cell), false);
+    pathAnchor = cell;
+  } else {
+    pathAnchor = cell;
+  }
+  refresh();
+}
+
+function selectCell(r, c) {
+  selected = { r, c };
+  validate();
+}
+
+function placeNumber(n) {
+  if (mode !== 'number' || !selected) return;
+  board[selected.r][selected.c] = n;
+  saveProgress();
+  validate();
+  checkComplete();
+}
+
+function toggleEdge(edge, shouldRefresh = true) {
+  if (pathEdges.has(edge)) pathEdges.delete(edge);
+  else pathEdges.add(edge);
+  saveProgress();
+  if (shouldRefresh) {
+    validate();
+    checkComplete();
+  }
+}
+
+function resetPath() {
+  if (!confirm('경로를 초기화하시겠습니까?')) return;
+  pathEdges = new Set();
+  pathAnchor = null;
+  saveProgress();
+  validate();
+}
+
+function getPathCells() {
+  const set = new Set();
+  pathEdges.forEach(edge => {
+    edge.split('|').forEach(cell => set.add(cell));
+  });
+  return set;
+}
+
+function getAdjacency() {
+  const adj = new Map();
+  pathEdges.forEach(edge => {
+    const [a, b] = edge.split('|');
+    if (!adj.has(a)) adj.set(a, []);
+    if (!adj.has(b)) adj.set(b, []);
+    adj.get(a).push(b);
+    adj.get(b).push(a);
+  });
+  return adj;
+}
+
+function edgeCrosses(e1, e2) {
+  const [a, b] = parseEdge(e1);
+  const [c, d] = parseEdge(e2);
+  const keys = new Set([key(a[0], a[1]), key(b[0], b[1]), key(c[0], c[1]), key(d[0], d[1])]);
+  if (keys.size < 4) return false;
+  const ad1 = Math.abs(a[0] - b[0]) === 1 && Math.abs(a[1] - b[1]) === 1;
+  const ad2 = Math.abs(c[0] - d[0]) === 1 && Math.abs(c[1] - d[1]) === 1;
+  if (!ad1 || !ad2) return false;
+  const rows1 = [a[0], b[0]].sort().join(',');
+  const cols1 = [a[1], b[1]].sort().join(',');
+  const rows2 = [c[0], d[0]].sort().join(',');
+  const cols2 = [c[1], d[1]].sort().join(',');
+  return rows1 === rows2 && cols1 === cols2;
+}
+
+function analyzePath() {
+  const cellErrors = new Set();
+  const edgeErrors = new Set();
+  const adj = getAdjacency();
+  const pathCells = getPathCells();
+
+  adj.forEach((neighbors, cell) => {
+    if (neighbors.length > 2) cellErrors.add(cell);
+  });
+
+  const edgeList = [...pathEdges];
+  for (let i = 0; i < edgeList.length; i++) {
+    for (let j = i + 1; j < edgeList.length; j++) {
+      if (edgeCrosses(edgeList[i], edgeList[j])) {
+        edgeErrors.add(edgeList[i]);
+        edgeErrors.add(edgeList[j]);
+      }
+    }
+  }
+
+  pathEdges.forEach(edge => {
+    const [a, b] = parseEdge(edge);
+    const av = board[a[0]][a[1]];
+    const bv = board[b[0]][b[1]];
+    if (av && bv && av + bv < 10) {
+      edgeErrors.add(edge);
+      cellErrors.add(key(a[0], a[1]));
+      cellErrors.add(key(b[0], b[1]));
+    }
+  });
+
+  const structuralOk = isSingleStartToGoalPath(adj, pathCells) && cellErrors.size === 0 && edgeErrors.size === 0;
+  return { pathCells, cellErrors, edgeErrors, structuralOk };
+}
+
+function isSingleStartToGoalPath(adj, pathCells) {
+  const start = key(START[0], START[1]);
+  const goal = key(GOAL[0], GOAL[1]);
+  if (!pathCells.has(start) || !pathCells.has(goal)) return false;
+  const endpoints = [...pathCells].filter(cell => (adj.get(cell) || []).length === 1);
+  if (endpoints.length !== 2 || !endpoints.includes(start) || !endpoints.includes(goal)) return false;
+  if ([...pathCells].some(cell => (adj.get(cell) || []).length > 2)) return false;
+
+  const seen = new Set([start]);
+  const queue = [start];
+  while (queue.length) {
+    const cur = queue.shift();
+    for (const next of (adj.get(cur) || [])) {
+      if (seen.has(next)) continue;
+      seen.add(next);
+      queue.push(next);
+    }
+  }
+  return seen.size === pathCells.size;
+}
+
+function validate() {
+  const errors = new Set();
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const v = board[r][c];
+      if (!v) continue;
+      for (let cc = 0; cc < SIZE; cc++) {
+        if (cc !== c && board[r][cc] === v) {
+          errors.add(key(r, c));
+          errors.add(key(r, cc));
+        }
+      }
+      for (let rr = 0; rr < SIZE; rr++) {
+        if (rr !== r && board[rr][c] === v) {
+          errors.add(key(r, c));
+          errors.add(key(rr, c));
+        }
+      }
+      const br = Math.floor(r / 2) * 2;
+      const bc = Math.floor(c / 4) * 4;
+      for (let rr = br; rr < br + 2; rr++) {
+        for (let cc = bc; cc < bc + 4; cc++) {
+          if ((rr !== r || cc !== c) && board[rr][cc] === v) {
+            errors.add(key(r, c));
+            errors.add(key(rr, cc));
+          }
+        }
+      }
+    }
+  }
+
+  const path = analyzePath();
+  path.cellErrors.forEach(cell => errors.add(cell));
+  refresh(errors, path);
+  return errors.size === 0 && path.edgeErrors.size === 0;
+}
+
+function refresh(errorSet = null, pathAnalysis = null) {
+  const errors = errorSet || new Set();
+  const path = pathAnalysis || analyzePath();
+  const pathCells = path.pathCells;
+  document.querySelectorAll('.cell').forEach(cell => {
+    const r = parseInt(cell.dataset.r);
+    const c = parseInt(cell.dataset.c);
+    const cellKey = key(r, c);
+    cell.textContent = board[r][c] || '';
+    const numberSelected = !!selected && selected.r === r && selected.c === c && mode === 'number';
+    const pathSelected = !!pathAnchor && pathAnchor[0] === r && pathAnchor[1] === c && mode === 'path';
+    cell.classList.toggle('selected', numberSelected || pathSelected);
+    cell.classList.toggle('path-cell', pathCells.has(cellKey));
+    cell.classList.toggle('error', errors.has(cellKey));
+  });
+  renderPath(path);
+}
+
+function renderPath(pathAnalysis = analyzePath()) {
+  const svg = document.getElementById('pathLayer');
+  let html = '';
+  pathEdges.forEach(edge => {
+    const [a, b] = parseEdge(edge);
+    const ca = center(a);
+    const cb = center(b);
+    const err = pathAnalysis.edgeErrors.has(edge) ? ' error' : '';
+    html += svgLine(`path-edge${err}`, ca, cb);
+  });
+  getPathCells().forEach(cell => {
+    const [r, c] = parseCell(cell);
+    const [cx, cy] = center([r, c]);
+    const err = pathAnalysis.cellErrors.has(cell) ? ' error' : '';
+    html += `<circle class="path-node${err}" cx="${cx}" cy="${cy}" r="0.055"></circle>`;
+  });
+  svg.innerHTML = html;
+}
+
+function checkComplete() {
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (!board[r][c]) return;
+    }
+  }
+  const path = analyzePath();
+  if (validate() && path.structuralOk) {
+    document.getElementById('message').textContent = '축하합니다! 퍼즐을 완성했습니다!';
+    recordCompletion(PUZZLE_ID);
+  }
+}
+
+function resetNumbers() {
+  if (!confirm('숫자를 초기화하시겠습니까?')) return;
+  board = initial.map(r => [...r]);
+  selected = null;
+  document.getElementById('message').textContent = '';
+  saveProgress();
+  validate();
+  resetCompletion(PUZZLE_ID);
+}
+
+document.addEventListener('keydown', e => {
+  if (mode === 'number') {
+    if (!selected) return;
+    if (e.key >= '1' && e.key <= '8') {
+      e.preventDefault();
+      placeNumber(parseInt(e.key));
+    } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
+      e.preventDefault();
+      placeNumber(0);
+    } else if (e.key === 'ArrowUp' && selected.r > 0) {
+      e.preventDefault();
+      selectCell(selected.r - 1, selected.c);
+    } else if (e.key === 'ArrowDown' && selected.r < SIZE - 1) {
+      e.preventDefault();
+      selectCell(selected.r + 1, selected.c);
+    } else if (e.key === 'ArrowLeft' && selected.c > 0) {
+      e.preventDefault();
+      selectCell(selected.r, selected.c - 1);
+    } else if (e.key === 'ArrowRight' && selected.c < SIZE - 1) {
+      e.preventDefault();
+      selectCell(selected.r, selected.c + 1);
+    }
+  }
+});
+
+async function handleCloudSave() {
+  await saveProgressCloud(PUZZLE_ID, { board, pathEdges: [...pathEdges], mode });
+}
+
+async function handleCloudLoad() {
+  await loadCloudState(PUZZLE_ID, state => {
+    if (!state || !Array.isArray(state.board)) return;
+    board = state.board;
+    pathEdges = new Set(Array.isArray(state.pathEdges) ? state.pathEdges : []);
+    mode = state.mode === 'path' ? 'path' : 'number';
+    setMode(mode);
+    saveProgress();
+    validate();
+    checkComplete();
+  });
+}
+
+init();
+initHeader();
+initCloudBtns();
+renderLeaderboard(PUZZLE_ID, 'leaderboard');
+</script>
+</body>
+</html>
