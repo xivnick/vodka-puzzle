@@ -1,0 +1,218 @@
+/* Original home styles, scoped to the current home page. */
+body.home {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #ffffff;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 0 16px 60px;
+  }
+
+body.home h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+
+body.home .desc {
+    font-size: 0.82rem;
+    color: #999;
+    margin-bottom: 32px;
+  }
+
+body.home .list {
+    width: min(94vw, 480px);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+body.home .list-tools {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+body.home .list-head {
+    width: min(94vw, 480px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+body.home .list-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #555;
+  }
+
+body.home .filter-btn {
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid #ddd8cf;
+    border-radius: 3px;
+    background: #fff;
+    color: #999;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.76rem;
+    cursor: pointer;
+  }
+
+body.home .filter-btn.active {
+    background: #faf8f4;
+    color: #555;
+    border-color: #cfc8bd;
+    font-weight: 700;
+  }
+
+body.home .list a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #e8e5df;
+    transition: background 0.12s;
+  }
+
+body.home .list a.first-visible {
+    border-top: 1px solid #e8e5df;
+  }
+
+body.home .list a:hover {
+    background: #faf8f4;
+  }
+
+body.home .list .title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+body.home .list .solver-count {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: #bbb;
+  }
+
+body.home .list .tag {
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: #aaa;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+
+body.home .empty {
+    color: #bbb;
+    font-size: 0.85rem;
+    margin-top: 40px;
+  }
+
+body.home .pager {
+    width: min(94vw, 480px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+body.home .pager button {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border: 1.5px solid #d0ccc4;
+    border-radius: 3px;
+    background: #faf8f4;
+    color: #777;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+
+body.home .pager button:hover { background: #eeebe4; color: #555; }
+
+body.home .pager button.active {
+    background: #e8e4da;
+    color: #333;
+    border-color: #bdb7ad;
+    font-weight: 700;
+  }
+
+body.home .pager button:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+body.home .rank-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+body.home .rank-head .lb-title { margin-bottom: 0; }
+
+body.home .rank-tabs {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+body.home .rank-tab {
+    height: 28px;
+    padding: 0 10px;
+    border: 1px solid #ddd8cf;
+    border-radius: 3px;
+    background: #fff;
+    color: #999;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.74rem;
+    cursor: pointer;
+  }
+
+body.home .rank-tab.active {
+    background: #faf8f4;
+    color: #555;
+    border-color: #cfc8bd;
+    font-weight: 700;
+  }
+
+  @media (max-width: 540px) {body.home { padding: 0 8px 48px; }
+
+body.home h1 { font-size: 1.3rem; }
+
+body.home .list a { padding: 12px 14px; }
+
+body.home .pager { gap: 5px; }
+
+body.home .pager button {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 8px;
+      font-size: 0.78rem;
+    }
+  }
+
+body.home .list a { position: relative; }
+
+body.home { line-height: normal; }
+body.home .site-header { height: 44px; }
+body.home .header-back { font-size: .85rem; color: #999; }
+body.home .header-nick-link { font-size: .82rem; color: #aaa; }
+body.home > h1 { margin-top: 20px; }
+body.home .recent-banner:not([style*="display: none"]) + h1 { margin-top: 0; }
+body.home > footer { margin-top: auto; padding-bottom: 0; }
