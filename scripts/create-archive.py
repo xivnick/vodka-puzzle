@@ -13,9 +13,8 @@ if (source/'test.html').exists(): shutil.copy2(source/'test.html',dest/'test.htm
 for p in dest.rglob('*.html'):
  s=p.read_text().replace('/puzzle/',base)
  s=re.sub(r'<a class="header-nick-link"[^>]*>.*?</a>','<a class="header-nick-link" href="/puzzle/">이번 학기</a>',s,flags=re.S)
- s=s.replace('</header>','</header><p class="archive-notice">2026년 1학기 아카이브 · 기록 저장 종료</p>')
  s=s.replace('`puzzle_${', '`archive:2026-1:puzzle_${')
- s=s.replace('</head>','<style>.archive-notice{font-size:14px;color:#777;text-align:center;margin:8px 12px 20px}#cloudBtns{display:none!important}</style></head>')
+ s=s.replace('</head>','<style>#cloudBtns{display:none!important}</style></head>')
  # Direct storage users also get isolated archive keys.
  s=re.sub(r"(['\"])(puzzle_[A-Za-z0-9_]+)\1",lambda m:m[1]+'archive:2026-1:'+m[2]+m[1],s)
  p.write_text(s)
