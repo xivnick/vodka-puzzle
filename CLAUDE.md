@@ -6,7 +6,7 @@
 - 현재 공통 파일은 `public/js/common.js`, `public/css/common.css`이며 변경 시 `SiteLayout.astro`의 버전 번호를 갱신한다.
 - 배포 대상은 `dist/`만이다. 비공개 백업과 소스 폴더 전체를 배포하지 않는다.
 - 루트의 기존 HTML/JS와 아래 설명은 아카이브 원본에 대한 기록이다. 현재 페이지를 추가하기 위해 루트 `index.html`을 수정하지 않는다.
-- 정식 전환 전에는 `supabase/cutover.sql`을 실행하지 않는다. 기존 운영 사이트의 저장을 닫는 작업이다.
+- 2026-09-16 정식 전환 완료. `supabase/cutover.sql`은 기존 운영 테이블을 잠근 전환 기록이므로 일반 배포 시 재실행하지 않는다. 일반 배포는 빌드·테스트 후 `deploy dist www/puzzle`을 사용한다.
 
 ---
 

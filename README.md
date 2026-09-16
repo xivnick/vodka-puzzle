@@ -33,9 +33,11 @@ Node.js 22.12 이상을 사용한다. 배포 대상은 **`dist/`만**이다. 저
 
 `semester_nicknames`, `semester_completions`, `semester_progress`를 추가했다. 키는 학기·닉네임(및 문제)이다. 기존 테이블을 변경하지 않고 2026-1 기록을 복사했으며, `semester_settings.active_season`에 해당하는 학기만 익명 쓰기를 허용한다. 닉네임 기반 식별 방식은 기존과 같다.
 
-기존 운영 사이트를 보호하기 위해 원래 `nicknames`, `completions`, `progress`의 저장 정책은 아직 유지한다. **정식 전환 시 마지막 기록 동기화와 잠금이 필요하다.** 현재 아카이브는 작업 시점의 스냅샷이다.
+2026-09-16 정식 전환을 완료했다. 원래 `nicknames`, `completions`, `progress`는 읽기 정책만 남겨 기록을 고정했다. 최종 아카이브는 완료 기록 976개를 포함하며, 새 사이트는 `2026-2` 학기를 사용한다. `deploy dist www/puzzle`로 배포했으며 원격 전용 파일은 삭제하지 않았다.
 
-### 정식 배포 순서
+전환 전 비공개 백업은 `~/Documents/Backups/vodka-puzzle/20260916-160431/`에 있으며 당시 운영 파일도 `production-site/`에 보존했다. 전환 후 최종 DB 스냅샷은 `20260916-160502/`에 보관했다.
+
+### 전환 절차 (이번 전환 완료; 재실행하지 않음)
 
 1. `python3 scripts/backup.py`로 전환 전 비공개 백업을 만든다. 출력 경로를 보관한다.
 2. `python3 scripts/database.py supabase/cutover.sql`로 마지막 기록을 학기 테이블에 동기화하고 기존 테이블의 쓰기 정책을 닫는다.
