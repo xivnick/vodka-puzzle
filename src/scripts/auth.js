@@ -74,6 +74,10 @@ async function bootstrap() {
 function setupAccountPage() {
   const login = document.getElementById('googleLogin');
   if (!login) return;
+  const pageTitle = account.user ? '마이페이지' : '로그인';
+  const heading = document.querySelector('.page-heading h1');
+  if (heading) heading.textContent = pageTitle;
+  document.title = `${pageTitle} · vodka puzzle`;
   const form = document.getElementById('nicknameForm');
   const input = document.getElementById('nickInput');
   const status = document.getElementById('nickStatus');
