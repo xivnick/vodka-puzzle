@@ -1,0 +1,6 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import body from '../../legacy/practice.html?raw';
+import css from '../../legacy/practice.css?raw';
+---
+<SiteLayout title="연습 스도쿠" legacy><Fragment slot="head" set:html={`<style>${css}</style>`} /><p class="season">연습 문제 · 학기 순위에는 반영되지 않습니다.</p><Fragment set:html={body} /></SiteLayout>

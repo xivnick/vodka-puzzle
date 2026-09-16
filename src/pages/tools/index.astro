@@ -1,0 +1,6 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import body from '../../legacy/tool-index.html?raw';
+import css from '../../legacy/tool-index.css?raw';
+---
+<SiteLayout title="퍼즐 제작 도구" legacy><Fragment slot="head" set:html={`<style>${css}</style>`} /><Fragment set:html={body} /></SiteLayout>

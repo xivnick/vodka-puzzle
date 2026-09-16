@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>퍼즐 목록</title>
+<meta property="og:title" content="퍼즐">
+<meta property="og:description" content="인터랙티브 퍼즐 모음">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xivnick.me/puzzle/archive/2026-1/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #ffffff;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 0 16px 60px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .desc {
+    font-size: 0.82rem;
+    color: #999;
+    margin-bottom: 32px;
+  }
+
+  .list {
+    width: min(94vw, 480px);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .list-tools {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .list-head {
+    width: min(94vw, 480px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .list-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #555;
+  }
+
+  .filter-btn {
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid #ddd8cf;
+    border-radius: 3px;
+    background: #fff;
+    color: #999;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.76rem;
+    cursor: pointer;
+  }
+
+  .filter-btn.active {
+    background: #faf8f4;
+    color: #555;
+    border-color: #cfc8bd;
+    font-weight: 700;
+  }
+
+  .list a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #e8e5df;
+    transition: background 0.12s;
+  }
+
+  .list a.first-visible {
+    border-top: 1px solid #e8e5df;
+  }
+
+  .list a:hover {
+    background: #faf8f4;
+  }
+
+  .list .title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .list .solver-count {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: #bbb;
+  }
+
+  .list .tag {
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: #aaa;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+
+  .empty {
+    color: #bbb;
+    font-size: 0.85rem;
+    margin-top: 40px;
+  }
+
+  .pager {
+    width: min(94vw, 480px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .pager button {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border: 1.5px solid #d0ccc4;
+    border-radius: 3px;
+    background: #faf8f4;
+    color: #777;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+
+  .pager button:hover { background: #eeebe4; color: #555; }
+  .pager button.active {
+    background: #e8e4da;
+    color: #333;
+    border-color: #bdb7ad;
+    font-weight: 700;
+  }
+
+  .pager button:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  .rank-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .rank-head .lb-title { margin-bottom: 0; }
+
+  .rank-tabs {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .rank-tab {
+    height: 28px;
+    padding: 0 10px;
+    border: 1px solid #ddd8cf;
+    border-radius: 3px;
+    background: #fff;
+    color: #999;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.74rem;
+    cursor: pointer;
+  }
+
+  .rank-tab.active {
+    background: #faf8f4;
+    color: #555;
+    border-color: #cfc8bd;
+    font-weight: 700;
+  }
+
+  @media (max-width: 540px) {
+    body { padding: 0 8px 48px; }
+    h1 { font-size: 1.3rem; }
+    .list a { padding: 12px 14px; }
+    .pager { gap: 5px; }
+    .pager button {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 8px;
+      font-size: 0.78rem;
+    }
+  }
+
+  .list a { position: relative; }
+</style>
+<link rel="stylesheet" href="/puzzle/archive/2026-1/css/common.css?v=23">
+<script src="/puzzle/archive/2026-1/js/common.js?v=26"></script>
+<style>.archive-notice{font-size:14px;color:#777;text-align:center;margin:8px 12px 20px}#cloudBtns{display:none!important}</style></head>
+<body>
+
+<header class="site-header">
+  <span class="header-back">vodka puzzle</span>
+  <a class="header-nick-link" href="/puzzle/">이번 학기</a>
+</header><p class="archive-notice">2026년 1학기 아카이브 · 기록 저장 종료</p>
+<h1>퍼즐</h1>
+<p class="desc">xivnick.me/puzzle</p>
+
+<div class="list-head">
+  <div class="list-title">문제</div>
+  <div class="list-tools" id="listTools">
+    <button class="filter-btn" id="unsolvedFilterBtn" onclick="toggleUnsolvedOnly()">미해결</button>
+    <button class="filter-btn" id="solverSortBtn" onclick="toggleSolverSort()">인기순</button>
+  </div>
+</div>
+
+<div class="list">
+  <a href="/puzzle/archive/2026-1/260518_02/" data-puzzle-id="260518_02">
+    <span class="title">260518 Rat Run 2</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260518_01/" data-puzzle-id="260518_01">
+    <span class="title">260518 팰린드롬 스도쿠</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260514_03/" data-puzzle-id="260514_03">
+    <span class="title">260514 도플블록 3</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260514_02/" data-puzzle-id="260514_02">
+    <span class="title">260514 도플블록 2</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260514_01/" data-puzzle-id="260514_01">
+    <span class="title">260514 도플블록 1</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260513_02/" data-puzzle-id="260513_02">
+    <span class="title">260513 수식완성 2</span>
+    <span class="tag">수리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260513_01/" data-puzzle-id="260513_01">
+    <span class="title">260513 수식완성 1</span>
+    <span class="tag">수리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260512_03/" data-puzzle-id="260512_03">
+    <span class="title">260512 스크래블(아카리)</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260512_02/" data-puzzle-id="260512_02">
+    <span class="title">260512 스크래블</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260512_01/" data-puzzle-id="260512_01">
+    <span class="title">260512 아카리</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260511_02/" data-puzzle-id="260511_02">
+    <span class="title">260511 Rat Run 1</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260511_01/" data-puzzle-id="260511_01">
+    <span class="title">260511 스도쿠(요새)</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260507_03/" data-puzzle-id="260507_03">
+    <span class="title">260507 낚시꾼(넘쳐나는 고기) 2</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260507_02/" data-puzzle-id="260507_02">
+    <span class="title">260507 낚시꾼(넘쳐나는 고기) 1</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260507_01/" data-puzzle-id="260507_01">
+    <span class="title">260507 낚시꾼</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260506_02/" data-puzzle-id="260506_02">
+    <span class="title">260506 동시 발발 수식</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260506_01/" data-puzzle-id="260506_01">
+    <span class="title">260506 펜토미너스</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260504_02/" data-puzzle-id="260504_02">
+    <span class="title">260504 클래식 스도쿠</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260504_01/" data-puzzle-id="260504_01">
+    <span class="title">260504 클론 스도쿠</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260503_02/" data-puzzle-id="260503_02">
+    <span class="title">260503 스타배틀(2☆)</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260503_01/" data-puzzle-id="260503_01">
+    <span class="title">260503 스타배틀(1☆)</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260430_01/" data-puzzle-id="260430_01">
+    <span class="title">260430 스타배틀</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260429_02/" data-puzzle-id="260429_02">
+    <span class="title">260429 SkyTomTom</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260429_01/" data-puzzle-id="260429_01">
+    <span class="title">260429 TomTom</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260428_03/" data-puzzle-id="260428_03">
+    <span class="title">260428 나선은하 배틀쉽</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260428_02/" data-puzzle-id="260428_02">
+    <span class="title">260428 나선은하</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260428_01/" data-puzzle-id="260428_01">
+    <span class="title">260428 Battleship</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260427_02/" data-puzzle-id="260427_02">
+    <span class="title">260427 스도쿠(매스랙스)</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260427_01/" data-puzzle-id="260427_01">
+    <span class="title">260427 스도쿠(시계)</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260425_02/" data-puzzle-id="260425_02">
+    <span class="title">260425 타파(정육면체) 2</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260425_01/" data-puzzle-id="260425_01">
+    <span class="title">260425 타파(정육면체) 1</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260423_01/" data-puzzle-id="260423_01">
+    <span class="title">260423 스도쿠(안티-나이트)</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260417_01/" data-puzzle-id="260417_01">
+    <span class="title">260417 체스 기물 스도쿠</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260416_03/" data-puzzle-id="260416_03">
+    <span class="title">260416 일본식 철로</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260416_02/" data-puzzle-id="260416_02">
+    <span class="title">260416 철로 2</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260416_01/" data-puzzle-id="260416_01">
+    <span class="title">260416 철로</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260415_02/" data-puzzle-id="260415_02">
+    <span class="title">260415 마방진 논리 2</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260415_01/" data-puzzle-id="260415_01">
+    <span class="title">260415 마방진 논리</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260414_03/" data-puzzle-id="260414_03">
+    <span class="title">260414 일본식 합</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260414_02/" data-puzzle-id="260414_02">
+    <span class="title">260414 일본식 주차장</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260414_01/" data-puzzle-id="260414_01">
+    <span class="title">260414 주차장</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260413_01/" data-puzzle-id="260413_01">
+    <span class="title">260413 스도쿠 (XV)</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260412_02/" data-puzzle-id="260412_02">
+    <span class="title">260412 다섯 칸 2</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260412_01/" data-puzzle-id="260412_01">
+    <span class="title">260412 다섯 칸</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260409_01/" data-puzzle-id="260409_01">
+    <span class="title">260409 스카이스크레이퍼 (큰 칸)</span>
+    <span class="tag">스카이스크레이퍼</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260408_01/" data-puzzle-id="260408_01">
+    <span class="title">260408 밸런싱</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260407_01/" data-puzzle-id="260407_01">
+    <span class="title">260407 블랙아웃 도미노</span>
+    <span class="tag">도미노</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260406_01/" data-puzzle-id="260406_01">
+    <span class="title">260406 홀짝 스도쿠</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260405_01/" data-puzzle-id="260405_01">
+    <span class="title">260405 펜토미노 블리츠 1</span>
+    <span class="tag">게임</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260401_01/" data-puzzle-id="260401_01">
+    <span class="title">260401 타파</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260331_03/" data-puzzle-id="260331_03">
+    <span class="title">260331 누리카베 (회전대칭)</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260331_02/" data-puzzle-id="260331_02">
+    <span class="title">260331 누리카베 (쌍의 합)</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260331_01/" data-puzzle-id="260331_01">
+    <span class="title">260331 누리카베</span>
+    <span class="tag">논리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260330_02/" data-puzzle-id="260330_02">
+    <span class="title">260330 스카이스크레이퍼 스도쿠</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260330_01/" data-puzzle-id="260330_01">
+    <span class="title">260330 겹침 스도쿠</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260326_03/" data-puzzle-id="260326_03">
+    <span class="title">260326 후토시키 3</span>
+    <span class="tag">추론</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260326_02/" data-puzzle-id="260326_02">
+    <span class="title">260326 후토시키 2</span>
+    <span class="tag">추론</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260326_01/" data-puzzle-id="260326_01">
+    <span class="title">260326 후토시키 1</span>
+    <span class="tag">추론</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260325_02/" data-puzzle-id="260325_02">
+    <span class="title">260325 Math Path 2</span>
+    <span class="tag">Math Path</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260325_01/" data-puzzle-id="260325_01">
+    <span class="title">260325 Math Path 1</span>
+    <span class="tag">Math Path</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260324_02/" data-puzzle-id="260324_02">
+    <span class="title">260324 필로미노(123)</span>
+    <span class="tag">필로미노</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260324_01/" data-puzzle-id="260324_01">
+    <span class="title">260324 필로미노</span>
+    <span class="tag">필로미노</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260323_01/" data-puzzle-id="260323_01">
+    <span class="title">260323 강한 크롭키 스도쿠</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260323_02/" data-puzzle-id="260323_02">
+    <span class="title">260323 약한 크롭키 스도쿠</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260319_03/" data-puzzle-id="260319_03">
+    <span class="title">260319 스카이스크레이퍼 3</span>
+    <span class="tag">스카이스크레이퍼</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260319_02/" data-puzzle-id="260319_02">
+    <span class="title">260319 스카이스크레이퍼 2</span>
+    <span class="tag">스카이스크레이퍼</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260319_01/" data-puzzle-id="260319_01">
+    <span class="title">260319 스카이스크레이퍼 1</span>
+    <span class="tag">스카이스크레이퍼</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260317_03/" data-puzzle-id="260317_03">
+    <span class="title">260317 노리노리 - 상</span>
+    <span class="tag">노리노리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260317_02/" data-puzzle-id="260317_02">
+    <span class="title">260317 노리노리 - 중</span>
+    <span class="tag">노리노리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260317_01/" data-puzzle-id="260317_01">
+    <span class="title">260317 노리노리 - 하</span>
+    <span class="tag">노리노리</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260316_02/" data-puzzle-id="260316_02">
+    <span class="title">260316 온도계 스도쿠</span>
+    <span class="tag">스도쿠</span>
+  </a>
+  <a href="/puzzle/archive/2026-1/260316_01/" data-puzzle-id="260316_01">
+    <span class="title">260316 노 터치 스도쿠</span>
+    <span class="tag">스도쿠</span>
+  </a>
+</div>
+
+<div class="pager" id="pager"></div>
+
+<div style="width: min(94vw, 480px); margin-top: 24px;">
+  <div class="lb-section">
+    <div class="rank-head">
+      <div class="lb-title" id="rankTitle">랭킹</div>
+      <div class="rank-tabs">
+        <button class="rank-tab active" id="recentRankBtn" onclick="setRankMode('recent')">최신 문제</button>
+        <button class="rank-tab" id="allRankBtn" onclick="setRankMode('all')">전체</button>
+      </div>
+    </div>
+    <div id="solverRank"><div class="lb-loading">불러오는 중...</div></div>
+  </div>
+</div>
+
+<script>
+  const PAGE_SIZE = 10;
+  let completedPuzzles = new Set();
+  let solverCounts = new Map();
+  let showUnsolvedOnly = false;
+  let sortBySolverCount = false;
+
+  initHeader();
+
+  function getCurrentPage(totalPages) {
+    const hash = window.location.hash.match(/^#page-(\d+)$/);
+    const page = hash ? parseInt(hash[1], 10) : 1;
+    return Math.min(Math.max(page, 1), totalPages);
+  }
+
+  function setCurrentPage(page) {
+    if (page <= 1) {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    } else {
+      history.replaceState(null, '', `${window.location.pathname}${window.location.search}#page-${page}`);
+    }
+  }
+
+  function renderPagination() {
+    const links = [...document.querySelectorAll('.list a[data-puzzle-id]')];
+    const originalIndex = new Map(links.map((link, index) => [link, index]));
+    let visibleLinks = showUnsolvedOnly
+      ? links.filter(link => !completedPuzzles.has(link.dataset.puzzleId))
+      : [...links];
+
+    if (sortBySolverCount) {
+      visibleLinks = visibleLinks.sort((a, b) => {
+        const byCount = (solverCounts.get(b.dataset.puzzleId) || 0) - (solverCounts.get(a.dataset.puzzleId) || 0);
+        return byCount || originalIndex.get(a) - originalIndex.get(b);
+      });
+    }
+    const totalPages = Math.max(1, Math.ceil(visibleLinks.length / PAGE_SIZE));
+    const currentPage = getCurrentPage(totalPages);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+
+    links.forEach(link => {
+      link.style.display = 'none';
+      link.style.order = '';
+      link.classList.remove('first-visible');
+    });
+    visibleLinks.forEach((link, index) => {
+      link.style.display = index >= start && index < end ? '' : 'none';
+      link.style.order = index;
+    });
+    if (visibleLinks[start]) visibleLinks[start].classList.add('first-visible');
+
+    const pager = document.getElementById('pager');
+    pager.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const prev = document.createElement('button');
+    prev.textContent = '‹';
+    prev.disabled = currentPage === 1;
+    prev.addEventListener('click', () => {
+      if (currentPage === 1) return;
+      setCurrentPage(currentPage - 1);
+      renderPagination();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+    pager.appendChild(prev);
+
+    for (let page = 1; page <= totalPages; page += 1) {
+      const btn = document.createElement('button');
+      btn.textContent = page;
+      btn.className = page === currentPage ? 'active' : '';
+      btn.addEventListener('click', () => {
+        setCurrentPage(page);
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      });
+      pager.appendChild(btn);
+    }
+
+    const next = document.createElement('button');
+    next.textContent = '›';
+    next.disabled = currentPage === totalPages;
+    next.addEventListener('click', () => {
+      if (currentPage === totalPages) return;
+      setCurrentPage(currentPage + 1);
+      renderPagination();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+    pager.appendChild(next);
+  }
+
+  renderPagination();
+
+  function initUnsolvedFilter() {
+    const unsolvedBtn = document.getElementById('unsolvedFilterBtn');
+    if (!unsolvedBtn) return;
+    if (isGuest()) {
+      showUnsolvedOnly = false;
+      unsolvedBtn.style.display = 'none';
+      updateListModeButtons();
+      return;
+    }
+    unsolvedBtn.style.display = '';
+  }
+
+  function updateListModeButtons() {
+    document.getElementById('unsolvedFilterBtn').classList.toggle('active', showUnsolvedOnly);
+    document.getElementById('solverSortBtn').classList.toggle('active', sortBySolverCount);
+  }
+
+  function toggleUnsolvedOnly() {
+    if (isGuest()) return;
+    showUnsolvedOnly = !showUnsolvedOnly;
+    updateListModeButtons();
+    setCurrentPage(1);
+    renderPagination();
+  }
+
+  function toggleSolverSort() {
+    sortBySolverCount = !sortBySolverCount;
+    updateListModeButtons();
+    setCurrentPage(1);
+    renderPagination();
+  }
+
+  initUnsolvedFilter();
+
+  async function loadCompletions() {
+    const completed = await getMyCompletedPuzzles();
+    completedPuzzles = completed;
+    document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
+      const pid = a.dataset.puzzleId;
+      if (completed.has(pid)) {
+        if (!a.querySelector('.check-mark')) {
+          const ck = document.createElement('span');
+          ck.className = 'check-mark';
+          ck.textContent = '✓';
+          a.querySelector('.title').appendChild(ck);
+        }
+      }
+    });
+    renderPagination();
+  }
+
+  loadCompletions();
+
+  async function loadCounts() {
+    const counts = await getSolverCounts();
+    solverCounts = counts;
+    document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
+      const pid = a.dataset.puzzleId;
+      const n = counts.get(pid);
+      if (n) {
+        const titleSpan = a.querySelector('.title');
+        if (!titleSpan.querySelector('.solver-count')) {
+          const ct = document.createElement('span');
+          ct.className = 'solver-count';
+          ct.textContent = `(${n})`;
+          titleSpan.insertBefore(ct, titleSpan.querySelector('.check-mark'));
+        }
+      }
+    });
+    if (sortBySolverCount) renderPagination();
+  }
+
+  loadCounts();
+
+  let rankMode = 'recent';
+
+  function getRecentPuzzleIds(limit = 10) {
+    return [...document.querySelectorAll('.list a[data-puzzle-id]')]
+      .map(a => a.dataset.puzzleId)
+      .filter(id => id && id !== 'archive:2026-1:puzzle_test')
+      .slice(0, limit);
+  }
+
+  function setRankMode(nextMode) {
+    rankMode = nextMode === 'all' ? 'all' : 'recent';
+    document.getElementById('recentRankBtn').classList.toggle('active', rankMode === 'recent');
+    document.getElementById('allRankBtn').classList.toggle('active', rankMode === 'all');
+    loadSolverRankings();
+  }
+
+  async function loadSolverRankings() {
+    const scopeIds = rankMode === 'recent' ? getRecentPuzzleIds(10) : null;
+    const rankings = await getSolverRankings(scopeIds);
+    const myNick = getNickname();
+    const container = document.getElementById('solverRank');
+    const titleEl = document.getElementById('rankTitle');
+    const titlePrefix = rankMode === 'recent' ? '최신 문제 랭킹' : '전체 랭킹';
+
+    if (rankings.length === 0) {
+      titleEl.textContent = `${titlePrefix} (0)`;
+      container.innerHTML = '<div class="lb-empty">아직 기록이 없습니다.</div>';
+      return;
+    }
+
+    titleEl.textContent = `${titlePrefix} (${rankings.length})`;
+
+    const myIdx = (!myNick || isGuest()) ? -1 : rankings.findIndex(r => r.nick === myNick);
+    const top = Math.min(10, rankings.length);
+
+    function rowHtml(rank, nick, count, extra) {
+      const isMe = myNick && nick === myNick;
+      return `<div class="lb-row${isMe ? ' lb-me' : ''}${extra ? ' ' + extra : ''}">` +
+        `<span class="lb-rank">${rank}</span>` +
+        `<span class="lb-name">${escHtml(nick)}</span>` +
+        `<span class="lb-time">${count}개</span>` +
+        `</div>`;
+    }
+
+    function ellipsisRow() {
+      return `<div class="lb-row lb-ellipsis lb-ellipsis-toggle" data-expand-rankings="1">` +
+        `<span class="lb-rank">⋯</span><span class="lb-name"></span><span class="lb-time"></span>` +
+        `</div>`;
+    }
+
+    function render(expanded = false) {
+      let html = '<div class="lb-list">';
+      if (expanded || rankings.length <= 10) {
+        for (let i = 0; i < rankings.length; i++) {
+          html += rowHtml(i + 1, rankings[i].nick, rankings[i].count);
+        }
+      } else {
+        for (let i = 0; i < top; i++) {
+          html += rowHtml(i + 1, rankings[i].nick, rankings[i].count);
+        }
+        if (myIdx >= 10) {
+          html += ellipsisRow();
+          html += rowHtml(myIdx + 1, rankings[myIdx].nick, rankings[myIdx].count);
+          if (myIdx < rankings.length - 1) html += ellipsisRow();
+        } else if (rankings.length > 10) {
+          html += ellipsisRow();
+        }
+      }
+      html += '</div>';
+      container.innerHTML = html;
+      container.querySelectorAll('[data-expand-rankings]').forEach(el => {
+        el.addEventListener('click', () => render(true), { once: true });
+      });
+    }
+
+    render(false);
+  }
+
+  loadSolverRankings();
+
+  window.addEventListener('pageshow', e => {
+    if (!e.persisted) return;
+    document.querySelectorAll('.check-mark').forEach(el => el.remove());
+    initUnsolvedFilter();
+    renderPagination();
+    loadCompletions();
+    loadSolverRankings();
+  });
+
+  window.addEventListener('hashchange', renderPagination);
+</script>
+</body>
+</html>

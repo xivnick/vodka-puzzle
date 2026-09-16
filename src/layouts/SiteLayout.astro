@@ -1,0 +1,22 @@
+---
+import Header from '../components/Header.astro';
+import season from '../data/season.json';
+const { title = '퍼즐', description = '보드카 퍼즐 모임', legacy = false } = Astro.props;
+---
+<!doctype html>
+<html lang="ko" data-season={season.id}>
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title} · 보드카</title><meta name="description" content={description} />
+<meta property="og:title" content={title} /><meta property="og:description" content={description} /><meta property="og:type" content="website" /><meta property="og:url" content={new URL(Astro.url.pathname, Astro.site)} />
+<link rel="stylesheet" href="/puzzle/css/common.css?v=27" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+<script is:inline src="/puzzle/js/common.js?v=27"></script>
+<slot name="head" />
+</head>
+<body class:list={{ legacy }}><Header /><slot /><script is:inline>initHeader();</script></body>
+</html>
+<style is:global>
+body{font-family:'Noto Sans KR',sans-serif;background:white;color:#333;font-size:16px;line-height:1.65;min-height:100vh}
+main.page{max-width:520px;margin:40px auto;padding:0 20px}h1{font-size:26px;letter-spacing:-.04em}h2{font-size:18px;margin:32px 0 12px}.season{color:#888;font-size:14px;margin-bottom:6px}.muted{color:#888}.empty{padding:32px 0;border-top:1px solid #e8e5df;border-bottom:1px solid #e8e5df;margin:24px 0}.links{display:flex;gap:18px;margin-top:16px;flex-wrap:wrap}.links a{color:#4a6fa5;font-size:14px}a{color:#4a6fa5}.legacy{display:flex;flex-direction:column;align-items:center}.legacy>.site-header{width:100%}button,input{font:inherit}button{cursor:pointer}.list{list-style:none}.list a{display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid #e8e5df;text-decoration:none;color:#333}.tag{color:#888;font-size:14px}.site-header a:focus-visible,button:focus-visible{outline:2px solid #4a6fa5;outline-offset:3px}
+</style>

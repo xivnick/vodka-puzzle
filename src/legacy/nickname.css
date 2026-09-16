@@ -1,0 +1,101 @@
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #fff;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 0 16px 60px;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 24px;
+    letter-spacing: -0.01em;
+  }
+
+  .form-wrap {
+    width: min(94vw, 480px);
+  }
+
+  .nick-input {
+    width: 100%;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    border: none;
+    border-bottom: 1.5px solid #ddd;
+    padding: 10px 0;
+    outline: none;
+    color: #222;
+    background: transparent;
+    transition: border-color 0.15s;
+  }
+  .nick-input::placeholder { color: #ccc; }
+  .nick-input:focus { border-bottom-color: #888; }
+
+  .nick-status {
+    min-height: 22px;
+    font-size: 0.78rem;
+    margin-top: 8px;
+    transition: color 0.15s;
+    color: #bbb;
+  }
+  .nick-status.checking { color: #bbb; }
+  .nick-status.is-new    { color: #5a9a5a; }
+  .nick-status.is-exists { color: #4a6fa5; }
+
+  .use-btn {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    background: #f4f1eb;
+    border: 1px solid #c8c3b8;
+    border-radius: 2px;
+    cursor: pointer;
+    color: #444;
+    transition: background 0.12s;
+  }
+  .use-btn:hover { background: #ede9e1; }
+  .use-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .desc-section {
+    width: min(94vw, 480px);
+    margin-top: 36px;
+    border-top: 1px solid #e8e5df;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .desc-item {
+    font-size: 0.8rem;
+    color: #999;
+    line-height: 1.6;
+    padding-left: 12px;
+    position: relative;
+  }
+  .desc-item::before {
+    content: '·';
+    position: absolute;
+    left: 0;
+    color: #ccc;
+  }
+  .desc-item strong {
+    color: #777;
+    font-weight: 500;
+  }
+
+  @media (max-width: 540px) {
+    h1 { font-size: 1.1rem; }
+  }

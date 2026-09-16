@@ -1,0 +1,90 @@
+
+  .back {
+    align-self: flex-start;
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: #999;
+    text-decoration: none;
+    margin-bottom: 16px;
+    transition: color 0.12s;
+  }
+
+  .back:hover { color: #555; }
+
+  .board-wrap {
+    border: 2.5px solid #222;
+    margin-top: 20px;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: min(6.2vw, 28px);
+    font-weight: 700;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s;
+    border-right: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+  }
+
+  .cell:nth-child(9n) { border-right: none; }
+  .cell:nth-child(n+73) { border-bottom: none; }
+
+  .cell.box-right { border-right: 2.5px solid #222; }
+  .cell.box-bottom { border-bottom: 2.5px solid #222; }
+
+  .cell.given { color: #222; }
+  .cell:not(.given) { color: #4a6fa5; }
+  .cell.selected { background: #e8e8d8 !important; }
+  .cell.error { background: #f5d0d0 !important; color: #c0392b !important; }
+  .cell.given.error { color: #c0392b !important; }
+  .cell:hover:not(.selected):not(.error) { background: #f5f5f0; }
+
+  .numpad {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .numpad button {
+    flex: 1;
+    height: 44px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    border: 1.5px solid #c8c3b8;
+    border-radius: 3px;
+    background: #f4f1eb;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.08s;
+  }
+
+  .numpad button:hover { background: #e8e4da; }
+  .numpad button:active { transform: scale(0.95); background: #ddd9cf; }
+
+  @media (max-width: 540px) {
+    body { padding: 0 8px 40px; }
+    h1 { font-size: 1.25rem; }
+    .numpad { gap: 5px; }
+    .numpad button { height: min(9.5vw, 44px); font-size: min(4.4vw, 18px); }
+    .bottom-buttons { gap: 5px; }
+    .bottom-buttons button { height: min(8.5vw, 40px); font-size: min(3.2vw, 13px); }
+  }
+
+  @media (max-width: 380px) {
+    .numpad button { height: 36px; font-size: 16px; }
+    .bottom-buttons button { height: 34px; font-size: 11px; }
+  }

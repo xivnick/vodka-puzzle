@@ -1,3 +1,8 @@
 .claude/
 sftp-config*.json
 sftp-settings.json
+node_modules/
+dist/
+.astro/
+.env*
+__pycache__/

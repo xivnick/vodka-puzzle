@@ -1,0 +1,6 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import body from '../../../legacy/tool-norinori.html?raw';
+import css from '../../../legacy/tool-norinori.css?raw';
+---
+<SiteLayout title="노리노리 보드 메이커" legacy><Fragment slot="head" set:html={`<style>${css}</style>`} /><Fragment set:html={body} /></SiteLayout>

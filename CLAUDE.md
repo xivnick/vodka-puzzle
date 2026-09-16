@@ -1,3 +1,15 @@
+# 현재 구조 (2026년 2학기 전환)
+
+현재 사이트는 Astro로 빌드한다. 작업 및 배포 절차는 `README.md`를 우선한다.
+- 공통 화면은 `src/layouts/`, `src/components/`에서 관리한다.
+- 신규 문제 목록은 `src/data/puzzles.json`에 등록한다.
+- 현재 공통 파일은 `public/js/common.js`, `public/css/common.css`이며 변경 시 `SiteLayout.astro`의 버전 번호를 갱신한다.
+- 배포 대상은 `dist/`만이다. 비공개 백업과 소스 폴더 전체를 배포하지 않는다.
+- 루트의 기존 HTML/JS와 아래 설명은 아카이브 원본에 대한 기록이다. 현재 페이지를 추가하기 위해 루트 `index.html`을 수정하지 않는다.
+- 정식 전환 전에는 `supabase/cutover.sql`을 실행하지 않는다. 기존 운영 사이트의 저장을 닫는 작업이다.
+
+---
+
 # 퍼즐 프로젝트 규칙
 
 ## Git

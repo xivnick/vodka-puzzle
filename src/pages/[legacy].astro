@@ -1,0 +1,8 @@
+---
+import puzzles from '../data/archive-puzzles.json';
+export function getStaticPaths() {
+  return [...new Set([...puzzles.map(p => p.id), 'puzzle_test', 'tmp_01'])].map(id => ({ params: { legacy: id } }));
+}
+const target = `/puzzle/archive/2026-1/${Astro.params.legacy}/`;
+---
+<!doctype html><html lang="ko"><head><meta charset="utf-8" /><meta http-equiv="refresh" content={`0;url=${target}`} /><link rel="canonical" href={new URL(target, 'https://xivnick.me')} /><title>지난 학기 문제로 이동</title></head><body><a href={target}>지난 학기 문제 보기</a></body></html>

@@ -1,0 +1,383 @@
+
+
+
+<h1>노리노리 보드 메이커</h1>
+<p class="subtitle">보드 모양과 영역을 지정하세요</p>
+
+<div class="container">
+  <div class="size-control">
+    <label for="sizeSlider">크기</label>
+    <input type="range" id="sizeSlider" min="5" max="15" value="8">
+    <span class="size-label" id="sizeLabel">8 x 8</span>
+  </div>
+
+  <div class="mode-toggle">
+    <button class="active" id="btnShape" onclick="setMode('shape')">모양</button>
+    <button id="btnRegion" onclick="setMode('region')">영역</button>
+  </div>
+
+  <div class="region-palette" id="regionPalette"></div>
+
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="bottom-buttons">
+    <button onclick="fillAll()">전체 켜기</button>
+    <button onclick="invertAll()">반전</button>
+    <button class="danger" onclick="clearAll()">초기화</button>
+  </div>
+
+  <div class="bottom-buttons">
+    <button class="primary" onclick="exportJSON()">JSON 내보내기</button>
+  </div>
+
+  <div class="message" id="message"></div>
+  <textarea class="export-box" id="exportBox" readonly></textarea>
+</div>
+
+<script>
+const SAVE_KEY = 'tool_norinori_board';
+const REGION_COLORS = [
+  '#d8e4f0','#f0e0d0','#d8f0d8','#e0d8f0','#f0e8d0',
+  '#d0e8e8','#f0d8e0','#e0e0d0','#d8d8f0','#f0f0d0',
+  '#d8e8d0','#e8d0d0','#d0d8e8','#e8e0d0','#e8e8d8',
+  '#c8d8e8','#e8d0c0','#c8e8c8','#d0c8e0','#e0d8c0',
+  '#c0d8d8','#e0c8d0','#d0d0c0','#c8c8e0','#e0e0c0'
+];
+
+let gridSize = 8;
+let mode = 'shape';
+let cells = {};
+let currentRegion = 1;
+let regionCount = 1;
+let isDragging = false;
+let dragValue = null;
+
+// --- Initialization ---
+function initCells() {
+  cells = {};
+  for (let r = 0; r < gridSize; r++) {
+    for (let c = 0; c < gridSize; c++) {
+      cells[`${r},${c}`] = { active: true, region: null };
+    }
+  }
+}
+
+function init() {
+  const saved = loadProgress();
+  if (!saved) {
+    initCells();
+  }
+  renderBoard();
+  renderPalette();
+}
+
+// --- Mode ---
+function setMode(m) {
+  mode = m;
+  document.getElementById('btnShape').classList.toggle('active', m === 'shape');
+  document.getElementById('btnRegion').classList.toggle('active', m === 'region');
+  document.getElementById('regionPalette').classList.toggle('visible', m === 'region');
+  renderBoard();
+}
+
+// --- Region Palette ---
+function renderPalette() {
+  const pal = document.getElementById('regionPalette');
+  pal.innerHTML = '';
+  for (let i = 1; i <= regionCount; i++) {
+    const sw = document.createElement('div');
+    sw.className = 'region-swatch' + (i === currentRegion ? ' active' : '');
+    sw.style.background = REGION_COLORS[(i - 1) % REGION_COLORS.length];
+    sw.textContent = i;
+    sw.onclick = () => { currentRegion = i; renderPalette(); };
+    pal.appendChild(sw);
+  }
+  const addBtn = document.createElement('button');
+  addBtn.className = 'region-add';
+  addBtn.textContent = '+';
+  addBtn.onclick = () => { regionCount++; currentRegion = regionCount; renderPalette(); saveProgress(); };
+  pal.appendChild(addBtn);
+}
+
+// --- Board Rendering ---
+function renderBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+
+  for (let r = 0; r < gridSize; r++) {
+    for (let c = 0; c < gridSize; c++) {
+      const cell = document.createElement('div');
+      const key = `${r},${c}`;
+      const data = cells[key];
+      cell.className = 'cell ' + (data.active ? 'active' : 'inactive');
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+
+      if (data.active && mode === 'region' && data.region) {
+        cell.style.background = REGION_COLORS[(data.region - 1) % REGION_COLORS.length];
+      }
+
+      // Region borders
+      if (data.active) {
+        applyRegionBorders(cell, r, c, data);
+      }
+
+      // Events
+      cell.addEventListener('mousedown', (e) => { e.preventDefault(); onCellDown(r, c); });
+      cell.addEventListener('mouseenter', () => { if (isDragging) onCellDrag(r, c); });
+      cell.addEventListener('touchstart', (e) => { e.preventDefault(); onCellDown(r, c); }, { passive: false });
+
+      board.appendChild(cell);
+    }
+  }
+}
+
+function applyRegionBorders(cell, r, c, data) {
+  const dirs = [
+    [-1, 0, 'borderTop'],
+    [1, 0, 'borderBottom'],
+    [0, -1, 'borderLeft'],
+    [0, 1, 'borderRight']
+  ];
+  for (const [dr, dc, prop] of dirs) {
+    const nr = r + dr, nc = c + dc;
+    const nKey = `${nr},${nc}`;
+    const neighbor = cells[nKey];
+    const needThick = !neighbor || !neighbor.active || neighbor.region !== data.region;
+    cell.style[prop] = needThick ? '2.5px solid #222' : '1px solid #aaa';
+  }
+}
+
+// --- Interaction ---
+function onCellDown(r, c) {
+  isDragging = true;
+  const key = `${r},${c}`;
+  const data = cells[key];
+
+  if (mode === 'shape') {
+    dragValue = !data.active;
+    data.active = dragValue;
+    if (!dragValue) data.region = null;
+  } else {
+    if (!data.active) return;
+    if (data.region === currentRegion) {
+      dragValue = null;
+      data.region = null;
+    } else {
+      dragValue = currentRegion;
+      data.region = currentRegion;
+    }
+  }
+  renderBoard();
+  saveProgress();
+}
+
+function onCellDrag(r, c) {
+  const key = `${r},${c}`;
+  const data = cells[key];
+
+  if (mode === 'shape') {
+    if (data.active === dragValue) return;
+    data.active = dragValue;
+    if (!dragValue) data.region = null;
+  } else {
+    if (!data.active) return;
+    if (dragValue === null) {
+      if (data.region === null) return;
+      data.region = null;
+    } else {
+      if (data.region === dragValue) return;
+      data.region = dragValue;
+    }
+  }
+  renderBoard();
+  saveProgress();
+}
+
+// Touch move handling
+document.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  e.preventDefault();
+  const touch = e.touches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  if (el && el.classList.contains('cell')) {
+    const r = parseInt(el.dataset.r);
+    const c = parseInt(el.dataset.c);
+    onCellDrag(r, c);
+  }
+}, { passive: false });
+
+document.addEventListener('mouseup', () => { isDragging = false; });
+document.addEventListener('touchend', () => { isDragging = false; });
+
+// --- Actions ---
+function fillAll() {
+  for (const key in cells) {
+    cells[key].active = true;
+  }
+  renderBoard();
+  saveProgress();
+}
+
+function invertAll() {
+  for (const key in cells) {
+    cells[key].active = !cells[key].active;
+    if (!cells[key].active) cells[key].region = null;
+  }
+  renderBoard();
+  saveProgress();
+}
+
+function clearAll() {
+  if (!confirm('모든 데이터를 초기화할까요?')) return;
+  initCells();
+  regionCount = 1;
+  currentRegion = 1;
+  renderPalette();
+  renderBoard();
+  saveProgress();
+  hideExport();
+}
+
+// --- Export ---
+function exportJSON() {
+  const msg = document.getElementById('message');
+  msg.textContent = '';
+
+  // Collect active cells
+  const activeCells = [];
+  for (const key in cells) {
+    if (cells[key].active) {
+      const [r, c] = key.split(',').map(Number);
+      activeCells.push([r, c]);
+    }
+  }
+
+  if (activeCells.length === 0) {
+    msg.textContent = '활성화된 셀이 없습니다.';
+    return;
+  }
+
+  // Check unassigned
+  const unassigned = activeCells.filter(([r, c]) => !cells[`${r},${c}`].region);
+  if (unassigned.length > 0) {
+    msg.textContent = `영역이 지정되지 않은 셀이 ${unassigned.length}개 있습니다.`;
+  }
+
+  // Collect regions
+  const regionMap = {};
+  for (const key in cells) {
+    const d = cells[key];
+    if (d.active && d.region) {
+      if (!regionMap[d.region]) regionMap[d.region] = [];
+      const [r, c] = key.split(',').map(Number);
+      regionMap[d.region].push([r, c]);
+    }
+  }
+
+  // Check small regions
+  const smallRegions = Object.entries(regionMap).filter(([_, v]) => v.length < 2);
+  if (smallRegions.length > 0 && !msg.textContent) {
+    msg.textContent = `2셀 미만인 영역이 ${smallRegions.length}개 있습니다.`;
+  }
+
+  // Sort cells within each region
+  const regions = Object.values(regionMap).map(r =>
+    r.sort((a, b) => a[0] - b[0] || a[1] - b[1])
+  );
+
+  const result = {
+    size: gridSize,
+    cells: activeCells.sort((a, b) => a[0] - b[0] || a[1] - b[1]),
+    regions: regions
+  };
+
+  const box = document.getElementById('exportBox');
+  box.value = JSON.stringify(result, null, 2);
+  box.classList.add('visible');
+  box.select();
+}
+
+function hideExport() {
+  document.getElementById('exportBox').classList.remove('visible');
+  document.getElementById('message').textContent = '';
+}
+
+// --- Size Change ---
+const sizeSlider = document.getElementById('sizeSlider');
+const sizeLabel = document.getElementById('sizeLabel');
+
+sizeSlider.addEventListener('input', () => {
+  const newSize = parseInt(sizeSlider.value);
+  sizeLabel.textContent = `${newSize} x ${newSize}`;
+});
+
+sizeSlider.addEventListener('change', () => {
+  const newSize = parseInt(sizeSlider.value);
+  if (newSize === gridSize) return;
+
+  const oldCells = { ...cells };
+  const oldSize = gridSize;
+  gridSize = newSize;
+  initCells();
+
+  // Preserve overlapping data
+  for (let r = 0; r < Math.min(oldSize, newSize); r++) {
+    for (let c = 0; c < Math.min(oldSize, newSize); c++) {
+      const key = `${r},${c}`;
+      if (oldCells[key]) {
+        cells[key] = { ...oldCells[key] };
+      }
+    }
+  }
+
+  // Clean up orphaned region numbers
+  cleanRegions();
+  renderBoard();
+  renderPalette();
+  saveProgress();
+  hideExport();
+});
+
+function cleanRegions() {
+  const usedRegions = new Set();
+  for (const key in cells) {
+    if (cells[key].active && cells[key].region) {
+      usedRegions.add(cells[key].region);
+    }
+  }
+  regionCount = Math.max(1, usedRegions.size > 0 ? Math.max(...usedRegions) : 1);
+  if (currentRegion > regionCount) currentRegion = regionCount;
+}
+
+// --- localStorage ---
+function saveProgress() {
+  const data = { gridSize, cells, regionCount, currentRegion };
+  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+}
+
+function loadProgress() {
+  const saved = localStorage.getItem(SAVE_KEY);
+  if (!saved) return false;
+  try {
+    const data = JSON.parse(saved);
+    gridSize = data.gridSize;
+    cells = data.cells;
+    regionCount = data.regionCount || 1;
+    currentRegion = data.currentRegion || 1;
+    sizeSlider.value = gridSize;
+    sizeLabel.textContent = `${gridSize} x ${gridSize}`;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// --- Start ---
+initHeader();
+init();
+</script>
+

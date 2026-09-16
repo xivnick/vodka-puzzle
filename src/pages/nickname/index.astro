@@ -1,0 +1,6 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import body from '../../legacy/nickname.html?raw';
+import css from '../../legacy/nickname.css?raw';
+---
+<SiteLayout title="닉네임" legacy><Fragment slot="head" set:html={`<style>${css}</style>`} /><Fragment set:html={body} /></SiteLayout>
