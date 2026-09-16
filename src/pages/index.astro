@@ -2,13 +2,15 @@
 import SiteLayout from '../layouts/SiteLayout.astro';
 import puzzles from '../data/puzzles.json';
 import season from '../data/season.json';
+import ArchiveLink from '../components/ArchiveLink.astro';
 const visible = puzzles.filter(p => p.season === season.id && new Date(p.publishedAt) <= new Date()).sort((a,b) => b.publishedAt.localeCompare(a.publishedAt));
 ---
 <SiteLayout><main class="page"><p class="season">{season.label}</p><h1>퍼즐</h1>
-{visible.length ? <ul class="list">{visible.map(p => <li><a href={p.href} data-puzzle-id={p.id}><span class="title">{p.title}</span><span class="tag">{p.type}</span></a></li>)}</ul> : <div class="empty"><p>이번 학기의 첫 문제를 기다리고 있어요.</p><p class="muted">그동안 연습 문제나 지난 학기 문제를 풀어 보세요.</p></div>}
-<div class="links"><a href="/puzzle/practice/">연습 스도쿠</a><a href="/puzzle/archive/2026-1/">2026년 1학기 아카이브</a></div>
+{visible.length ? <ul class="list">{visible.map(p => <li><a href={p.href} data-puzzle-id={p.id}><span class="title">{p.title}</span><span class="tag">{p.type}</span></a></li>)}</ul> : null}
+<div class="links"><a href="/puzzle/practice/">연습 스도쿠</a></div>
 <h2>이번 학기 순위</h2><div id="semesterRank" aria-live="polite">불러오는 중…</div>
 </main>
+<ArchiveLink />
 <script is:inline>
 (async()=>{
  const el=document.getElementById('semesterRank');
