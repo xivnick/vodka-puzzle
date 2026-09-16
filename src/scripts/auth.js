@@ -83,6 +83,8 @@ function setupAccountPage() {
   const status = document.getElementById('nickStatus');
   const save = document.getElementById('useBtn');
   const logout = document.getElementById('logout');
+  const deleteAccount = document.getElementById('deleteAccount');
+  deleteAccount.hidden = !account.user;
   document.getElementById('accountLoading').hidden = true;
   login.hidden = !!account.user;
   form.hidden = !account.user;
@@ -127,6 +129,33 @@ function setupAccountPage() {
       status.textContent = error.code === '23505' ? '이미 사용 중인 닉네임입니다.' : '닉네임을 저장하지 못했습니다. 다시 시도해 주세요.';
       save.disabled = false;
     }
+  });
+  deleteAccount.addEventListener('click', async () => {
+    if (deleteAccount.disabled || !account.user) return;
+    if (!confirm('계정과 연결된 모든 학기의 닉네임, 완료 기록, 클라우드 풀이를 삭제합니다. 복구할 수 없습니다. 지난 학기 정적 아카이브는 별도 삭제 요청이 필요합니다. 계정을 삭제하시겠습니까?')) return;
+    deleteAccount.disabled = save.disabled = logout.disabled = true;
+    status.textContent = '계정을 삭제하는 중입니다...';
+    try {
+      const { data, error } = await client.functions.invoke('delete-account', { body: {} });
+      if (error || !data?.deleted) throw new Error('delete failed');
+    } catch {
+      status.textContent = '계정을 삭제하지 못했습니다. 로그인 상태를 확인하고 다시 시도해 주세요.';
+      deleteAccount.disabled = logout.disabled = false;
+      save.disabled = !!account.error;
+      return;
+    }
+    const userId = account.user.id;
+    initialized = false;
+    try {
+      for (const key of Object.keys(localStorage)) {
+        if (key.includes(`:${userId}:`) || key.startsWith('completion_saved_') && key.includes(`_${userId}_`)) localStorage.removeItem(key);
+      }
+      sessionStorage.removeItem('puzzle_login_next');
+    } catch {}
+    await client.auth.signOut({ scope: 'local' }).catch(() => {});
+    try { localStorage.removeItem('vodka_google_session'); } catch {}
+    account.user = account.profile = null;
+    location.replace('/puzzle/');
   });
   logout.addEventListener('click', async () => {
     logout.disabled = true;

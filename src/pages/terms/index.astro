@@ -1,0 +1,13 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import PolicyLinks from '../../components/PolicyLinks.astro';
+import '../../styles/policies.css';
+---
+<PageLayout title="이용약관">
+  <article class="policy">
+    <h2>서비스 목적</h2><p>vodka puzzle은 동아리 퍼즐 모임의 문제를 함께 풀고 풀이 기록과 순위를 공유하는 서비스다.</p>
+    <h2>이용 방식</h2><p>로그인하지 않아도 퍼즐을 플레이할 수 있다. 완료 기록과 클라우드 풀이를 저장하려면 Google 계정으로 로그인하고 닉네임을 설정한다. 닉네임과 완료 기록은 순위 및 풀이자 목록에 공개된다. 학기가 종료된 문제와 기록은 아카이브로 제공될 수 있다.</p>
+    <h2>금지 행위</h2><ul><li>다른 사람을 사칭하거나 타인의 계정과 기록에 무단으로 접근하는 행위</li><li>완료 기록을 조작하거나 자동화된 요청으로 순위를 부당하게 변경하는 행위</li><li>서비스를 방해하거나 시스템의 취약점을 악용하는 행위</li><li>모욕, 혐오, 개인정보 노출 등 타인에게 피해를 주는 닉네임을 사용하는 행위</li></ul>
+  </article>
+  <PolicyLinks slot="footer" />
+</PageLayout>

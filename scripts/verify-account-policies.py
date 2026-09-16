@@ -55,7 +55,13 @@ DO $$ BEGIN
   RAISE EXCEPTION 'Guest progress read allowed';
  EXCEPTION WHEN insufficient_privilege THEN NULL; END;
 END $$;
-SELECT 'owner writes, rename, isolation, nickname uniqueness, guest rejection: passed' AS result;
+RESET ROLE;
+DELETE FROM auth.users WHERE id='{u1}';
+DO $$ BEGIN
+ IF EXISTS(SELECT 1 FROM semester_nicknames WHERE user_id='{u1}') OR EXISTS(SELECT 1 FROM semester_completions WHERE user_id='{u1}') OR EXISTS(SELECT 1 FROM semester_progress WHERE user_id='{u1}') THEN RAISE EXCEPTION 'Account deletion did not cascade'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM semester_nicknames WHERE user_id='{u2}') THEN RAISE EXCEPTION 'Other account deleted'; END IF;
+END $$;
+SELECT 'owner writes, rename, isolation, nickname uniqueness, guest rejection, account deletion cascade: passed' AS result;
 ROLLBACK;
 """
 print(query(sql))

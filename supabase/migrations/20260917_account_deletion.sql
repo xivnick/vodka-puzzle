@@ -1,0 +1,12 @@
+BEGIN;
+ALTER TABLE public.semester_nicknames DROP CONSTRAINT semester_nicknames_user_id_fkey;
+ALTER TABLE public.semester_nicknames ADD CONSTRAINT semester_nicknames_user_id_fkey FOREIGN KEY(user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+ALTER TABLE public.semester_completions DROP CONSTRAINT semester_completions_user_id_fkey;
+ALTER TABLE public.semester_completions ADD CONSTRAINT semester_completions_user_id_fkey FOREIGN KEY(user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+ALTER TABLE public.semester_progress DROP CONSTRAINT semester_progress_user_id_fkey;
+ALTER TABLE public.semester_progress ADD CONSTRAINT semester_progress_user_id_fkey FOREIGN KEY(user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+ALTER TABLE public.semester_completions DROP CONSTRAINT completion_profile;
+ALTER TABLE public.semester_completions ADD CONSTRAINT completion_profile FOREIGN KEY(season_id,user_id,nickname) REFERENCES public.semester_nicknames(season_id,user_id,nickname) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE public.semester_progress DROP CONSTRAINT progress_profile;
+ALTER TABLE public.semester_progress ADD CONSTRAINT progress_profile FOREIGN KEY(season_id,user_id,nickname) REFERENCES public.semester_nicknames(season_id,user_id,nickname) ON UPDATE CASCADE ON DELETE CASCADE;
+COMMIT;
