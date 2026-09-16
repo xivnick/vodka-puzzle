@@ -22,7 +22,7 @@ Node.js 22.12 이상을 사용한다. 배포 대상은 **`dist/`만**이다. 저
 - `src/data/season.json`: 현재 학기
 - `src/data/puzzles.json`: 현재 사이트 문제 목록. `id`, `title`, `type`, `season`, `publishedAt`(시간대 포함 ISO 날짜), `href`를 입력한다.
 - `src/pages/`: 현재 사이트 페이지. 새 문제는 이곳에서 `PuzzleLayout`을 사용한다.
-- `src/legacy/`: 기존 닉네임·연습·제작 도구의 HTML/스타일 호환 조각. 헤더는 포함하지 않는다.
+- `src/legacy/`: 기존 연습·제작 도구의 HTML/스타일 호환 조각. 헤더는 포함하지 않는다.
 - `public/js/common.js`: 현재 학기의 저장·순위 기능
 - `public/archive/2026-1/`: DB와 독립된 지난 학기 사이트와 공개 완료 기록
 
@@ -32,9 +32,25 @@ Node.js 22.12 이상을 사용한다. 배포 대상은 **`dist/`만**이다. 저
 
 ## 데이터와 전환 상태
 
-`semester_nicknames`, `semester_completions`, `semester_progress`를 추가했다. 키는 학기·닉네임(및 문제)이다. 기존 테이블을 변경하지 않고 2026-1 기록을 복사했으며, `semester_settings.active_season`에 해당하는 학기만 익명 쓰기를 허용한다. 닉네임 기반 식별 방식은 기존과 같다.
+`semester_nicknames`, `semester_completions`, `semester_progress`는 Google OAuth 계정의 `user_id`로 소유자를 식별한다. 학기별 닉네임은 중복할 수 없고 한 계정당 하나이다. 닉네임 변경은 외래키의 ON UPDATE CASCADE로 완료·진행 기록에 반영된다. 브라우저 저장 키도 계정 ID를 사용한다.
 
-2026-09-16 정식 전환을 완료했다. 원래 `nicknames`, `completions`, `progress`는 읽기 정책만 남겨 기록을 고정했다. 최종 아카이브는 완료 기록 976개를 포함하며, 새 사이트는 `2026-2` 학기를 사용한다. `deploy dist www/puzzle`로 배포했으며 원격 전용 파일은 삭제하지 않았다.
+구글 로그인 없이 퍼즐을 풀 수 있지만 DB 기록은 저장할 수 없다. 현재 학기의 본인 기록에만 쓰기를 허용하며, 진행 상태는 본인만 조회한다. 공개 순위·닉네임은 누구나 조회할 수 있다. 기존 1학기 자료는 삭제하지 않으며 아카이브는 별도의 정적 기록 파일을 사용한다.
+
+### Google OAuth
+
+- `src/scripts/auth.js`: Supabase SDK, PKCE 코드 교환, 세션 복원·갱신, 닉네임 설정, 로그아웃
+- `src/pages/auth/callback/`: 로그인 후 복귀 경로
+- `src/pages/nickname/`: 구글 로그인과 계정에 연결된 닉네임 관리
+- Google 승인된 원본: `https://xivnick.me`
+- Google 승인된 리디렉션: `https://hlhrzbylbwebtoytmmpd.supabase.co/auth/v1/callback`
+- Supabase 허용 복귀 주소: `https://xivnick.me/puzzle/auth/callback/`
+- Client Secret은 Supabase 설정에만 보관한다. 이메일 로그인은 비활성화했다.
+
+신규 퍼즐은 초기 상태 복원을 `window.puzzleAuthReady.then(init)`처럼 인증 초기화 이후에 실행한다. 오프라인/비로그인 상태에서도 초기화는 완료된다. 완료·클라우드 저장 함수는 내부에서 인증 초기화를 기다린다.
+
+`npm test`는 OAuth 성공·취소·만료, 복귀 주소 검증, 계정별 저장 분리 등을 검사한다. `python3 scripts/verify-account-policies.py`는 실제 DB에서 두 가상 계정으로 권한과 닉네임 변경을 검증하고 전체 트랜잭션을 롤백한다. 실제 Google 동의 화면을 통과하는 로그인은 사용자 계정으로 최종 확인한다.
+
+2026-09-16 정식 전환을 완료했다. 원래 테이블은 기록을 고정했으며, 진행 상태 테이블의 익명 접근도 차단했다. 최종 아카이브는 완료 기록 976개를 포함하며, 새 사이트는 `2026-2` 학기를 사용한다. `deploy dist www/puzzle`로 배포했으며 원격 전용 파일은 삭제하지 않았다.
 
 전환 전 비공개 백업은 `~/Documents/Backups/vodka-puzzle/20260916-160431/`에 있으며 당시 운영 파일도 `production-site/`에 보존했다. 전환 후 최종 DB 스냅샷은 `20260916-160502/`에 보관했다.
 

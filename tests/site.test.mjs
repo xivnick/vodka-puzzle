@@ -39,10 +39,20 @@ test('new reads are semester-scoped and paginate beyond 1000 rows',async()=>{
  const calls=[];const r=runtime('public/js/common.js',async url=>{calls.push(url);const p=new URL(url).searchParams;assert.equal(p.get('season_id'),'eq.2026-2');return{ok:true,json:async()=>Array.from({length:calls.length<3?500:7},()=>({nickname:'n'}))}});
  const rows=await r.run("sbSelect('completions','select=nickname')");assert.equal(rows.length,1007);assert.equal(calls.length,3);
 });
-test('new upserts and local state include semester and nickname',async()=>{
+test('writes require a session; identity and local state follow account IDs',async()=>{
  const calls=[];const r=runtime('public/js/common.js',async(url,opts)=>{calls.push([url,opts]);return{ok:true}});
- r.run("setNickname('a');saveLocalState('puzzle_test',{n:1})");
- assert.ok(r.values.has('2026-2:a:puzzle_test'));r.run("setNickname('b')");assert.equal(r.run("loadLocalState('puzzle_test')"),null);
- await r.run("sbUpsert('progress',{nickname:'b',puzzle_id:'test',state:{}},'season_id,nickname,puzzle_id')");
- assert.equal(JSON.parse(calls[0][1].body).season_id,'2026-2');assert.match(calls[0][0],/semester_progress/);
+ r.values.set('vodka_nickname:2026-2','someone');
+ assert.equal(r.run('isGuest()'),true);
+ await assert.rejects(r.run("sbUpsert('progress',{},'season_id,user_id,puzzle_id')"));
+ assert.equal(calls.length,0);
+ r.run("window.puzzleAccount={user:{id:'account-a'},profile:{nickname:'a'},client:{auth:{getSession:async()=>({data:{session:{access_token:'session-token'}}})}}}");
+ r.run("saveLocalState('puzzle_test',{n:1})");
+ assert.ok(r.values.has('2026-2:account-a:puzzle_test'));
+ r.run("window.puzzleAccount.profile.nickname='renamed'");
+ assert.equal(r.run("loadLocalState('puzzle_test').n"),1);
+ await r.run("sbUpsert('progress',{nickname:'renamed',user_id:'forged',puzzle_id:'test',state:{}},'season_id,user_id,puzzle_id')");
+ const body=JSON.parse(calls[0][1].body);
+ assert.equal(body.season_id,'2026-2');assert.equal(body.user_id,'account-a');
+ assert.equal(calls[0][1].headers.Authorization,'Bearer session-token');
+ r.run("window.puzzleAccount.user.id='account-b'");assert.equal(r.run("loadLocalState('puzzle_test')"),null);
 });

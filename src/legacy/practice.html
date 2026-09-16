@@ -214,7 +214,7 @@ async function handleCloudLoad() {
   });
 }
 
-init();
+window.puzzleAuthReady.then(init);
 
 
 

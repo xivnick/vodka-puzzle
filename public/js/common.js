@@ -59,7 +59,7 @@ async function sbSelect(table, qs = '') {
     params.set('offset', String(offset));
     params.set('limit', String(Math.min(500, requestedLimit - rows.length)));
     const res = await fetch(`${SUPABASE_URL}/rest/v1/semester_${table}?${params}`, {
-      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+      headers: await accountHeaders()
     });
     if (!res.ok) throw new Error(`sbSelect ${table}: ${res.status}`);
     const page = await res.json(); rows.push(...page);
@@ -72,36 +72,27 @@ async function sbInsert(table, data) {
   const res = await fetch(url, {
     method: 'POST',
     headers: {
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      ...await accountHeaders(true),
       'Content-Type': 'application/json',
       'Prefer': 'return=minimal',
     },
-    body: JSON.stringify({ ...data, season_id: SEASON_ID }),
+    body: JSON.stringify({ ...data, season_id: SEASON_ID, user_id: getUserId() }),
   });
   if (!res.ok) throw new Error(`sbInsert ${table}: ${res.status}`);
   return true;
 }
 
-// ── Nickname ─────────────────────────────────────────────────────────────────
-const NICK_KEY = `vodka_nickname:${SEASON_ID}`;
-
-function getNickname() {
-  return localStorage.getItem(NICK_KEY) || '';
-}
-
-function setNickname(name) {
-  localStorage.setItem(NICK_KEY, name);
-}
-
-async function registerNickname(name) {
-  if (!name || name === GUEST_NAME) return;
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/semester_nicknames`, {
-    method: 'POST',
-    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json', Prefer: 'resolution=ignore-duplicates,return=minimal' },
-    body: JSON.stringify({ season_id: SEASON_ID, nickname: name })
-  });
-  if (!res.ok) throw new Error(`registerNickname: ${res.status}`);
+// ── Account identity (provided by the shared OAuth client) ──────────────────
+function getUserId() { return window.puzzleAccount?.user?.id || ''; }
+function getNickname() { return window.puzzleAccount?.profile?.nickname || ''; }
+async function accountHeaders(requireLogin = false) {
+  await window.puzzleAuthReady;
+  const client = window.puzzleAccount?.client;
+  const session = client ? await client.auth.getSession() : { data: { session: null } };
+  if (session.error) throw session.error;
+  const token = session.data.session?.access_token;
+  if (requireLogin && (!token || !getUserId() || !getNickname())) throw new Error('구글 로그인 후 닉네임을 설정해 주세요.');
+  return { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token || SUPABASE_ANON_KEY}` };
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
@@ -127,7 +118,10 @@ function initHeader() {
   const link = document.getElementById('nicknameLink');
   if (!link) return;
   const saved = getNickname();
-  link.textContent = saved || GUEST_NAME;
+  link.textContent = saved || (getUserId() ? '닉네임 설정' : '로그인');
+  if (!location.pathname.startsWith('/puzzle/nickname') && !location.pathname.startsWith('/puzzle/auth/')) {
+    link.href = '/puzzle/nickname/?next=' + encodeURIComponent(location.pathname + location.search + location.hash);
+  }
   initRecentBanner();
 }
 
@@ -299,14 +293,15 @@ function stopRecentBannerPolling() {
 }
 
 // ── Completion recording ─────────────────────────────────────────────────────
-function _completionSavedKey(puzzleId) { return `completion_saved_${SEASON_ID}_${getNickname()}_${puzzleId}`; }
+function _completionSavedKey(puzzleId) { return `completion_saved_${SEASON_ID}_${getUserId() || 'guest'}_${puzzleId}`; }
 
 function isGuest() {
   const nick = getNickname();
-  return !nick || nick === GUEST_NAME;
+  return !getUserId() || !nick || nick === GUEST_NAME;
 }
 
 async function recordCompletion(puzzleId) {
+  await window.puzzleAuthReady;
   const savedKey = _completionSavedKey(puzzleId);
 
   // 게스트로 완료했다가 닉네임을 설정한 경우 → 플래그 초기화 후 재기록
@@ -320,8 +315,8 @@ async function recordCompletion(puzzleId) {
     // 게스트는 저장 안 함 → 닉네임 설정 유도
     localStorage.setItem(savedKey, 'guest'); // 세션 내 중복 알림 방지
     setTimeout(() => {
-      if (confirm('닉네임을 설정하면 이 기록이 저장됩니다.\n닉네임 설정 페이지로 이동할까요?')) {
-        location.href = '/puzzle/nickname/';
+      if (confirm('구글 로그인 후 닉네임을 설정하면 기록을 저장할 수 있습니다.\n로그인 화면으로 이동할까요?')) {
+        location.href = '/puzzle/nickname/?next=' + encodeURIComponent(location.pathname + location.search + location.hash);
       }
     }, 300);
     return;
@@ -331,16 +326,15 @@ async function recordCompletion(puzzleId) {
   localStorage.setItem(savedKey, '1');
 
   try {
-    const url = `${SUPABASE_URL}/rest/v1/semester_completions?on_conflict=season_id,nickname,puzzle_id`;
+    const url = `${SUPABASE_URL}/rest/v1/semester_completions?on_conflict=season_id,user_id,puzzle_id`;
     const res = await fetch(url, {
       method: 'POST',
       headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        ...await accountHeaders(true),
         'Content-Type': 'application/json',
         'Prefer': 'resolution=ignore-duplicates,return=minimal',
       },
-      body: JSON.stringify({ puzzle_id: puzzleId, nickname: nickname, season_id: SEASON_ID }),
+      body: JSON.stringify({ puzzle_id: puzzleId, nickname: nickname, season_id: SEASON_ID, user_id: getUserId() }),
     });
     if (!res.ok) throw new Error(`recordCompletion: ${res.status}`);
   } catch (e) {
@@ -369,26 +363,26 @@ async function sbUpsert(table, data, onConflict) {
   const res = await fetch(url, {
     method: 'POST',
     headers: {
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      ...await accountHeaders(true),
       'Content-Type': 'application/json',
       'Prefer': 'resolution=merge-duplicates,return=minimal',
     },
-    body: JSON.stringify({ ...data, season_id: SEASON_ID }),
+    body: JSON.stringify({ ...data, season_id: SEASON_ID, user_id: getUserId() }),
   });
   if (!res.ok) throw new Error(`sbUpsert ${table}: ${res.status}`);
   return true;
 }
 
 async function saveProgressCloud(puzzleId, state) {
-  if (isGuest()) { showToast('닉네임을 설정해야 저장할 수 있습니다.'); return; }
+  await window.puzzleAuthReady;
+  if (isGuest()) { showToast('구글 로그인 후 닉네임을 설정해 주세요.'); return; }
   try {
     await sbUpsert('progress', {
       nickname: getNickname(),
       puzzle_id: puzzleId,
       state: state,
       saved_at: new Date().toISOString(),
-    }, 'season_id,nickname,puzzle_id');
+    }, 'season_id,user_id,puzzle_id');
     showToast('저장했습니다.');
   } catch(e) {
     console.warn('saveProgressCloud failed:', e);
@@ -397,11 +391,12 @@ async function saveProgressCloud(puzzleId, state) {
 }
 
 async function loadProgressCloud(puzzleId) {
-  if (isGuest()) { showToast('닉네임을 설정해야 불러올 수 있습니다.'); return null; }
+  await window.puzzleAuthReady;
+  if (isGuest()) { showToast('구글 로그인 후 닉네임을 설정해 주세요.'); return null; }
   try {
     const rows = await sbSelect(
       'progress',
-      `nickname=eq.${encodeURIComponent(getNickname())}&puzzle_id=eq.${encodeURIComponent(puzzleId)}&select=state&limit=1`
+      `user_id=eq.${encodeURIComponent(getUserId())}&puzzle_id=eq.${encodeURIComponent(puzzleId)}&select=state&limit=1`
     );
     if (rows.length === 0) { showToast('불러올 데이터가 없습니다.'); return null; }
     showToast('불러왔습니다.');
@@ -426,11 +421,16 @@ function toggleRules(id = 'rulesBox') {
 }
 
 function saveLocalState(key, state) {
-  localStorage.setItem(`${SEASON_ID}:${getNickname()}:${key}`, JSON.stringify(state));
+  localStorage.setItem(`${SEASON_ID}:${getUserId() || 'guest'}:${key}`, JSON.stringify(state));
 }
 
 function loadLocalState(key) {
-  const raw = localStorage.getItem(`${SEASON_ID}:${getNickname()}:${key}`);
+  const storageKey = `${SEASON_ID}:${getUserId() || 'guest'}:${key}`;
+  let raw = localStorage.getItem(storageKey);
+  if (!raw && !getUserId()) {
+    raw = localStorage.getItem(`${SEASON_ID}::${key}`);
+    if (raw) localStorage.setItem(storageKey, raw);
+  }
   if (!raw) return null;
   try {
     return JSON.parse(raw);
@@ -549,12 +549,13 @@ async function renderLeaderboard(puzzleId, containerId) {
 
 // ── My completed puzzles ─────────────────────────────────────────────────────
 async function getMyCompletedPuzzles() {
+  await window.puzzleAuthReady;
   const nickname = getNickname();
   if (!nickname) return new Set();
   try {
     const rows = await sbSelect(
       'completions',
-      `nickname=eq.${encodeURIComponent(nickname)}&select=puzzle_id`
+      `user_id=eq.${encodeURIComponent(getUserId())}&select=puzzle_id`
     );
     return new Set(rows.map(r => r.puzzle_id));
   } catch (e) {
@@ -653,3 +654,8 @@ function escHtml(s) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
+window.addEventListener('puzzle-auth-ready', () => {
+  initHeader();
+  initCloudBtns();
+});

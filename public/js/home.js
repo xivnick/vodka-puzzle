@@ -253,3 +253,10 @@ const PAGE_SIZE = 10;
   });
 
   window.addEventListener('hashchange', renderPagination);
+
+window.addEventListener('puzzle-auth-ready', () => {
+  document.querySelectorAll('.check-mark').forEach(el => el.remove());
+  initUnsolvedFilter();
+  loadCompletions();
+  loadSolverRankings();
+});
