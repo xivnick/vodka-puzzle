@@ -1,28 +1,4 @@
 /* Original home styles, scoped to the current home page. */
-body.home {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: #ffffff;
-    color: #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    padding: 0 16px 60px;
-  }
-
-body.home h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 6px;
-    letter-spacing: -0.01em;
-  }
-
-body.home .desc {
-    font-size: 0.82rem;
-    color: #999;
-    margin-bottom: 32px;
-  }
 
 body.home .list {
     width: min(94vw, 480px);
@@ -191,9 +167,7 @@ body.home .rank-tab.active {
     font-weight: 700;
   }
 
-  @media (max-width: 540px) {body.home { padding: 0 8px 48px; }
-
-body.home h1 { font-size: 1.3rem; }
+  @media (max-width: 540px) {
 
 body.home .list a { padding: 12px 14px; }
 
@@ -208,11 +182,3 @@ body.home .pager button {
   }
 
 body.home .list a { position: relative; }
-
-body.home { line-height: normal; }
-body.home .site-header { height: 44px; }
-body.home .header-back { font-size: .85rem; color: #999; }
-body.home .header-nick-link { font-size: .82rem; color: #aaa; }
-body.home > h1 { margin-top: 20px; }
-body.home .recent-banner:not([style*="display: none"]) + h1 { margin-top: 0; }
-body.home > footer { margin-top: auto; padding-bottom: 0; }

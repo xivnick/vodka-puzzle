@@ -1,7 +1,7 @@
 ---
 import Header from '../components/Header.astro';
 import season from '../data/season.json';
-const { title = 'vodka puzzle', description = 'vodka puzzle', legacy = false, home = false } = Astro.props;
+const { title = 'vodka puzzle', description = 'vodka puzzle', legacy = false, home = false, unified = false } = Astro.props;
 ---
 <!doctype html>
 <html lang="ko" data-season={season.id}>
@@ -14,7 +14,7 @@ const { title = 'vodka puzzle', description = 'vodka puzzle', legacy = false, ho
 <script is:inline src="/puzzle/js/common.js?v=27"></script>
 <slot name="head" />
 </head>
-<body class:list={{ legacy, home }}><Header /><slot /><script is:inline>initHeader();</script></body>
+<body class:list={{ legacy, home, unified }}><Header /><slot /><script is:inline>initHeader();</script></body>
 </html>
 <style is:global>
 body{font-family:'Noto Sans KR',sans-serif;background:white;color:#333;font-size:16px;line-height:1.65;min-height:100vh}

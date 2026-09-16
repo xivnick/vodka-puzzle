@@ -17,6 +17,7 @@ Node.js 22.12 이상을 사용한다. 배포 대상은 **`dist/`만**이다. 저
 
 - `src/components/Header.astro`: 모든 현재 페이지의 헤더와 메뉴
 - `src/layouts/SiteLayout.astro`: 메타 정보, 공통 스타일·스크립트
+- `src/layouts/PageLayout.astro`: 홈·문제·닉네임·아카이브 목록의 본문 너비, 제목·부제, 모바일 여백. 페이지별 CSS에서 body/h1/헤더 레이아웃을 덮어쓰지 않는다.
 - `src/layouts/PuzzleLayout.astro`: 신규 퍼즐의 규칙·저장 버튼·리더보드
 - `src/data/season.json`: 현재 학기
 - `src/data/puzzles.json`: 현재 사이트 문제 목록. `id`, `title`, `type`, `season`, `publishedAt`(시간대 포함 ISO 날짜), `href`를 입력한다.

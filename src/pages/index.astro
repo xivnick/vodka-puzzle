@@ -1,14 +1,12 @@
 ---
-import SiteLayout from '../layouts/SiteLayout.astro';
+import PageLayout from '../layouts/PageLayout.astro';
 import puzzles from '../data/puzzles.json';
 import season from '../data/season.json';
 import ArchiveLink from '../components/ArchiveLink.astro';
 import '../styles/home.css';
 const visible = puzzles.filter(p => p.season === season.id && new Date(p.publishedAt) <= new Date()).sort((a,b) => b.publishedAt.localeCompare(a.publishedAt));
 ---
-<SiteLayout home>
-<h1>퍼즐</h1>
-<p class="desc">xivnick.me/puzzle</p>
+<PageLayout title="vodka puzzle" heading="퍼즐" subtitle="xivnick.me/puzzle" home>
 
 <div class="list-head">
   <div class="list-title">문제</div>
@@ -35,6 +33,6 @@ const visible = puzzles.filter(p => p.season === season.id && new Date(p.publish
     <div id="solverRank" aria-live="polite"><div class="lb-loading">불러오는 중...</div></div>
   </div>
 </div>
-<ArchiveLink />
+<ArchiveLink slot="footer" />
 <script is:inline src="/puzzle/js/home.js?v=1"></script>
-</SiteLayout>
+</PageLayout>

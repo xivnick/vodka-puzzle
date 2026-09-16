@@ -1,11 +1,11 @@
 ---
-import SiteLayout from './SiteLayout.astro';
-const { title, puzzleId, description } = Astro.props;
+import PageLayout from './PageLayout.astro';
+const { title, puzzleId, description, subtitle } = Astro.props;
 ---
-<SiteLayout title={title} description={description} legacy>
+<PageLayout title={title} description={description} subtitle={subtitle}>
 <slot name="head" slot="head" />
-<h1>{title}</h1><div class="container"><details class="rules-box"><summary>규칙 보기</summary><slot name="rules" /></details><slot />
+<div class="container"><details class="rules-box open"><summary>규칙 보기</summary><slot name="rules" /></details><slot />
 <div class="cloud-btns" id="cloudBtns" style="display:none"><button class="cloud-btn" onclick="handleCloudSave()">저장하기</button><button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button></div>
 <div class="lb-section"><div class="lb-title">푼 사람</div><div id="leaderboard"></div></div></div>
 <script is:inline define:vars={{puzzleId}}>window.addEventListener('DOMContentLoaded',()=>{initCloudBtns();renderLeaderboard(puzzleId,'leaderboard');});</script>
-</SiteLayout>
+</PageLayout>

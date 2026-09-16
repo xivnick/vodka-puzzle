@@ -1,0 +1,42 @@
+---
+import SiteLayout from './SiteLayout.astro';
+const { title, heading = title, subtitle, description, home = false } = Astro.props;
+---
+<SiteLayout title={title} description={description} home={home} unified>
+  <slot name="head" slot="head" />
+  <main class="page-content">
+    <div class="page-heading">
+      <h1>{heading}</h1>
+      {subtitle && <p class="page-subtitle">{subtitle}</p>}
+    </div>
+    <slot />
+  </main>
+  <slot name="footer" />
+</SiteLayout>
+<style is:global>
+body.unified {
+  display:flex; flex-direction:column; align-items:center;
+  min-height:100vh; padding:0 16px 60px; line-height:normal;
+}
+body.unified > .site-header { flex-shrink:0; }
+body.unified > .recent-banner { margin-bottom:0; }
+.page-content {
+  display:flex; flex-direction:column; align-items:center;
+  width:min(94vw,480px); max-width:100%; flex:1;
+  padding-top:20px;
+}
+.page-heading { width:100%; margin-bottom:32px; text-align:center; }
+.page-heading h1 {
+  margin:0; font-size:1.5rem; font-weight:700; color:#222;
+  letter-spacing:-.01em; line-height:normal;
+}
+.page-heading .page-subtitle {
+  margin:6px 0 0; font-size:.82rem; color:#999; line-height:1.5;
+}
+.page-content > .container { max-width:100%; }
+body.unified > footer { padding-bottom:0; }
+@media(max-width:540px) {
+  body.unified { padding:0 8px 48px; }
+  .page-heading h1 { font-size:1.3rem; }
+}
+</style>

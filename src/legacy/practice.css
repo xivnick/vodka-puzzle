@@ -1,5 +1,4 @@
-
-  .back {
+.back {
     align-self: flex-start;
     font-size: 0.82rem;
     font-weight: 400;
@@ -76,8 +75,7 @@
   .numpad button:active { transform: scale(0.95); background: #ddd9cf; }
 
   @media (max-width: 540px) {
-    body { padding: 0 8px 40px; }
-    h1 { font-size: 1.25rem; }
+
     .numpad { gap: 5px; }
     .numpad button { height: min(9.5vw, 44px); font-size: min(4.4vw, 18px); }
     .bottom-buttons { gap: 5px; }
