@@ -23,3 +23,9 @@ export function conflicts(puzzle,values){
  for(const path of puzzle.thermometers){const ids=path.map(indexOf);ids.forEach((i,a)=>{for(let b=a+1;b<ids.length;b++){const j=ids[b];if(values[i]&&values[j]&&values[i]>=values[j]){bad.add(i);bad.add(j);}}});}return bad;
 }
 export function solved(puzzle,values){return values.length===81&&values.every(n=>Number.isInteger(n)&&n>=1&&n<=9)&&puzzle.givens.flat().every((n,i)=>!n||values[i]===n)&&conflicts(puzzle,values).size===0;}
+
+export function parseState(puzzle,saved,puzzleId){
+ if(!saved||saved.version!==1||saved.puzzleId!==puzzleId||!Array.isArray(saved.values)||saved.values.length!==81||!saved.values.every(n=>Number.isInteger(n)&&n>=0&&n<=9)||!Array.isArray(saved.notes)||saved.notes.length!==81||!saved.notes.every(a=>Array.isArray(a)&&a.every(n=>Number.isInteger(n)&&n>=1&&n<=9)))return null;
+ const values=saved.values.map((n,i)=>puzzle.givens.flat()[i]||n);
+ return {values,notes:saved.notes.map((a,i)=>values[i]?[]:[...new Set(a)])};
+}

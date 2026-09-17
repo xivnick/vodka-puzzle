@@ -1,7 +1,13 @@
-import {puzzles,conflicts,solved} from '../lib/thermo-sudoku.js';
+import {puzzles,conflicts,solved,parseState} from '../lib/thermo-sudoku.js';
 const $=id=>document.getElementById(id);
 const puzzle=puzzles.find(p=>p.id===$('thermoGame').dataset.difficulty);
 const givens=puzzle.givens.flat();
+const ID=$('thermoGame').dataset.puzzleId,preview=$('thermoGame').dataset.preview==='true';
+let ready=preview,completed=false;
+function state(){return {version:1,puzzleId:ID,values:values.slice(),notes:notes.map(a=>a.slice())};}
+function persist(){if(preview||!ready)return;try{window.saveLocalState(ID,state());}catch{window.showToast('브라우저에 저장하지 못했습니다.');}}
+function checkComplete(){if(!preview&&ready&&!completed&&solved(puzzle,values)){completed=true;window.recordCompletion(ID);}}
+function update(){persist();render();checkComplete();}
 let values=givens.slice(),notes=Array.from({length:81},()=>[]),selected=0,notesMode=false;
 function render(){
  const bad=conflicts(puzzle,values);
@@ -9,7 +15,7 @@ function render(){
  $('thermoComplete').hidden=!solved(puzzle,values);
 }
 function focus(){document.querySelector(`[data-cell="${selected}"]`).focus();}
-function change(n){if(givens[selected])return;if(notesMode&&n){if(values[selected])return;notes[selected]=notes[selected].includes(n)?notes[selected].filter(v=>v!==n):[...notes[selected],n];}else{values[selected]=n;notes[selected]=[];}render();}
+function change(n){if(!ready||givens[selected])return;if(notesMode&&n){if(values[selected])return;notes[selected]=notes[selected].includes(n)?notes[selected].filter(v=>v!==n):[...notes[selected],n];}else{values[selected]=n;notes[selected]=[];}update();}
 function toggleNotes(){notesMode=!notesMode;$('thermoNotes').setAttribute('aria-pressed',String(notesMode));}
 $('thermoCells').addEventListener('click',e=>{const cell=e.target.closest('[data-cell]');if(cell){selected=Number(cell.dataset.cell);render();focus();}});
 $('thermoCells').addEventListener('keydown',e=>{
@@ -21,5 +27,21 @@ $('thermoCells').addEventListener('keydown',e=>{
 $('thermoNumbers').addEventListener('click',e=>{const button=e.target.closest('[data-number]');if(button)change(Number(button.dataset.number));});
 $('thermoNotes').addEventListener('click',toggleNotes);
 $('thermoErase').addEventListener('click',()=>change(0));
-$('thermoReset').addEventListener('click',()=>{if(confirm('입력한 숫자와 메모를 초기화할까요?')){values=givens.slice();notes=Array.from({length:81},()=>[]);render();}});
+$('thermoReset').addEventListener('click',()=>{if(ready&&confirm('입력한 숫자와 메모를 초기화할까요?')){values=givens.slice();notes=Array.from({length:81},()=>[]);update();}});
 render();
+
+if(!preview){
+ window.checkComplete=checkComplete;
+ window.handleCloudSave=()=>{if(ready)return window.saveProgressCloud(ID,state());};
+ window.handleCloudLoad=async()=>{
+  if(!ready||!confirm('저장된 진행 상황을 불러오시겠습니까?'))return;
+  const saved=await window.loadProgressCloud(ID);if(saved==null)return;
+  const next=parseState(puzzle,saved,ID);if(!next){window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.');return;}
+  values=next.values;notes=next.notes;update();
+ };
+ function restore(){ready=false;completed=false;let saved=null;try{saved=window.loadLocalState(ID);}catch{}
+  const next=parseState(puzzle,saved,ID);values=next?.values||givens.slice();notes=next?.notes||Array.from({length:81},()=>[]);ready=true;render();window.initCloudBtns();checkComplete();
+ }
+ window.puzzleAuthReady.then(restore);
+ window.addEventListener('puzzle-auth-ready',restore);
+}
