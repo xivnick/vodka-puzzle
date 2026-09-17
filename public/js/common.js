@@ -172,7 +172,7 @@ async function refreshLatestCompletions(force = false) {
 async function getPuzzleTitleMap() {
   if (_puzzleTitleMapPromise) return _puzzleTitleMapPromise;
   _puzzleTitleMapPromise = (async () => {
-    const map = new Map(Object.entries(PUZZLE_TITLE_OVERRIDES));
+    const map = new Map([...Object.entries(PUZZLE_TITLE_OVERRIDES), ...Object.entries(window.puzzleTitles || {})]);
     try {
       const res = await fetch('/');
       if (!res.ok) throw new Error(`index fetch failed: ${res.status}`);
@@ -252,7 +252,9 @@ async function renderRecentBanner(rows) {
   }
 
   if (!rows || rows.length === 0) {
-    banner.style.display = 'none';
+    banner.style.display = 'flex';
+    banner.classList.remove('is-animated');
+    banner.innerHTML = '';
     stopRecentBannerRotation();
     return;
   }

@@ -1,9 +1,10 @@
 ---
-import PageLayout from '../../layouts/PageLayout.astro';
+import PuzzleLayout from '../../layouts/PuzzleLayout.astro';
 import body from '../../legacy/practice.html?raw';
 import css from '../../legacy/practice.css?raw';
 ---
-<PageLayout title="테스트 스도쿠" subtitle="테스트용 스도쿠입니다. 랭킹에는 반영되지 않습니다">
+<PuzzleLayout title="테스트 스도쿠" puzzleId="puzzle_test" subtitle="테스트용 스도쿠입니다. 랭킹에는 반영되지 않습니다" showCloud={false} showLeaderboard={false}>
+  <div slot="rules"><strong>스도쿠 규칙</strong><br />같은 행, 같은 열, 같은 3×3 박스 안에 1~9가 한 번씩 들어갑니다.</div>
   <Fragment slot="head" set:html={`<style>${css}</style>`} />
   <Fragment set:html={body} />
-</PageLayout>
+</PuzzleLayout>

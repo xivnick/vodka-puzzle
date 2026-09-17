@@ -1,10 +1,10 @@
 ---
 import SiteLayout from './SiteLayout.astro';
-const { title, heading = title, subtitle, description, home = false } = Astro.props;
+const { title, heading = title, subtitle, description, home = false, puzzle = false } = Astro.props;
 ---
 <SiteLayout title={title} description={description} home={home} unified>
   <slot name="head" slot="head" />
-  <main class="page-content">
+  <main class:list={["page-content", { "puzzle-content": puzzle }]}>
     <div class="page-heading">
       <h1>{heading}</h1>
       {subtitle && <p class="page-subtitle">{subtitle}</p>}
@@ -25,14 +25,15 @@ body.unified > .recent-banner { margin-bottom:0; }
   width:min(94vw,480px); max-width:100%; flex:1;
   padding-top:20px;
 }
-.page-heading { width:100%; margin-bottom:32px; text-align:center; }
+.page-heading { width:100%; margin-bottom:24px; text-align:center; }
 .page-heading h1 {
   margin:0; font-size:1.5rem; font-weight:700; color:#222;
-  letter-spacing:-.01em; line-height:normal;
+  letter-spacing:-.01em; line-height:1.4;
 }
 .page-heading .page-subtitle {
-  margin:6px 0 0; font-size:.82rem; color:#999; line-height:1.5;
+  margin:6px 0 0; font-size:.82rem; color:#888; line-height:1.5;
 }
+.page-content.puzzle-content .page-heading { margin-bottom:8px; }
 .page-content > .container { max-width:100%; }
 body.unified > footer { padding-bottom:0; }
 @media(max-width:540px) {
