@@ -1,0 +1,24 @@
+---
+import PuzzleLayout from '../../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from '../../components/PuzzleCompletion.astro';
+---
+<PuzzleLayout title="260916 Mini Rectangles" puzzleId="260916_01" subtitle="정사각형을 최소로 하여 흰색 영역을 직사각형으로 나누세요" description="흰색 영역을 직사각형으로 나누고 정사각형의 개수를 최소로 만드세요.">
+  <div slot="rules" class="mr-rules">
+    <p>흰색 칸으로 이루어진 영역을 선을 따라 분할하여 직사각형들로 나누세요. 단, 정사각형의 개수가 최소가 되도록 나누세요.</p>
+    <p>검게 칠해진 칸은 영역의 일부가 아닙니다.</p>
+  </div>
+  <div slot="controls">
+    흰색 칸에서 드래그하면 사각형이 만들어집니다.<br />
+    만든 사각형을 누르면 삭제됩니다.
+  </div>
+  <section class="mr-game" aria-label="Mini Rectangles 퍼즐">
+    <svg id="mr-board" viewBox="-2 -2 454 454" role="application" aria-label="9행 9열 직사각형 퍼즐. 드래그로 만들고 누르면 삭제합니다." tabindex="0"></svg>
+    <div class="bottom-buttons"><button id="mr-reset" class="danger" type="button">초기화</button></div>
+    <PuzzleCompletion id="mr-complete" />
+    <span id="mr-status" class="sr-only" role="status" aria-live="polite"></span>
+  </section>
+</PuzzleLayout>
+<script>import '../../scripts/mini-rectangles.js';</script>
+<style>
+.mr-rules{line-height:1.7}.mr-rules p+p{margin-top:8px}.mr-game{width:100%;max-width:480px}#mr-board{display:block;width:100%;height:auto;margin:0;touch-action:none;user-select:none;cursor:crosshair;background:white}#mr-board:focus{outline:none}#mr-board[data-keyboard=true]:focus-visible{outline:2px solid #4a6fa5;outline-offset:4px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+</style>
