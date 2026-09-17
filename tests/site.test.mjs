@@ -80,3 +80,17 @@ test('shared pages reserve an empty banner before JavaScript and empty results k
  r.run("window.banner={style:{},classList:{remove(){}},innerHTML:'old'};document.querySelector=()=>({});document.getElementById=()=>window.banner;");
  await r.run('renderRecentBanner([])');assert.equal(r.run('window.banner.style.display'),'flex');assert.equal(r.run('window.banner.innerHTML'),'');
 });
+
+
+test('banner loads combined records and formats daily dates with escaped nicknames',async()=>{
+ const calls=[];
+ const r=runtime('public/js/common.js',async(url,opts)=>{calls.push([url,opts]);return {ok:true,json:async()=>[{nickname:'<solver>',puzzle_id:'daily-sudoku:2026-09-17',completed_at:'2026-09-17T01:00:00Z'}]};});
+ const rows=await r.run('getLatestCompletions()');
+ assert.equal(rows[0].puzzle_id,'daily-sudoku:2026-09-17');
+ assert.match(calls[0][0],/rpc\/recent_completions$/);assert.equal(calls[0][1].method,'POST');
+ r.run("window.messages=[];document.querySelector=()=>({});document.getElementById=()=>({style:{}});getPuzzleTitleMap=async()=>new Map([['normal','일반 문제']]);applyRecentBannerMessage=(banner,message)=>window.messages.push(message);startRecentBannerRotation=(banner,messages)=>window.messages=messages;");
+ await r.run("renderRecentBanner([{nickname:'<solver>',puzzle_id:'daily-sudoku:2026-09-17'},{nickname:'solver',puzzle_id:'normal'}])");
+ assert.match(r.run('window.messages[0]'),/260917 Daily Sudoku/);
+ assert.match(r.run('window.messages[0]'),/&lt;solver&gt;/);
+ assert.match(r.run('window.messages[1]'),/일반 문제/);
+});

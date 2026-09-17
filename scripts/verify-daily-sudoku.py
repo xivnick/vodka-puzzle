@@ -38,12 +38,15 @@ DO $$ DECLARE d date; a text; second jsonb; ctx jsonb; first_rank bigint; BEGIN
  SELECT (r->>'rank')::bigint INTO first_rank FROM jsonb_array_elements(ctx->'rankings') r WHERE r->>'nickname'='__daily_renamed';
  IF first_rank IS NULL OR (second->>'rank')::bigint<>first_rank+1 THEN RAISE EXCEPTION 'Rank order/rename failed'; END IF;
  END $$;
+INSERT INTO public.semester_completions(season_id,user_id,nickname,puzzle_id) SELECT active_season,'{u2}','__daily_b','__banner_fixture' FROM public.semester_settings WHERE id;
 RESET ROLE;
 SET LOCAL ROLE anon;
 SELECT set_config('request.jwt.claims','{{"role":"anon"}}',true);
 DO $$ DECLARE ctx jsonb; BEGIN
  ctx:=public.daily_sudoku_context((SELECT day+1 FROM daily_fixture));
  IF (ctx->>'available')::boolean OR ctx->>'givens' IS NOT NULL OR jsonb_array_length(ctx->'rankings')<>0 THEN RAISE EXCEPTION 'Future puzzle exposed'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.recent_completions() WHERE nickname='__daily_renamed' AND puzzle_id='daily-sudoku:' || (SELECT day::text FROM daily_fixture)) OR NOT EXISTS(SELECT 1 FROM public.recent_completions() WHERE puzzle_id='__banner_fixture') THEN RAISE EXCEPTION 'Mixed banner records/rename failed'; END IF;
+ IF (SELECT count(*) FROM public.recent_completions())<>3 THEN RAISE EXCEPTION 'Banner limit failed'; END IF;
  ctx:=public.daily_sudoku_context(date '2000-01-01');IF (ctx->>'available')::boolean THEN RAISE EXCEPTION 'Missing puzzle not handled'; END IF;
  BEGIN PERFORM public.submit_daily_sudoku((SELECT day FROM daily_fixture),repeat('1',81)); RAISE EXCEPTION 'Guest submit accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; WHEN raise_exception THEN IF SQLERRM <> 'LOGIN_REQUIRED' THEN RAISE; END IF; END;
  END $$;

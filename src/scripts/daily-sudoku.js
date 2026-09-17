@@ -25,7 +25,7 @@ async function submit(){
  try{
   const {data:result,error}=await window.puzzleAccount.client.rpc('submit_daily_sudoku',{requested_day:data.day,answer});
   if(error)throw error;
-  completedAnswer=answer;complete();await refreshRanks();
+  completedAnswer=answer;complete();window.refreshRecentBanner?.(true);await refreshRanks();
  }catch(e){
   if(e.message?.includes('WRONG_ANSWER')){rejectedAnswer=answer;message('아직 정답이 아닙니다.');}
   else message(e.message?.includes('CLOSED')?'순위 집계가 마감되었습니다.':e.message?.includes('PROFILE_REQUIRED')?'닉네임을 설정해 주세요.':'제출하지 못했습니다. 잠시 후 자동으로 다시 시도합니다.');

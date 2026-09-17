@@ -136,17 +136,17 @@ const PUZZLE_TITLE_OVERRIDES = {
 };
 
 async function getLatestCompletions() {
-  if (_recentCompletionCache) return _recentCompletionCache;
-  try {
-    const rows = await sbSelect(
-      'completions',
-      'select=nickname,puzzle_id,completed_at&order=completed_at.desc&limit=3'
-    );
-    _recentCompletionCache = rows || [];
-  } catch (e) {
-    _recentCompletionCache = [];
-  }
-  return _recentCompletionCache;
+  return refreshLatestCompletions();
+}
+
+async function fetchRecentCompletions() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/recent_completions`, {
+    method: 'POST',
+    headers: { ...await accountHeaders(), 'Content-Type': 'application/json' },
+    body: '{}',
+  });
+  if (!res.ok) throw new Error(`recent_completions: ${res.status}`);
+  return res.json();
 }
 
 async function refreshLatestCompletions(force = false) {
@@ -154,10 +154,7 @@ async function refreshLatestCompletions(force = false) {
   _recentBannerInFlight = (async () => {
     if (!force && _recentCompletionCache) return _recentCompletionCache;
     try {
-      const rows = await sbSelect(
-        'completions',
-        'select=nickname,puzzle_id,completed_at&order=completed_at.desc&limit=3'
-      );
+      const rows = await fetchRecentCompletions();
       _recentCompletionCache = rows || [];
     } catch (e) {
       if (force) _recentCompletionCache = [];
@@ -262,7 +259,8 @@ async function renderRecentBanner(rows) {
   banner.style.display = 'flex';
   const titleMap = await getPuzzleTitleMap();
   const messages = rows.map(row => {
-    const puzzleTitle = titleMap.get(row.puzzle_id) || row.puzzle_id;
+    const daily = /^daily-sudoku:(\d{4}-\d{2}-\d{2})$/.exec(row.puzzle_id);
+    const puzzleTitle = daily ? `${daily[1].replaceAll('-', '').slice(2)} Daily Sudoku` : titleMap.get(row.puzzle_id) || row.puzzle_id;
     return buildRecentBannerText(row, puzzleTitle);
   });
   _recentBannerIndex = Math.min(_recentBannerIndex, messages.length - 1);
