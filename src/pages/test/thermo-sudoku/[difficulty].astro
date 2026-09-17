@@ -8,7 +8,7 @@ const point=([r,c])=>[(c-.5)*50,(r-.5)*50];
 function points(path){const coords=path.map(point);const last=coords.at(-1),prev=coords.at(-2);coords[coords.length-1]=last.map((n,i)=>n+(prev[i]-n)*.28);return coords.map(p=>p.join(',')).join(' ');}
 const bulbs=[...new Map(puzzle.thermometers.map(p=>[p[0].join(','),p[0]])).values()];
 ---
-<PuzzleLayout title={`스도쿠 (온도계) · ${puzzle.difficulty}`} puzzleId={`test-thermo-${puzzle.id}`} subtitle="온도계의 큰 원에서 끝으로 갈수록 숫자가 커져야 합니다" description="온도계의 큰 원에서 끝으로 갈수록 숫자가 커지는 스도쿠" showCloud={false} showLeaderboard={false}>
+<PuzzleLayout title={`온도계 스도쿠 - ${puzzle.difficulty}`} puzzleId={`test-thermo-${puzzle.id}`} subtitle="온도계의 큰 원에서 끝으로 갈수록 숫자가 커져야 합니다" description="온도계의 큰 원에서 끝으로 갈수록 숫자가 커지는 스도쿠" showCloud={false} showLeaderboard={false}>
   <div slot="rules">각 가로줄, 세로줄, 3×3 영역에 1부터 9까지의 숫자가 한 번씩 들어가도록 채우세요.<br />온도계의 숫자는 중심(큰 원)에서 끝으로 갈수록 커져야 합니다. 같은 숫자는 들어갈 수 없습니다.</div>
   <div slot="controls">
     칸을 선택하고 숫자 버튼으로 입력하세요.<br />
