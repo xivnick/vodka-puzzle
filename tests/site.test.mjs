@@ -19,8 +19,8 @@ test('all built HTML scripts compile and local links resolve',()=>{
   if(/type="(?:module|application\/ld\+json)"/.test(m[1]))continue;
   assert.doesNotThrow(()=>new vm.Script(m[2]),file);
  }
- for(const m of html.matchAll(/(?:href|src)="(\/puzzle\/[^"?#]*)/g)){
- const target=path.join('dist',decodeURI(m[1].slice('/puzzle/'.length)));
+ for(const m of html.matchAll(/(?:href|src)="(\/(?!\/)[^"?#]*)/g)){
+ const target=path.join('dist',decodeURI(m[1].slice('/'.length)));
  assert.ok(fs.existsSync(target),`${file}: missing ${m[1]}`);
  }
  }
@@ -31,7 +31,7 @@ test('archive loads only snapshot and cannot write records',async()=>{
  const result=await r.run("sbSelect('completions','order=completed_at.desc&limit=3')");assert.equal(result.length,3);
  await r.run('registerNickname("test")');await r.run('saveProgressCloud("test",{})');
  await assert.rejects(r.run('sbInsert("completions",{})'));
- assert.equal(calls.length,1);assert.equal(calls[0][0],'/puzzle/archive/2026-1/records.json');assert.equal(calls[0][1],undefined);
+ assert.equal(calls.length,1);assert.equal(calls[0][0],'/archive/2026-1/records.json');assert.equal(calls[0][1],undefined);
  assert.ok(!read('public/archive/2026-1/js/common.js').includes('supabase.co'));
  assert.ok(rows.every(row=>Object.keys(row).sort().join(',')==='completed_at,nickname,puzzle_id'));
 });

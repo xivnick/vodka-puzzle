@@ -50,7 +50,7 @@ document.addEventListener('gesturestart', event => {
 let archiveRowsPromise;
 async function sbSelect(table, qs = '') {
   if (table !== 'completions') return [];
-  archiveRowsPromise ||= fetch('/puzzle/archive/2026-1/records.json').then(r => { if (!r.ok) throw new Error('기록을 불러오지 못했습니다.'); return r.json(); });
+  archiveRowsPromise ||= fetch('/archive/2026-1/records.json').then(r => { if (!r.ok) throw new Error('기록을 불러오지 못했습니다.'); return r.json(); });
   let rows = [...await archiveRowsPromise];
   const params = new URLSearchParams(qs);
   for (const field of ['nickname','puzzle_id']) {
@@ -144,7 +144,7 @@ async function getPuzzleTitleMap() {
   _puzzleTitleMapPromise = (async () => {
     const map = new Map(Object.entries(PUZZLE_TITLE_OVERRIDES));
     try {
-      const res = await fetch('/puzzle/archive/2026-1/');
+      const res = await fetch('/archive/2026-1/');
       if (!res.ok) throw new Error(`index fetch failed: ${res.status}`);
       const html = await res.text();
       const doc = new DOMParser().parseFromString(html, 'text/html');

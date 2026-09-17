@@ -10,10 +10,10 @@ let initialized = false;
 
 export function safeNext(value) {
   try {
-    const url = new URL(value || '/puzzle/', location.origin);
-    if (url.origin === location.origin && url.pathname.startsWith('/puzzle/') && !/^\/puzzle\/(auth|nickname)(\/|$)/.test(url.pathname)) return url.pathname + url.search + url.hash;
+    const url = new URL(value || '/', location.origin);
+    if (url.origin === location.origin && url.pathname.startsWith('/') && !/^\/(auth|nickname)(\/|$)/.test(url.pathname)) return url.pathname + url.search + url.hash;
   } catch {}
-  return '/puzzle/';
+  return '/';
 }
 function nextPage() { return safeNext(sessionStorage.getItem('puzzle_login_next')); }
 
@@ -32,7 +32,7 @@ client.auth.onAuthStateChange((_event, session) => {
 });
 
 async function bootstrap() {
-  const callback = location.pathname === '/puzzle/auth/callback/';
+  const callback = location.pathname === '/auth/callback/';
   try {
     const params = new URLSearchParams(location.search);
     if (callback && params.has('error')) throw new Error('로그인이 취소되었거나 완료되지 않았습니다. 다시 시도해 주세요.');
@@ -40,7 +40,7 @@ async function bootstrap() {
       const code = params.get('code');
       if (!code) throw new Error('로그인 정보가 없습니다. 다시 로그인해 주세요.');
       const { error } = await client.auth.exchangeCodeForSession(code);
-      history.replaceState(null, '', '/puzzle/auth/callback/');
+      history.replaceState(null, '', '/auth/callback/');
       if (error) throw new Error('로그인 연결이 만료되었습니다. 다시 시도해 주세요.');
     }
     const { data, error } = await client.auth.getSession();
@@ -54,13 +54,13 @@ async function bootstrap() {
     if (callback && !account.user) throw new Error('로그인이 완료되지 않았습니다. 다시 시도해 주세요.');
     await loadProfile();
     if (callback && account.user) {
-      const target = account.profile ? nextPage() : '/puzzle/nickname/';
+      const target = account.profile ? nextPage() : '/nickname/';
       if (account.profile) sessionStorage.removeItem('puzzle_login_next');
       location.replace(target);
     }
   } catch (error) {
     account.error = error.message?.startsWith('로그인') || error.message?.startsWith('구글') ? error.message : '계정 정보를 불러오지 못했습니다. 새로고침해 주세요.';
-    if (callback) history.replaceState(null, '', '/puzzle/auth/callback/');
+    if (callback) history.replaceState(null, '', '/auth/callback/');
   } finally {
     initialized = true;
     window.resolvePuzzleAuth();
@@ -99,7 +99,7 @@ function setupAccountPage() {
     login.disabled = true;
     status.textContent = '';
     try {
-      const { error } = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/puzzle/auth/callback/' } });
+      const { error } = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/auth/callback/' } });
       if (error) throw error;
     } catch {
       status.textContent = '구글 로그인을 시작하지 못했습니다. 다시 시도해 주세요.';
@@ -155,13 +155,13 @@ function setupAccountPage() {
     await client.auth.signOut({ scope: 'local' }).catch(() => {});
     try { localStorage.removeItem('vodka_google_session'); } catch {}
     account.user = account.profile = null;
-    location.replace('/puzzle/');
+    location.replace('/');
   });
   logout.addEventListener('click', async () => {
     logout.disabled = true;
     const { error } = await client.auth.signOut({ scope: 'local' });
     if (error) { status.textContent = '로그아웃하지 못했습니다. 다시 시도해 주세요.'; logout.disabled = false; return; }
-    location.replace('/puzzle/');
+    location.replace('/');
   });
 }
 

@@ -6,6 +6,6 @@ const semesters = Object.values(snapshots).sort((a, b) => b.season.localeCompare
 <PageLayout title="archive">
 <ul class="list">{semesters.map(({season}) => {
   const [year, term] = season.split('-');
-  return <li><a href={`/puzzle/archive/${season}/`}>{year}년 {term}학기</a></li>;
+  return <li><a href={`/archive/${season}/`}>{year}년 {term}학기</a></li>;
 })}</ul>
 </PageLayout>

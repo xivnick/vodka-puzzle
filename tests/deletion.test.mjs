@@ -27,3 +27,14 @@ test('deletion failure is never reported as success',async()=>{
   const handler=createHandler(env,async()=>++n===1 ? Response.json({id:'owner',app_metadata:{provider:'google'}}) : new Response('{}',{status:500}));
   assert.equal((await handler(req({authorization:'Bearer valid'}))).status,500);
 });
+
+test('deletion preflight permits both site origins and rejects foreign origins', async () => {
+  const handler = createHandler(env, async () => { throw Error('Preflight must not call auth'); });
+  for (const origin of ['https://xivnick.me', 'https://puzzle.xivnick.me']) {
+    const response = await handler(new Request('https://example.com', {method:'OPTIONS', headers:{origin}}));
+    assert.equal(response.status, 204);
+    assert.equal(response.headers.get('Access-Control-Allow-Origin'), origin);
+  }
+  const foreign = await handler(new Request('https://example.com', {method:'OPTIONS', headers:{origin:'https://attacker.example'}}));
+  assert.equal(foreign.status, 403);
+});

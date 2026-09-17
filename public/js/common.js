@@ -119,8 +119,8 @@ function initHeader() {
   if (!link) return;
   const saved = getNickname();
   link.textContent = saved || (getUserId() ? '닉네임 설정' : '로그인');
-  if (!location.pathname.startsWith('/puzzle/nickname') && !location.pathname.startsWith('/puzzle/auth/')) {
-    link.href = '/puzzle/nickname/?next=' + encodeURIComponent(location.pathname + location.search + location.hash);
+  if (!location.pathname.startsWith('/nickname') && !location.pathname.startsWith('/auth/')) {
+    link.href = '/nickname/?next=' + encodeURIComponent(location.pathname + location.search + location.hash);
   }
   initRecentBanner();
 }
@@ -174,7 +174,7 @@ async function getPuzzleTitleMap() {
   _puzzleTitleMapPromise = (async () => {
     const map = new Map(Object.entries(PUZZLE_TITLE_OVERRIDES));
     try {
-      const res = await fetch('/puzzle/');
+      const res = await fetch('/');
       if (!res.ok) throw new Error(`index fetch failed: ${res.status}`);
       const html = await res.text();
       const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -316,7 +316,7 @@ async function recordCompletion(puzzleId) {
     localStorage.setItem(savedKey, 'guest'); // 세션 내 중복 알림 방지
     setTimeout(() => {
       if (confirm('구글 로그인 후 닉네임을 설정하면 기록을 저장할 수 있습니다.\n로그인 화면으로 이동할까요?')) {
-        location.href = '/puzzle/nickname/?next=' + encodeURIComponent(location.pathname + location.search + location.hash);
+        location.href = '/nickname/?next=' + encodeURIComponent(location.pathname + location.search + location.hash);
       }
     }, 300);
     return;

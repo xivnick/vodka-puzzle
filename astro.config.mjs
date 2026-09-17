@@ -1,2 +1,2 @@
 import { defineConfig } from 'astro/config';
-export default defineConfig({ site: 'https://xivnick.me', base: '/puzzle', trailingSlash: 'always', output: 'static' });
+export default defineConfig({ site: 'https://puzzle.xivnick.me', base: '/', trailingSlash: 'always', output: 'static' });

@@ -1,8 +1,10 @@
 export function createHandler(env, requestFetch = fetch) {
-  const cors = { 'Access-Control-Allow-Origin': 'https://xivnick.me', 'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Vary': 'Origin' };
-  const reply = (status, body) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+  const allowedOrigins = new Set(['https://xivnick.me', 'https://puzzle.xivnick.me']);
   return async request => {
-    if (request.headers.get('origin') && request.headers.get('origin') !== 'https://xivnick.me') return reply(403, { error: 'Forbidden origin' });
+    const origin = request.headers.get('origin');
+    const cors = { 'Access-Control-Allow-Origin': allowedOrigins.has(origin) ? origin : 'https://xivnick.me', 'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Vary': 'Origin' };
+  const reply = (status, body) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+    if (origin && !allowedOrigins.has(origin)) return reply(403, { error: 'Forbidden origin' });
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     if (request.method !== 'POST') return reply(405, { error: 'POST required' });
     const authorization = request.headers.get('authorization');

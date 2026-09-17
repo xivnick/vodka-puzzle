@@ -6,7 +6,7 @@ import ArchiveLink from '../components/ArchiveLink.astro';
 import '../styles/home.css';
 const visible = puzzles.filter(p => p.season === season.id && new Date(p.publishedAt) <= new Date()).sort((a,b) => b.publishedAt.localeCompare(a.publishedAt));
 ---
-<PageLayout title="vodka puzzle" heading="퍼즐" subtitle="xivnick.me/puzzle" home>
+<PageLayout title="vodka puzzle" heading="퍼즐" subtitle="puzzle.xivnick.me" home>
 
 <div class="list-head">
   <div class="list-title">문제</div>
@@ -17,7 +17,7 @@ const visible = puzzles.filter(p => p.season === season.id && new Date(p.publish
 </div>
 <div class="list">
   {visible.map(p => <a href={p.href} data-puzzle-id={p.id}><span class="title">{p.title}</span><span class="tag">{p.type}</span></a>)}
-  <a href="/puzzle/practice/" data-puzzle-id="puzzle_test"><span class="title">연습 스도쿠</span><span class="tag">스도쿠</span></a>
+  <a href="/practice/" data-puzzle-id="puzzle_test"><span class="title">연습 스도쿠</span><span class="tag">스도쿠</span></a>
 </div>
 <div class="pager" id="pager"></div>
 
@@ -34,5 +34,5 @@ const visible = puzzles.filter(p => p.season === season.id && new Date(p.publish
   </div>
 </div>
 <ArchiveLink slot="footer" />
-<script is:inline src="/puzzle/js/home.js?v=2"></script>
+<script is:inline src="/js/home.js?v=2"></script>
 </PageLayout>

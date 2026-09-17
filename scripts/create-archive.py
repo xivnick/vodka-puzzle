@@ -3,16 +3,19 @@ import pathlib,json,re,shutil,sys,tarfile,tempfile
 root=pathlib.Path(__file__).resolve().parent.parent
 backup=json.loads((pathlib.Path(sys.argv[1])/'database.json').read_text())
 dest=root/'public/archive/2026-1';dest.mkdir(parents=True,exist_ok=True)
-base='/puzzle/archive/2026-1/'
+base='/archive/2026-1/'
 source = pathlib.Path(tempfile.mkdtemp(prefix='puzzle-archive-'))
 with tarfile.open(pathlib.Path(sys.argv[1])/'source.tar.gz') as tar: tar.extractall(source)
+extracted_root = source
+# Accept both old root-level snapshots and the reorganized source tree.
+if (source/'legacy/2026-1/index.html').exists(): source = source/'legacy/2026-1'
 folders=[p for p in source.iterdir() if p.is_dir() and (re.fullmatch(r'\d{6}_\d{2}',p.name) or p.name in ['puzzle_test','tmp_01','css','js','img','data'])]
 for p in folders: shutil.copytree(p,dest/p.name,dirs_exist_ok=True,ignore=shutil.ignore_patterns('.DS_Store'))
 shutil.copy2(source/'index.html',dest/'index.html')
 if (source/'test.html').exists(): shutil.copy2(source/'test.html',dest/'test.html')
 for p in dest.rglob('*.html'):
- s=p.read_text().replace('/puzzle/',base)
- s=re.sub(r'<a class="header-nick-link"[^>]*>.*?</a>','<a class="header-nick-link" href="/puzzle/">이번 학기</a>',s,flags=re.S)
+ s=p.read_text().replace('https://xivnick.me/puzzle/', 'https://puzzle.xivnick.me/archive/2026-1/').replace('/puzzle/',base)
+ s=re.sub(r'<a class="header-nick-link"[^>]*>.*?</a>','<a class="header-nick-link" href="/">이번 학기</a>',s,flags=re.S)
  s=s.replace('`puzzle_${', '`archive:2026-1:puzzle_${')
  s=s.replace('</head>','<style>#cloudBtns{display:none!important}</style></head>')
  # Direct storage users also get isolated archive keys.
@@ -31,7 +34,7 @@ def replace_fn(name,body,async_=False):
 replace_fn('sbSelect', '''let archiveRowsPromise;
 async function sbSelect(table, qs = '') {
   if (table !== 'completions') return [];
-  archiveRowsPromise ||= fetch('/puzzle/archive/2026-1/records.json').then(r => { if (!r.ok) throw new Error('기록을 불러오지 못했습니다.'); return r.json(); });
+  archiveRowsPromise ||= fetch('/archive/2026-1/records.json').then(r => { if (!r.ok) throw new Error('기록을 불러오지 못했습니다.'); return r.json(); });
   let rows = [...await archiveRowsPromise];
   const params = new URLSearchParams(qs);
   for (const field of ['nickname','puzzle_id']) {
@@ -64,4 +67,4 @@ records=[{k:r[k] for k in ['nickname','puzzle_id','completed_at']} for r in back
 (dest/'snapshot.json').write_text(json.dumps({'season':'2026-1','records':len(records),'snapshot':pathlib.Path(sys.argv[1]).name},ensure_ascii=False))
 print(f'Archived {len(folders)} directories and {len(records)} completions')
 
-shutil.rmtree(source)
+shutil.rmtree(extracted_root)
