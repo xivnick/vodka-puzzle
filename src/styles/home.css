@@ -7,12 +7,6 @@ body.home .list {
     gap: 0;
   }
 
-body.home .list-tools {
-    display: flex;
-    gap: 4px;
-    flex-shrink: 0;
-  }
-
 body.home .list-head {
     width: min(94vw, 480px);
     display: flex;
@@ -26,25 +20,6 @@ body.home .list-title {
     font-size: 0.88rem;
     font-weight: 700;
     color: #555;
-  }
-
-body.home .filter-btn {
-    height: 30px;
-    padding: 0 10px;
-    border: 1px solid #ddd8cf;
-    border-radius: 3px;
-    background: #fff;
-    color: #999;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.76rem;
-    cursor: pointer;
-  }
-
-body.home .filter-btn.active {
-    background: #faf8f4;
-    color: #555;
-    border-color: #cfc8bd;
-    font-weight: 700;
   }
 
 body.home .list a {
@@ -78,16 +53,6 @@ body.home .list .solver-count {
     font-size: 0.78rem;
     font-weight: 400;
     color: #bbb;
-  }
-
-body.home .list .tag {
-    font-size: 0.72rem;
-    font-weight: 400;
-    color: #aaa;
-    border: 1px solid #ddd;
-    border-radius: 2px;
-    padding: 2px 8px;
-    white-space: nowrap;
   }
 
 body.home .empty {
@@ -132,42 +97,7 @@ body.home .pager button:disabled {
     cursor: default;
   }
 
-body.home .rank-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-
-body.home .rank-head .lb-title { margin-bottom: 0; }
-
-body.home .rank-tabs {
-    display: flex;
-    gap: 4px;
-    flex-shrink: 0;
-  }
-
-body.home .rank-tab {
-    height: 28px;
-    padding: 0 10px;
-    border: 1px solid #ddd8cf;
-    border-radius: 3px;
-    background: #fff;
-    color: #999;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.74rem;
-    cursor: pointer;
-  }
-
-body.home .rank-tab.active {
-    background: #faf8f4;
-    color: #555;
-    border-color: #cfc8bd;
-    font-weight: 700;
-  }
-
-  @media (max-width: 540px) {
+@media (max-width: 540px) {
 
 body.home .list a { padding: 12px 14px; }
 
@@ -182,3 +112,47 @@ body.home .pager button {
   }
 
 body.home .list a { position: relative; }
+
+body.home .pager:empty { display:none; }
+body.home .home-rank { width:100%; margin-top:32px; }
+body.home .home-rank > .lb-section { margin-top:0; }
+
+body.home .list a.daily-card { order:-1; background:#f1f4f0; border-top:1px solid #e8e5df; border-bottom:1px solid #e8e5df; }
+body.home .list a.daily-card:hover { background:#e8eee6; }
+body.home .list a.daily-card ~ a.first-visible { border-top:0; }
+  .rank-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .rank-head .lb-title { margin-bottom: 0; }
+
+  .rank-tabs {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .rank-tab {
+    height: 28px;
+    padding: 0 10px;
+    border: 1px solid #ddd8cf;
+    border-radius: 3px;
+    background: #fff;
+    color: #999;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.74rem;
+    cursor: pointer;
+  }
+
+  .rank-tab.active {
+    background: #faf8f4;
+    color: #555;
+    border-color: #cfc8bd;
+    font-weight: 700;
+  }
+
+[hidden] { display:none !important; }

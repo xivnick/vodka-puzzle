@@ -1,0 +1,30 @@
+---
+import PuzzleLayout from '../../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from '../../components/PuzzleCompletion.astro';
+import '../../styles/daily-sudoku.css';
+---
+<PuzzleLayout title="Daily Sudoku" puzzleId="daily-sudoku" subtitle="매일 12시에 새로운 스도쿠를 풀어보세요">
+ <p slot="rules">각 행, 열, 3×3 구역에 1부터 9까지 한 번씩 넣으세요.</p>
+ <p slot="controls">칸을 선택하고 숫자를 누르세요. 메모하기 버튼으로 후보 숫자를 입력할 수 있습니다.</p>
+ <p id="dailyStatus" class="daily-loading-status" role="status">문제를 불러오는 중...</p>
+ <section id="dailyUnavailable" class="daily-unavailable" hidden>
+  <h2 id="dailyUnavailableTitle">문제가 준비되지 않았습니다</h2>
+  <button id="dailyRetry" type="button">다시 확인</button>
+  <a href="/">문제 목록으로</a>
+ </section>
+ <section id="dailyGame" aria-label="데일리 스도쿠">
+  <div class="sudoku-board-tools"><button id="sudokuNotes" disabled class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+  <div id="sudokuBoard" class="sudoku-board sudoku-loading" role="group" aria-label="스도쿠 9행 9열" aria-busy="true">
+   {Array.from({length:81},(_,i)=><button class="sudoku-cell" type="button" disabled aria-label={`${Math.floor(i/9)+1}행 ${i%9+1}열, 불러오는 중`} />)}
+  </div>
+  <div class="sudoku-numbers" id="sudokuNumbers">{Array.from({length:9},(_,i)=><button type="button" data-number={i+1} disabled>{i+1}</button>)}</div>
+  <div class="bottom-buttons">
+   <button id="sudokuErase" disabled type="button">지우기</button>
+   <button id="sudokuReset" disabled class="danger" type="button">초기화</button>
+  </div>
+  <PuzzleCompletion id="sudokuComplete" />
+  <p id="sudokuMessage" class="daily-status" role="status"></p>
+ </section>
+ <div slot="leaderboard" id="sudokuRank"><div class="lb-loading">불러오는 중...</div></div>
+</PuzzleLayout>
+<script>import '../../scripts/daily-sudoku.js';</script>

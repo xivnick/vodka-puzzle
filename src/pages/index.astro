@@ -4,35 +4,34 @@ import puzzles from '../data/puzzles.json';
 import season from '../data/season.json';
 import ArchiveLink from '../components/ArchiveLink.astro';
 import '../styles/home.css';
-const visible = puzzles.filter(p => p.season === season.id && new Date(p.publishedAt) <= new Date()).sort((a,b) => b.publishedAt.localeCompare(a.publishedAt));
+const visible = puzzles.filter(p => p.listed !== false && p.season === season.id && new Date(p.publishedAt) <= new Date()).sort((a,b) => b.publishedAt.localeCompare(a.publishedAt));
 ---
 <PageLayout title="vodka puzzle" heading="퍼즐" subtitle="puzzle.xivnick.me" home>
 
 <div class="list-head">
   <div class="list-title">문제</div>
-  <div class="list-tools" id="listTools">
-    <button class="filter-btn" id="unsolvedFilterBtn" onclick="toggleUnsolvedOnly()">미해결</button>
-    <button class="filter-btn" id="solverSortBtn" onclick="toggleSolverSort()">인기순</button>
-  </div>
 </div>
 <div class="list">
-  {visible.map(p => <a href={p.href} data-puzzle-id={p.id}><span class="title">{p.title}</span><span class="tag">{p.type}</span></a>)}
-  <a href="/practice/" data-puzzle-id="puzzle_test"><span class="title">연습 스도쿠</span><span class="tag">스도쿠</span></a>
+  <a id="dailyCard" class="daily-card" href="/daily-sudoku/"><span class="title"><span id="dailyTitle">Daily Sudoku</span></span></a>
+  {visible.map(p => <a href={p.href} data-puzzle-id={p.id}><span class="title">{p.title}</span></a>)}
 </div>
 <div class="pager" id="pager"></div>
 
-<div style="width: min(94vw, 480px); margin-top: 24px;">
+<div class="home-rank">
   <div class="lb-section">
     <div class="rank-head">
       <div class="lb-title" id="rankTitle">랭킹</div>
-      <div class="rank-tabs">
-        <button class="rank-tab active" id="recentRankBtn" onclick="setRankMode('recent')">최신 문제</button>
-        <button class="rank-tab" id="allRankBtn" onclick="setRankMode('all')">전체</button>
+      <div class="rank-tabs" aria-label="랭킹 종류">
+        <button id="regularRankBtn" class="rank-tab active" type="button" aria-pressed="true" aria-controls="regularRankPanel" data-rank-mode="regular">랭킹</button>
+        <button id="dailyRankBtn" class="rank-tab" type="button" aria-pressed="false" aria-controls="dailyRankPanel" data-rank-mode="daily">데일리 스도쿠</button>
       </div>
     </div>
-    <div id="solverRank" aria-live="polite"><div class="lb-loading">불러오는 중...</div></div>
+    <div id="regularRankPanel"><div id="solverRank" aria-live="polite"><div class="lb-loading">불러오는 중...</div></div></div>
+    <div id="dailyRankPanel" hidden><div id="dailyRank" aria-live="polite"><div class="lb-loading">불러오는 중...</div></div></div>
   </div>
 </div>
 <ArchiveLink slot="footer" />
-<script is:inline src="/js/home.js?v=2"></script>
+<script is:inline src="/js/home.js?v=5"></script>
 </PageLayout>
+
+<script>import '../scripts/daily-home.js';</script>

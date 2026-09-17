@@ -1,10 +1,4 @@
 const PAGE_SIZE = 10;
-  let completedPuzzles = new Set();
-  let solverCounts = new Map();
-  let showUnsolvedOnly = false;
-  let sortBySolverCount = false;
-
-
   function getCurrentPage(totalPages) {
     const hash = window.location.hash.match(/^#page-(\d+)$/);
     const page = hash ? parseInt(hash[1], 10) : 1;
@@ -21,17 +15,7 @@ const PAGE_SIZE = 10;
 
   function renderPagination() {
     const links = [...document.querySelectorAll('.list a[data-puzzle-id]')];
-    const originalIndex = new Map(links.map((link, index) => [link, index]));
-    let visibleLinks = showUnsolvedOnly
-      ? links.filter(link => !completedPuzzles.has(link.dataset.puzzleId))
-      : [...links];
-
-    if (sortBySolverCount) {
-      visibleLinks = visibleLinks.sort((a, b) => {
-        const byCount = (solverCounts.get(b.dataset.puzzleId) || 0) - (solverCounts.get(a.dataset.puzzleId) || 0);
-        return byCount || originalIndex.get(a) - originalIndex.get(b);
-      });
-    }
+    const visibleLinks = links;
     const totalPages = Math.max(1, Math.ceil(visibleLinks.length / PAGE_SIZE));
     const currentPage = getCurrentPage(totalPages);
     const start = (currentPage - 1) * PAGE_SIZE;
@@ -89,43 +73,8 @@ const PAGE_SIZE = 10;
 
   renderPagination();
 
-  function initUnsolvedFilter() {
-    const unsolvedBtn = document.getElementById('unsolvedFilterBtn');
-    if (!unsolvedBtn) return;
-    if (isGuest()) {
-      showUnsolvedOnly = false;
-      unsolvedBtn.style.display = 'none';
-      updateListModeButtons();
-      return;
-    }
-    unsolvedBtn.style.display = '';
-  }
-
-  function updateListModeButtons() {
-    document.getElementById('unsolvedFilterBtn').classList.toggle('active', showUnsolvedOnly);
-    document.getElementById('solverSortBtn').classList.toggle('active', sortBySolverCount);
-  }
-
-  function toggleUnsolvedOnly() {
-    if (isGuest()) return;
-    showUnsolvedOnly = !showUnsolvedOnly;
-    updateListModeButtons();
-    setCurrentPage(1);
-    renderPagination();
-  }
-
-  function toggleSolverSort() {
-    sortBySolverCount = !sortBySolverCount;
-    updateListModeButtons();
-    setCurrentPage(1);
-    renderPagination();
-  }
-
-  initUnsolvedFilter();
-
   async function loadCompletions() {
     const completed = await getMyCompletedPuzzles();
-    completedPuzzles = completed;
     document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
       const pid = a.dataset.puzzleId;
       if (completed.has(pid)) {
@@ -144,7 +93,6 @@ const PAGE_SIZE = 10;
 
   async function loadCounts() {
     const counts = await getSolverCounts();
-    solverCounts = counts;
     document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
       const pid = a.dataset.puzzleId;
       const n = counts.get(pid);
@@ -158,42 +106,26 @@ const PAGE_SIZE = 10;
         }
       }
     });
-    if (sortBySolverCount) renderPagination();
   }
 
   loadCounts();
 
-  let rankMode = 'recent';
-
-  function getRecentPuzzleIds(limit = 10) {
-    return [...document.querySelectorAll('.list a[data-puzzle-id]')]
-      .map(a => a.dataset.puzzleId)
-      .filter(id => id && id !== 'puzzle_test')
-      .slice(0, limit);
-  }
-
-  function setRankMode(nextMode) {
-    rankMode = nextMode === 'all' ? 'all' : 'recent';
-    document.getElementById('recentRankBtn').classList.toggle('active', rankMode === 'recent');
-    document.getElementById('allRankBtn').classList.toggle('active', rankMode === 'all');
-    loadSolverRankings();
-  }
-
   async function loadSolverRankings() {
-    const scopeIds = getRecentPuzzleIds(rankMode === 'recent' ? 10 : Infinity);
+    const scopeIds = [...document.querySelectorAll('.list a[data-puzzle-id]')]
+      .map(a => a.dataset.puzzleId);
+
     const rankings = await getSolverRankings(scopeIds);
     const myNick = getNickname();
     const container = document.getElementById('solverRank');
-    const titleEl = document.getElementById('rankTitle');
-    const titlePrefix = rankMode === 'recent' ? '최신 문제 랭킹' : '전체 랭킹';
+    const rankTitle = document.getElementById('rankTitle');
+    rankTitle.dataset.regularCount = String(rankings.length);
+    if (document.getElementById('regularRankBtn').getAttribute('aria-pressed') === 'true') rankTitle.textContent = `랭킹 (${rankings.length})`;
 
     if (rankings.length === 0) {
-      titleEl.textContent = `${titlePrefix} (0)`;
       container.innerHTML = '<div class="lb-empty">아직 기록이 없습니다.</div>';
       return;
     }
 
-    titleEl.textContent = `${titlePrefix} (${rankings.length})`;
 
     const myIdx = (!myNick || isGuest()) ? -1 : rankings.findIndex(r => r.nick === myNick);
     const top = Math.min(10, rankings.length);
@@ -245,8 +177,7 @@ const PAGE_SIZE = 10;
 
   window.addEventListener('pageshow', e => {
     if (!e.persisted) return;
-    document.querySelectorAll('.check-mark').forEach(el => el.remove());
-    initUnsolvedFilter();
+    document.querySelectorAll('.list a[data-puzzle-id] .check-mark').forEach(el => el.remove());
     renderPagination();
     loadCompletions();
     loadSolverRankings();
@@ -255,8 +186,7 @@ const PAGE_SIZE = 10;
   window.addEventListener('hashchange', renderPagination);
 
 window.addEventListener('puzzle-auth-ready', () => {
-  document.querySelectorAll('.check-mark').forEach(el => el.remove());
-  initUnsolvedFilter();
+  document.querySelectorAll('.list a[data-puzzle-id] .check-mark').forEach(el => el.remove());
   loadCompletions();
   loadSolverRankings();
 });
