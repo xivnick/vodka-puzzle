@@ -10,7 +10,10 @@ const bulbs=[...new Map(puzzle.thermometers.map(p=>[p[0].join(','),p[0]])).value
 ---
 <PuzzleLayout title={`스도쿠 (온도계) · ${puzzle.difficulty}`} puzzleId={`test-thermo-${puzzle.id}`} subtitle="온도계의 큰 원에서 끝으로 갈수록 숫자가 커져야 합니다" description="온도계의 큰 원에서 끝으로 갈수록 숫자가 커지는 스도쿠" showCloud={false} showLeaderboard={false}>
   <div slot="rules">각 가로줄, 세로줄, 3×3 영역에 1부터 9까지의 숫자가 한 번씩 들어가도록 채우세요.<br />온도계의 숫자는 중심(큰 원)에서 끝으로 갈수록 커져야 합니다. 같은 숫자는 들어갈 수 없습니다.</div>
-  <div slot="controls">칸을 선택한 뒤 숫자 버튼이나 키보드의 1~9로 입력하세요. 방향키로 이동하고 Backspace·Delete·0으로 지울 수 있습니다. 메모하기 버튼이나 M키로 메모 입력을 켜고 끕니다.</div>
+  <div slot="controls">
+    칸을 선택하고 숫자 버튼으로 입력하세요.<br />
+    메모하기 버튼이나 M을 눌러 메모 입력을 켜고 끄세요.
+  </div>
   <section id="thermoGame" data-difficulty={puzzle.id} aria-label={`온도계 스도쿠 ${puzzle.difficulty}`}>
     <div class="thermo-board-tools"><button id="thermoNotes" class="thermo-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
     <div class="thermo-board">
