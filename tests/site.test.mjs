@@ -56,3 +56,27 @@ test('writes require a session; identity and local state follow account IDs',asy
  assert.equal(calls[0][1].headers.Authorization,'Bearer session-token');
  r.run("window.puzzleAccount.user.id='account-b'");assert.equal(r.run("loadLocalState('puzzle_test')"),null);
 });
+test('registered puzzle titles remain available to the banner offline',async()=>{
+ const r=runtime('public/js/common.js',async()=>{throw new Error('offline')});
+ r.run("window.puzzleTitles={'260916_01':'260916 Mini Rectangles',puzzle_test:'테스트 스도쿠'}");
+ const titles=await r.run('getPuzzleTitleMap()');
+ assert.equal(titles.get('260916_01'),'260916 Mini Rectangles');
+ assert.equal(titles.get('puzzle_test'),'테스트 스도쿠');
+ assert.ok(read('dist/index.html').includes('data-puzzle-id="260916_01"'));
+ assert.ok(!read('dist/index.html').includes('data-puzzle-id="puzzle_test"'));
+});
+test('practice uses shared puzzle rules and remains outside completion rankings',()=>{
+ const html=read('dist/practice/index.html');
+ assert.ok(html.includes('page-content puzzle-content'));
+ assert.equal((html.match(/id="rulesToggle"/g)||[]).length,1);
+ assert.equal((html.match(/id="rulesBox"/g)||[]).length,1);
+ assert.ok(html.includes('puzzle-body'));
+ assert.ok(!html.includes('id="leaderboard"'));
+});
+
+test('shared pages reserve an empty banner before JavaScript and empty results keep its space',async()=>{
+ const html=read('dist/index.html');assert.match(html,/<div id="recentBanner" class="recent-banner" aria-live="polite"><\/div>/);
+ const r=runtime('public/js/common.js',async()=>{throw Error('unexpected request');});
+ r.run("window.banner={style:{},classList:{remove(){}},innerHTML:'old'};document.querySelector=()=>({});document.getElementById=()=>window.banner;");
+ await r.run('renderRecentBanner([])');assert.equal(r.run('window.banner.style.display'),'flex');assert.equal(r.run('window.banner.innerHTML'),'');
+});
