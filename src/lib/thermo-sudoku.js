@@ -20,6 +20,6 @@ export const indexOf = ([r,c]) => (r-1)*9+c-1;
 export const units = [...Array.from({length:9},(_,r)=>Array.from({length:9},(_,c)=>r*9+c)),...Array.from({length:9},(_,c)=>Array.from({length:9},(_,r)=>r*9+c)),...Array.from({length:9},(_,b)=>Array.from({length:9},(_,n)=>(Math.floor(b/3)*3+Math.floor(n/3))*9+b%3*3+n%3))];
 export function conflicts(puzzle,values){
  const bad=new Set();for(const u of units)for(const i of u)if(values[i]&&u.some(j=>j!==i&&values[i]===values[j]))bad.add(i);
- for(const path of puzzle.thermometers){const ids=path.map(indexOf);ids.forEach((i,a)=>{if(values[i]&&(values[i]<a+1||values[i]>9-(ids.length-1-a)))bad.add(i);for(let b=a+1;b<ids.length;b++){const j=ids[b];if(values[i]&&values[j]&&values[j]-values[i]<b-a){bad.add(i);bad.add(j);}}});}return bad;
+ for(const path of puzzle.thermometers){const ids=path.map(indexOf);ids.forEach((i,a)=>{for(let b=a+1;b<ids.length;b++){const j=ids[b];if(values[i]&&values[j]&&values[i]>=values[j]){bad.add(i);bad.add(j);}}});}return bad;
 }
 export function solved(puzzle,values){return values.length===81&&values.every(n=>Number.isInteger(n)&&n>=1&&n<=9)&&puzzle.givens.flat().every((n,i)=>!n||values[i]===n)&&conflicts(puzzle,values).size===0;}
