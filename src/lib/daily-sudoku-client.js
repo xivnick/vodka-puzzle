@@ -4,7 +4,7 @@ export async function context(day=null) {
  if(error)throw error;return data;
 }
 export function title(day) {return `${day.replaceAll('-','').slice(2)} Daily Sudoku`;}
-export function time(value) {return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(new Date(value));}
+export function time(value) {return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'numeric',minute:'2-digit',hourCycle:'h12'}).format(new Date(value));}
 export function rankMessage(element,text) {
  const empty=document.createElement('div');empty.className='lb-empty';empty.textContent=text;element.replaceChildren(empty);
 }
