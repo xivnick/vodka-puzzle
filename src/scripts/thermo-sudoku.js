@@ -6,7 +6,7 @@ const ID=$('thermoGame').dataset.puzzleId,preview=$('thermoGame').dataset.previe
 let ready=preview,completed=false;
 function state(){return {version:1,puzzleId:ID,values:values.slice(),notes:notes.map(a=>a.slice())};}
 function persist(){if(preview||!ready)return;try{window.saveLocalState(ID,state());}catch{window.showToast('브라우저에 저장하지 못했습니다.');}}
-function checkComplete(){if(!preview&&ready&&!completed&&solved(puzzle,values)){completed=true;window.recordCompletion(ID);}}
+function checkComplete(){if(!preview&&ready&&!completed&&solved(puzzle,values)){completed=true;window.recordCompletion(ID,state());}}
 function update(){persist();render();checkComplete();}
 let values=givens.slice(),notes=Array.from({length:81},()=>[]),selected=0,notesMode=false;
 function render(){

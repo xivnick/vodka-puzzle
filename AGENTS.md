@@ -33,8 +33,8 @@
 - 판 구성과 규칙 검증은 문제별 코드로 유지한다. 모든 종류를 하나의 범용 엔진이나 DB 데이터 형식으로 강제 통합하지 않는다.
 - 온도계 스도쿠는 `ThermoSudoku.astro`를 재사용한다. 정식 문제에는 고유 `puzzleId`를 전달하고 테스트 문제는 `preview`로 기록·저장을 분리한다.
 - 초기 보드·숫자·마스크 데이터는 2차원 배열로 정의한다. 런타임 Set·Map·객체는 배열에서 파생한다.
-- 일반 문제의 정답 검증은 브라우저에서 처리할 수 있다. 데일리 스도쿠의 기록 제출은 기존 서버 RPC를 유지한다.
-- 일반 문제 완료 시 `recordCompletion(puzzleId)`를 호출한다. 저장 기능은 `handleCloudSave`와 `handleCloudLoad`를 구현한다.
+- 일반 문제의 정답 검증은 브라우저에서 처리할 수 있다. 데일리도 브라우저에서 규칙 준수를 확인하고 `submit_completion` RPC로 완료 보드를 제출한다. 서버는 정답을 비교하지 않는다.
+- 일반 문제 완료 시 `recordCompletion(puzzleId, state)`를 호출한다. 저장 기능은 `handleCloudSave`와 `handleCloudLoad`를 구현한다.
 - 초기 진행 복원은 `window.puzzleAuthReady.then(init)`처럼 인증 초기화 후 실행한다.
 - 일반 문제의 로컬 저장에는 `saveLocalState`와 `loadLocalState`를 사용한다. 계정·학기별 저장을 분리하고 닉네임 문자열로 소유자를 식별하지 않는다.
 - 공통 CSS·JS를 바꿀 때 `SiteLayout.astro`의 해당 파일 쿼리 버전을 올린다. 별도 정적 JS의 연결 버전도 필요에 따라 갱신한다. 아카이브 전체에 버전을 일괄 치환하지 않는다.
@@ -56,7 +56,9 @@
 
 - Supabase의 Google 계정 ID를 인증·소유권 기준으로 사용한다. 현재 학기의 기록만 본인이 쓸 수 있어야 한다.
 - 공개 키는 클라이언트에 사용할 수 있지만 관리자 키·OAuth Client Secret·관리 API 토큰은 공개 코드에 넣지 않는다.
-- 데일리 미래 문제와 정답은 비공개 DB 영역에 유지한다. 정답이 포함된 생성 SQL을 `public/`, `dist/` 또는 Git에 넣지 않는다.
+- `private.daily_sudoku`는 미공개 데일리 문제 대기열이다. 공개 시점이 지난 문제는 RPC 조회·제출·저장 시 `public.daily_sudoku`로 옮긴다. 정답은 DB에 보관하지 않는다.
+- 완료 보드는 `public.completion_submissions`에 최초 상태로 저장하며 일반 사용자에게 조회·쓰기 권한을 주지 않는다. 개인 진행 저장은 계속 본인만 조회한다.
+- `src/data/puzzles.json`의 승인된 문제 메타데이터는 배포 시 `scripts/sync-puzzle-catalog.py`로 DB에 등록한다. 테스트 문제는 등록하지 않는다. 정답이 포함된 생성 SQL을 `public/`, `dist/` 또는 Git에 넣지 않는다.
 - 체스 이미지의 출처·라이선스 README를 유지한다.
 - `npm test`의 페이지 검증은 `dist`를 읽는다. 화면·코드 변경 후 `npm run build`를 먼저 실행하고 `npm test`로 확인한다.
 - 실제 DB 권한 검증 도구는 README의 적용 범위를 확인한 뒤 사용한다. 테스트 트랜잭션을 롤백한다.

@@ -94,3 +94,28 @@ test('banner loads combined records and formats daily dates with escaped nicknam
  assert.match(r.run('window.messages[0]'),/&lt;solver&gt;/);
  assert.match(r.run('window.messages[1]'),/일반 문제/);
 });
+
+test('completion snapshots are sent once; failure retries the original board and success marks storage',async()=>{
+ const calls=[],timers=[];let fail=true;
+ const r=runtime('public/js/common.js',async(url,opts)=>{calls.push([url,opts]);return {ok:!fail,status:503,json:async()=>({completed_at:'2026-09-17T00:00:00Z'})};});
+ r.context.setTimeout=(callback)=>{timers.push(callback);return timers.length;};
+ r.run("window.puzzleAccount={user:{id:'account-a'},profile:{nickname:'a'},client:{auth:{getSession:async()=>({data:{session:{access_token:'token'}}})}}};showToast=()=>{};refreshRecentBanner=()=>{};renderLeaderboard=()=>{};window.board={version:1,values:[1,2,3]};");
+ await r.run("recordCompletion('260917_01',window.board)");
+ assert.equal(r.values.has('completion_saved_2026-2_account-a_260917_01'),false);
+ r.run('window.board.values[0]=9');fail=false;
+ await timers[0]();
+ const submitted=JSON.parse(calls[1][1].body);
+ assert.equal(submitted.submitted_state.values[0],1);assert.equal(submitted.state_version,1);
+ assert.deepEqual(Object.keys(submitted).sort(),['requested_puzzle','state_version','submitted_state']);
+ assert.equal(r.values.get('completion_saved_2026-2_account-a_260917_01'),'1');
+ await r.run("recordCompletion('260917_01',window.board)");assert.equal(calls.length,2);
+});
+
+test('completion requests cannot send a solved board after changing accounts',async()=>{
+ const calls=[],timers=[];
+ const r=runtime('public/js/common.js',async(url,opts)=>{calls.push([url,opts]);return {ok:false,status:503};});
+ r.context.setTimeout=callback=>{timers.push(callback);return timers.length;};
+ r.run("window.puzzleAccount={user:{id:'a'},profile:{nickname:'a'},client:{auth:{getSession:async()=>({data:{session:{access_token:'token'}}})}}};showToast=()=>{};");
+ await r.run("recordCompletion('260917_01',{version:1,values:[1]})");
+ r.run("window.puzzleAccount.user.id='b'");await timers[0]();assert.equal(calls.length,1);
+});

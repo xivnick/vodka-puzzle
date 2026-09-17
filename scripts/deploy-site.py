@@ -13,6 +13,7 @@ for file in build.rglob('*'):
     if file.is_symlink() or file.name.startswith('.'):
         raise SystemExit(f'Unexpected build entry: {file}')
 subprocess.run(['npm', 'test'], cwd=root, check=True)
+subprocess.run(['python3', 'scripts/sync-puzzle-catalog.py'], cwd=root, check=True)
 host = 'xivnick@xivnick.me'
 ssh = ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15']
 release = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid.uuid4().hex[:8]

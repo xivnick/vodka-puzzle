@@ -23,7 +23,7 @@ function render(){
 }
 function state(){return {version:1,rects:structuredClone(rects)};}
 function persist(){try{window.saveLocalState(ID,state());}catch{window.showToast('브라우저에 저장하지 못했습니다.');}}
-function checkComplete(){if(ready&&analyze(rects).complete)window.recordCompletion(ID);}
+function checkComplete(){if(ready&&analyze(rects).complete)window.recordCompletion(ID,state());}
 function update(next){rects=next;persist();render();checkComplete();}
 function cancel(){anchor=null;end=null;pointer=null;render();}
 function finish(){const q=normalize(anchor,end),error=validateRect(q,rects);anchor=null;end=null;pointer=null;if(error){announce(error);render();return;}update([...rects,q]);announce('사각형을 추가했습니다.');}

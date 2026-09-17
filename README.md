@@ -4,7 +4,7 @@ Astro 정적 사이트와 Supabase로 운영하는 퍼즐 사이트다. 운영 �
 
 ## 실행과 배포
 
-로컬 프로젝트는 `~/Documents/Development/vodka-puzzle/`에 있다. Node.js 22.12 이상과 npm을 사용한다. 배포에는 Python 3, SSH, rsync가 필요하다.
+로컬 프로젝트는 `~/Documents/Development/vodka-puzzle/`에 있다. Node.js 22.12 이상과 npm을 사용한다. 배포에는 Python 3, SSH, rsync와 로컬 `~/.supabase/access-token`이 필요하다.
 
 ```sh
 npm ci
@@ -20,7 +20,7 @@ npm run preview
 npm run deploy
 ```
 
-로컬에서 빌드·테스트한 후 `scripts/deploy-site.py`가 **빌드 결과만** `xivnick@xivnick.me:~/vodka-puzzle/releases/<id>/`에 업로드하고 `~/vodka-puzzle/dist` 링크를 원자적으로 전환한다. 소스·node_modules·비밀 설정은 업로드하지 않는다. 이전 릴리스는 자동 삭제하지 않는다.
+로컬에서 빌드·테스트한 후 승인된 문제 목록을 `scripts/sync-puzzle-catalog.py`로 DB에 동기화하고 `scripts/deploy-site.py`가 **빌드 결과만** `xivnick@xivnick.me:~/vodka-puzzle/releases/<id>/`에 업로드하고 `~/vodka-puzzle/dist` 링크를 원자적으로 전환한다. 소스·node_modules·비밀 설정은 업로드하지 않는다. 이전 릴리스는 자동 삭제하지 않는다.
 
 서버 nginx는 `/home/xivnick/vodka-puzzle/dist`만 공개한다. 설정 원본은 `ops/puzzle.nginx.conf`다. DNS·HTTPS·실제 Google 로그인은 2026-09-17에 확인했다. nginx 설정을 변경할 때만 서버에서 다음 명령을 사용한다.
 
@@ -74,7 +74,7 @@ mv -Tf dist-rollback dist
 
 승인된 문제의 목록은 `src/data/puzzles.json`에 등록한다. 필드는 `id`, `title`, `type`, `season`, `publishedAt`(시간대 포함 ISO 날짜), `href`다. 링크는 `/<id>/` 형식이다. `listed: false`는 목록에서만 숨기며 접근 권한을 제한하지 않는다. 공개일 필터는 빌드 시 적용되므로 일반 문제의 목록 공개에는 재빌드·배포가 필요하다.
 
-일반 문제는 `handleCloudSave`, `handleCloudLoad`를 구현하고 완료 시 `recordCompletion(puzzleId)`를 호출한다. 초기화는 `window.puzzleAuthReady.then(init)` 이후에 수행하고 로컬 저장은 `saveLocalState`·`loadLocalState`를 사용한다. 연습 페이지는 완료 순위에 포함하지 않는다. 공통 CSS/JS 변경 시 `SiteLayout.astro`의 해당 파일 버전 번호를 갱신한다.
+일반 문제는 `handleCloudSave`, `handleCloudLoad`를 구현하고 완료 시 `recordCompletion(puzzleId, state)`를 호출한다. 제출 상태는 문제별 형식을 유지하며 `version: 1`을 포함한다. 초기화는 `window.puzzleAuthReady.then(init)` 이후에 수행하고 로컬 저장은 `saveLocalState`·`loadLocalState`를 사용한다. 연습 페이지는 완료 순위에 포함하지 않는다. 공통 CSS/JS 변경 시 `SiteLayout.astro`의 해당 파일 버전 번호를 갱신한다.
 
 ## 로그인과 기록
 
@@ -96,7 +96,9 @@ Client Secret은 Supabase 설정에만 보관한다. 이메일 로그인은 비�
 
 `/daily-sudoku/`는 한국 시간 자정부터 다음 자정까지 같은 문제를 제공한다. `?day=YYYY-MM-DD`로 특정 회차를 열 수 있고 마감 회차는 연습만 가능하다. 홈 최상단 카드는 일반 목록 페이징과 독립적이며 일반 학기 순위와 데일리 순위는 분리된다.
 
-미래 문제·정답·완료 원본은 DB의 `private` 스키마에 보관한다. 서버 RPC로 문제 조회·정답 제출·진행 저장을 처리한다. 공개 여부는 DB 서버 시각으로 판단하므로 매일 빌드나 cron이 필요 없다. 브라우저는 조작과 표시를 담당하고 완료 시 자동으로 정답을 제출한다. 최초 성공의 순번·시각은 서버가 기록하며 중복 요청으로 변경되지 않는다. 순위는 소요 시간이 아닌 검증된 제출 순서다.
+`private.daily_sudoku`는 미공개 문제 대기열이다. 조회·제출·진행 저장 RPC가 서버 시각으로 공개 시점을 확인하고, 열린 문제를 `public.daily_sudoku`로 원자적으로 옮긴다. 방문이 없는 동안에는 공개 시점이 지난 행도 대기열에 남을 수 있지만 미래 정보는 조회할 수 없다. 공개 문제에는 고정 숫자만 있으며 DB에 정답을 보관하지 않는다. 매일 빌드나 cron은 필요 없다.
+
+일반 퍼즐과 데일리 모두 브라우저에서 규칙 준수·완료를 판단하고 `submit_completion(requested_puzzle, submitted_state, state_version)`으로 보드를 제출한다. 데일리 ID는 `daily-sudoku:YYYY-MM-DD` 형식이다. 서버는 로그인·현재 학기 닉네임·등록된 문제 또는 열린 데일리 회차·JSON 크기·버전을 확인하고 완료 정보와 제출 보드를 한 트랜잭션으로 저장한다. 풀이 규칙은 서버에서 검사하지 않으며 사후 검토한다. 제출 시각과 데일리 순번은 서버가 정하고, 중복 요청은 최초 기록을 반환한다. 데일리 순위는 소요 시간이 아닌 제출 순서다. 이전 클라이언트의 `submit_daily_sudoku`는 답안 문자열을 보드 배열로 바꿔 같은 제출 함수에 전달한다.
 
 전광판은 `recent_completions()` RPC로 현재 학기의 일반 문제·데일리 완료 기록을 합쳐 최신 3건을 표시한다. 데일리 제목에는 회차 날짜를 붙이며 정답·계정 ID는 반환하지 않는다. DB 변경은 `supabase/migrations/20260917_recent_completions.sql`을 한 번 적용한다.
 
@@ -110,7 +112,24 @@ npm run daily:generate -- --start 2026-10-16 --count 30
 python3 scripts/database.py /비공개/경로/daily-sudoku-2026-10-16.sql
 ```
 
-생성은 DB 등록과 별개다. `--output /비공개/절대경로.sql`로 저장 위치를 지정할 수 있다. 정답이 포함된 SQL/JSON을 `public/`, `dist/`, Git이나 공개 서버 경로에 넣지 않는다. 기존 날짜는 ON CONFLICT DO NOTHING으로 보존한다. 문제 묶음이 소진되면 문제 없음 화면이 표시된다.
+생성은 DB 등록과 별개다. `--output /비공개/절대경로.sql`로 저장 위치를 지정할 수 있다. 생성 SQL에는 미래 고정 숫자와 생성 메타데이터만 포함하며 정답은 포함하지 않는다. 미래 문제 SQL/JSON을 `public/`, `dist/`, Git이나 공개 서버 경로에 넣지 않는다. 기존 날짜는 ON CONFLICT DO NOTHING으로 보존한다. 문제 묶음이 소진되면 문제 없음 화면이 표시된다.
+
+## 완료 제출과 검토
+
+완료 정보는 기존 `public.semester_completions`와 `public.daily_sudoku_completions`에 보관한다. 두 종류의 최초 완료 보드는 `public.completion_submissions`에 계정·학기·문제 ID·형식 버전·서버 시각과 함께 저장한다. 진행 저장과 독립적인 사본이며 이후 저장하기·초기화·중복 완료로 덮어쓰지 않는다. 일반 사용자는 완료 보드를 읽거나 직접 쓸 수 없다. 개인 진행은 기존처럼 본인만 조회한다. 공개 조회에는 제출 보드가 포함되지 않는다.
+
+기존 완료 기록의 시각·순위는 그대로 보존하고, 이전 기록에는 제출 보드를 소급해 붙이지 않는다. 스키마 변경은 `supabase/migrations/20260917_completion_states.sql`을 한 번 적용한다. 변경 전 데일리 문제·정답·완료·진행과 일반 완료는 로컬 비공개 백업에 보관했다. 이미 생성한 이전 형식의 문제 SQL에는 삭제된 `solution` 열이 있으므로 그대로 실행하지 않고 새 생성 명령으로 준비한다.
+
+```sh
+# 읽기 전용 운영자 검토: 닉네임·문제·제출 시각·판정 출력
+python3 scripts/review-completions.py
+# 새 문제 메타데이터 등록 (일반 배포에서도 실행)
+python3 scripts/sync-puzzle-catalog.py
+```
+
+검토는 현재 학기의 수집된 보드를 문제별 기존 규칙 코드로 확인한다. 정상 보드는 `valid`, 규칙 위반은 `invalid`, 미지원 버전·문제는 별도 결과로 출력한다. 직접 풀었는지는 판단하지 않는다. 검토 명령은 기록을 자동 변경하지 않는다. 운영자가 규칙 위반을 확인한 경우 해당 완료 행의 `excluded`를 true로 변경하면 전광판·일반 순위·데일리 순위에서 제외한다. 최초 보드와 시각·순번은 남고, 되돌릴 때는 false로 변경한다.
+
+일반 퍼즐은 화면에서 완료를 즉시 표시하고 기록 저장 응답 후 저장 안내를 표시한다. 실패 시 30초 뒤 최초 보드로 재시도하며 계정 전환 후에는 이전 계정의 보드를 제출하지 않는다. 새로고침하면 로컬 보드의 완료 여부로 다시 제출한다. 데일리도 완료 화면을 먼저 표시하고 실패 시 기존 30초 갱신 주기에 재시도한다.
 
 ## 검증과 운영 주의
 
@@ -118,7 +137,7 @@ python3 scripts/database.py /비공개/경로/daily-sudoku-2026-10-16.sql
 
 - `npm run build` 후 `npm test`: 생성 페이지·링크·OAuth 복귀·저장 분리·정답 판정·캐시·삭제 권한 검증
 - `python3 scripts/verify-account-policies.py`: 실제 DB의 계정별 권한·닉네임 변경을 확인하고 트랜잭션 롤백
-- `python3 scripts/verify-daily-sudoku.py`: 실제 데일리 RPC·권한·중복 제출·계정 삭제 연계를 확인하고 트랜잭션 롤백
+- `python3 scripts/verify-completion-policies.py` (`verify-daily-sudoku.py`도 같은 검사): 일반·데일리 제출 상태, 중복, 권한, 공개 전환, 집계 제외, 계정 삭제를 확인하고 트랜잭션 롤백
 - 실제 Google 로그인은 사용자 계정으로 확인한다.
 
 관리 API 토큰은 `~/.supabase/access-token`에서 읽고 출력·배포하지 않는다. 로컬 비공개 백업은 `~/Documents/Backups/vodka-puzzle/`에 둔다.

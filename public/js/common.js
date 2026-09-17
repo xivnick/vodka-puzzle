@@ -53,6 +53,7 @@ document.addEventListener('gesturestart', event => {
 async function sbSelect(table, qs = '') {
   const params = new URLSearchParams(qs);
   params.set('season_id', `eq.${SEASON_ID}`);
+  if (table === 'completions') params.set('excluded', 'eq.false');
   const requestedLimit = Number(params.get('limit')) || Infinity;
   const rows = [];
   for (let offset = 0; ; offset += 500) {
@@ -300,7 +301,10 @@ function isGuest() {
   return !getUserId() || !nick || nick === GUEST_NAME;
 }
 
-async function recordCompletion(puzzleId) {
+const _completionInFlight = new Set();
+const _completionRetries = new Map();
+
+async function recordCompletion(puzzleId, state) {
   await window.puzzleAuthReady;
   const savedKey = _completionSavedKey(puzzleId);
 
@@ -309,7 +313,7 @@ async function recordCompletion(puzzleId) {
     localStorage.removeItem(savedKey);
   }
 
-  if (localStorage.getItem(savedKey)) return; // already recorded
+  if (localStorage.getItem(savedKey) || _completionInFlight.has(savedKey)) return;
 
   if (isGuest()) {
     // 게스트는 저장 안 함 → 닉네임 설정 유도
@@ -322,34 +326,41 @@ async function recordCompletion(puzzleId) {
     return;
   }
 
-  const nickname = getNickname();
-  localStorage.setItem(savedKey, '1');
-
+  if (!state || typeof state !== 'object' || Array.isArray(state)) return;
+  const owner = getUserId();
+  const snapshot = JSON.parse(JSON.stringify(state));
+  _completionInFlight.add(savedKey);
   try {
-    const url = `${SUPABASE_URL}/rest/v1/semester_completions?on_conflict=season_id,user_id,puzzle_id`;
-    const res = await fetch(url, {
+    const headers = { ...await accountHeaders(true), 'Content-Type': 'application/json' };
+    if (getUserId() !== owner) return;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/submit_completion`, {
       method: 'POST',
-      headers: {
-        ...await accountHeaders(true),
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=ignore-duplicates,return=minimal',
-      },
-      body: JSON.stringify({ puzzle_id: puzzleId, nickname: nickname, season_id: SEASON_ID, user_id: getUserId() }),
+      headers,
+      body: JSON.stringify({ requested_puzzle: puzzleId, submitted_state: snapshot, state_version: snapshot.version || 1 }),
     });
     if (!res.ok) throw new Error(`recordCompletion: ${res.status}`);
+    await res.json();
+    localStorage.setItem(savedKey, '1');
+    clearTimeout(_completionRetries.get(savedKey));
+    _completionRetries.delete(savedKey);
   } catch (e) {
     console.warn('recordCompletion failed:', e);
-    localStorage.removeItem(savedKey); // allow retry
+    if (!_completionRetries.has(savedKey)) showToast('완료 기록을 저장하지 못했습니다. 다시 시도합니다.');
+    clearTimeout(_completionRetries.get(savedKey));
+    const timer = setTimeout(() => {
+      if (getUserId() === owner) return recordCompletion(puzzleId, snapshot);
+      else _completionRetries.delete(savedKey);
+    }, 30000);
+    _completionRetries.set(savedKey, timer);
     return;
+  } finally {
+    _completionInFlight.delete(savedKey);
   }
 
-  showToast('🎉 완성했습니다!');
-  _recentCompletionCache = [
-    { nickname, puzzle_id: puzzleId, completed_at: new Date().toISOString() },
-    ...(_recentCompletionCache || []).filter(row => !(row.nickname === nickname && row.puzzle_id === puzzleId)),
-  ].slice(0, 3);
+  if (getUserId() !== owner) return;
+  showToast('🎉 완료 기록을 저장했습니다!');
   _recentBannerIndex = 0;
-  refreshRecentBanner();
+  refreshRecentBanner(true);
   renderLeaderboard(puzzleId, 'leaderboard');
 }
 

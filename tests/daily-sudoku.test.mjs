@@ -25,9 +25,9 @@ test('full valid board submits automatically once; partial and conflicting board
  const source=fs.readFileSync('src/scripts/daily-sudoku.js','utf8').replace(/^import .*;\n/gm,'').split('init();setInterval(')[0];
  vm.runInContext(source,sandbox);
  const solution=Array.from({length:81},(_,i)=>((Math.floor(i/9)*3+Math.floor(Math.floor(i/9)/3)+i%9)%9)+1);
- vm.runInContext(`ready=true;data={day:'2026-09-16'};state={values:${JSON.stringify(solution)},notes:[]};state.values[80]=0;`,sandbox);
+ vm.runInContext(`ready=true;data={day:'2026-09-16',givens:'0'.repeat(81)};state={values:${JSON.stringify(solution)},notes:[]};state.values[80]=0;`,sandbox);
  await vm.runInContext('submit()',sandbox);assert.equal(calls.length,0);
  vm.runInContext('state.values[80]=state.values[79]',sandbox);await vm.runInContext('submit()',sandbox);assert.equal(calls.length,0);
  vm.runInContext(`state.values=${JSON.stringify(solution)}`,sandbox);await vm.runInContext('submit()',sandbox);await vm.runInContext('submit()',sandbox);
- assert.equal(calls.length,1);assert.equal(calls[0].name,'submit_daily_sudoku');assert.equal(calls[0].args.answer,solution.join(''));
+ assert.equal(calls.length,1);assert.equal(calls[0].name,'submit_completion');assert.equal(calls[0].args.requested_puzzle,'daily-sudoku:2026-09-16');assert.deepEqual(Array.from(calls[0].args.submitted_state.values),solution);assert.equal(calls[0].args.state_version,1);
 });

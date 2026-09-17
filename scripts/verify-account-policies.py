@@ -11,7 +11,7 @@ INSERT INTO auth.users(id,aud,role,email,raw_app_meta_data) VALUES
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims','{claims(u1)}',true);
 INSERT INTO semester_nicknames(season_id,user_id,nickname) VALUES('2026-2','{u1}','__policy_a');
-INSERT INTO semester_completions(season_id,user_id,nickname,puzzle_id) VALUES('2026-2','{u1}','__policy_a','__policy_puzzle');
+SELECT public.submit_completion('260916_01','{{"version":1,"rects":[]}}',1);
 INSERT INTO semester_progress(season_id,user_id,nickname,puzzle_id,state) VALUES('2026-2','{u1}','__policy_a','__policy_puzzle','{{"n":1}}');
 INSERT INTO semester_progress(season_id,user_id,nickname,puzzle_id,state) VALUES('2026-2','{u1}','__policy_a','__policy_puzzle','{{"n":2}}') ON CONFLICT(season_id,user_id,puzzle_id) DO UPDATE SET state=excluded.state;
 UPDATE semester_nicknames SET nickname='__policy_renamed' WHERE user_id='{u1}';
@@ -36,7 +36,7 @@ DO $$ DECLARE affected int; BEGIN
  BEGIN
   INSERT INTO semester_completions(season_id,user_id,nickname,puzzle_id) VALUES('2026-2','{u2}','__policy_renamed','__forged');
   RAISE EXCEPTION 'Forged nickname accepted';
- EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN
   UPDATE semester_nicknames SET nickname='__policy_renamed' WHERE user_id='{u2}';
   RAISE EXCEPTION 'Duplicate nickname accepted';
