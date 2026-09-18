@@ -21,7 +21,7 @@ test('malformed or conflicting boards have no solution',()=>{assert.equal(countS
 test('full valid board submits automatically once; partial and conflicting boards do not',async()=>{
  const {default:vm}=await import('node:vm');
  const elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id,{addEventListener(){},setAttribute(){},textContent:''});return elements.get(id);};
- const calls=[];const sandbox=vm.createContext({units,URLSearchParams,location:{search:''},document:{getElementById:element,addEventListener(){}},window:{puzzleAccount:{user:{id:'test'},profile:{nickname:'test'},client:{rpc:async(name,args)=>{calls.push({name,args});return {data:{rank:1,completed_at:'2026-09-16T03:00:00Z'}};}}}},context:async()=>({current_day:'2026-09-16',rankings:[]}),rankings(){},time:()=> '12:00:00'});
+ const calls=[];const sandbox=vm.createContext({units,URLSearchParams,location:{search:''},document:{getElementById:element,addEventListener(){}},window:{addEventListener(){},puzzleAccount:{user:{id:'test'},profile:{nickname:'test'},client:{rpc:async(name,args)=>{calls.push({name,args});return {data:{rank:1,completed_at:'2026-09-16T03:00:00Z'}};}}}},context:async()=>({current_day:'2026-09-16',rankings:[]}),rankings(){},renderStreak(){},time:()=> '12:00:00'});
  const source=fs.readFileSync('src/scripts/daily-sudoku.js','utf8').replace(/^import .*;\n/gm,'').split('init();setInterval(')[0];
  vm.runInContext(source,sandbox);
  const solution=Array.from({length:81},(_,i)=>((Math.floor(i/9)*3+Math.floor(Math.floor(i/9)/3)+i%9)%9)+1);

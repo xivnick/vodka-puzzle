@@ -1,0 +1,6 @@
+.daily-streak{display:inline-flex;align-items:center;gap:2px;font-size:.78rem;font-weight:500;color:#777;white-space:nowrap;flex-shrink:0;font-variant-numeric:tabular-nums}
+.daily-streak[hidden]{display:none!important}
+.daily-streak img{display:block;width:14px;height:14px;transform:translateY(1px);flex-shrink:0}
+#dailyCard>.daily-streak{margin-left:12px}
+.daily-streak-heading{display:flex;justify-content:center;margin:0 0 8px}
+.daily-streak-heading[hidden]{display:none!important}

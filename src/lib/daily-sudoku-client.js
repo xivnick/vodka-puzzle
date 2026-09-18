@@ -1,6 +1,8 @@
 export async function context(day=null) {
  await window.puzzleAuthReady;
+ const owner=window.puzzleAccount.user?.id;
  const {data,error}=await window.puzzleAccount.client.rpc('daily_sudoku_context',{requested_day:day});
+ if(owner!==window.puzzleAccount.user?.id)throw new Error('ACCOUNT_CHANGED');
  if(error)throw error;return data;
 }
 export function title(day) {return `${day.replaceAll('-','').slice(2)} Daily Sudoku`;}

@@ -6,6 +6,7 @@ const { title, heading = title, subtitle, description, home = false, puzzle = fa
   <slot name="head" slot="head" />
   <main class:list={["page-content", { "puzzle-content": puzzle }]}>
     <div class="page-heading">
+      <slot name="above-title" />
       <h1>{heading}</h1>
       {subtitle && <p class="page-subtitle">{subtitle}</p>}
     </div>

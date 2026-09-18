@@ -6,6 +6,7 @@ const hasCustomLeaderboard = Astro.slots.has('leaderboard');
 ---
 <PageLayout title={title} description={description} subtitle={subtitle} puzzle>
 <slot name="head" slot="head" />
+<slot name="above-title" slot="above-title" />
 <div class="container">
 <div class="help-toggles">
 <button class="rules-toggle" id="rulesToggle" type="button" aria-expanded="false" aria-controls="rulesBox">규칙 보기</button>
