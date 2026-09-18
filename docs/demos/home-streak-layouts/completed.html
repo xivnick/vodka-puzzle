@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html data-season="2026-2" lang="ko"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1" name="viewport"/><title>보조 줄 · 완료 후 · 홈 미리보기</title><meta content="vodka puzzle" name="description"/><meta content="vodka puzzle" property="og:title"/><meta content="vodka puzzle" property="og:description"/><meta content="website" property="og:type"/><meta content="https://puzzle.xivnick.me/" property="og:url"/><style>* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+button,
+a,
+.cell,
+.board,
+.puzzle-page {
+  touch-action: manipulation;
+}
+
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+
+/* ── Site header ──────────────────────────────────────────────────────────── */
+.site-header {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 max(16px, calc(50vw - 240px));
+  height: 44px;
+  border-bottom: 1px solid #e8e5df;
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.site-header + .recent-banner { margin-bottom: 20px; }
+
+.header-back {
+  color: #999;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.12s;
+}
+.header-back:hover { color: #555; }
+
+.header-nick-link {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.82rem;
+  color: #aaa;
+  text-decoration: none;
+  padding: 3px 0;
+  border-bottom: 1px solid transparent;
+  transition: color 0.12s, border-color 0.12s;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.header-nick-link:hover { color: #666; border-bottom-color: #ddd; }
+
+/* ── Toast ────────────────────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: #333;
+  color: #fff;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.82rem;
+  padding: 9px 18px;
+  border-radius: 20px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 999;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+body { padding-top: 0; }
+.site-header + h1 { margin-top: 20px; }
+
+/* ── Shared puzzle layout ─────────────────────────────────────────────────── */
+.puzzle-page {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #fff;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 0 16px 60px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.puzzle-page.pad-48 { padding-bottom: 48px; }
+
+.puzzle-page > h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  font-size: 0.82rem;
+  color: #888;
+  margin-bottom: 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.container.align-center { align-items: center; }
+.container.align-stretch { align-items: stretch; }
+.container.puzzle-width-sm { width: min(94vw, 380px); }
+.container.puzzle-width-md { width: min(94vw, 450px); }
+.container.puzzle-width-lg { width: min(94vw, 500px); }
+
+.recent-banner {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  padding: 0 max(16px, calc(50vw - 240px));
+  border-bottom: 1px solid #ece6dc;
+  background: #faf8f4;
+  overflow: hidden;
+}
+
+.recent-banner-track {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100%;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.recent-banner.is-animated .recent-banner-track {
+  width: max-content;
+  min-width: auto;
+  animation: recent-banner-scroll 20s linear infinite;
+}
+
+.recent-banner-text {
+  display: inline-block;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: #7b7062;
+  letter-spacing: 0.01em;
+  animation: recent-banner-fade 0.45s ease;
+}
+
+.recent-banner.is-animated .recent-banner-text {
+  padding-right: 40px;
+}
+
+.recent-banner-label {
+  color: #9a8e7c;
+}
+
+.recent-banner-strong {
+  color: #5f5548;
+  font-weight: 700;
+}
+
+@keyframes recent-banner-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-50% - 20px)); }
+}
+
+@keyframes recent-banner-fade {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rules-toggle {
+  font-size: 0.78rem;
+  color: #999;
+  cursor: pointer;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 1px;
+  align-self: center;
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+.rules-toggle:hover { color: #555; }
+
+.rules-box {
+  display: none;
+  background: #faf8f4;
+  border: 1px solid #e0ddd6;
+  border-radius: 3px;
+  padding: 14px 18px;
+  font-size: 0.82rem;
+  color: #555;
+  line-height: 1.8;
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+.rules-box.open { display: block; }
+.rules-box strong { color: #333; font-size: 0.82rem; font-weight: 700; }
+
+.bottom-buttons {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+.bottom-buttons button {
+  flex: 1;
+  height: 40px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  background: #faf8f4;
+  border: 1.5px solid #d0ccc4;
+  border-radius: 3px;
+  color: #777;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.bottom-buttons button:hover { background: #f0ede7; }
+.bottom-buttons button.danger { border-color: #e0bfbf; background: #fdf5f5; color: #b05050; }
+.bottom-buttons button.danger:hover { background: #f8e8e8; }
+
+.message {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #4a6fa5;
+  margin-bottom: 8px;
+  min-height: 1.4em;
+  text-align: center;
+}
+
+.paint-grid-board {
+  display: grid;
+  border: 2.5px solid #222;
+  width: var(--paint-board-width, min(94vw, 450px));
+  aspect-ratio: var(--paint-board-aspect, 1);
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
+
+.paint-grid-board > .cell,
+.paint-grid-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--paint-cell-font, clamp(0.8rem, 4vw, 1.15rem));
+  font-weight: 700;
+  cursor: pointer;
+  border-right: 1px solid #bbb;
+  border-bottom: 1px solid #bbb;
+  background: #fff;
+  color: #333;
+  transition: background 0.08s;
+  min-height: 0;
+}
+
+.paint-grid-board > .cell.painted,
+.paint-grid-cell.painted { background: #333; }
+.paint-grid-board > .cell.preset,
+.paint-grid-cell.preset { cursor: default; }
+.paint-grid-board > .cell.err-painted,
+.paint-grid-cell.err-painted { background: #8b1a1a; }
+.paint-grid-board > .cell.err-white,
+.paint-grid-board > .cell.err-clue,
+.paint-grid-cell.err-white,
+.paint-grid-cell.err-clue {
+  background: #fde8e8;
+  color: #b03030;
+}
+.paint-grid-board > .cell.err-white.preset,
+.paint-grid-cell.err-white.preset { color: #b03030; }
+.paint-grid-board > .cell.correct,
+.paint-grid-cell.correct {
+  background: #e8f5ec;
+  color: #2d7a4a;
+}
+.paint-grid-board > .cell.correct.preset,
+.paint-grid-cell.correct.preset { color: #2d7a4a; }
+
+@media (max-width: 540px) {
+  .puzzle-page { padding: 0 8px 48px; }
+  .puzzle-page.pad-48 { padding-bottom: 40px; }
+  .puzzle-page > h1 { font-size: 1.2rem; }
+  .recent-banner {
+    height: 28px;
+    padding: 0 8px;
+  }
+  .recent-banner-text { font-size: 0.72rem; }
+}
+
+/* ── Leaderboard ──────────────────────────────────────────────────────────── */
+.lb-section { width: 100%; margin-top: 28px; }
+.lb-title { font-size: 0.88rem; font-weight: 700; color: #555; margin-bottom: 8px; }
+.lb-list { border-top: 1px solid #e8e5df; }
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 4px;
+  border-bottom: 1px solid #e8e5df;
+  font-size: 0.88rem;
+}
+.lb-row.lb-me { background: #f5f8ff; font-weight: 600; }
+.lb-rank { width: 24px; color: #aaa; font-size: 0.78rem; flex-shrink: 0; text-align: right; }
+.lb-name { flex: 1; color: #333; }
+.lb-time { color: #888; font-size: 0.82rem; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.lb-loading, .lb-empty { font-size: 0.82rem; color: #bbb; text-align: center; padding: 16px 0; }
+.lb-ellipsis .lb-rank { color: #ccc; letter-spacing: 0.05em; width: auto; text-align: center; }
+.lb-ellipsis { border-bottom-style: dashed; }
+.lb-ellipsis-toggle { cursor: pointer; user-select: none; }
+.lb-ellipsis-toggle:hover { background: #faf8f4; }
+.lb-ellipsis-toggle .lb-name,
+.lb-ellipsis-toggle .lb-time { display: none; }
+.lb-ellipsis-toggle .lb-rank { flex: 1; }
+
+/* ── Cloud sync buttons ───────────────────────────────────────────────────── */
+.cloud-btns {
+  width: 100%;
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+.cloud-btn {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.82rem;
+  color: #999;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.12s;
+}
+.cloud-btn:hover { color: #555; }
+
+/* ── Completion check mark (index page) ───────────────────────────────────── */
+.check-mark { color: #5a9a5a; font-size: 1rem; margin-left: 8px; flex-shrink: 0; }
+</style><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet"/><style>body.unified{flex-direction:column;align-items:center;min-height:100vh;padding:0 16px 60px;line-height:normal;display:flex}body.unified>.site-header{flex-shrink:0}body.unified>.recent-banner{margin-bottom:0}.page-content{flex-direction:column;flex:1;align-items:center;width:min(94vw,480px);max-width:100%;padding-top:20px;display:flex}.page-heading{text-align:center;width:100%;margin-bottom:24px}.page-heading h1{color:#222;letter-spacing:-.01em;margin:0;font-size:1.5rem;font-weight:700;line-height:1.4}.page-heading .page-subtitle{color:#888;margin:6px 0 0;font-size:.82rem;line-height:1.5}.page-content.puzzle-content .page-heading{margin-bottom:8px}.page-content>.container{max-width:100%}body.unified>footer{padding-bottom:0}@media (width<=540px){body.unified{padding:0 8px 48px}.page-heading h1{font-size:1.3rem}}
+nav[data-astro-cid-nen7h5rs]{align-items:center;gap:20px;display:flex}nav[data-astro-cid-nen7h5rs] a[data-astro-cid-nen7h5rs]{text-decoration:none}.header-back[data-astro-cid-nen7h5rs]{color:#999;font-size:.85rem}.site-header[data-astro-cid-nen7h5rs]{height:44px}body{color:#333;background:#fff;min-height:100vh;font-family:Noto Sans KR,sans-serif;font-size:16px;line-height:1.65}body:not(.legacy){flex-direction:column;display:flex}body:not(.legacy)>main.page{flex:1;width:100%}main.page{max-width:520px;margin:40px auto;padding:0 20px}h1{letter-spacing:-.04em;font-size:26px}h2{margin:32px 0 12px;font-size:18px}.season{color:#888;margin-bottom:6px;font-size:14px}.muted{color:#888}.empty{border-top:1px solid #e8e5df;border-bottom:1px solid #e8e5df;margin:24px 0;padding:32px 0}.links{flex-wrap:wrap;gap:18px;margin-top:16px;display:flex}.links a{color:#4a6fa5;font-size:14px}a{color:#4a6fa5}.legacy{flex-direction:column;align-items:center;display:flex}.legacy>.site-header{width:100%}button,input{font:inherit}button{cursor:pointer}.list{list-style:none}.list a{color:#333;border-bottom:1px solid #e8e5df;justify-content:space-between;padding:16px 0;text-decoration:none;display:flex}.tag{color:#888;font-size:14px}.site-header a:focus-visible,button:focus-visible{outline-offset:3px;outline:2px solid #4a6fa5}
+footer[data-astro-cid-dypm2i3n]{text-align:center;padding:24px 20px}a[data-astro-cid-dypm2i3n]{color:#888;font-size:14px;text-decoration:none}a[data-astro-cid-dypm2i3n]:hover{text-decoration:underline}a[data-astro-cid-dypm2i3n]:focus-visible{outline-offset:3px;outline:2px solid #4a6fa5}body.home .list{flex-direction:column;gap:0;width:min(94vw,480px);display:flex}body.home .list-head{justify-content:space-between;align-items:center;gap:10px;width:min(94vw,480px);margin-bottom:8px;display:flex}body.home .list-title{color:#555;font-size:.88rem;font-weight:700}body.home .list a{color:#333;border-bottom:1px solid #e8e5df;justify-content:space-between;align-items:center;padding:14px 18px;text-decoration:none;transition:background .12s;display:flex}body.home .list a.first-visible{border-top:1px solid #e8e5df}body.home .list a:hover{background:#faf8f4}body.home .list .title{align-items:center;gap:6px;font-size:.95rem;font-weight:500;display:flex}body.home .list .solver-count{color:#bbb;font-size:.78rem;font-weight:400}body.home .empty{color:#bbb;margin-top:40px;font-size:.85rem}body.home .pager{justify-content:center;align-items:center;gap:6px;width:min(94vw,480px);margin-top:14px;display:flex}body.home .pager button{color:#777;cursor:pointer;background:#faf8f4;border:1.5px solid #d0ccc4;border-radius:3px;min-width:34px;height:34px;padding:0 10px;font-family:Noto Sans KR,sans-serif;font-size:.82rem}body.home .pager button:hover{color:#555;background:#eeebe4}body.home .pager button.active{color:#333;background:#e8e4da;border-color:#bdb7ad;font-weight:700}body.home .pager button:disabled{opacity:.45;cursor:default}@media (width<=540px){body.home .list a{padding:12px 14px}body.home .pager{gap:5px}body.home .pager button{min-width:32px;height:32px;padding:0 8px;font-size:.78rem}}body.home .list a{position:relative}body.home .pager:empty{display:none}body.home .home-rank{width:100%;margin-top:32px}body.home .home-rank>.lb-section{margin-top:0}body.home .list a.daily-card{background:#f1f4f0;border-top:1px solid #e8e5df;border-bottom:1px solid #e8e5df;order:-1}body.home .list a.daily-card:hover{background:#e8eee6}body.home .list a.daily-card~a.first-visible{border-top:0}.rank-head{justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;display:flex}.rank-head .lb-title{margin-bottom:0}.rank-tabs{flex-shrink:0;gap:4px;display:flex}.rank-tab{color:#999;cursor:pointer;background:#fff;border:1px solid #ddd8cf;border-radius:3px;height:28px;padding:0 10px;font-family:Noto Sans KR,sans-serif;font-size:.74rem}.rank-tab.active{color:#555;background:#faf8f4;border-color:#cfc8bd;font-weight:700}[hidden]{display:none!important}
+.policy-links[data-astro-cid-xuekdsdg]{justify-content:center;gap:16px;margin-top:16px;display:flex}.policy-links[data-astro-cid-xuekdsdg] a[data-astro-cid-xuekdsdg]{color:#888;font-size:12px;text-decoration:none}.policy-links[data-astro-cid-xuekdsdg] a[data-astro-cid-xuekdsdg]:hover{text-decoration:underline}
+</style><style>.daily-copy{display:flex;flex-direction:column;gap:4px;min-width:0}.daily-subline{font-size:.76rem;font-weight:400;line-height:1.5;color:#888}.daily-indicator{font-size:1rem;color:#999;margin-left:12px;flex-shrink:0}.daily-indicator.is-complete{color:#5a9a5a}.daily-inline-streak{font-size:.78rem;font-weight:400;color:#888;white-space:nowrap;margin-left:12px;flex-shrink:0}</style></head><body class="home unified"><header class="site-header" data-astro-cid-nen7h5rs=""><a class="header-back" data-astro-cid-nen7h5rs="" href="https://puzzle.xivnick.me/">vodka puzzle</a><nav aria-label="주 메뉴" data-astro-cid-nen7h5rs=""><a class="header-nick-link" data-astro-cid-nen7h5rs="" href="https://puzzle.xivnick.me/nickname/" id="nicknameLink">퍼즐러</a></nav></header><div aria-live="polite" class="recent-banner" id="recentBanner"></div><main class="page-content"><div class="page-heading"><h1>퍼즐</h1><p class="page-subtitle">puzzle.xivnick.me</p></div><div class="list-head"><div class="list-title">문제</div></div><div class="list"><a class="daily-card" href="https://xivnick.me/pub/MTkclOtEQvuRpQSz/daily-success.html" id="dailyCard"><span class="daily-copy"><span class="title">오늘의 스도쿠</span><span class="daily-subline">6일 연속 성공 🔥</span></span><span aria-hidden="true" class="daily-indicator is-complete">✓</span></a><a data-puzzle-id="260918_01" href="https://puzzle.xivnick.me/260918_01/"><span class="title">260918 온도계 스도쿠 A</span></a><a data-puzzle-id="260918_02" href="https://puzzle.xivnick.me/260918_02/"><span class="title">260918 온도계 스도쿠 B</span></a><a data-puzzle-id="260917_01" href="https://puzzle.xivnick.me/260917_01/"><span class="title">260917 온도계 스도쿠 - 하</span></a><a data-puzzle-id="260917_02" href="https://puzzle.xivnick.me/260917_02/"><span class="title">260917 온도계 스도쿠 - 중</span></a><a data-puzzle-id="260917_03" href="https://puzzle.xivnick.me/260917_03/"><span class="title">260917 온도계 스도쿠 - 상</span></a><a data-puzzle-id="260916_01" href="https://puzzle.xivnick.me/260916_01/"><span class="title">260916 Mini Rectangles</span></a></div><div class="pager" id="pager"></div><div class="home-rank"><div class="lb-section"><div class="rank-head"><div class="lb-title" id="rankTitle">랭킹</div><div aria-label="랭킹 종류" class="rank-tabs"><button aria-controls="regularRankPanel" aria-pressed="true" class="rank-tab active" data-rank-mode="regular" id="regularRankBtn" type="button">랭킹</button><button aria-controls="dailyRankPanel" aria-pressed="false" class="rank-tab" data-rank-mode="daily" id="dailyRankBtn" type="button">데일리 스도쿠</button></div></div><div id="regularRankPanel"><div aria-live="polite" id="solverRank"><div class="lb-empty">아직 기록이 없습니다.</div></div></div><div hidden="" id="dailyRankPanel"><div aria-live="polite" id="dailyRank"><div class="lb-empty">아직 기록이 없습니다.</div></div></div></div></div></main><footer data-astro-cid-dypm2i3n=""><a data-astro-cid-dypm2i3n="" href="https://puzzle.xivnick.me/archive/">archive</a><nav aria-label="서비스 정책" class="policy-links" data-astro-cid-xuekdsdg=""><a data-astro-cid-xuekdsdg="" href="https://puzzle.xivnick.me/terms/">이용약관</a><a data-astro-cid-xuekdsdg="" href="https://puzzle.xivnick.me/privacy/">개인정보처리방침</a></nav></footer><script>for(const b of document.querySelectorAll('[data-rank-mode]'))b.addEventListener('click',()=>{const daily=b.dataset.rankMode==='daily';document.getElementById('regularRankPanel').hidden=daily;document.getElementById('dailyRankPanel').hidden=!daily;for(const t of document.querySelectorAll('[data-rank-mode]')){t.classList.toggle('active',t===b);t.setAttribute('aria-pressed',String(t===b));}document.getElementById('rankTitle').textContent=daily?'데일리 스도쿠':'랭킹';});</script></body></html>
