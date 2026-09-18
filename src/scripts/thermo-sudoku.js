@@ -1,6 +1,6 @@
-import {puzzles,previewPuzzles,conflicts,solved,parseState} from '../lib/thermo-sudoku.js';
+import {puzzles,photoPuzzles,conflicts,solved,parseState} from '../lib/thermo-sudoku.js';
 const $=id=>document.getElementById(id);
-const puzzle=[...puzzles,...previewPuzzles].find(p=>p.id===$('thermoGame').dataset.difficulty);
+const puzzle=[...puzzles,...photoPuzzles].find(p=>p.id===$('thermoGame').dataset.difficulty);
 const givens=puzzle.givens.flat(),size=puzzle.givens.length;
 const ID=$('thermoGame').dataset.puzzleId,preview=$('thermoGame').dataset.preview==='true';
 let ready=preview,completed=false;

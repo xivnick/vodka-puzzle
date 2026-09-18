@@ -1,0 +1,6 @@
+---
+import ThermoSudoku from '../../components/ThermoSudoku.astro';
+import {photoPuzzles} from '../../lib/thermo-sudoku.js';
+const puzzle=photoPuzzles.find(p=>p.id==='photo-20260918-2');
+---
+<ThermoSudoku puzzle={puzzle} puzzleId="260918_02" />

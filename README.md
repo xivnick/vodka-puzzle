@@ -65,7 +65,7 @@ mv -Tf dist-rollback dist
 - `PageLayout.astro`: 제목·부제·본문 너비·모바일 여백
 - `PuzzleLayout.astro`: 규칙·조작 방법·클라우드 저장·리더보드
 - `PuzzleCompletion.astro`: 공통 완료 안내
-- `ThermoSudoku.astro`: 9×9(3×3 영역)·6×6(2×3 영역) 온도계 스도쿠 화면. 정식 문제는 `260917_01`·`260917_02`·`260917_03`이며 테스트 경로는 기록·저장 없이 시연한다.
+- `ThermoSudoku.astro`: 9×9(3×3 영역)·6×6(2×3 영역) 온도계 스도쿠 화면. 정식 문제는 `260917_01`·`260917_02`·`260917_03`·`260918_01`(A, 9×9)·`260918_02`(B, 6×6)이며 테스트 경로는 기록·저장 없이 시연한다.
 - `public/js/common.js`: 일반 문제의 로컬 저장·클라우드 저장·완료 기록·순위
 
 신규 문제는 `src/pages/<YYMMDD_번호>/index.astro`에서 `PuzzleLayout`을 사용한다. `title`, `puzzleId`, `description`과 필요한 `subtitle`을 전달하고 `rules`, `controls` 슬롯에 안내를 넣는다. 판 구성·조작·일반 정답 검증은 문제별 코드에 둔다.

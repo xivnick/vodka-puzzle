@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {puzzles,previewPuzzles,parseState,conflicts,solved} from '../src/lib/thermo-sudoku.js';
+import {puzzles,photoPuzzles,parseState,conflicts,solved} from '../src/lib/thermo-sudoku.js';
 test('published thermo pages have separate IDs, rankings and cloud controls; previews remain isolated',()=>{
  const home=fs.readFileSync('dist/index.html','utf8');
  for(const [i,slug] of ['easy','medium','hard'].entries()){
@@ -38,7 +38,7 @@ test('thermometer errors compare entered order without predicting empty cells',(
 
 test('photo previews render matching sizes and stay outside catalog and saving',()=>{
  const catalog=fs.readFileSync('src/data/puzzles.json','utf8');
- for(const p of previewPuzzles){
+ for(const p of photoPuzzles){
   const html=fs.readFileSync(`dist/test/thermo-sudoku/${p.id}/index.html`,'utf8');
   assert.equal((html.match(/data-cell=/g)||[]).length,p.givens.length**2);
   assert.equal((html.match(/data-number=/g)||[]).length,p.givens.length);
@@ -48,7 +48,7 @@ test('photo previews render matching sizes and stay outside catalog and saving',
  }
 });
 test('six by six checks 2 by 3 regions, diagonal thermometers and valid completion',()=>{
- const p=previewPuzzles[1],v=Array(36).fill(0);
+ const p=photoPuzzles[1],v=Array(36).fill(0);
  v[0]=2;v[8]=2;assert.deepEqual([...conflicts(p,v)].sort((a,b)=>a-b),[0,8]);
  v.fill(0);v[7]=3;v[0]=2;assert.deepEqual([...conflicts(p,v)].sort((a,b)=>a-b),[0,7]);
  v[0]=4;assert.equal(conflicts(p,v).size,0);
@@ -60,4 +60,16 @@ test('six by six checks 2 by 3 regions, diagonal thermometers and valid completi
  const state={version:1,puzzleId:p.id,values:Array(36).fill(0),notes:Array.from({length:36},()=>[])};
  assert.equal(parseState(p,state,p.id).values[3],1);
  state.notes[0]=[7];assert.equal(parseState(p,state,p.id),null);
+});
+
+test('published photo puzzles use official IDs with cloud controls and rankings',()=>{
+ const home=fs.readFileSync('dist/index.html','utf8');
+ for(const [i,p] of photoPuzzles.entries()){
+  const id=`260918_0${i+1}`,html=fs.readFileSync(`dist/${id}/index.html`,'utf8');
+  assert(home.includes(`data-puzzle-id="${id}"`));
+  assert(html.includes(p.title));
+  assert(html.includes(`data-puzzle-id="${id}"`));
+  assert(html.includes('data-preview="false"'));
+  assert(html.includes('id="cloudBtns"')&&html.includes('id="leaderboard"'));
+ }
 });
