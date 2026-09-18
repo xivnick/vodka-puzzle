@@ -1,3 +1,16 @@
+// Choose once per page load, before either ranking finishes loading.
+{
+  const mode = Math.random() < 0.5 ? 'regular' : 'daily';
+  document.querySelectorAll('[data-rank-mode]').forEach(button => {
+    const active = button.dataset.rankMode === mode;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  document.getElementById('regularRankPanel').hidden = mode !== 'regular';
+  document.getElementById('dailyRankPanel').hidden = mode !== 'daily';
+  document.getElementById('rankTitle').textContent = mode === 'daily' ? '데일리 스도쿠' : '랭킹';
+}
+
 const PAGE_SIZE = 10;
   function getCurrentPage(totalPages) {
     const hash = window.location.hash.match(/^#page-(\d+)$/);

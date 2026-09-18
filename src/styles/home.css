@@ -55,6 +55,12 @@ body.home .list .solver-count {
     color: #bbb;
   }
 
+body.home .list .check-mark {
+    font-size: inherit;
+    line-height: 1;
+    height: 1em;
+  }
+
 body.home .empty {
     color: #bbb;
     font-size: 0.85rem;
