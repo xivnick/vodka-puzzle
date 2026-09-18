@@ -15,6 +15,7 @@ function updateCard(rows,streak=null){
  const text=card.querySelector('.title');
  text.querySelector('.solver-count')?.remove();text.querySelector('.check-mark')?.remove();
  if(rows.length){const count=document.createElement('span');count.className='solver-count';count.textContent=`(${rows.length})`;text.append(count);}
+ if(rows.some(row=>row.is_me)){const check=document.createElement('span');check.className='check-mark';check.textContent='✓';text.append(check);}
 }
 function apply(data){
  current=data.current_day;label.textContent=title(current);card.href=`/daily-sudoku/?day=${current}`;

@@ -41,7 +41,7 @@ test('home refresh preserves solver count and renders personal streak separately
   // Stop before listener setup and its initial network activity.
   vm.runInContext(source.split('const buttons=')[0],sandbox);
   vm.runInContext("apply({current_day:'2026-09-19',available:true,rankings:[{is_me:true},{}],streak_rankings:[{rank:1,nickname:'solver',count:1,status:'completed'}],streak:{count:1,status:'completed'}})",sandbox);
-  assert.equal(elements.get('dailyTitle').textContent,'2026-09-19 Daily Sudoku');assert.equal(title.children[0].textContent,'(2)');assert.equal(title.children.length,1);assert.equal(elements.get('dailyStreak').children[0].textContent,'1');
+  assert.equal(elements.get('dailyTitle').textContent,'2026-09-19 Daily Sudoku');assert.equal(title.children[0].textContent,'(2)');assert.equal(title.children.length,2);assert.equal(title.children[1].className,'check-mark');assert.equal(title.children[1].textContent,'✓');assert.equal(elements.get('dailyStreak').children[0].textContent,'1');
   vm.runInContext('updateCard([])',sandbox);assert.equal(elements.get('dailyStreak').hidden,true);
  }finally{globalThis.document=original;}
 });
