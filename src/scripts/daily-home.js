@@ -1,5 +1,5 @@
-import {context,title,rankings,rankMessage} from '../lib/daily-sudoku-client.js';
-import {renderStreak} from '../lib/daily-streak.js';
+import {context,title,rankMessage} from '../lib/daily-sudoku-client.js';
+import {renderStreak,renderStreakRankings} from '../lib/daily-streak.js';
 import {dailyDate} from '../lib/sudoku.js';
 const card=document.getElementById('dailyCard'),label=document.getElementById('dailyTitle'),panel=document.getElementById('dailyRank');
 let current,offset=0,busy=false,rollover,refreshPending=false;
@@ -18,8 +18,8 @@ function updateCard(rows,streak=null){
 }
 function apply(data){
  current=data.current_day;label.textContent=title(current);card.href=`/daily-sudoku/?day=${current}`;
- updateCard(data.rankings,data.streak);document.getElementById('rankTitle').dataset.dailyCount=String(data.rankings.length);updateRankTitle();
- rankings(panel,data.rankings);if(!data.available)rankMessage(panel,'아직 기록이 없습니다.');
+ updateCard(data.rankings,data.streak);document.getElementById('rankTitle').dataset.dailyCount=String(data.streak_rankings?.length||0);updateRankTitle();
+ renderStreakRankings(panel,data.streak_rankings);
 }
 localLabel();
 async function refresh(){

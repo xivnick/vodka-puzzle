@@ -14,3 +14,18 @@ export function renderStreak(element,streak,{label=false}={}) {
  element.append(value,icon);element.hidden=false;
  element.setAttribute('aria-label',`${label?text:streak.count+'일 스트릭'}, ${completed?'오늘 완료':streak.status==='rest'?'하루 휴식 중, 오늘 완료하면 이어집니다':'오늘 도전 중'}`);
 }
+
+export function renderStreakRankings(element,rows) {
+ element.replaceChildren();
+ if(!rows?.length){
+  const empty=document.createElement('div');empty.className='lb-empty';empty.textContent='아직 기록이 없습니다.';element.append(empty);return;
+ }
+ const list=document.createElement('div');list.className='lb-list';element.append(list);
+ for(const row of rows){
+  const line=document.createElement('div');line.className=`lb-row${row.is_me?' lb-me':''}`;
+  const rank=document.createElement('span');rank.className='lb-rank';rank.textContent=row.rank;
+  const name=document.createElement('span');name.className='lb-name';name.textContent=row.nickname;
+  const streak=document.createElement('span');streak.className='daily-streak';renderStreak(streak,row);
+  line.append(rank,name,streak);list.append(line);
+ }
+}

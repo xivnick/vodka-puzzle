@@ -98,13 +98,15 @@ Client Secret은 Supabase 설정에만 보관한다. 이메일 로그인은 비�
 
 `private.daily_sudoku`는 미공개 문제 대기열이다. 조회·제출·진행 저장 RPC가 서버 시각으로 공개 시점을 확인하고, 열린 문제를 `public.daily_sudoku`로 원자적으로 옮긴다. 방문이 없는 동안에는 공개 시점이 지난 행도 대기열에 남을 수 있지만 미래 정보는 조회할 수 없다. 공개 문제에는 고정 숫자만 있으며 DB에 정답을 보관하지 않는다. 매일 빌드나 cron은 필요 없다.
 
-일반 퍼즐과 데일리 모두 브라우저에서 규칙 준수·완료를 판단하고 `submit_completion(requested_puzzle, submitted_state, state_version)`으로 보드를 제출한다. 데일리 ID는 `daily-sudoku:YYYY-MM-DD` 형식이다. 서버는 로그인·현재 학기 닉네임·등록된 문제 또는 열린 데일리 회차·JSON 크기·버전을 확인하고 완료 정보와 제출 보드를 한 트랜잭션으로 저장한다. 풀이 규칙은 서버에서 검사하지 않으며 사후 검토한다. 제출 시각과 데일리 순번은 서버가 정하고, 중복 요청은 최초 기록을 반환한다. 데일리 순위는 소요 시간이 아닌 제출 순서다. 이전 클라이언트의 `submit_daily_sudoku`는 답안 문자열을 보드 배열로 바꿔 같은 제출 함수에 전달한다.
+일반 퍼즐과 데일리 모두 브라우저에서 규칙 준수·완료를 판단하고 `submit_completion(requested_puzzle, submitted_state, state_version)`으로 보드를 제출한다. 데일리 ID는 `daily-sudoku:YYYY-MM-DD` 형식이다. 서버는 로그인·현재 학기 닉네임·등록된 문제 또는 열린 데일리 회차·JSON 크기·버전을 확인하고 완료 정보와 제출 보드를 한 트랜잭션으로 저장한다. 풀이 규칙은 서버에서 검사하지 않으며 사후 검토한다. 제출 시각과 데일리 순번은 서버가 정하고, 중복 요청은 최초 기록을 반환한다. 데일리 문제 페이지의 회차별 순위는 소요 시간이 아닌 제출 순서다. 이전 클라이언트의 `submit_daily_sudoku`는 답안 문자열을 보드 배열로 바꿔 같은 제출 함수에 전달한다.
 
 전광판은 `recent_completions()` RPC로 현재 학기의 일반 문제·데일리 완료 기록을 합쳐 최신 3건을 표시한다. 데일리 제목에는 회차 날짜를 붙이며 정답·계정 ID는 반환하지 않는다. DB 변경은 `supabase/migrations/20260917_recent_completions.sql`을 한 번 적용한다.
 
 스트릭은 **2026-09-19 회차부터** Google 계정별 완료 날짜로 집계하며 학기가 바뀌어도 이어진다. `daily_sudoku_context`는 서버의 한국 날짜로 계산한 본인 `streak: {count, status}`만 반환한다. `excluded` 기록은 제외하고 시작일 이전 기록은 집계하지 않는다. 완료 날짜 사이의 하루 공백은 허용하지만 쉰 날은 숫자에 더하지 않는다. 어제 완료·오늘 미완료는 윤곽선 불꽃(`pending`), 오늘 완료는 채운 불꽃(`completed`), 어제 쉬고 오늘 미완료는 Zzz(`rest`)로 표시한다. 이틀 연속 미완료 후 자정이 지나면 현재 스트릭이 종료되어 표시하지 않는다(`none`). 휴식 후 다음 날 완료하면 같은 스트릭에 1을 더하고, 종료 후 완료하면 1부터 시작한다. 최초 완료·중복 제출·사후 집계 제외는 기존 완료 행에서 계산하므로 별도 카운터나 cron이 필요 없다.
 
 홈에는 `YYMMDD Daily Sudoku`, 푼 사람 수와 오른쪽 스트릭을 표시하고 데일리의 기존 체크를 스트릭으로 대체한다. 완료 기록이 없으면 홈의 스트릭은 숨기고 당일 데일리 페이지에는 `1일 연속 도전 중..`과 빈 불꽃을 표시한다. 당일 데일리 페이지에는 제목 위에 `n일 연속 도전 중..`과 빈 불꽃, 완료 후 `n일 연속 완성`과 채운 불꽃을 표시하며 과거 연습 페이지에는 표시하지 않는다. 서버 완료 저장 후 조회한 스트릭으로만 갱신하고, 로그아웃·계정 전환 시 이전 표시와 조회 응답을 버린다. 아이콘은 `public/icons/daily-streak/`의 Tabler Icons(MIT)를 사용한다. DB 변경은 `supabase/migrations/20260919_daily_streak.sql`을 한 번 적용한다.
+
+홈의 데일리 랭킹은 `daily_sudoku_context.streak_rankings`로 현재 스트릭을 표시한다. 스트릭 숫자 내림차순, 같은 숫자는 채운 불꽃 → 빈 불꽃 → Zzz 순, 숫자·상태가 같으면 해당 숫자를 만든 최초 완료의 서버 시각 오름차순으로 정렬한다. 두 시각까지 같으면 계정 ID로 순서를 고정하되 ID는 반환하지 않는다. 종료되거나 아직 시작하지 않은 스트릭은 순위에서 제외한다. 현재 학기 닉네임을 우선 사용하며 없는 경우 마지막 완료 기록의 닉네임을 사용한다. 개인의 `is_me` 외에 계정 ID·보드·달성 시각을 공개하지 않는다. DB 변경은 `supabase/migrations/20260919_daily_streak_rankings.sql`을 한 번 적용한다. 데일리 문제 페이지의 기존 회차별 완료 순위는 유지한다.
 
 주요 코드는 `src/lib/sudoku.js`, `src/lib/daily-sudoku-client.js`, `src/scripts/daily-sudoku.js`, `src/scripts/daily-home.js`다. 당일 캐시는 날짜와 고정 숫자만 저장하고 서버에서 재확인한다. 계정별 진행 저장과 캐시는 분리되며 정답·순위는 캐시에 넣지 않는다.
 
@@ -143,6 +145,7 @@ python3 scripts/sync-puzzle-catalog.py
 - `python3 scripts/verify-account-policies.py`: 실제 DB의 계정별 권한·닉네임 변경을 확인하고 트랜잭션 롤백
 - `python3 scripts/verify-completion-policies.py` (`verify-daily-sudoku.py`도 같은 검사): 일반·데일리 제출 상태, 중복, 권한, 공개 전환, 집계 제외, 계정 삭제를 확인하고 트랜잭션 롤백
 - `python3 scripts/verify-daily-streak.py`: 시작일·하루 휴식·복구·종료·중복·권한·계정 분리 검증 후 롤백 (`--rehearse`는 스트릭 마이그레이션도 함께 롤백)
+- `python3 scripts/verify-daily-streak-rankings.py`: 스트릭 순위·동률 상태·달성 시각·닉네임·권한 검증 후 롤백 (`--rehearse`는 순위 마이그레이션도 함께 롤백)
 - 실제 Google 로그인은 사용자 계정으로 확인한다.
 
 관리 API 토큰은 `~/.supabase/access-token`에서 읽고 출력·배포하지 않는다. 로컬 비공개 백업은 `~/Documents/Backups/vodka-puzzle/`에 둔다.

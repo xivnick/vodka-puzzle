@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import {renderStreak} from '../src/lib/daily-streak.js';
+import {renderStreak,renderStreakRankings} from '../src/lib/daily-streak.js';
 import {context} from '../src/lib/daily-sudoku-client.js';
 function node(){return {children:[],hidden:false,attributes:{},replaceChildren(){this.children=[];},append(...children){this.children.push(...children);},setAttribute(k,v){this.attributes[k]=v;},removeAttribute(k){delete this.attributes[k];}};}
 test('streak renders no record, outline, rest and restored completion with accessible labels',()=>{
@@ -33,15 +33,26 @@ test('home refresh preserves solver count and renders personal streak separately
  const title=node();title.querySelector=()=>null;
  const card=node();card.querySelector=()=>title;elements.set('dailyCard',card);
  elements.set('dailyRankBtn',{getAttribute:()=> 'false'});
- const sandbox=vm.createContext({document:{getElementById:id=>elements.get(id),createElement:node,querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){}},renderStreak,Date,title:d=>`${d} Daily Sudoku`,rankings(){},rankMessage(){},dailyDate:()=> '2026-09-19'});
+ const sandbox=vm.createContext({document:{getElementById:id=>elements.get(id),createElement:node,querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){}},renderStreak,renderStreakRankings,Date,title:d=>`${d} Daily Sudoku`,rankings(){},rankMessage(){},dailyDate:()=> '2026-09-19'});
  // renderStreak uses document in its originating module scope.
  const original=globalThis.document;globalThis.document={createElement:node};
  try{
   const source=fs.readFileSync('src/scripts/daily-home.js','utf8').replace(/^import .*;\n/gm,'').split('refresh();setInterval(')[0].replace('localLabel();','');
   // Stop before listener setup and its initial network activity.
   vm.runInContext(source.split('const buttons=')[0],sandbox);
-  vm.runInContext("apply({current_day:'2026-09-19',available:true,rankings:[{is_me:true},{}],streak:{count:1,status:'completed'}})",sandbox);
+  vm.runInContext("apply({current_day:'2026-09-19',available:true,rankings:[{is_me:true},{}],streak_rankings:[{rank:1,nickname:'solver',count:1,status:'completed'}],streak:{count:1,status:'completed'}})",sandbox);
   assert.equal(elements.get('dailyTitle').textContent,'2026-09-19 Daily Sudoku');assert.equal(title.children[0].textContent,'(2)');assert.equal(title.children.length,1);assert.equal(elements.get('dailyStreak').children[0].textContent,'1');
   vm.runInContext('updateCard([])',sandbox);assert.equal(elements.get('dailyStreak').hidden,true);
+ }finally{globalThis.document=original;}
+});
+
+test('streak leaderboard displays server order, nicknames and numeric icons without submission times',()=>{
+ const original=globalThis.document;globalThis.document={createElement:node};
+ try{
+  const el=node();
+  renderStreakRankings(el,[{rank:1,nickname:'<solver>',count:6,status:'completed',is_me:true},{rank:2,nickname:'resting',count:6,status:'rest',is_me:false}]);
+  const [first,second]=el.children[0].children;
+  assert.equal(first.className,'lb-row lb-me');assert.equal(first.children[0].textContent,1);assert.equal(first.children[1].textContent,'<solver>');assert.equal(first.children[2].children[0].textContent,'6');assert.equal(first.children[2].children[1].src,'/icons/daily-streak/flame-filled.svg');assert.equal(second.children[2].children[1].src,'/icons/daily-streak/zzz.svg');assert.equal(first.children.length,3);
+  renderStreakRankings(el,[]);assert.equal(el.children[0].textContent,'아직 기록이 없습니다.');
  }finally{globalThis.document=original;}
 });
