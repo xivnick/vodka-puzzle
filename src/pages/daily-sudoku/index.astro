@@ -3,7 +3,7 @@ import PuzzleLayout from '../../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from '../../components/PuzzleCompletion.astro';
 import '../../styles/daily-sudoku.css';
 ---
-<PuzzleLayout title="Daily Sudoku" puzzleId="daily-sudoku" subtitle="매일 12시에 새로운 스도쿠를 풀어보세요">
+<PuzzleLayout title="Daily Sudoku" puzzleId="daily-sudoku" subtitle="매일 밤 12시에 새로운 스도쿠를 풀어보세요">
  <p slot="rules">각 행, 열, 3×3 구역에 1부터 9까지 한 번씩 넣으세요.</p>
  <p slot="controls">칸을 선택하고 숫자를 누르세요. 메모하기 버튼으로 후보 숫자를 입력할 수 있습니다.</p>
  <p id="dailyStatus" class="daily-loading-status" role="status">문제를 불러오는 중...</p>
