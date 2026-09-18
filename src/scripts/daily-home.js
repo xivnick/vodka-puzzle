@@ -3,7 +3,7 @@ import {renderStreak} from '../lib/daily-streak.js';
 import {dailyDate} from '../lib/sudoku.js';
 const card=document.getElementById('dailyCard'),label=document.getElementById('dailyTitle'),panel=document.getElementById('dailyRank');
 let current,offset=0,busy=false,rollover,refreshPending=false;
-function localLabel(){label.textContent=title(dailyDate(new Date(Date.now()+offset))).replace('Daily Sudoku','오늘의 스도쿠');}
+function localLabel(){label.textContent=title(dailyDate(new Date(Date.now()+offset)));}
 function updateRankTitle(){
  const heading=document.getElementById('rankTitle');
  const daily=document.getElementById('dailyRankBtn').getAttribute('aria-pressed')==='true';
@@ -17,7 +17,7 @@ function updateCard(rows,streak=null){
  if(rows.length){const count=document.createElement('span');count.className='solver-count';count.textContent=`(${rows.length})`;text.append(count);}
 }
 function apply(data){
- current=data.current_day;label.textContent=title(current).replace('Daily Sudoku','오늘의 스도쿠');card.href=`/daily-sudoku/?day=${current}`;
+ current=data.current_day;label.textContent=title(current);card.href=`/daily-sudoku/?day=${current}`;
  updateCard(data.rankings,data.streak);document.getElementById('rankTitle').dataset.dailyCount=String(data.rankings.length);updateRankTitle();
  rankings(panel,data.rankings);if(!data.available)rankMessage(panel,'아직 기록이 없습니다.');
 }

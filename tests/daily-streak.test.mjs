@@ -12,8 +12,8 @@ test('streak renders no record, outline, rest and restored completion with acces
   for(const [count,status,icon] of [[6,'pending','flame'],[6,'rest','zzz'],[7,'completed','flame-filled']]){
    renderStreak(el,{count,status});assert.equal(el.hidden,false);assert.equal(el.children[0].textContent,String(count));assert.equal(el.children[1].src,`/icons/daily-streak/${icon}.svg`);assert.equal(el.children[1].width,14);
   }
-  renderStreak(el,{count:7,status:'completed'},{label:true});assert.equal(el.children[0].textContent,'7일 연속 성공');
-  renderStreak(el,{count:6,status:'rest'},{label:true});assert.equal(el.children[0].textContent,'6일 연속 도전 중..');assert.match(el.attributes['aria-label'],/오늘 완료하면 이어집니다/);
+  renderStreak(el,{count:7,status:'completed'},{label:true});assert.equal(el.children[0].textContent,'7일 연속 완성');
+  renderStreak(el,{count:6,status:'rest'},{label:true});assert.equal(el.children[0].textContent,'6일 연속 도전 중..');assert.match(el.attributes['aria-label'],/오늘 완료하면 이어집니다/);assert.equal(el.children[1].src,'/icons/daily-streak/flame.svg');
   for(const invalid of [null,{count:0,status:'none'},{count:6,status:'unknown'},{count:-1,status:'pending'}]){renderStreak(el,invalid);assert.equal(el.hidden,true);assert.equal(el.children.length,0);assert.equal(el.attributes['aria-label'],undefined);}
  }finally{globalThis.document=original;}
 });
@@ -40,7 +40,7 @@ test('home refresh preserves solver count and renders personal streak separately
   // Stop before listener setup and its initial network activity.
   vm.runInContext(source.split('const buttons=')[0],sandbox);
   vm.runInContext("apply({current_day:'2026-09-19',available:true,rankings:[{is_me:true},{}],streak:{count:1,status:'completed'}})",sandbox);
-  assert.equal(elements.get('dailyTitle').textContent,'2026-09-19 오늘의 스도쿠');assert.equal(title.children[0].textContent,'(2)');assert.equal(title.children.length,1);assert.equal(elements.get('dailyStreak').children[0].textContent,'1');
+  assert.equal(elements.get('dailyTitle').textContent,'2026-09-19 Daily Sudoku');assert.equal(title.children[0].textContent,'(2)');assert.equal(title.children.length,1);assert.equal(elements.get('dailyStreak').children[0].textContent,'1');
   vm.runInContext('updateCard([])',sandbox);assert.equal(elements.get('dailyStreak').hidden,true);
  }finally{globalThis.document=original;}
 });

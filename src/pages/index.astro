@@ -13,7 +13,7 @@ const visible = puzzles.filter(p => p.listed !== false && p.season === season.id
   <div class="list-title">문제</div>
 </div>
 <div class="list">
-  <a id="dailyCard" class="daily-card" href="/daily-sudoku/"><span class="title"><span id="dailyTitle">오늘의 스도쿠</span></span><span id="dailyStreak" class="daily-streak" hidden></span></a>
+  <a id="dailyCard" class="daily-card" href="/daily-sudoku/"><span class="title"><span id="dailyTitle">Daily Sudoku</span></span><span id="dailyStreak" class="daily-streak" hidden></span></a>
   {visible.map(p => <a href={p.href} data-puzzle-id={p.id}><span class="title">{p.title}</span></a>)}
 </div>
 <div class="pager" id="pager"></div>
