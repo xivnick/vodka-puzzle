@@ -33,6 +33,11 @@ export const fourWindsPuzzles = [
 
 export const cellKey = ({ r, c }) => `${r}:${c}`;
 
+export function removeSourceArrows(arrows, source) {
+  const sourceKey = cellKey(source);
+  return arrows.filter(arrow => cellKey(arrow.source) !== sourceKey);
+}
+
 export function arrowCells(arrow) {
   const dr = Math.sign(arrow.end.r - arrow.source.r);
   const dc = Math.sign(arrow.end.c - arrow.source.c);

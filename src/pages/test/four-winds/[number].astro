@@ -23,7 +23,8 @@ const { puzzle } = Astro.props;
   </div>
   <div slot="controls">
     숫자 칸에서 빈 칸까지 드래그하거나, 숫자 칸과 끝 칸을 차례로 누르세요.<br />
-    그려진 화살표를 누르면 지울 수 있습니다. 키보드에서는 방향키로 이동하고 Enter로 선택합니다.
+    그려진 화살표를 누르면 지울 수 있습니다.<br />
+    숫자 칸을 두 번 누르면 그 숫자에서 출발한 화살표를 모두 지울 수 있습니다.
   </div>
   <section id="fwGame" class="fw-game" data-puzzles={JSON.stringify([puzzle])} aria-label={puzzle.label}>
     <svg id="fwBoard" role="application" tabindex="0" aria-label={puzzle.label}></svg>

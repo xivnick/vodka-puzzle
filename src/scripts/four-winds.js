@@ -1,4 +1,4 @@
-import { arrowCells, analyzeFourWinds, cellKey, validateArrow } from '../lib/four-winds.js';
+import { arrowCells, analyzeFourWinds, cellKey, removeSourceArrows, validateArrow } from '../lib/four-winds.js';
 
 const game = document.getElementById('fwGame');
 const board = document.getElementById('fwBoard');
@@ -12,6 +12,7 @@ let selected = null;
 let cursor = { r: 0, c: 0 };
 let keyboard = false;
 let pointer = null;
+let lastClueTap = null;
 
 const puzzle = () => puzzles[puzzleIndex];
 const arrows = () => states[puzzleIndex];
@@ -49,14 +50,19 @@ function linePoints(arrow) {
   };
 }
 
-function drawArrow(arrow, index, preview = false) {
+function drawArrow(arrow, index, preview = false, analysis = null) {
   const invalid = preview && validateArrow(puzzle(), arrow, arrows());
-  const color = invalid ? '#b65c5c' : preview ? '#aa8750' : '#527aa3';
+  const target = puzzle().cells[arrow.source.r][arrow.source.c];
+  const total = analysis?.totals.get(cellKey(arrow.source)) || 0;
+  const state = total > target ? 'over' : total === target ? 'exact' : 'under';
+  const color = invalid || state === 'over' ? '#b65c5c' : state === 'exact' ? '#5b8c64' : preview ? '#8a98a8' : '#527aa3';
+  const fill = invalid || state === 'over' ? '#f4d5d5' : state === 'exact' ? '#dcebdc' : '#fff';
+  const marker = invalid || state === 'over' ? 'fwArrowError' : state === 'exact' ? 'fwArrowExact' : preview ? 'fwArrowPreview' : 'fwArrowHead';
   for (const cell of arrowCells(arrow)) {
     if (!active(cell)) continue;
-    svgNode('rect', { x: cell.c * 50 + 2, y: cell.r * 50 + 2, width: 46, height: 46, fill: invalid ? '#f5dddd' : '#efe7d7' });
+    svgNode('rect', { x: cell.c * 50 + 2, y: cell.r * 50 + 2, width: 46, height: 46, fill });
   }
-  const line = svgNode('line', { ...linePoints(arrow), stroke: color, 'stroke-width': 3.5, 'stroke-linecap': 'square', 'marker-end': `url(#${invalid ? 'fwArrowError' : preview ? 'fwArrowPreview' : 'fwArrowHead'})` });
+  const line = svgNode('line', { ...linePoints(arrow), stroke: color, 'stroke-width': 3.5, 'stroke-linecap': 'square', 'marker-end': `url(#${marker})` });
   if (!preview) line.dataset.arrowIndex = index;
 }
 
@@ -71,7 +77,7 @@ function render() {
   board.setAttribute('aria-label', `${current.label}, ${rows}행 ${cols}열. 현재 ${cursor.r + 1}행 ${cursor.c + 1}열.`);
 
   const defs = svgNode('defs');
-  for (const [id, color] of [['fwArrowHead', '#527aa3'], ['fwArrowPreview', '#aa8750'], ['fwArrowError', '#b65c5c']]) {
+  for (const [id, color] of [['fwArrowHead', '#527aa3'], ['fwArrowPreview', '#8a98a8'], ['fwArrowExact', '#5b8c64'], ['fwArrowError', '#b65c5c']]) {
     const marker = svgNode('marker', { id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 4.5, markerHeight: 4.5, orient: 'auto-start-reverse', markerUnits: 'strokeWidth' }, defs);
     svgNode('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: color }, marker);
   }
@@ -83,11 +89,11 @@ function render() {
     const clueFill = value > 0 && total > value ? '#f4d5d5' : value > 0 && total === value ? '#dcebdc' : '#fff';
     svgNode('rect', { x: c * 50, y: r * 50, width: 50, height: 50, fill: clueFill });
   }));
-  arrows().forEach((arrow, index) => drawArrow(arrow, index));
+  arrows().forEach((arrow, index) => drawArrow(arrow, index, false, analysis));
   const draft = draftArrow();
-  if (draft) drawArrow(draft, -1, true);
+  if (draft) drawArrow(draft, -1, true, analyzeFourWinds(current, [...arrows(), draft]));
 
-  if (selected) svgNode('rect', { x: selected.source.c * 50 + 3, y: selected.source.r * 50 + 3, width: 44, height: 44, fill: 'none', stroke: '#4a6fa5', 'stroke-width': 2 });
+  if (selected) svgNode('rect', { x: selected.source.c * 50 + 4, y: selected.source.r * 50 + 4, width: 42, height: 42, fill: 'none', stroke: '#aab2bb', 'stroke-width': 1, 'stroke-dasharray': '3 3' });
 
   current.cells.forEach((row, r) => row.forEach((value, c) => {
     if (value === -1) return;
@@ -140,6 +146,16 @@ function removeArrow(index) {
   render();
 }
 
+function removeAllFromSource(source) {
+  const next = removeSourceArrows(arrows(), source);
+  if (next.length === arrows().length) return false;
+  states[puzzleIndex] = next;
+  selected = null;
+  announce('이 숫자에서 출발한 화살표를 모두 지웠습니다.');
+  render();
+  return true;
+}
+
 board.addEventListener('pointerdown', event => {
   if (event.button !== 0 || !event.isPrimary || pointer) return;
   const cell = eventCell(event);
@@ -177,11 +193,25 @@ board.addEventListener('pointerup', event => {
   const action = pointer;
   pointer = null;
   if (action.remove >= 0 && !action.moved) { removeArrow(action.remove); return; }
-  if (action.source && action.moved) { addArrow({ source: action.source, end: selected.end }); return; }
-  if (action.source) { selected = { source: action.source, end: action.source }; announce(`숫자 ${puzzle().cells[action.source.r][action.source.c]}에서 출발합니다. 끝 칸을 선택하세요.`); render(); }
+  if (action.source && action.moved) { lastClueTap = null; addArrow({ source: action.source, end: selected.end }); return; }
+  if (action.source) {
+    const now = performance.now();
+    const key = cellKey(action.source);
+    if (lastClueTap?.key === key && now - lastClueTap.time < 450 && removeAllFromSource(action.source)) { lastClueTap = null; return; }
+    lastClueTap = { key, time: now };
+    selected = { source: action.source, end: action.source };
+    announce(`숫자 ${puzzle().cells[action.source.r][action.source.c]}에서 출발합니다. 끝 칸을 선택하세요.`);
+    render();
+  }
 });
 
 board.addEventListener('pointercancel', () => { pointer = null; selected = null; render(); });
+
+board.addEventListener('dblclick', event => {
+  const source = eventCell(event);
+  if (!source || !clue(source)) return;
+  removeAllFromSource(source);
+});
 
 board.addEventListener('keydown', event => {
   const directions = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
