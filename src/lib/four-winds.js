@@ -1,7 +1,7 @@
 export const fourWindsPuzzles = [
   {
     id: 'photo-20260919-1',
-    label: '문제 1',
+    label: '사풍(四風) - 1',
     cells: [
       [2, 0, 0, 0, 1, 0, -1, -1],
       [0, 6, 0, 0, 0, 5, 0, 0],
@@ -15,7 +15,7 @@ export const fourWindsPuzzles = [
   },
   {
     id: 'photo-20260919-2',
-    label: '문제 2',
+    label: '사풍(四風) - 2',
     cells: [
       [0, 5, 0, 0, 0, 0, 2, 0, 0, 0],
       [0, 0, 0, 0, 4, 0, 0, 0, 0, 3],
@@ -52,10 +52,6 @@ export function validateArrow(puzzle, arrow, arrows = []) {
     if (cells[cell.r]?.[cell.c] !== 0) return '화살표는 빈 칸 안에서만 뻗을 수 있습니다.';
     if (occupied.has(cellKey(cell))) return '이미 다른 화살표가 차지한 칸입니다.';
   }
-  const used = arrows
-    .filter(existing => cellKey(existing.source) === cellKey(arrow.source))
-    .reduce((sum, existing) => sum + arrowCells(existing).length, 0);
-  if (used + covered.length > sourceValue) return `이 숫자에서 출발한 화살표의 합은 ${sourceValue}를 넘을 수 없습니다.`;
   return null;
 }
 

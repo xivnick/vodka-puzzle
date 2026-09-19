@@ -56,7 +56,7 @@ function drawArrow(arrow, index, preview = false) {
     if (!active(cell)) continue;
     svgNode('rect', { x: cell.c * 50 + 2, y: cell.r * 50 + 2, width: 46, height: 46, fill: invalid ? '#f5dddd' : '#efe7d7' });
   }
-  const line = svgNode('line', { ...linePoints(arrow), stroke: color, 'stroke-width': 7, 'stroke-linecap': 'square', 'marker-end': `url(#${invalid ? 'fwArrowError' : preview ? 'fwArrowPreview' : 'fwArrowHead'})` });
+  const line = svgNode('line', { ...linePoints(arrow), stroke: color, 'stroke-width': 3.5, 'stroke-linecap': 'square', 'marker-end': `url(#${invalid ? 'fwArrowError' : preview ? 'fwArrowPreview' : 'fwArrowHead'})` });
   if (!preview) line.dataset.arrowIndex = index;
 }
 
@@ -72,20 +72,22 @@ function render() {
 
   const defs = svgNode('defs');
   for (const [id, color] of [['fwArrowHead', '#527aa3'], ['fwArrowPreview', '#aa8750'], ['fwArrowError', '#b65c5c']]) {
-    const marker = svgNode('marker', { id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse', markerUnits: 'strokeWidth' }, defs);
+    const marker = svgNode('marker', { id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 4.5, markerHeight: 4.5, orient: 'auto-start-reverse', markerUnits: 'strokeWidth' }, defs);
     svgNode('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: color }, marker);
   }
 
   current.cells.forEach((row, r) => row.forEach((value, c) => {
     if (value === -1) return;
     const key = cellKey({ r, c });
-    const isSelected = selected && cellKey(selected.source) === key;
-    const satisfied = value > 0 && analysis.totals.get(key) === value;
-    svgNode('rect', { x: c * 50, y: r * 50, width: 50, height: 50, fill: isSelected ? '#e4edf7' : satisfied ? '#edf4f8' : '#fff' });
+    const total = analysis.totals.get(key) || 0;
+    const clueFill = value > 0 && total > value ? '#f4d5d5' : value > 0 && total === value ? '#dcebdc' : '#fff';
+    svgNode('rect', { x: c * 50, y: r * 50, width: 50, height: 50, fill: clueFill });
   }));
   arrows().forEach((arrow, index) => drawArrow(arrow, index));
   const draft = draftArrow();
   if (draft) drawArrow(draft, -1, true);
+
+  if (selected) svgNode('rect', { x: selected.source.c * 50 + 3, y: selected.source.r * 50 + 3, width: 44, height: 44, fill: 'none', stroke: '#4a6fa5', 'stroke-width': 2 });
 
   current.cells.forEach((row, r) => row.forEach((value, c) => {
     if (value === -1) return;
@@ -103,7 +105,6 @@ function render() {
   if (keyboard && active(cursor)) svgNode('rect', { x: cursor.c * 50 + 3, y: cursor.r * 50 + 3, width: 44, height: 44, fill: 'none', stroke: '#4a6fa5', 'stroke-width': 2, 'stroke-dasharray': '3 3' });
   complete.hidden = !analysis.complete;
   if (analysis.complete) announce('퍼즐을 완성했습니다!');
-  else if (!status.textContent) announce(`채우지 않은 빈 칸이 ${analysis.emptyCount}개 있습니다.`);
 }
 
 function eventCell(event, clamp = false) {
@@ -205,18 +206,6 @@ board.addEventListener('keydown', event => {
   const occupied = arrowAt(cursor);
   if (occupied >= 0) { removeArrow(occupied); return; }
   if (clue(cursor)) { selected = { source: { ...cursor }, end: { ...cursor } }; announce('방향키로 끝 칸을 정한 뒤 Enter를 누르세요.'); render(); }
-});
-
-document.getElementById('fwPicker').addEventListener('click', event => {
-  const button = event.target.closest('button[data-index]');
-  if (!button) return;
-  puzzleIndex = Number(button.dataset.index);
-  selected = null;
-  pointer = null;
-  cursor = { r: 0, c: 0 };
-  status.textContent = '';
-  document.querySelectorAll('#fwPicker button').forEach((item, index) => item.setAttribute('aria-pressed', String(index === puzzleIndex)));
-  render();
 });
 
 document.getElementById('fwReset').addEventListener('click', () => {

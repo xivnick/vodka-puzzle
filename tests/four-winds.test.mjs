@@ -13,7 +13,7 @@ test('photo transcription keeps both Four Winds board shapes and clues', () => {
   assert.deepEqual([second.cells[0][1], second.cells[6][4], second.cells[9][8]], [5, 9, 2]);
 });
 
-test('arrows stay straight, start at clues, avoid clues and overlaps, and respect clue totals', () => {
+test('arrows stay straight, start at clues, avoid clues and overlaps, and may exceed clue totals', () => {
   const puzzle = { cells: [[2, 0, 0], [1, 0, 1]] };
   const right = { source: { r: 0, c: 0 }, end: { r: 0, c: 2 } };
   assert.deepEqual(arrowCells(right), [{ r: 0, c: 1 }, { r: 0, c: 2 }]);
@@ -22,6 +22,11 @@ test('arrows stay straight, start at clues, avoid clues and overlaps, and respec
   assert.match(validateArrow(puzzle, { source: { r: 0, c: 0 }, end: { r: 1, c: 1 } }), /가로 또는 세로/);
   assert.match(validateArrow(puzzle, { source: { r: 0, c: 0 }, end: { r: 1, c: 0 } }), /빈 칸/);
   assert.match(validateArrow(puzzle, { source: { r: 1, c: 2 }, end: { r: 0, c: 2 } }, [right]), /이미 다른/);
+  const small = { cells: [[0, 0, 0], [0, 1, 0], [0, 0, 0]] };
+  const up = { source: { r: 1, c: 1 }, end: { r: 0, c: 1 } };
+  const over = { source: { r: 1, c: 1 }, end: { r: 1, c: 2 } };
+  assert.equal(validateArrow(small, over, [up]), null);
+  assert.equal(analyzeFourWinds(small, [up, over]).totals.get('1:1'), 2);
 });
 
 test('completion requires every empty cell and exact clue sums', () => {
@@ -33,11 +38,15 @@ test('completion requires every empty cell and exact clue sums', () => {
 });
 
 test('Four Winds preview is built without catalog, cloud, or completion recording', () => {
-  const html = fs.readFileSync('dist/test/four-winds/index.html', 'utf8');
   const catalog = fs.readFileSync('src/data/puzzles.json', 'utf8');
-  assert(html.includes('사풍 (四風)'));
-  assert(html.includes('data-puzzles='));
-  assert(!html.includes('id="cloudBtns"') && !html.includes('id="leaderboard"'));
+  for (const number of [1, 2]) {
+    const html = fs.readFileSync(`dist/test/four-winds/${number}/index.html`, 'utf8');
+    assert(html.includes(`사풍(四風) - ${number}`));
+    assert(html.includes('data-puzzles=') && !html.includes('fwPicker'));
+    assert(!html.includes('id="cloudBtns"') && !html.includes('id="leaderboard"'));
+  }
+  const script = fs.readFileSync('src/scripts/four-winds.js', 'utf8');
+  assert(script.includes("total > value ? '#f4d5d5'") && script.includes("total === value ? '#dcebdc'"));
   assert(!catalog.includes('photo-20260919-1') && !catalog.includes('photo-20260919-2'));
-  assert(!fs.readFileSync('src/scripts/four-winds.js', 'utf8').includes('recordCompletion'));
+  assert(!script.includes('recordCompletion'));
 });
