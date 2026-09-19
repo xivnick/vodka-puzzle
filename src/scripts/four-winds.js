@@ -1,4 +1,4 @@
-import { arrowCells, analyzeFourWinds, cellKey, validateArrow } from '../lib/four-winds.js';
+import { arrowCells, analyzeFourWinds, cellKey, parseFourWindsState, validateArrow } from '../lib/four-winds.js';
 
 const game = document.getElementById('fwGame');
 const board = document.getElementById('fwBoard');
@@ -6,12 +6,16 @@ const status = document.getElementById('fwStatus');
 const complete = document.getElementById('fwComplete');
 const ns = 'http://www.w3.org/2000/svg';
 const puzzles = JSON.parse(game.dataset.puzzles);
+const ID = game.dataset.puzzleId;
+const preview = game.dataset.preview === 'true';
 const states = puzzles.map(() => []);
 let puzzleIndex = 0;
 let selected = null;
 let cursor = { r: 0, c: 0 };
 let keyboard = false;
 let pointer = null;
+let ready = preview;
+let completed = false;
 
 const puzzle = () => puzzles[puzzleIndex];
 const arrows = () => states[puzzleIndex];
@@ -26,6 +30,20 @@ function svgNode(tag, attrs = {}, parent = board) {
 }
 
 function announce(message) { status.textContent = message; }
+
+function state() { return { version: 1, puzzleId: ID, arrows: structuredClone(arrows()) }; }
+
+function persist() {
+  if (preview || !ready) return;
+  try { window.saveLocalState(ID, state()); }
+  catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
+}
+
+function checkComplete() {
+  if (preview || !ready || completed || !analyzeFourWinds(puzzle(), arrows()).complete) return;
+  completed = true;
+  window.recordCompletion(ID, state());
+}
 
 function snappedEnd(source, cell) {
   const dr = cell.r - source.r;
@@ -132,7 +150,9 @@ function addArrow(arrow) {
   states[puzzleIndex] = [...arrows(), arrow];
   selected = null;
   announce('화살표를 그렸습니다.');
+  persist();
   render();
+  checkComplete();
   return true;
 }
 
@@ -140,12 +160,14 @@ function removeArrow(index) {
   if (index < 0) return;
   states[puzzleIndex] = arrows().filter((_, arrowIndex) => arrowIndex !== index);
   selected = null;
+  completed = false;
   announce('화살표를 지웠습니다.');
+  persist();
   render();
 }
 
 board.addEventListener('pointerdown', event => {
-  if (event.button !== 0 || !event.isPrimary || pointer) return;
+  if (!ready || event.button !== 0 || !event.isPrimary || pointer) return;
   const cell = eventCell(event);
   if (!cell || !active(cell)) return;
   event.preventDefault();
@@ -192,6 +214,7 @@ board.addEventListener('pointerup', event => {
 board.addEventListener('pointercancel', () => { pointer = null; selected = null; render(); });
 
 board.addEventListener('keydown', event => {
+  if (!ready) return;
   const directions = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
   if (directions[event.key]) {
     event.preventDefault();
@@ -217,11 +240,46 @@ board.addEventListener('keydown', event => {
 });
 
 document.getElementById('fwReset').addEventListener('click', () => {
+  if (!ready) return;
   if (arrows().length && !confirm('현재 문제를 초기화하시겠습니까?')) return;
   states[puzzleIndex] = [];
   selected = null;
+  completed = false;
   status.textContent = '';
+  persist();
   render();
 });
 
-render();
+window.checkComplete = checkComplete;
+window.handleCloudSave = () => window.saveProgressCloud(ID, state());
+window.handleCloudLoad = async () => {
+  if (arrows().length && !confirm('저장된 진행 상황을 불러오시겠습니까?')) return;
+  const saved = await window.loadProgressCloud(ID);
+  if (saved == null) return;
+  const next = parseFourWindsState(puzzle(), saved, ID);
+  if (!next) { window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.'); return; }
+  states[puzzleIndex] = next;
+  selected = null;
+  completed = false;
+  persist();
+  render();
+  checkComplete();
+};
+
+function init() {
+  if (ready) return;
+  let saved = null;
+  try { saved = window.loadLocalState(ID); } catch {}
+  states[puzzleIndex] = parseFourWindsState(puzzle(), saved, ID) || [];
+  ready = true;
+  render();
+  window.initCloudBtns();
+  checkComplete();
+}
+
+if (preview) render();
+else {
+  render();
+  window.puzzleAuthReady.then(init);
+  window.addEventListener('puzzle-auth-ready', init);
+}

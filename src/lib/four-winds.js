@@ -74,3 +74,17 @@ export function analyzeFourWinds(puzzle, arrows) {
   }));
   return { occupied, totals, errors, emptyCount, complete: errors.length === 0 && emptyCount === 0 && cluesComplete };
 }
+
+export function parseFourWindsState(puzzle, saved, puzzleId) {
+  if (!saved || saved.version !== 1 || saved.puzzleId !== puzzleId || !Array.isArray(saved.arrows)) return null;
+  const arrows = [];
+  for (const item of saved.arrows) {
+    if (!item || !item.source || !item.end) return null;
+    const values = [item.source.r, item.source.c, item.end.r, item.end.c];
+    if (!values.every(Number.isInteger)) return null;
+    const arrow = { source: { r: item.source.r, c: item.source.c }, end: { r: item.end.r, c: item.end.c } };
+    if (validateArrow(puzzle, arrow, arrows)) return null;
+    arrows.push(arrow);
+  }
+  return arrows;
+}

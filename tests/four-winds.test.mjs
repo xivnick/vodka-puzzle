@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { fourWindsPuzzles, arrowCells, validateArrow, analyzeFourWinds } from '../src/lib/four-winds.js';
+import { fourWindsPuzzles, arrowCells, validateArrow, analyzeFourWinds, parseFourWindsState } from '../src/lib/four-winds.js';
 
 test('photo transcription keeps both Four Winds board shapes and clues', () => {
   const [first, second] = fourWindsPuzzles;
@@ -37,6 +37,14 @@ test('completion requires every empty cell and exact clue sums', () => {
   assert.equal(analyzeFourWinds(puzzle, [first, second]).complete, true);
 });
 
+test('saved progress must match the Four Winds puzzle and contain valid arrows', () => {
+  const puzzle = { cells: [[1, 0], [0, 1]] };
+  const saved = { version: 1, puzzleId: '260919_01', arrows: [{ source: { r: 0, c: 0 }, end: { r: 0, c: 1 } }] };
+  assert.deepEqual(parseFourWindsState(puzzle, saved, '260919_01'), saved.arrows);
+  assert.equal(parseFourWindsState(puzzle, saved, '260919_02'), null);
+  assert.equal(parseFourWindsState(puzzle, { ...saved, arrows: [{ source: { r: 9, c: 9 }, end: { r: 9, c: 8 } }] }, '260919_01'), null);
+});
+
 test('Four Winds preview is built without catalog, cloud, or completion recording', () => {
   const catalog = fs.readFileSync('src/data/puzzles.json', 'utf8');
   for (const number of [1, 2]) {
@@ -54,5 +62,18 @@ test('Four Winds preview is built without catalog, cloud, or completion recordin
   assert(!script.includes("stroke: '#aab2bb'"));
   assert(!script.includes("dblclick") && !script.includes("lastClueTap"));
   assert(!catalog.includes('photo-20260919-1') && !catalog.includes('photo-20260919-2'));
-  assert(!script.includes('recordCompletion'));
+});
+
+test('published Four Winds pages use official IDs with saving and rankings', () => {
+  const home = fs.readFileSync('dist/index.html', 'utf8');
+  const catalog = fs.readFileSync('src/data/puzzles.json', 'utf8');
+  for (const number of [1, 2]) {
+    const id = `260919_0${number}`;
+    const html = fs.readFileSync(`dist/${id}/index.html`, 'utf8');
+    assert(home.includes(`data-puzzle-id="${id}"`));
+    assert(html.includes(`260919 사풍(四風) - ${number}`));
+    assert(html.includes(`data-puzzle-id="${id}"`) && html.includes('data-preview="false"'));
+    assert(html.includes('id="cloudBtns"') && html.includes('id="leaderboard"'));
+    assert(catalog.includes(`"id": "${id}"`));
+  }
 });

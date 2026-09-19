@@ -1,0 +1,36 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+const { puzzle, title = puzzle.label, puzzleId = `test-four-winds-${puzzle.id}`, preview = false } = Astro.props;
+---
+<PuzzleLayout
+  title={title}
+  puzzleId={puzzleId}
+  subtitle="숫자 칸에서 화살표를 뻗어 모든 빈 칸을 채우세요"
+  description="숫자 칸에서 뻗은 화살표로 모든 빈 칸을 채우는 사풍 퍼즐"
+  showCloud={!preview}
+  showLeaderboard={!preview}
+>
+  <div slot="rules" class="fw-rules">
+    <p>주어진 격자의 빈 칸에 화살표를 그려 넣으세요.</p>
+    <p>각 화살표는 중간에 꺾이지 않고 동서남북 중 한 방향으로만 뻗으며, 반드시 숫자가 쓰인 칸의 한 변에서 출발합니다.</p>
+    <p>모든 빈 칸은 단 하나의 화살표가 차지해야 합니다. 숫자는 그 칸에서 출발한 모든 화살표가 차지하는 칸 수의 합입니다.</p>
+  </div>
+  <div slot="controls">
+    숫자 칸에서 빈 칸까지 드래그하거나, 숫자 칸과 끝 칸을 차례로 누르세요.<br />
+    그려진 화살표를 누르면 지울 수 있습니다.
+  </div>
+  <section id="fwGame" class="fw-game" data-puzzles={JSON.stringify([puzzle])} data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label={title}>
+    <svg id="fwBoard" role="application" tabindex="0" aria-label={title}></svg>
+    <span id="fwStatus" class="sr-only" role="status" aria-live="polite"></span>
+    <div class="bottom-buttons"><button id="fwReset" class="danger" type="button">초기화</button></div>
+    <PuzzleCompletion id="fwComplete" />
+  </section>
+</PuzzleLayout>
+<script>import '../scripts/four-winds.js';</script>
+<style>
+.fw-rules{line-height:1.7}.fw-rules p{margin:0}.fw-rules p+p{margin-top:8px}
+.fw-game{width:100%;max-width:480px}#fwBoard{display:block;width:100%;height:auto;background:#fff;touch-action:none;user-select:none}
+#fwBoard:focus{outline:none}#fwBoard[data-keyboard="true"]:focus-visible{outline:2px solid #4a6fa5;outline-offset:4px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+</style>
