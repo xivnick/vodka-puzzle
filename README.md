@@ -70,7 +70,7 @@ mv -Tf dist-rollback dist
 
 신규 문제는 `src/pages/<YYMMDD_번호>/index.astro`에서 `PuzzleLayout`을 사용한다. `title`, `puzzleId`, `description`과 필요한 `subtitle`을 전달하고 `rules`, `controls` 슬롯에 안내를 넣는다. 판 구성·조작·일반 정답 검증은 문제별 코드에 둔다.
 
-새 문제는 **별도 테스트 URL에서 시연 → 사용자 피드백에 따른 수정 → 명시적인 공개 승인 → 정식 문제 경로와 목록에 반영** 순서로 진행한다. 승인 전에는 공개 목록에 등록하지 않으며 실제 완료 기록·클라우드 진행 저장을 연결하지 않는다. 테스트 URL 자체는 인증된 비공개 경로가 아니다. 사진 기반 온도계 두 문제는 `/test/thermo-sudoku/photo-20260918-1/`(9×9)과 `/test/thermo-sudoku/photo-20260918-2/`(6×6)에서 시연하며 기록·진행 저장을 하지 않는다.
+새 문제는 **별도 테스트 URL에서 시연 → 사용자 피드백에 따른 수정 → 명시적인 공개 승인 → 정식 문제 경로와 목록에 반영** 순서로 진행한다. 승인 전에는 공개 목록에 등록하지 않으며 실제 완료 기록·클라우드 진행 저장을 연결하지 않는다. 테스트 URL 자체는 인증된 비공개 경로가 아니다. 사진 기반 온도계 두 문제는 `/test/thermo-sudoku/photo-20260918-1/`(9×9)과 `/test/thermo-sudoku/photo-20260918-2/`(6×6)에서, 사진 기반 사풍 두 문제는 `/test/four-winds/`에서 시연하며 기록·진행 저장을 하지 않는다.
 
 승인된 문제의 목록은 `src/data/puzzles.json`에 등록한다. 필드는 `id`, `title`, `type`, `season`, `publishedAt`(시간대 포함 ISO 날짜), `href`다. 링크는 `/<id>/` 형식이다. `listed: false`는 목록에서만 숨기며 접근 권한을 제한하지 않는다. 공개일 필터는 빌드 시 적용되므로 일반 문제의 목록 공개에는 재빌드·배포가 필요하다.
 
