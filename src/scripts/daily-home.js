@@ -40,6 +40,4 @@ for(const button of buttons)button.addEventListener('click',()=>{
  if(daily)loadRank();
 });
 refresh();setInterval(()=>{if(document.hidden)return;localLabel();if(current!==dailyDate(new Date(Date.now()+offset)))updateCard([]);refresh();},30000);
-window.addEventListener('pageshow',refresh);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
-
-window.addEventListener('puzzle-auth-ready',()=>{updateCard([]);refresh();});
+window.addEventListener('pageshow',event=>{if(event.persisted)refresh();});document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});

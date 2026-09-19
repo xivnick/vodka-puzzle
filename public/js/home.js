@@ -197,9 +197,3 @@ const PAGE_SIZE = 10;
   });
 
   window.addEventListener('hashchange', renderPagination);
-
-window.addEventListener('puzzle-auth-ready', () => {
-  document.querySelectorAll('.list a[data-puzzle-id] .check-mark').forEach(el => el.remove());
-  loadCompletions();
-  loadSolverRankings();
-});

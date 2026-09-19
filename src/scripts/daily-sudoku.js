@@ -3,7 +3,7 @@ import {renderStreak} from '../lib/daily-streak.js';
 import {units,dailyDate} from '../lib/sudoku.js';
 import {readPuzzleCache,writePuzzleCache,clearPuzzleCache} from '../lib/daily-sudoku-cache.js';
 const $=id=>document.getElementById(id),message=text=>{$('sudokuMessage').textContent=text;};
-let data,state,selected=0,notesMode=false,key,submitting=false,loading=false,closed=false,rollover,completedAnswer=null,rejectedAnswer=null,ready=false,reinitPending=false;
+let data,state,selected=0,notesMode=false,key,submitting=false,loading=false,closed=false,rollover,completedAnswer=null,rejectedAnswer=null,ready=false,reinitPending=false,stateDirty=false;
 const requested=new URLSearchParams(location.search).get('day');
 const day=/^\d{4}-\d{2}-\d{2}$/.test(requested||'')?requested:null;
 function updateStreak(result){
@@ -19,13 +19,14 @@ function setReady(value){ready=value;$('sudokuBoard').classList.toggle('sudoku-l
 function render(){ $('sudokuComplete').hidden=!isSolved();const conflicts=new Set();for(const u of units)for(const i of u)if(state.values[i]&&u.some(j=>j!==i&&state.values[j]===state.values[i]))conflicts.add(i);
  const board=$('sudokuBoard');board.replaceChildren();for(let i=0;i<81;i++){const b=document.createElement('button');b.type='button';b.disabled=!ready;b.className=`sudoku-cell${data.givens[i]!=='0'?' given':''}${selected===i?' selected':''}${conflicts.has(i)?' conflict':''}`;b.setAttribute('aria-label',`${Math.floor(i/9)+1}행 ${i%9+1}열, ${state.values[i]||'빈칸'}${data.givens[i]!=='0'?', 고정 숫자':''}`);b.tabIndex=i===selected?0:-1;b.dataset.cell=i;if(state.values[i])b.textContent=state.values[i];else{const n=document.createElement('span');n.className='notes';for(let v=1;v<=9;v++){const s=document.createElement('span');s.textContent=state.notes[i].includes(v)?v:'\u00a0';n.append(s);}b.append(n);}board.append(b);}}
 function focus(){document.querySelector(`[data-cell="${selected}"]`)?.focus();}
-function change(n){if(!ready||!state||data.givens[selected]!=='0')return;if(notesMode&&n){const a=state.notes[selected];state.notes[selected]=a.includes(n)?a.filter(v=>v!==n):[...a,n];}else{state.values[selected]=n;state.notes[selected]=[];}persist();render();if(state.values.every(Boolean)&&!notesMode)submit();}
+function change(n){if(!ready||!state||data.givens[selected]!=='0')return;if(notesMode&&n){const a=state.notes[selected];state.notes[selected]=a.includes(n)?a.filter(v=>v!==n):[...a,n];}else{state.values[selected]=n;state.notes[selected]=[];}stateDirty=true;persist();render();if(state.values.every(Boolean)&&!notesMode)submit();}
 async function submit(){
  if(!ready||submitting||!state||!state.values.every(Boolean))return;
  const answer=state.values.join('');
  if(answer===completedAnswer||answer===rejectedAnswer)return;
  if(!isSolved()){rejectedAnswer=answer;message('아직 정답이 아닙니다.');return;}
  if(closed){completedAnswer=answer;complete();return;}
+ await window.puzzleAuthReady;
  if(!window.puzzleAccount.user||!window.puzzleAccount.profile){completedAnswer=answer;complete();return;}
  const owner=window.puzzleAccount.user.id;
  submitting=true;complete();message('완료 기록을 저장하고 있습니다...');
@@ -48,7 +49,7 @@ function showPuzzle(puzzle, preserve=false){
  if(!preserve){
   key=`daily-sudoku:${window.puzzleAccount.user?.id||'guest'}:${data.day}`;
   let saved;try{saved=JSON.parse(localStorage.getItem(key));if(!saved&&window.puzzleAccount.user)saved=JSON.parse(localStorage.getItem(`daily-sudoku:guest:${data.day}`));}catch{}
-  state=clean(saved);completedAnswer=null;rejectedAnswer=null;
+  state=clean(saved);stateDirty=false;completedAnswer=null;rejectedAnswer=null;
  }
  render();
 }
@@ -72,10 +73,14 @@ async function init(){
  const cached=readPuzzleCache(localStorage,dailyDate(),day);
  if(!ready||data?.day!==(day||dailyDate()))showLoading();
  if(!ready&&cached){
-  data=cached;state=clean(null);document.querySelector('h1').textContent=title(cached.day);document.title=`${title(cached.day)} · vodka puzzle`;render();
+  showPuzzle(cached);setReady(true);$('dailyStatus').textContent='';
  }
  await window.puzzleAuthReady;
- if(!ready&&cached){showPuzzle(cached);setReady(true);window.initCloudBtns();$('dailyStatus').textContent='';}
+ if(cached&&window.puzzleAccount.user&&key===`daily-sudoku:guest:${cached.day}`){
+  if(stateDirty){key=`daily-sudoku:${window.puzzleAccount.user.id}:${cached.day}`;persist();}
+  else showPuzzle(cached);
+ }
+ if(cached)window.initCloudBtns();
  try{
   const result=await context(day);
   document.querySelector('h1').textContent=title(result.day);document.title=`${title(result.day)} · vodka puzzle`;
@@ -95,8 +100,7 @@ function historyReplace(date){window.history.replaceState(null,'',`?day=${date}`
 $('dailyRetry').addEventListener('click',init);$('sudokuBoard').addEventListener('click',e=>{const b=e.target.closest('[data-cell]');if(ready&&b){selected=Number(b.dataset.cell);render();focus();}});
 $('sudokuBoard').addEventListener('keydown',e=>{if(!ready)return;if(/^[1-9]$/.test(e.key)){e.preventDefault();change(Number(e.key));focus();}else if(['Backspace','Delete','0'].includes(e.key)){e.preventDefault();change(0);focus();}else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();selected=Math.max(0,Math.min(80,selected+({ArrowLeft:-1,ArrowRight:1,ArrowUp:-9,ArrowDown:9}[e.key])));render();focus();}});
 $('sudokuNumbers').addEventListener('click',e=>{const b=e.target.closest('[data-number]');if(b)change(Number(b.dataset.number));});
-$('sudokuNotes').addEventListener('click',()=>{notesMode=!notesMode;$('sudokuNotes').setAttribute('aria-pressed',String(notesMode));});$('sudokuErase').addEventListener('click',()=>change(0));$('sudokuReset').addEventListener('click',()=>{if(confirm('입력한 숫자와 메모를 초기화할까요?')){state=clean(null);persist();render();}});
+$('sudokuNotes').addEventListener('click',()=>{notesMode=!notesMode;$('sudokuNotes').setAttribute('aria-pressed',String(notesMode));});$('sudokuErase').addEventListener('click',()=>change(0));$('sudokuReset').addEventListener('click',()=>{if(confirm('입력한 숫자와 메모를 초기화할까요?')){state=clean(null);stateDirty=true;persist();render();}});
 window.handleCloudSave=async()=>{if(!ready||!data?.available||!state)return;try{const {error}=await window.puzzleAccount.client.rpc('save_daily_sudoku_progress',{requested_day:data.day,saved_state:state});if(error)throw error;window.showToast('저장했습니다.');}catch{message('저장하지 못했습니다. 로그인과 연결을 확인해 주세요.');}};
 window.handleCloudLoad=async()=>{if(!ready||!data?.available||!state)return;if(!window.puzzleAccount.user){message('로그인 후 불러올 수 있습니다.');return;}try{const {data:row,error}=await window.puzzleAccount.client.from('daily_sudoku_progress').select('state').eq('day',data.day).eq('user_id',window.puzzleAccount.user.id).maybeSingle();if(error)throw error;if(!row){message('저장된 기록이 없습니다.');return;}if(confirm('클라우드 기록으로 현재 진행 상황을 바꿀까요?')){state=clean(row.state);persist();render();window.showToast('불러왔습니다.');submit();}}catch{message('불러오지 못했습니다. 다시 시도해 주세요.');}};
-window.addEventListener('puzzle-auth-ready',()=>{updateStreak(null);setReady(false);completedAnswer=null;init();});
 init();setInterval(()=>{if(!document.hidden&&data?.available){refreshRanks().catch(()=>{});submit();}else if(!document.hidden&&!loading)init();},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&data?.available)refreshRanks().catch(()=>{});});
