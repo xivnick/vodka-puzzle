@@ -60,7 +60,7 @@ test('Four Winds preview is built without catalog, cloud, or completion recordin
   const script = fs.readFileSync('src/scripts/four-winds.js', 'utf8');
   assert(script.includes("total > value ? '#f4d5d5'") && script.includes("total === value ? '#dcebdc'"));
   assert(script.includes("state === 'exact' ? '#dcebdc'") && script.includes("state === 'exact' ? '#5b8c64'"));
-  assert(script.includes("isSelected ? '#eef2f6' : clueFill"));
+  assert(script.includes("isSelected ? 'rgba(111,155,208,.22)' : clueFill"));
   assert(!script.includes("stroke: '#aab2bb'"));
   assert(!catalog.includes('photo-20260919-1') && !catalog.includes('photo-20260919-2'));
   assert(!script.includes('recordCompletion'));

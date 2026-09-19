@@ -88,7 +88,7 @@ function render() {
     const total = analysis.totals.get(key) || 0;
     const clueFill = value > 0 && total > value ? '#f4d5d5' : value > 0 && total === value ? '#dcebdc' : '#fff';
     const isSelected = selected && cellKey(selected.source) === key;
-    svgNode('rect', { x: c * 50, y: r * 50, width: 50, height: 50, fill: isSelected ? '#eef2f6' : clueFill });
+    svgNode('rect', { x: c * 50, y: r * 50, width: 50, height: 50, fill: isSelected ? 'rgba(111,155,208,.22)' : clueFill });
   }));
   arrows().forEach((arrow, index) => drawArrow(arrow, index, false, analysis));
   const draft = draftArrow();
