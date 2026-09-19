@@ -1,4 +1,4 @@
-import { arrowCells, analyzeFourWinds, cellKey, removeSourceArrows, validateArrow } from '../lib/four-winds.js';
+import { arrowCells, analyzeFourWinds, cellKey, validateArrow } from '../lib/four-winds.js';
 
 const game = document.getElementById('fwGame');
 const board = document.getElementById('fwBoard');
@@ -12,7 +12,6 @@ let selected = null;
 let cursor = { r: 0, c: 0 };
 let keyboard = false;
 let pointer = null;
-let lastClueTap = null;
 
 const puzzle = () => puzzles[puzzleIndex];
 const arrows = () => states[puzzleIndex];
@@ -145,16 +144,6 @@ function removeArrow(index) {
   render();
 }
 
-function removeAllFromSource(source) {
-  const next = removeSourceArrows(arrows(), source);
-  if (next.length === arrows().length) return false;
-  states[puzzleIndex] = next;
-  selected = null;
-  announce('이 숫자에서 출발한 화살표를 모두 지웠습니다.');
-  render();
-  return true;
-}
-
 board.addEventListener('pointerdown', event => {
   if (event.button !== 0 || !event.isPrimary || pointer) return;
   const cell = eventCell(event);
@@ -192,12 +181,8 @@ board.addEventListener('pointerup', event => {
   const action = pointer;
   pointer = null;
   if (action.remove >= 0 && !action.moved) { removeArrow(action.remove); return; }
-  if (action.source && action.moved) { lastClueTap = null; addArrow({ source: action.source, end: selected.end }); return; }
+  if (action.source && action.moved) { addArrow({ source: action.source, end: selected.end }); return; }
   if (action.source) {
-    const now = performance.now();
-    const key = cellKey(action.source);
-    if (lastClueTap?.key === key && now - lastClueTap.time < 450 && removeAllFromSource(action.source)) { lastClueTap = null; return; }
-    lastClueTap = { key, time: now };
     selected = { source: action.source, end: action.source };
     announce(`숫자 ${puzzle().cells[action.source.r][action.source.c]}에서 출발합니다. 끝 칸을 선택하세요.`);
     render();
@@ -205,12 +190,6 @@ board.addEventListener('pointerup', event => {
 });
 
 board.addEventListener('pointercancel', () => { pointer = null; selected = null; render(); });
-
-board.addEventListener('dblclick', event => {
-  const source = eventCell(event);
-  if (!source || !clue(source)) return;
-  removeAllFromSource(source);
-});
 
 board.addEventListener('keydown', event => {
   const directions = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };

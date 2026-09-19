@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { fourWindsPuzzles, arrowCells, validateArrow, analyzeFourWinds, removeSourceArrows } from '../src/lib/four-winds.js';
+import { fourWindsPuzzles, arrowCells, validateArrow, analyzeFourWinds } from '../src/lib/four-winds.js';
 
 test('photo transcription keeps both Four Winds board shapes and clues', () => {
   const [first, second] = fourWindsPuzzles;
@@ -37,16 +37,6 @@ test('completion requires every empty cell and exact clue sums', () => {
   assert.equal(analyzeFourWinds(puzzle, [first, second]).complete, true);
 });
 
-test('double-press removal keeps arrows from other clues', () => {
-  const source = { r: 0, c: 0 };
-  const arrows = [
-    { source, end: { r: 0, c: 1 } },
-    { source, end: { r: 1, c: 0 } },
-    { source: { r: 2, c: 2 }, end: { r: 2, c: 1 } },
-  ];
-  assert.deepEqual(removeSourceArrows(arrows, source), [arrows[2]]);
-});
-
 test('Four Winds preview is built without catalog, cloud, or completion recording', () => {
   const catalog = fs.readFileSync('src/data/puzzles.json', 'utf8');
   for (const number of [1, 2]) {
@@ -62,6 +52,7 @@ test('Four Winds preview is built without catalog, cloud, or completion recordin
   assert(script.includes("state === 'exact' ? '#dcebdc'") && script.includes("state === 'exact' ? '#5b8c64'"));
   assert(script.includes("isSelected ? 'rgba(111,155,208,.22)' : clueFill"));
   assert(!script.includes("stroke: '#aab2bb'"));
+  assert(!script.includes("dblclick") && !script.includes("lastClueTap"));
   assert(!catalog.includes('photo-20260919-1') && !catalog.includes('photo-20260919-2'));
   assert(!script.includes('recordCompletion'));
 });
