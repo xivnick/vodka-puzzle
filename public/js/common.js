@@ -205,20 +205,6 @@ function createRecentBannerSlot(messageHtml, state) {
   return slot;
 }
 
-function prepareRecentBannerMarquee(slot, viewport) {
-  requestAnimationFrame(() => {
-    if (!slot.isConnected) return;
-    const track = slot.querySelector('.recent-banner-track');
-    const first = track.querySelector('.recent-banner-text');
-    const needsAnimation = track.scrollWidth > viewport.clientWidth - 8;
-    if (!needsAnimation) return;
-    slot.classList.add('is-marquee');
-    const second = first.cloneNode(true);
-    second.setAttribute('aria-hidden', 'true');
-    track.appendChild(second);
-  });
-}
-
 function finishRecentBannerTransition(banner) {
   clearTimeout(_recentBannerTransitionTimer);
   _recentBannerTransitionTimer = null;
@@ -245,7 +231,6 @@ function applyRecentBannerMessage(banner, messageHtml) {
   const current = viewport.querySelector('.current');
   const incoming = createRecentBannerSlot(messageHtml, current ? 'incoming' : 'current');
   viewport.appendChild(incoming);
-  prepareRecentBannerMarquee(incoming, viewport);
   if (!current) return;
 
   current.setAttribute('aria-hidden', 'true');

@@ -173,30 +173,23 @@ body { padding-top: 0; }
 }
 
 .recent-banner-track {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 100%;
-  white-space: nowrap;
-}
-
-.recent-banner-slot.is-marquee .recent-banner-track {
-  width: max-content;
-  min-width: auto;
-  animation: recent-banner-scroll 20s linear infinite;
-  will-change: transform;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .recent-banner-text {
-  display: inline-block;
+  display: block;
+  width: 100%;
   font-size: 0.76rem;
   font-weight: 500;
   color: #7b7062;
   letter-spacing: 0.01em;
-}
-
-.recent-banner-slot.is-marquee .recent-banner-text {
-  padding-right: 40px;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .recent-banner-label {
@@ -206,11 +199,6 @@ body { padding-top: 0; }
 .recent-banner-strong {
   color: #5f5548;
   font-weight: 700;
-}
-
-@keyframes recent-banner-scroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(calc(-50% - 20px)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
