@@ -87,13 +87,12 @@ function render() {
     const key = cellKey({ r, c });
     const total = analysis.totals.get(key) || 0;
     const clueFill = value > 0 && total > value ? '#f4d5d5' : value > 0 && total === value ? '#dcebdc' : '#fff';
-    svgNode('rect', { x: c * 50, y: r * 50, width: 50, height: 50, fill: clueFill });
+    const isSelected = selected && cellKey(selected.source) === key;
+    svgNode('rect', { x: c * 50, y: r * 50, width: 50, height: 50, fill: isSelected ? '#eef2f6' : clueFill });
   }));
   arrows().forEach((arrow, index) => drawArrow(arrow, index, false, analysis));
   const draft = draftArrow();
   if (draft) drawArrow(draft, -1, true, analyzeFourWinds(current, [...arrows(), draft]));
-
-  if (selected) svgNode('rect', { x: selected.source.c * 50 + 4, y: selected.source.r * 50 + 4, width: 42, height: 42, fill: 'none', stroke: '#aab2bb', 'stroke-width': 1, 'stroke-dasharray': '3 3' });
 
   current.cells.forEach((row, r) => row.forEach((value, c) => {
     if (value === -1) return;
