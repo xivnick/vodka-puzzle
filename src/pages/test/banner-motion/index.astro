@@ -1,0 +1,160 @@
+---
+import PageLayout from '../../../layouts/PageLayout.astro';
+---
+<PageLayout title="전광판 애니메이션 비교" heading="전광판 애니메이션 비교" subtitle="같은 문구를 다섯 가지 전환 방식으로 비교해보세요">
+  <section class="motion-controls" aria-label="애니메이션 설정">
+    <label>
+      <span>문구 유지 시간 <output id="holdOutput">6초</output></span>
+      <input id="holdRange" type="range" min="2" max="12" step="1" value="6" />
+    </label>
+    <label>
+      <span>전환 시간 <output id="durationOutput">0.55초</output></span>
+      <input id="durationRange" type="range" min="0.2" max="1.2" step="0.05" value="0.55" />
+    </label>
+    <div class="control-buttons">
+      <button id="togglePlay" type="button">일시정지</button>
+      <button id="nextMessage" type="button">다음 문구</button>
+    </div>
+  </section>
+
+  <div class="motion-list">
+    <article class="motion-card" data-motion="fade-lift">
+      <div class="motion-title"><strong>1. 페이드 + 살짝 상승</strong><span>현재 방식의 부드러운 개선형</span></div>
+      <div class="demo-banner"><div class="motion-stage"><span class="motion-line current"></span><span class="motion-line next"></span></div></div>
+    </article>
+    <article class="motion-card" data-motion="soft-blur">
+      <div class="motion-title"><strong>2. 소프트 크로스페이드</strong><span>위치 변화 없이 잔잔하게 교체</span></div>
+      <div class="demo-banner"><div class="motion-stage"><span class="motion-line current"></span><span class="motion-line next"></span></div></div>
+    </article>
+    <article class="motion-card" data-motion="vertical-roll">
+      <div class="motion-title"><strong>3. 세로 롤</strong><span>전광판처럼 위로 한 줄씩 이동</span></div>
+      <div class="demo-banner"><div class="motion-stage"><span class="motion-line current"></span><span class="motion-line next"></span></div></div>
+    </article>
+    <article class="motion-card" data-motion="side-glide">
+      <div class="motion-title"><strong>4. 좌우 글라이드</strong><span>짧은 거리만 수평으로 이동</span></div>
+      <div class="demo-banner"><div class="motion-stage"><span class="motion-line current"></span><span class="motion-line next"></span></div></div>
+    </article>
+    <article class="motion-card" data-motion="gentle-scale">
+      <div class="motion-title"><strong>5. 미세 줌 크로스페이드</strong><span>크기 변화로 초점을 자연스럽게 전환</span></div>
+      <div class="demo-banner"><div class="motion-stage"><span class="motion-line current"></span><span class="motion-line next"></span></div></div>
+    </article>
+  </div>
+  <p class="motion-note">번호와 원하는 유지·전환 시간을 알려주시면 실제 전광판에 적용할 수 있습니다.</p>
+</PageLayout>
+
+<style>
+  :global(#recentBanner) { display:none !important; }
+  :global(body.unified > .site-header) { margin-bottom:0; }
+  :global(.page-content) { width:min(94vw,560px); }
+  .motion-controls { width:100%; padding:16px; border:1px solid #e8e5df; border-radius:8px; background:#fcfbf8; }
+  .motion-controls label { display:block; margin-bottom:15px; }
+  .motion-controls label > span { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; font-size:.82rem; color:#666; }
+  .motion-controls output { color:#4a6fa5; font-variant-numeric:tabular-nums; }
+  .motion-controls input { display:block; width:100%; accent-color:#6f89ae; }
+  .control-buttons { display:flex; gap:8px; }
+  .control-buttons button { flex:1; padding:7px 10px; border:1px solid #dcd8d0; border-radius:5px; background:#fff; color:#555; font-size:.8rem; }
+  .control-buttons button:hover { background:#f5f3ef; }
+  .motion-list { display:grid; width:100%; gap:20px; margin-top:26px; }
+  .motion-card { width:100%; }
+  .motion-title { display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin:0 2px 7px; }
+  .motion-title strong { color:#444; font-size:.84rem; font-weight:600; }
+  .motion-title span { color:#999; font-size:.7rem; text-align:right; }
+  .demo-banner { height:30px; padding:0 16px; border-top:1px solid #ece6dc; border-bottom:1px solid #ece6dc; background:#faf8f4; overflow:hidden; }
+  .motion-stage { position:relative; width:100%; height:100%; overflow:hidden; }
+  .motion-line { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#7b7062; font-size:.76rem; font-weight:500; letter-spacing:.01em; white-space:nowrap; will-change:transform,opacity,filter; }
+  .motion-line strong { color:#5f5548; font-weight:700; }
+  .motion-line.next { opacity:0; }
+  .motion-note { margin:24px 0 0; color:#888; font-size:.76rem; line-height:1.6; text-align:center; }
+  @media(max-width:540px) {
+    .motion-title { display:block; }
+    .motion-title span { display:block; margin-top:3px; text-align:left; }
+    .demo-banner { padding:0 8px; }
+    .motion-line { font-size:.72rem; }
+  }
+</style>
+
+<script>
+  const messages = [
+    '<strong>김동현</strong>님이 <strong>260919 Daily Sudoku</strong>를 풀었습니다!',
+    '<strong>여정</strong>님이 <strong>260918 온도계 스도쿠 A</strong>를 풀었습니다!',
+    '<strong>민재</strong>님이 <strong>260916 Mini Rectangles</strong>를 풀었습니다!'
+  ];
+  const cards = [...document.querySelectorAll('[data-motion]')];
+  const holdRange = document.getElementById('holdRange');
+  const durationRange = document.getElementById('durationRange');
+  const holdOutput = document.getElementById('holdOutput');
+  const durationOutput = document.getElementById('durationOutput');
+  const togglePlay = document.getElementById('togglePlay');
+  let index = 0, timer, playing = true, transitioning = false;
+
+  const frames = {
+    'fade-lift': {
+      out:[{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-4px)'}],
+      in:[{opacity:0,transform:'translateY(4px)'},{opacity:1,transform:'translateY(0)'}]
+    },
+    'soft-blur': {
+      out:[{opacity:1,filter:'blur(0)'},{opacity:0,filter:'blur(2px)'}],
+      in:[{opacity:0,filter:'blur(2px)'},{opacity:1,filter:'blur(0)'}]
+    },
+    'vertical-roll': {
+      out:[{opacity:1,transform:'translateY(0)'},{opacity:.1,transform:'translateY(-100%)'}],
+      in:[{opacity:.1,transform:'translateY(100%)'},{opacity:1,transform:'translateY(0)'}]
+    },
+    'side-glide': {
+      out:[{opacity:1,transform:'translateX(0)'},{opacity:0,transform:'translateX(-12px)'}],
+      in:[{opacity:0,transform:'translateX(12px)'},{opacity:1,transform:'translateX(0)'}]
+    },
+    'gentle-scale': {
+      out:[{opacity:1,transform:'scale(1)'},{opacity:0,transform:'scale(.985)'}],
+      in:[{opacity:0,transform:'scale(1.015)'},{opacity:1,transform:'scale(1)'}]
+    }
+  };
+
+  function fillInitial() {
+    for (const card of cards) card.querySelector('.current').innerHTML = messages[index];
+  }
+  function schedule() {
+    clearTimeout(timer);
+    if (playing) timer = setTimeout(advance, Number(holdRange.value) * 1000);
+  }
+  async function advance() {
+    if (transitioning) return;
+    transitioning = true;
+    const nextIndex = (index + 1) % messages.length;
+    const duration = Number(durationRange.value) * 1000;
+    const easing = 'cubic-bezier(.22,.61,.36,1)';
+    const animations = cards.flatMap(card => {
+      const current = card.querySelector('.current');
+      const next = card.querySelector('.next');
+      const motion = frames[card.dataset.motion];
+      next.innerHTML = messages[nextIndex];
+      return [current.animate(motion.out,{duration,easing,fill:'forwards'}),next.animate(motion.in,{duration,easing,fill:'forwards'})];
+    });
+    await Promise.all(animations.map(animation => animation.finished.catch(()=>{})));
+    index = nextIndex;
+    for (const card of cards) {
+      const current = card.querySelector('.current');
+      const next = card.querySelector('.next');
+      current.innerHTML = messages[index];
+      next.innerHTML = '';
+      current.getAnimations().forEach(animation => animation.cancel());
+      next.getAnimations().forEach(animation => animation.cancel());
+    }
+    transitioning = false;
+    schedule();
+  }
+  function updateControls() {
+    holdOutput.textContent = `${holdRange.value}초`;
+    durationOutput.textContent = `${Number(durationRange.value).toFixed(2)}초`;
+    schedule();
+  }
+  holdRange.addEventListener('input', updateControls);
+  durationRange.addEventListener('input', updateControls);
+  togglePlay.addEventListener('click', () => {
+    playing = !playing;
+    togglePlay.textContent = playing ? '일시정지' : '재생';
+    schedule();
+  });
+  document.getElementById('nextMessage').addEventListener('click', () => { clearTimeout(timer); advance(); });
+  fillInitial();schedule();
+</script>
