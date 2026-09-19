@@ -9,7 +9,13 @@ export function getStaticPaths() {
 
 const { puzzle } = Astro.props;
 ---
-<PuzzleLayout title={puzzle.label} puzzleId={`test-four-winds-${Astro.params.number}`} showCloud={false} showLeaderboard={false}>
+<PuzzleLayout
+  title={puzzle.label}
+  puzzleId={`test-four-winds-${Astro.params.number}`}
+  subtitle="숫자 칸에서 화살표를 뻗어 모든 빈 칸을 채우세요"
+  showCloud={false}
+  showLeaderboard={false}
+>
   <div slot="rules" class="fw-rules">
     <p>주어진 격자의 빈 칸에 화살표를 그려 넣으세요.</p>
     <p>각 화살표는 중간에 꺾이지 않고 동서남북 중 한 방향으로만 뻗으며, 반드시 숫자가 쓰인 칸의 한 변에서 출발합니다.</p>

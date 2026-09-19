@@ -42,7 +42,9 @@ test('Four Winds preview is built without catalog, cloud, or completion recordin
   for (const number of [1, 2]) {
     const html = fs.readFileSync(`dist/test/four-winds/${number}/index.html`, 'utf8');
     assert(html.includes(`사풍(四風) - ${number}`));
+    assert(html.includes('숫자 칸에서 화살표를 뻗어 모든 빈 칸을 채우세요'));
     assert(html.includes('data-puzzles=') && !html.includes('fwPicker'));
+    assert(html.includes('id="fwStatus" class="sr-only"'));
     assert(!html.includes('id="cloudBtns"') && !html.includes('id="leaderboard"'));
   }
   const script = fs.readFileSync('src/scripts/four-winds.js', 'utf8');
