@@ -371,6 +371,24 @@ footer[data-astro-cid-dypm2i3n]{text-align:center;padding:24px 20px}a[data-astro
 .badge:hover,.badge:focus-visible{background:color-mix(in srgb,var(--badge-color) 10%,white);}
 .streak-value,#dailyStreak{display:inline-flex;align-items:center;gap:2px;font-size:.78rem;font-weight:500;color:#777;white-space:nowrap;flex-shrink:0;font-variant-numeric:tabular-nums;}
 .streak-value svg,#dailyStreak svg{display:block;width:14px;height:14px;transform:translateY(1px);flex-shrink:0;color:#8c8c83;}
+.cosmetic-picker{display:flex;align-items:center;gap:5px;margin:-1px 0 10px;padding:7px 8px;background:#faf8f4;border:1px solid #eee9e1;border-radius:4px;}
+.cosmetic-label{margin-right:auto;color:#8b8378;font-size:.72rem;white-space:nowrap;}
+.cosmetic-option{height:25px;padding:0 8px;border:1px solid transparent;border-radius:3px;background:transparent;color:#999;font-family:inherit;font-size:.7rem;cursor:pointer;}
+.cosmetic-option.active{border-color:#d5cec3;background:#fff;color:#555;font-weight:700;}
+.rank-title{display:none;flex-shrink:0;color:#8d8172;font-size:.66rem;line-height:1;white-space:nowrap;}
+body[data-cosmetic-mode="title"] .badge,
+body[data-cosmetic-mode="decoration"] .badge{display:none;}
+body[data-cosmetic-mode="title"] .rank-title,
+body[data-cosmetic-mode="all"] .rank-title{display:inline;}
+body[data-cosmetic-mode="decoration"] .nick-ink,
+body[data-cosmetic-mode="all"] .nick-ink{color:#8d6f3d;font-weight:700;}
+body[data-cosmetic-mode="decoration"] .nick-line,
+body[data-cosmetic-mode="all"] .nick-line{text-decoration:underline;text-decoration-color:#b9a98f;text-decoration-thickness:1px;text-underline-offset:3px;}
+body[data-cosmetic-mode="decoration"] .nick-soft,
+body[data-cosmetic-mode="all"] .nick-soft{margin:-2px 0;padding:2px 5px;border-radius:3px;background:#f2eee5;color:#6e6253;}
+body[data-cosmetic-mode="decoration"] .nick-blue,
+body[data-cosmetic-mode="all"] .nick-blue{color:#607d9e;font-weight:600;letter-spacing:.02em;}
+@media(max-width:420px){.cosmetic-picker{gap:2px;padding:6px 5px}.cosmetic-label{display:none}.cosmetic-option{padding:0 6px}.rank-title{font-size:.62rem}.lb-name{gap:4px}}
 .demo-caption{margin-top:12px;color:#888;font-size:.74rem;line-height:1.7;}
 dialog{margin:auto;border:1px solid #e8e5df;border-radius:8px;width:min(340px,calc(100vw - 40px));padding:28px 24px 22px;color:#333;text-align:center;font-family:inherit;box-shadow:0 12px 48px #00000012;}
 dialog::backdrop{background:#25252535;}
@@ -873,6 +891,35 @@ unicode: "ec2c"
 </svg>
 </span></div></div></div></div></div></div><p class="demo-caption">닉네임 옆 배지를 누르면 도전과제와 달성 조건을 볼 수 있습니다.</p></main><footer data-astro-cid-dypm2i3n=""><a data-astro-cid-dypm2i3n="" href="https://puzzle.xivnick.me/archive/">archive</a><nav aria-label="서비스 정책" class="policy-links" data-astro-cid-xuekdsdg=""><a data-astro-cid-xuekdsdg="" href="https://puzzle.xivnick.me/terms/">이용약관</a><a data-astro-cid-xuekdsdg="" href="https://puzzle.xivnick.me/privacy/">개인정보처리방침</a></nav></footer><script>for(const b of document.querySelectorAll('[data-rank-mode]'))b.addEventListener('click',()=>{const daily=b.dataset.rankMode==='daily';document.getElementById('regularRankPanel').hidden=daily;document.getElementById('dailyRankPanel').hidden=!daily;for(const t of document.querySelectorAll('[data-rank-mode]')){t.classList.toggle('active',t===b);t.setAttribute('aria-pressed',String(t===b));}document.getElementById('rankTitle').textContent=daily?'데일리 스도쿠 (8)':'랭킹 (8)';});</script><dialog id="badgeDialog" aria-labelledby="badgeTitle" aria-describedby="badgeCondition"><div class="dialog-icon" id="badgeIcon"></div><p class="eyebrow">도전과제 달성 보상 · 대표 배지</p><h2 id="badgeTitle"></h2><p id="badgeCondition"></p><form method="dialog"><button class="dialog-close">닫기</button></form></dialog><script>
 const dialog=document.getElementById('badgeDialog');
+const cosmeticNames=['네모 장인','데일리 수집가','불씨 지킴이','규칙 탐험가','첫걸음','재도전자','두 접시','밤의 해결사'];
+const nickStyles=['nick-ink','nick-line','nick-soft','nick-blue'];
+for(const [listIndex,list] of [...document.querySelectorAll('.lb-list')].entries()){
+ [...list.querySelectorAll('.lb-row')].forEach((row,index)=>{
+  const nick=row.querySelector('.nick');
+  if(!nick)return;
+  nick.classList.add(nickStyles[index%nickStyles.length]);
+  const title=document.createElement('span');
+  title.className='rank-title';
+  title.textContent=cosmeticNames[index];
+  row.querySelector('.lb-name').appendChild(title);
+ });
+}
+const cosmeticPicker=document.createElement('div');
+cosmeticPicker.className='cosmetic-picker';
+cosmeticPicker.setAttribute('role','group');
+cosmeticPicker.setAttribute('aria-label','랭킹 꾸미기 비교');
+cosmeticPicker.innerHTML='<span class="cosmetic-label">표시 방식</span><button type="button" class="cosmetic-option active" data-cosmetic-mode="badge" aria-pressed="true">배지만</button><button type="button" class="cosmetic-option" data-cosmetic-mode="title" aria-pressed="false">칭호</button><button type="button" class="cosmetic-option" data-cosmetic-mode="decoration" aria-pressed="false">닉네임</button><button type="button" class="cosmetic-option" data-cosmetic-mode="all" aria-pressed="false">모두</button>';
+document.querySelector('.rank-head').after(cosmeticPicker);
+document.querySelector('.demo-caption').textContent='표시 방식을 바꿔 밀도를 비교할 수 있습니다. 배지는 누르면 달성 조건이 열립니다.';
+document.body.dataset.cosmeticMode='badge';
+for(const button of cosmeticPicker.querySelectorAll('[data-cosmetic-mode]'))button.addEventListener('click',()=>{
+ document.body.dataset.cosmeticMode=button.dataset.cosmeticMode;
+ for(const option of cosmeticPicker.querySelectorAll('[data-cosmetic-mode]')){
+  const active=option===button;
+  option.classList.toggle('active',active);
+  option.setAttribute('aria-pressed',String(active));
+ }
+});
 for(const button of document.querySelectorAll('.badge'))button.addEventListener('click',()=>{
  document.getElementById('badgeIcon').innerHTML=button.innerHTML;
  document.getElementById('badgeIcon').style.color=button.style.getPropertyValue('--badge-color');
