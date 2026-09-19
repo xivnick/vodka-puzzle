@@ -57,11 +57,12 @@ test('writes require a session; identity and local state follow account IDs',asy
  r.run("window.puzzleAccount.user.id='account-b'");assert.equal(r.run("loadLocalState('puzzle_test')"),null);
 });
 test('registered puzzle titles remain available to the banner offline',async()=>{
- const r=runtime('public/js/common.js',async()=>{throw new Error('offline')});
+ const calls=[];const r=runtime('public/js/common.js',async url=>{calls.push(url);throw new Error('offline')});
  r.run("window.puzzleTitles={'260916_01':'260916 Mini Rectangles',puzzle_test:'테스트 스도쿠'}");
  const titles=await r.run('getPuzzleTitleMap()');
  assert.equal(titles.get('260916_01'),'260916 Mini Rectangles');
  assert.equal(titles.get('puzzle_test'),'테스트 스도쿠');
+ assert.equal(calls.length,0);
  assert.ok(read('dist/index.html').includes('data-puzzle-id="260916_01"'));
  assert.ok(!read('dist/index.html').includes('data-puzzle-id="puzzle_test"'));
 });
@@ -93,6 +94,26 @@ test('banner loads combined records and formats daily dates with escaped nicknam
  assert.match(r.run('window.messages[0]'),/260917 Daily Sudoku/);
  assert.match(r.run('window.messages[0]'),/&lt;solver&gt;/);
  assert.match(r.run('window.messages[1]'),/일반 문제/);
+});
+
+test('banner initialization shares one request and one render',async()=>{
+ let resolveFetch;const calls=[];
+ const r=runtime('public/js/common.js',(url,opts)=>{calls.push([url,opts]);return new Promise(resolve=>{resolveFetch=resolve;});});
+ r.run("window.puzzleTitles={normal:'일반 문제'};window.renders=0;renderRecentBanner=async()=>{window.renders+=1};");
+ const first=r.run('initRecentBanner()');const second=r.run('initRecentBanner()');
+ await Promise.resolve();await Promise.resolve();
+ resolveFetch({ok:true,json:async()=>[{nickname:'solver',puzzle_id:'normal',completed_at:'2026-09-19T00:00:00Z'}]});
+ await Promise.all([first,second]);assert.equal(calls.length,1);assert.equal(r.run('window.renders'),1);
+});
+
+test('unchanged banner data does not restart animation; new data returns to latest item',async()=>{
+ const r=runtime('public/js/common.js',async()=>{throw Error('unexpected request')});
+ r.run("window.banner={style:{},classList:{remove(){}},innerHTML:''};document.querySelector=()=>({});document.getElementById=()=>window.banner;window.puzzleTitles={normal:'일반 문제'};window.renders=0;applyRecentBannerMessage=()=>{window.renders+=1};startRecentBannerRotation=()=>{};");
+ const rows="[{nickname:'a',puzzle_id:'normal',completed_at:'2026-09-19T00:00:00Z'},{nickname:'b',puzzle_id:'normal',completed_at:'2026-09-18T00:00:00Z'}]";
+ await r.run(`renderRecentBanner(${rows})`);r.run('_recentBannerIndex=1');await r.run(`renderRecentBanner(${rows})`);
+ assert.equal(r.run('window.renders'),1);assert.equal(r.run('_recentBannerIndex'),1);
+ await r.run("renderRecentBanner([{nickname:'new',puzzle_id:'normal',completed_at:'2026-09-19T01:00:00Z'},..."+rows+"])");
+ assert.equal(r.run('window.renders'),2);assert.equal(r.run('_recentBannerIndex'),0);
 });
 
 test('completion snapshots are sent once; failure retries the original board and success marks storage',async()=>{

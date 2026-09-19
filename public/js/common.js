@@ -130,8 +130,11 @@ let _recentCompletionCache = null;
 let _puzzleTitleMapPromise = null;
 let _recentBannerTimer = null;
 let _recentBannerInFlight = null;
+let _recentBannerInitPromise = null;
 let _recentBannerRotateTimer = null;
 let _recentBannerIndex = 0;
+let _recentBannerSignature = null;
+let _recentBannerMessages = [];
 const PUZZLE_TITLE_OVERRIDES = {
   tmp_01: '펜토미노 블리츠 1',
 };
@@ -158,7 +161,7 @@ async function refreshLatestCompletions(force = false) {
       const rows = await fetchRecentCompletions();
       _recentCompletionCache = rows || [];
     } catch (e) {
-      if (force) _recentCompletionCache = [];
+      if (!_recentCompletionCache) _recentCompletionCache = [];
     } finally {
       _recentBannerInFlight = null;
     }
@@ -171,21 +174,6 @@ async function getPuzzleTitleMap() {
   if (_puzzleTitleMapPromise) return _puzzleTitleMapPromise;
   _puzzleTitleMapPromise = (async () => {
     const map = new Map([...Object.entries(PUZZLE_TITLE_OVERRIDES), ...Object.entries(window.puzzleTitles || {})]);
-    try {
-      const res = await fetch('/');
-      if (!res.ok) throw new Error(`index fetch failed: ${res.status}`);
-      const html = await res.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      doc.querySelectorAll('[data-puzzle-id]').forEach(el => {
-        const id = el.getAttribute('data-puzzle-id');
-        if (!id || map.has(id)) return;
-        const titleEl = el.querySelector('.title');
-        const title = titleEl ? titleEl.textContent.trim() : '';
-        if (title) map.set(id, title);
-      });
-    } catch (e) {
-      // index를 못 읽으면 override/current page title만 사용
-    }
     const pageTitle = document.querySelector('h1')?.textContent?.trim();
     if (typeof PUZZLE_ID !== 'undefined' && pageTitle && !map.has(PUZZLE_ID)) {
       map.set(PUZZLE_ID, pageTitle);
@@ -235,7 +223,13 @@ function startRecentBannerRotation(banner, messages) {
     if (document.visibilityState !== 'visible') return;
     _recentBannerIndex = (_recentBannerIndex + 1) % messages.length;
     applyRecentBannerMessage(banner, messages[_recentBannerIndex]);
-  }, 10000);
+  }, 6000);
+}
+
+function resumeRecentBannerRotation() {
+  if (_recentBannerRotateTimer || _recentBannerMessages.length <= 1) return;
+  const banner = document.getElementById('recentBanner');
+  if (banner) startRecentBannerRotation(banner, _recentBannerMessages);
 }
 
 async function renderRecentBanner(rows) {
@@ -249,29 +243,45 @@ async function renderRecentBanner(rows) {
     header.insertAdjacentElement('afterend', banner);
   }
 
-  if (!rows || rows.length === 0) {
+  rows = rows || [];
+  const signature = JSON.stringify(rows.map(row => [row.nickname, row.puzzle_id, row.completed_at]));
+  if (signature === _recentBannerSignature) {
+    if (document.visibilityState === 'visible') resumeRecentBannerRotation();
+    return;
+  }
+  const hadPreviousData = _recentBannerSignature !== null;
+  _recentBannerSignature = signature;
+  if (hadPreviousData) _recentBannerIndex = 0;
+
+  if (rows.length === 0) {
     banner.style.display = 'flex';
     banner.classList.remove('is-animated');
     banner.innerHTML = '';
+    _recentBannerMessages = [];
     stopRecentBannerRotation();
     return;
   }
 
   banner.style.display = 'flex';
   const titleMap = await getPuzzleTitleMap();
-  const messages = rows.map(row => {
+  _recentBannerMessages = rows.map(row => {
     const daily = /^daily-sudoku:(\d{4}-\d{2}-\d{2})$/.exec(row.puzzle_id);
     const puzzleTitle = daily ? `${daily[1].replaceAll('-', '').slice(2)} Daily Sudoku` : titleMap.get(row.puzzle_id) || row.puzzle_id;
     return buildRecentBannerText(row, puzzleTitle);
   });
-  _recentBannerIndex = Math.min(_recentBannerIndex, messages.length - 1);
-  applyRecentBannerMessage(banner, messages[_recentBannerIndex]);
-  startRecentBannerRotation(banner, messages);
+  _recentBannerIndex = Math.min(_recentBannerIndex, _recentBannerMessages.length - 1);
+  applyRecentBannerMessage(banner, _recentBannerMessages[_recentBannerIndex]);
+  startRecentBannerRotation(banner, _recentBannerMessages);
 }
 
-async function initRecentBanner() {
-  const rows = await getLatestCompletions();
-  await renderRecentBanner(rows);
+function initRecentBanner() {
+  if (!_recentBannerInitPromise) {
+    _recentBannerInitPromise = (async () => {
+      const rows = await getLatestCompletions();
+      await renderRecentBanner(rows);
+    })();
+  }
+  return _recentBannerInitPromise;
 }
 
 async function refreshRecentBanner(force = false) {
@@ -643,16 +653,13 @@ window.addEventListener('pageshow', e => {
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
+    resumeRecentBannerRotation();
     refreshRecentBanner(true);
     startRecentBannerPolling();
     return;
   }
   stopRecentBannerPolling();
   stopRecentBannerRotation();
-});
-
-window.addEventListener('focus', () => {
-  if (document.visibilityState === 'visible') refreshRecentBanner(true);
 });
 
 startRecentBannerPolling();
