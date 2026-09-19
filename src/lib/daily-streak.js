@@ -3,8 +3,8 @@ const icons={pending:'flame',completed:'flame-filled',rest:'zzz'};
 export function renderStreak(element,streak,{label=false}={}) {
  if(!element)return;
  element.replaceChildren();element.hidden=true;element.removeAttribute('aria-label');
- // The daily heading invites the first attempt before any completion exists.
- if(label&&streak?.count===0&&streak.status==='none')streak={count:1,status:'pending'};
+ // The daily heading shows the streak that completing today's puzzle will make.
+ if(label&&Number.isInteger(streak?.count)&&streak.count>=0&&streak.status!=='completed')streak={...streak,count:streak.count+1,status:streak.status==='none'?'pending':streak.status};
  if(!Number.isInteger(streak?.count)||streak.count<1||!icons[streak.status])return;
  const completed=streak.status==='completed';
  const text=label?`${streak.count}일 연속 ${completed?'완성':'도전 중..'}`:String(streak.count);

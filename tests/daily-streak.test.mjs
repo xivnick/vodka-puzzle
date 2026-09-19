@@ -13,8 +13,9 @@ test('streak renders no record, outline, rest and restored completion with acces
    renderStreak(el,{count,status});assert.equal(el.hidden,false);assert.equal(el.children[0].textContent,String(count));assert.equal(el.children[1].src,`/icons/daily-streak/${icon}.svg`);assert.equal(el.children[1].width,14);
   }
   renderStreak(el,{count:0,status:'none'},{label:true});assert.equal(el.hidden,false);assert.equal(el.children[0].textContent,'1일 연속 도전 중..');assert.equal(el.children[1].src,'/icons/daily-streak/flame.svg');
+  renderStreak(el,{count:6,status:'pending'},{label:true});assert.equal(el.children[0].textContent,'7일 연속 도전 중..');
   renderStreak(el,{count:7,status:'completed'},{label:true});assert.equal(el.children[0].textContent,'7일 연속 완성');
-  renderStreak(el,{count:6,status:'rest'},{label:true});assert.equal(el.children[0].textContent,'6일 연속 도전 중..');assert.match(el.attributes['aria-label'],/오늘 완료하면 이어집니다/);assert.equal(el.children[1].src,'/icons/daily-streak/flame.svg');
+  renderStreak(el,{count:6,status:'rest'},{label:true});assert.equal(el.children[0].textContent,'7일 연속 도전 중..');assert.match(el.attributes['aria-label'],/오늘 완료하면 이어집니다/);assert.equal(el.children[1].src,'/icons/daily-streak/flame.svg');
   for(const invalid of [null,{count:0,status:'none'},{count:6,status:'unknown'},{count:-1,status:'pending'}]){renderStreak(el,invalid);assert.equal(el.hidden,true);assert.equal(el.children.length,0);assert.equal(el.attributes['aria-label'],undefined);}
  }finally{globalThis.document=original;}
 });
