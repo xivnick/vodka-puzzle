@@ -376,10 +376,16 @@ footer[data-astro-cid-dypm2i3n]{text-align:center;padding:24px 20px}a[data-astro
 .cosmetic-option{height:25px;padding:0 8px;border:1px solid transparent;border-radius:3px;background:transparent;color:#999;font-family:inherit;font-size:.7rem;cursor:pointer;}
 .cosmetic-option.active{border-color:#d5cec3;background:#fff;color:#555;font-weight:700;}
 .rank-title{display:none;flex-shrink:0;color:#8d8172;font-size:.66rem;line-height:1;white-space:nowrap;}
+.profile-icon{display:none;align-items:center;justify-content:center;flex:0 0 20px;width:20px;height:20px;margin:-3px 1px -3px 0;border:1px solid #e5dfd5;border-radius:50%;background:#f6f2eb;font-family:Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif;font-size:12px;line-height:1;}
+.profile-icon-1{background:#f3eee2}.profile-icon-2{background:#edf2e9}.profile-icon-3{background:#f6ece7}.profile-icon-4{background:#eaf0f5}
+.profile-icon-5{background:#f3eef5}.profile-icon-6{background:#edf3ef}.profile-icon-7{background:#f5f0e8}.profile-icon-8{background:#edf0f6}
 body[data-cosmetic-mode="title"] .badge,
-body[data-cosmetic-mode="decoration"] .badge{display:none;}
+body[data-cosmetic-mode="decoration"] .badge,
+body[data-cosmetic-mode="profile"] .badge{display:none;}
 body[data-cosmetic-mode="title"] .rank-title,
 body[data-cosmetic-mode="all"] .rank-title{display:inline;}
+body[data-cosmetic-mode="profile"] .profile-icon,
+body[data-cosmetic-mode="all"] .profile-icon{display:inline-flex;}
 body[data-cosmetic-mode="decoration"] .nick-ink,
 body[data-cosmetic-mode="all"] .nick-ink{color:#8d6f3d;font-weight:700;}
 body[data-cosmetic-mode="decoration"] .nick-line,
@@ -892,12 +898,18 @@ unicode: "ec2c"
 </span></div></div></div></div></div></div><p class="demo-caption">닉네임 옆 배지를 누르면 도전과제와 달성 조건을 볼 수 있습니다.</p></main><footer data-astro-cid-dypm2i3n=""><a data-astro-cid-dypm2i3n="" href="https://puzzle.xivnick.me/archive/">archive</a><nav aria-label="서비스 정책" class="policy-links" data-astro-cid-xuekdsdg=""><a data-astro-cid-xuekdsdg="" href="https://puzzle.xivnick.me/terms/">이용약관</a><a data-astro-cid-xuekdsdg="" href="https://puzzle.xivnick.me/privacy/">개인정보처리방침</a></nav></footer><script>for(const b of document.querySelectorAll('[data-rank-mode]'))b.addEventListener('click',()=>{const daily=b.dataset.rankMode==='daily';document.getElementById('regularRankPanel').hidden=daily;document.getElementById('dailyRankPanel').hidden=!daily;for(const t of document.querySelectorAll('[data-rank-mode]')){t.classList.toggle('active',t===b);t.setAttribute('aria-pressed',String(t===b));}document.getElementById('rankTitle').textContent=daily?'데일리 스도쿠 (8)':'랭킹 (8)';});</script><dialog id="badgeDialog" aria-labelledby="badgeTitle" aria-describedby="badgeCondition"><div class="dialog-icon" id="badgeIcon"></div><p class="eyebrow">도전과제 달성 보상 · 대표 배지</p><h2 id="badgeTitle"></h2><p id="badgeCondition"></p><form method="dialog"><button class="dialog-close">닫기</button></form></dialog><script>
 const dialog=document.getElementById('badgeDialog');
 const cosmeticNames=['네모 장인','데일리 수집가','불씨 지킴이','규칙 탐험가','첫걸음','재도전자','두 접시','밤의 해결사'];
+const profileIcons=['🐻','🐰','🔥','🧩','⭐','🌱','⚡','🌙'];
 const nickStyles=['nick-ink','nick-line','nick-soft','nick-blue'];
 for(const [listIndex,list] of [...document.querySelectorAll('.lb-list')].entries()){
  [...list.querySelectorAll('.lb-row')].forEach((row,index)=>{
   const nick=row.querySelector('.nick');
   if(!nick)return;
   nick.classList.add(nickStyles[index%nickStyles.length]);
+  const profile=document.createElement('span');
+  profile.className=`profile-icon profile-icon-${index+1}`;
+  profile.setAttribute('aria-hidden','true');
+  profile.textContent=profileIcons[index];
+  nick.before(profile);
   const title=document.createElement('span');
   title.className='rank-title';
   title.textContent=cosmeticNames[index];
@@ -908,7 +920,7 @@ const cosmeticPicker=document.createElement('div');
 cosmeticPicker.className='cosmetic-picker';
 cosmeticPicker.setAttribute('role','group');
 cosmeticPicker.setAttribute('aria-label','랭킹 꾸미기 비교');
-cosmeticPicker.innerHTML='<span class="cosmetic-label">표시 방식</span><button type="button" class="cosmetic-option active" data-cosmetic-mode="badge" aria-pressed="true">배지만</button><button type="button" class="cosmetic-option" data-cosmetic-mode="title" aria-pressed="false">칭호</button><button type="button" class="cosmetic-option" data-cosmetic-mode="decoration" aria-pressed="false">닉네임</button><button type="button" class="cosmetic-option" data-cosmetic-mode="all" aria-pressed="false">모두</button>';
+cosmeticPicker.innerHTML='<span class="cosmetic-label">표시 방식</span><button type="button" class="cosmetic-option active" data-cosmetic-mode="badge" aria-pressed="true">배지만</button><button type="button" class="cosmetic-option" data-cosmetic-mode="profile" aria-pressed="false">프로필</button><button type="button" class="cosmetic-option" data-cosmetic-mode="title" aria-pressed="false">칭호</button><button type="button" class="cosmetic-option" data-cosmetic-mode="decoration" aria-pressed="false">닉네임</button><button type="button" class="cosmetic-option" data-cosmetic-mode="all" aria-pressed="false">모두</button>';
 document.querySelector('.rank-head').after(cosmeticPicker);
 document.querySelector('.demo-caption').textContent='표시 방식을 바꿔 밀도를 비교할 수 있습니다. 배지는 누르면 달성 조건이 열립니다.';
 document.body.dataset.cosmeticMode='badge';
