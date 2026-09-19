@@ -78,7 +78,7 @@ test('practice uses shared puzzle rules and remains outside completion rankings'
 test('shared pages reserve an empty banner before JavaScript and empty results keep its space',async()=>{
  const html=read('dist/index.html');assert.match(html,/<div id="recentBanner" class="recent-banner" aria-live="polite"><\/div>/);
  const r=runtime('public/js/common.js',async()=>{throw Error('unexpected request');});
- r.run("window.banner={style:{},classList:{remove(){}},innerHTML:'old'};document.querySelector=()=>({});document.getElementById=()=>window.banner;");
+ r.run("window.banner={style:{},classList:{remove(){}},innerHTML:'old',querySelector(){return null}};document.querySelector=()=>({});document.getElementById=()=>window.banner;");
  await r.run('renderRecentBanner([])');assert.equal(r.run('window.banner.style.display'),'flex');assert.equal(r.run('window.banner.innerHTML'),'');
 });
 

@@ -132,6 +132,8 @@ let _recentBannerTimer = null;
 let _recentBannerInFlight = null;
 let _recentBannerInitPromise = null;
 let _recentBannerRotateTimer = null;
+let _recentBannerTransitionTimer = null;
+let _recentBannerTransitionToken = 0;
 let _recentBannerIndex = 0;
 let _recentBannerSignature = null;
 let _recentBannerMessages = [];
@@ -190,23 +192,70 @@ function buildRecentBannerText(row, puzzleTitle) {
     `<span class="recent-banner-strong">${title}</span>를 풀었습니다!`;
 }
 
-function applyRecentBannerMessage(banner, messageHtml) {
-  banner.classList.remove('is-animated');
-  banner.innerHTML = '';
+function createRecentBannerSlot(messageHtml, state) {
+  const slot = document.createElement('div');
+  slot.className = `recent-banner-slot ${state}`;
   const track = document.createElement('div');
   track.className = 'recent-banner-track';
   const first = document.createElement('span');
   first.className = 'recent-banner-text';
   first.innerHTML = messageHtml;
   track.appendChild(first);
-  banner.appendChild(track);
+  slot.appendChild(track);
+  return slot;
+}
 
+function prepareRecentBannerMarquee(slot, viewport) {
   requestAnimationFrame(() => {
-    const needsAnimation = track.scrollWidth > banner.clientWidth - 8;
+    if (!slot.isConnected) return;
+    const track = slot.querySelector('.recent-banner-track');
+    const first = track.querySelector('.recent-banner-text');
+    const needsAnimation = track.scrollWidth > viewport.clientWidth - 8;
     if (!needsAnimation) return;
-    banner.classList.add('is-animated');
+    slot.classList.add('is-marquee');
     const second = first.cloneNode(true);
+    second.setAttribute('aria-hidden', 'true');
     track.appendChild(second);
+  });
+}
+
+function finishRecentBannerTransition(banner) {
+  clearTimeout(_recentBannerTransitionTimer);
+  _recentBannerTransitionTimer = null;
+  const viewport = banner.querySelector('.recent-banner-viewport');
+  const visible = viewport?.querySelector('.incoming') || viewport?.querySelector('.current');
+  banner.classList.remove('is-rolling');
+  if (!viewport || !visible) return;
+  const settled = visible.cloneNode(true);
+  settled.classList.remove('incoming');
+  settled.classList.add('current');
+  settled.removeAttribute('aria-hidden');
+  viewport.replaceChildren(settled);
+}
+
+function applyRecentBannerMessage(banner, messageHtml) {
+  finishRecentBannerTransition(banner);
+  let viewport = banner.querySelector('.recent-banner-viewport');
+  if (!viewport) {
+    banner.innerHTML = '';
+    viewport = document.createElement('div');
+    viewport.className = 'recent-banner-viewport';
+    banner.appendChild(viewport);
+  }
+  const current = viewport.querySelector('.current');
+  const incoming = createRecentBannerSlot(messageHtml, current ? 'incoming' : 'current');
+  viewport.appendChild(incoming);
+  prepareRecentBannerMarquee(incoming, viewport);
+  if (!current) return;
+
+  current.setAttribute('aria-hidden', 'true');
+  const token = ++_recentBannerTransitionToken;
+  requestAnimationFrame(() => {
+    if (token !== _recentBannerTransitionToken || !incoming.isConnected) return;
+    banner.classList.add('is-rolling');
+    _recentBannerTransitionTimer = setTimeout(() => {
+      if (token === _recentBannerTransitionToken) finishRecentBannerTransition(banner);
+    }, 550);
   });
 }
 
@@ -255,7 +304,8 @@ async function renderRecentBanner(rows) {
 
   if (rows.length === 0) {
     banner.style.display = 'flex';
-    banner.classList.remove('is-animated');
+    _recentBannerTransitionToken++;
+    finishRecentBannerTransition(banner);
     banner.innerHTML = '';
     _recentBannerMessages = [];
     stopRecentBannerRotation();
