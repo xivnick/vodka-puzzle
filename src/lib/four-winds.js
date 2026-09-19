@@ -55,6 +55,19 @@ export function validateArrow(puzzle, arrow, arrows = []) {
   return null;
 }
 
+export function placeFourWindsArrow(puzzle, arrows, arrow) {
+  const structuralError = validateArrow(puzzle, arrow);
+  if (structuralError) return { error: structuralError, arrows };
+  const source = cellKey(arrow.source);
+  const covered = new Set(arrowCells(arrow).map(cellKey));
+  const retained = arrows.filter(existing => {
+    if (cellKey(existing.source) !== source) return true;
+    return !arrowCells(existing).some(cell => covered.has(cellKey(cell)));
+  });
+  const error = validateArrow(puzzle, arrow, retained);
+  return { error, arrows: error ? arrows : [...retained, arrow] };
+}
+
 export function analyzeFourWinds(puzzle, arrows) {
   const occupied = new Map();
   const totals = new Map();

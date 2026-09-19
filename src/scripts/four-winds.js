@@ -1,4 +1,4 @@
-import { arrowCells, analyzeFourWinds, cellKey, parseFourWindsState, validateArrow } from '../lib/four-winds.js';
+import { arrowCells, analyzeFourWinds, cellKey, parseFourWindsState, placeFourWindsArrow, validateArrow } from '../lib/four-winds.js';
 
 const game = document.getElementById('fwGame');
 const board = document.getElementById('fwBoard');
@@ -67,8 +67,8 @@ function linePoints(arrow) {
   };
 }
 
-function drawArrow(arrow, index, preview = false, analysis = null) {
-  const invalid = preview && validateArrow(puzzle(), arrow, arrows());
+function drawArrow(arrow, index, preview = false, analysis = null, placement = null) {
+  const invalid = preview && (placement?.error || validateArrow(puzzle(), arrow, arrows()));
   const target = puzzle().cells[arrow.source.r][arrow.source.c];
   const total = analysis?.totals.get(cellKey(arrow.source)) || 0;
   const state = total > target ? 'over' : total === target ? 'exact' : 'under';
@@ -107,9 +107,12 @@ function render() {
     const isSelected = selected && cellKey(selected.source) === key;
     svgNode('rect', { x: c * 50, y: r * 50, width: 50, height: 50, fill: isSelected ? 'rgba(111,155,208,.22)' : clueFill });
   }));
-  arrows().forEach((arrow, index) => drawArrow(arrow, index, false, analysis));
   const draft = draftArrow();
-  if (draft) drawArrow(draft, -1, true, analyzeFourWinds(current, [...arrows(), draft]));
+  const placement = draft ? placeFourWindsArrow(current, arrows(), draft) : null;
+  const visibleArrows = placement && !placement.error ? placement.arrows.slice(0, -1) : arrows();
+  const visibleAnalysis = placement && !placement.error ? analyzeFourWinds(current, placement.arrows) : analysis;
+  visibleArrows.forEach((arrow, index) => drawArrow(arrow, index, false, visibleAnalysis));
+  if (draft) drawArrow(draft, -1, true, visibleAnalysis, placement);
 
   current.cells.forEach((row, r) => row.forEach((value, c) => {
     if (value === -1) return;
@@ -145,9 +148,9 @@ function arrowAt(cell) {
 }
 
 function addArrow(arrow) {
-  const error = validateArrow(puzzle(), arrow, arrows());
-  if (error) { announce(error); selected = null; render(); return false; }
-  states[puzzleIndex] = [...arrows(), arrow];
+  const placement = placeFourWindsArrow(puzzle(), arrows(), arrow);
+  if (placement.error) { announce(placement.error); selected = null; render(); return false; }
+  states[puzzleIndex] = placement.arrows;
   selected = null;
   announce('화살표를 그렸습니다.');
   persist();

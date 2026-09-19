@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { fourWindsPuzzles, arrowCells, validateArrow, analyzeFourWinds, parseFourWindsState } from '../src/lib/four-winds.js';
+import { fourWindsPuzzles, arrowCells, validateArrow, analyzeFourWinds, parseFourWindsState, placeFourWindsArrow } from '../src/lib/four-winds.js';
 
 test('photo transcription keeps both Four Winds board shapes and clues', () => {
   const [first, second] = fourWindsPuzzles;
@@ -35,6 +35,25 @@ test('completion requires every empty cell and exact clue sums', () => {
   const second = { source: { r: 1, c: 0 }, end: { r: 1, c: 1 } };
   assert.equal(analyzeFourWinds(puzzle, [first]).complete, false);
   assert.equal(analyzeFourWinds(puzzle, [first, second]).complete, true);
+});
+
+test('a new arrow replaces an overlapping arrow only when both start at the same clue', () => {
+  const line = { cells: [[3, 0, 0, 0]] };
+  const old = { source: { r: 0, c: 0 }, end: { r: 0, c: 2 } };
+  const resized = { source: { r: 0, c: 0 }, end: { r: 0, c: 3 } };
+  assert.deepEqual(placeFourWindsArrow(line, [old], resized), { error: null, arrows: [resized] });
+
+  const cross = { cells: [[0, 0, 0], [0, 2, 0], [0, 0, 0]] };
+  const up = { source: { r: 1, c: 1 }, end: { r: 0, c: 1 } };
+  const right = { source: { r: 1, c: 1 }, end: { r: 1, c: 2 } };
+  assert.deepEqual(placeFourWindsArrow(cross, [up], right).arrows, [up, right]);
+
+  const opposed = { cells: [[2, 0, 0], [0, 0, 2]] };
+  const down = { source: { r: 0, c: 0 }, end: { r: 1, c: 0 } };
+  const left = { source: { r: 1, c: 2 }, end: { r: 1, c: 0 } };
+  const blocked = placeFourWindsArrow(opposed, [down], left);
+  assert.match(blocked.error, /이미 다른/);
+  assert.deepEqual(blocked.arrows, [down]);
 });
 
 test('saved progress must match the Four Winds puzzle and contain valid arrows', () => {
