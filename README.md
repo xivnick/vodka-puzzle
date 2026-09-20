@@ -100,7 +100,7 @@ Client Secret은 Supabase 설정에만 보관한다. 이메일 로그인은 비�
 
 일반 퍼즐과 데일리 모두 브라우저에서 규칙 준수·완료를 판단하고 `submit_completion(requested_puzzle, submitted_state, state_version)`으로 보드를 제출한다. 데일리 ID는 `daily-sudoku:YYYY-MM-DD` 형식이다. 서버는 로그인·현재 학기 닉네임·등록된 문제 또는 열린 데일리 회차·JSON 크기·버전을 확인하고 완료 정보와 제출 보드를 한 트랜잭션으로 저장한다. 풀이 규칙은 서버에서 검사하지 않으며 사후 검토한다. 제출 시각과 데일리 순번은 서버가 정하고, 중복 요청은 최초 기록을 반환한다. 데일리 문제 페이지의 회차별 순위는 소요 시간이 아닌 제출 순서다. 이전 클라이언트의 `submit_daily_sudoku`는 답안 문자열을 보드 배열로 바꿔 같은 제출 함수에 전달한다.
 
-전광판은 `recent_completions()` RPC로 현재 학기의 일반 문제·데일리 완료 기록을 합쳐 최신 3건을 표시한다. 데일리 제목에는 회차 날짜를 붙이며 정답·계정 ID는 반환하지 않는다. DB 변경은 `supabase/migrations/20260917_recent_completions.sql`을 한 번 적용한다.
+전광판은 `recent_completions()` RPC로 현재 학기의 일반 문제·데일리 완료 기록을 합친다. 계정별로 가장 최근 완료 하나만 남긴 뒤 최신 3명을 표시하므로 한 사람이 여러 문제를 연달아 완료해도 한 번만 나온다. 데일리 제목에는 회차 날짜를 붙이며 정답·계정 ID는 반환하지 않는다. DB 변경은 `supabase/migrations/20260917_recent_completions.sql`과 `supabase/migrations/20260920_unique_recent_completions.sql`을 순서대로 한 번씩 적용한다.
 
 스트릭은 **2026-09-19 회차부터** Google 계정별 완료 날짜로 집계하며 학기가 바뀌어도 이어진다. `daily_sudoku_context`는 서버의 한국 날짜로 계산한 본인 `streak: {count, status}`만 반환한다. `excluded` 기록은 제외하고 시작일 이전 기록은 집계하지 않는다. 완료 날짜 사이의 하루 공백은 허용하지만 쉰 날은 숫자에 더하지 않는다. 어제 완료·오늘 미완료는 윤곽선 불꽃(`pending`), 오늘 완료는 채운 불꽃(`completed`), 어제 쉬고 오늘 미완료는 Zzz(`rest`)로 표시한다. 이틀 연속 미완료 후 자정이 지나면 현재 스트릭이 종료되어 표시하지 않는다(`none`). 휴식 후 다음 날 완료하면 같은 스트릭에 1을 더하고, 종료 후 완료하면 1부터 시작한다. 최초 완료·중복 제출·사후 집계 제외는 기존 완료 행에서 계산하므로 별도 카운터나 cron이 필요 없다.
 

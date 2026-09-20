@@ -55,8 +55,8 @@ SELECT set_config('request.jwt.claims','{{"role":"anon"}}',true);
 DO $$ DECLARE ctx jsonb; BEGIN
  ctx:=public.daily_sudoku_context((clock_timestamp() AT TIME ZONE 'Asia/Seoul')::date+1);
  IF (ctx->>'available')::boolean OR ctx->>'givens' IS NOT NULL OR jsonb_array_length(ctx->'rankings')<>0 THEN RAISE EXCEPTION 'Future exposed'; END IF;
- IF (SELECT count(*) FROM public.recent_completions())<>3 THEN RAISE EXCEPTION 'Banner limit'; END IF;
- IF NOT EXISTS(SELECT 1 FROM public.recent_completions() WHERE nickname='__completion_renamed') THEN RAISE EXCEPTION 'Renamed banner missing'; END IF;
+ IF (SELECT count(*) FROM public.recent_completions())>3 THEN RAISE EXCEPTION 'Banner limit'; END IF;
+ IF (SELECT count(*) FROM public.recent_completions() WHERE nickname='__completion_renamed')<>1 THEN RAISE EXCEPTION 'Banner account duplicate or missing'; END IF;
  BEGIN PERFORM * FROM public.completion_submissions; RAISE EXCEPTION 'Anonymous snapshot exposed'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN PERFORM * FROM public.daily_sudoku_completions; RAISE EXCEPTION 'Daily account IDs exposed'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN PERFORM * FROM private.daily_sudoku; RAISE EXCEPTION 'Queue exposed'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
@@ -71,11 +71,11 @@ DELETE FROM auth.users WHERE id='{u1}';
 DO $$ BEGIN
  IF EXISTS(SELECT 1 FROM public.completion_submissions WHERE user_id='{u1}') OR EXISTS(SELECT 1 FROM public.daily_sudoku_completions WHERE user_id='{u1}') OR EXISTS(SELECT 1 FROM public.semester_completions WHERE user_id='{u1}') OR EXISTS(SELECT 1 FROM public.daily_sudoku_progress WHERE user_id='{u1}') THEN RAISE EXCEPTION 'Delete cascade failed'; END IF;
  END $$;
-SELECT 'completion snapshots, duplicates, ranks, publication, RLS, moderation, deletion: passed' AS result;
+SELECT 'completion snapshots, duplicates, unique banner accounts, ranks, publication, RLS, moderation, deletion: passed' AS result;
 ROLLBACK;
 """
 if '--rehearse' in sys.argv:
- migration=(Path(__file__).resolve().parent.parent/'supabase/migrations/20260917_completion_states.sql').read_text()
+ migration=(Path(__file__).resolve().parent.parent/'supabase/migrations/20260920_unique_recent_completions.sql').read_text()
  sql=migration.rsplit('COMMIT;',1)[0]+sql.removeprefix('\nBEGIN;')
 try:
  print(query(sql))
