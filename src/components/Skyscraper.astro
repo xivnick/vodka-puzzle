@@ -2,7 +2,7 @@
 import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
 
-const { puzzle, title = puzzle.title, puzzleId = puzzle.id, preview = false } = Astro.props;
+const { puzzle, title = puzzle.title, puzzleId = puzzle.id, preview = false, enableNotes = false } = Astro.props;
 const size = puzzle.givens.length;
 const cells = Array.from({ length: size ** 2 }, (_, index) => ({
   row: Math.floor(index / size),
@@ -24,6 +24,7 @@ const cells = Array.from({ length: size ** 2 }, (_, index) => ({
   </div>
   <div slot="controls">
     칸을 누른 뒤 숫자 버튼이나 키보드의 1~{size}을 입력하세요.<br />
+    {enableNotes && <>메모하기 버튼이나 M을 눌러 메모 입력을 켜고 끄세요.<br /></>}
     방향키로 칸을 옮기고, Backspace 또는 Delete로 지울 수 있습니다.
   </div>
   <section
@@ -32,9 +33,11 @@ const cells = Array.from({ length: size ** 2 }, (_, index) => ({
     data-puzzle={JSON.stringify(puzzle)}
     data-puzzle-id={puzzleId}
     data-preview={String(preview)}
+    data-notes={String(enableNotes)}
     style={`--sky-size:${size}`}
     aria-label={title}
   >
+    {enableNotes && <div class="sky-board-tools"><button id="skyNotes" class="sky-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>}
     <div id="skyBoard" class="sky-board" role="grid" aria-label={`${size}행 ${size}열 스카이스크레이퍼 퍼즐`}>
       <span class="sky-corner" aria-hidden="true"></span>
       {puzzle.clues.top.map((clue, index) => <span class="sky-clue" data-clue={`top-${index}`} aria-label={clue == null ? undefined : `위쪽 ${index + 1}열 단서 ${clue}`}>{clue}</span>)}
@@ -76,11 +79,13 @@ const cells = Array.from({ length: size ** 2 }, (_, index) => ({
 <style>
 .sky-rules{line-height:1.7}.sky-rules p{margin:0}.sky-rules p+p{margin-top:8px}
 .sky-game{--sky-cell:min(58px,12.2vw);--sky-clue:min(34px,7.2vw);width:calc(var(--sky-size) * var(--sky-cell) + 2 * var(--sky-clue));max-width:100%;margin-inline:auto}
+.sky-board-tools{display:flex;justify-content:flex-end;width:calc(var(--sky-size) * var(--sky-cell));margin:0 0 8px var(--sky-clue)}.sky-notes-toggle{background:none;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:0 0 1px;color:#888;font-family:inherit;font-size:.82rem;line-height:1.5;cursor:pointer}.sky-notes-toggle[aria-pressed=true]{color:#4a6fa5;border-color:#4a6fa5;font-weight:700}
 .sky-board{display:grid;grid-template-columns:var(--sky-clue) repeat(var(--sky-size),var(--sky-cell)) var(--sky-clue);grid-template-rows:var(--sky-clue) repeat(var(--sky-size),var(--sky-cell)) var(--sky-clue);width:max-content;max-width:100%}
 .sky-clue{display:flex;align-items:center;justify-content:center;font-weight:700;color:#333;font-size:1rem}.sky-clue.error{color:#b05050}.sky-corner{display:block}
 .sky-cell{appearance:none;display:flex;align-items:center;justify-content:center;min-width:0;padding:0;margin:0;border:0;border-top:1px solid #aaa;border-left:1px solid #aaa;border-radius:0;background:#fff;color:#4a6fa5;font:700 1.15rem 'Noto Sans KR',sans-serif;cursor:pointer;touch-action:manipulation}
 .sky-cell:nth-of-type(6n){border-right:2px solid #333}.sky-cell:nth-of-type(-n+6){border-top:2px solid #333}.sky-cell:nth-last-of-type(-n+6){border-bottom:2px solid #333}.sky-cell:nth-of-type(6n+1){border-left:2px solid #333}
 .sky-cell:hover{background:#f4f1eb}.sky-cell.selected{background:#e8edf5}.sky-cell.given{color:#222}.sky-cell.conflict{background:#f5d0d0;color:#b05050}.sky-cell:focus{outline:none}.sky-cell:focus-visible{outline:2px solid #4a6fa5;outline-offset:-4px}
+.sky-cell :global(.notes){position:absolute;inset:2px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);font-size:clamp(9px,2.4vw,12px);font-weight:500;color:#606975}.sky-cell :global(.notes span){display:flex;align-items:center;justify-content:center}.sky-cell{position:relative}
 .sky-numpad,.bottom-buttons{display:flex;gap:6px;width:calc(var(--sky-size) * var(--sky-cell));margin-left:var(--sky-clue)}.sky-numpad{margin-top:12px}.sky-game .bottom-buttons{margin:8px 0 0 var(--sky-clue)!important}
 .sky-numpad button,.bottom-buttons button{flex:1;height:44px;padding:0;font-family:inherit;font-size:1rem;font-weight:600;background:#f4f1eb;border:1px solid #c8c3b8;border-radius:3px;color:#333;cursor:pointer}.sky-numpad button:hover,.bottom-buttons button:hover{background:#ebe8e1}.bottom-buttons button.danger{background:#fdf5f5;border-color:#e0bfbf;color:#b05050}.bottom-buttons button.danger:hover{background:#f8e8e8}
 .sky-game :global(.message){text-align:center;margin-left:var(--sky-clue);width:calc(var(--sky-size) * var(--sky-cell))}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}

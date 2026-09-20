@@ -87,3 +87,10 @@ export function parseSkyscraperState(puzzle, saved, puzzleId) {
   if (!saved.values.every(value => Number.isInteger(value) && value >= 0 && value <= size)) return null;
   return saved.values.map((value, index) => puzzle.givens.flat()[index] || value);
 }
+
+export function parseSkyscraperNotes(puzzle, saved, puzzleId) {
+  const size = puzzle.givens.length;
+  if (!parseSkyscraperState(puzzle, saved, puzzleId) || !Array.isArray(saved.notes) || saved.notes.length !== size ** 2) return null;
+  if (!saved.notes.every(note => Array.isArray(note) && note.every(value => Number.isInteger(value) && value >= 1 && value <= size))) return null;
+  return saved.notes.map((note, index) => puzzle.givens.flat()[index] || saved.values[index] ? [] : [...new Set(note)].sort((a, b) => a - b));
+}
