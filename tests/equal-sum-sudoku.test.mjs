@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { equalSumRegionConflicts, equalSumSudoku260921, equalSumSudokuConflicts, parseEqualSumSudokuState, solvedEqualSumSudoku } from '../src/lib/equal-sum-sudoku.js';
+import { equalSumRegionConflicts, equalSumSudoku260921, equalSumSudokuConflicts, parseEqualSumSudokuState, solvedEqualSumSudoku, sudokuConflicts } from '../src/lib/equal-sum-sudoku.js';
 
 const solution = [
   [2, 5, 8, 1, 9, 7, 3, 4, 6],
@@ -29,7 +29,9 @@ test('equal-sum validation accepts a solved board and detects Sudoku and sum err
   for (const [index, value] of [[0, 2], [9, 1], [10, 4], [19, 9], [20, 3], [4, 9], [5, 7], [14, 2]]) wrongSum[index] = value;
   assert.ok(equalSumRegionConflicts(equalSumSudoku260921, wrongSum).size > 0);
   const duplicate = [...solution];
-  duplicate[0] = duplicate[1];
+  duplicate[1] = duplicate[0];
+  assert.ok(sudokuConflicts(equalSumSudoku260921, duplicate).has(0));
+  assert.equal(equalSumRegionConflicts(equalSumSudoku260921, duplicate).has(0), false);
   assert.ok(equalSumSudokuConflicts(equalSumSudoku260921, duplicate).has(0));
   assert.equal(solvedEqualSumSudoku(equalSumSudoku260921, duplicate), false);
 });

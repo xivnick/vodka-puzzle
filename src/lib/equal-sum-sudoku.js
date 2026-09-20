@@ -51,15 +51,19 @@ export function equalSumRegionConflicts(puzzle, values) {
   return new Set(complete.flatMap(({ region }) => region));
 }
 
-export function equalSumSudokuConflicts(puzzle, values) {
+export function sudokuConflicts(puzzle, values) {
   const size = puzzle.givens.length;
-  const conflicts = equalSumRegionConflicts(puzzle, values);
+  const conflicts = new Set();
   for (const unit of sudokuUnits(size, puzzle.boxRows || 3, puzzle.boxColumns || 3)) {
     for (const index of unit) {
       if (values[index] && unit.some(other => other !== index && values[other] === values[index])) conflicts.add(index);
     }
   }
   return conflicts;
+}
+
+export function equalSumSudokuConflicts(puzzle, values) {
+  return new Set([...sudokuConflicts(puzzle, values), ...equalSumRegionConflicts(puzzle, values)]);
 }
 
 export function solvedEqualSumSudoku(puzzle, values) {

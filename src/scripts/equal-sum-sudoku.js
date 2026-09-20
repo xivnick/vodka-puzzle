@@ -1,4 +1,4 @@
-import { equalSumSudokuConflicts, parseEqualSumSudokuState, solvedEqualSumSudoku } from '../lib/equal-sum-sudoku.js';
+import { equalSumRegionConflicts, parseEqualSumSudokuState, solvedEqualSumSudoku, sudokuConflicts } from '../lib/equal-sum-sudoku.js';
 
 const game = document.getElementById('equalSumGame');
 const puzzle = JSON.parse(game.dataset.puzzle);
@@ -37,7 +37,8 @@ function checkComplete() {
 }
 
 function render() {
-  const conflicts = equalSumSudokuConflicts(puzzle, values);
+  const sumConflicts = equalSumRegionConflicts(puzzle, values);
+  const duplicateConflicts = sudokuConflicts(puzzle, values);
   cells.forEach((cell, index) => {
     cell.replaceChildren();
     if (values[index]) cell.textContent = values[index];
@@ -53,11 +54,12 @@ function render() {
       cell.append(box);
     }
     cell.classList.toggle('selected', index === selected);
-    cell.classList.toggle('conflict', conflicts.has(index));
+    cell.classList.toggle('sum-conflict', sumConflicts.has(index));
+    cell.classList.toggle('sudoku-conflict', duplicateConflicts.has(index));
     cell.tabIndex = index === selected ? 0 : -1;
     const row = Math.floor(index / size);
     const column = index % size;
-    cell.setAttribute('aria-label', `${row + 1}행 ${column + 1}열${values[index] ? `, 숫자 ${values[index]}` : ', 빈칸'}${givens[index] ? ', 주어진 숫자' : ''}${cell.classList.contains('shaded') ? ', 회색 영역' : ''}${conflicts.has(index) ? ', 규칙 위반' : ''}${!values[index] && notes[index].length ? `, 메모 ${notes[index].join(', ')}` : ''}`);
+    cell.setAttribute('aria-label', `${row + 1}행 ${column + 1}열${values[index] ? `, 숫자 ${values[index]}` : ', 빈칸'}${givens[index] ? ', 주어진 숫자' : ''}${cell.classList.contains('shaded') ? ', 회색 영역' : ''}${sumConflicts.has(index) ? ', 영역 합 불일치' : ''}${duplicateConflicts.has(index) ? ', 숫자 중복' : ''}${!values[index] && notes[index].length ? `, 메모 ${notes[index].join(', ')}` : ''}`);
   });
   checkComplete();
 }
