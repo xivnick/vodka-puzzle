@@ -69,8 +69,8 @@ test('published 260920 skyscraper uses its official ID with saving and rankings'
   assert.match(html, /260920 스카이스크레이퍼/);
   assert.match(html, /data-puzzle-id="260920_01"/);
   assert.match(html, /data-preview="false"/);
-  assert.match(html, /data-notes="false"/);
-  assert.ok(!html.includes('id="skyNotes"'));
+  assert.match(html, /data-notes="true"/);
+  assert.ok(html.includes('id="skyNotes"'));
   assert.ok(html.includes('id="cloudBtns"'));
   assert.ok(html.includes('id="leaderboard"'));
   assert.ok(home.includes('data-puzzle-id="260920_01"'));

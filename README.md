@@ -66,7 +66,7 @@ mv -Tf dist-rollback dist
 - `PuzzleLayout.astro`: 규칙·조작 방법·클라우드 저장·리더보드
 - `PuzzleCompletion.astro`: 공통 완료 안내
 - `ThermoSudoku.astro`: 9×9(3×3 영역)·6×6(2×3 영역) 온도계 스도쿠 화면. 정식 문제는 `260917_01`·`260917_02`·`260917_03`·`260918_01`(A, 9×9)·`260918_02`(B, 6×6)이며 테스트 경로는 기록·저장 없이 시연한다.
-- `Skyscraper.astro`: 가로·세로 라틴방진과 바깥 시야 단서를 검사하는 스카이스크레이퍼 화면. 사진 기반 6×6 문제는 `/260920_01/`에서 서비스한다. `/test/skyscraper/260920/`은 메모 입력을 시험하는 기록·저장 없는 시연 경로이며, 승인 전까지 정식 문제에는 메모 기능을 켜지 않는다.
+- `Skyscraper.astro`: 가로·세로 라틴방진과 바깥 시야 단서를 검사하고 후보 숫자 메모를 지원하는 스카이스크레이퍼 화면. 사진 기반 6×6 문제는 `/260920_01/`에서 서비스하며, `/test/skyscraper/260920/`은 기록·저장 없는 시연 경로로 유지한다.
 - `public/js/common.js`: 일반 문제의 로컬 저장·클라우드 저장·완료 기록·순위
 
 신규 문제는 `src/pages/<YYMMDD_번호>/index.astro`에서 `PuzzleLayout`을 사용한다. `title`, `puzzleId`, `description`과 필요한 `subtitle`을 전달하고 `rules`, `controls` 슬롯에 안내를 넣는다. 판 구성·조작·일반 정답 검증은 문제별 코드에 둔다.
