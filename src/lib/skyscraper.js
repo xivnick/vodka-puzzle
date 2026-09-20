@@ -1,3 +1,22 @@
+export const skyscraper260920 = {
+  id: 'skyscraper-260920',
+  title: '260920 스카이스크레이퍼',
+  givens: [
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0],
+    [0, 0, 3, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+  ],
+  clues: {
+    top: [null, null, 3, 3, 1, 3],
+    right: [null, 5, 3, 3, 1, null],
+    bottom: [null, 3, 3, 3, 5, null],
+    left: [null, null, 3, 3, 3, 1],
+  },
+};
+
 export function countVisible(values) {
   let count = 0;
   let highest = 0;

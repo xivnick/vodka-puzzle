@@ -49,3 +49,16 @@ test('260920 photo preview keeps its clues and stays outside saving and rankings
   assert.ok(!html.includes('id="cloudBtns"'));
   assert.ok(!html.includes('id="leaderboard"'));
 });
+
+test('published 260920 skyscraper uses its official ID with saving and rankings', () => {
+  const html = fs.readFileSync('dist/260920_01/index.html', 'utf8');
+  const home = fs.readFileSync('dist/index.html', 'utf8');
+  const catalog = fs.readFileSync('src/data/puzzles.json', 'utf8');
+  assert.match(html, /260920 스카이스크레이퍼/);
+  assert.match(html, /data-puzzle-id="260920_01"/);
+  assert.match(html, /data-preview="false"/);
+  assert.ok(html.includes('id="cloudBtns"'));
+  assert.ok(html.includes('id="leaderboard"'));
+  assert.ok(home.includes('data-puzzle-id="260920_01"'));
+  assert.ok(catalog.includes('"id": "260920_01"'));
+});
