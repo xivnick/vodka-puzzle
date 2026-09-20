@@ -1,0 +1,72 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+
+const { puzzle, title = puzzle.title, puzzleId = puzzle.id, preview = false } = Astro.props;
+const size = puzzle.givens.length;
+const givens = puzzle.givens.flat();
+const shaded = new Set(puzzle.regions.flat().map(([row, column]) => `${row - 1},${column - 1}`));
+---
+<PuzzleLayout
+  title={title}
+  puzzleId={puzzleId}
+  subtitle="모든 회색 영역의 숫자 합이 같아야 합니다"
+  description="모든 회색 영역의 합이 같은 변형 스도쿠"
+  showCloud={!preview}
+  showLeaderboard={!preview}
+>
+  <div slot="rules" class="equal-sum-rules">
+    <p>각 가로줄, 세로줄, 3×3 영역에 1부터 9까지의 숫자가 한 번씩 들어가도록 채우세요.</p>
+    <p>가로 또는 세로로 연결된 각 회색 영역에 들어가는 숫자들의 합은 모두 같습니다.</p>
+  </div>
+  <div slot="controls">
+    칸을 누른 뒤 숫자 버튼이나 키보드의 1~9를 입력하세요.<br />
+    메모하기 버튼이나 M을 눌러 메모 입력을 켜고 끄세요.<br />
+    방향키로 칸을 옮기고, Backspace 또는 Delete로 지울 수 있습니다.
+  </div>
+  <section
+    id="equalSumGame"
+    class="equal-sum-game"
+    data-puzzle={JSON.stringify(puzzle)}
+    data-puzzle-id={puzzleId}
+    data-preview={String(preview)}
+    style={`--sudoku-size:${size}`}
+    aria-label={title}
+  >
+    <div class="equal-sum-board-tools"><button id="equalSumNotes" class="equal-sum-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <div id="equalSumBoard" class="equal-sum-board" role="grid" aria-label={`${size}행 ${size}열 같은 합 스도쿠`}>
+      {givens.map((given, index) => {
+        const row = Math.floor(index / size);
+        const column = index % size;
+        return <button
+          type="button"
+          role="gridcell"
+          class:list={['equal-sum-cell', { given: Boolean(given), shaded: shaded.has(`${row},${column}`) }]}
+          data-cell={index}
+          tabindex={index === 0 ? '0' : '-1'}
+          aria-label={`${row + 1}행 ${column + 1}열${given ? `, 주어진 숫자 ${given}` : ', 빈칸'}${shaded.has(`${row},${column}`) ? ', 회색 영역' : ''}`}
+        >{given || ''}</button>;
+      })}
+    </div>
+    <div id="equalSumNumbers" class="equal-sum-numbers" aria-label="숫자 입력">
+      {Array.from({ length: size }, (_, index) => <button type="button" data-number={index + 1}>{index + 1}</button>)}
+    </div>
+    <div class="bottom-buttons">
+      <button id="equalSumErase" type="button">지우기</button>
+      <button id="equalSumReset" class="danger" type="button">초기화</button>
+    </div>
+    <PuzzleCompletion id="equalSumComplete" />
+    <span id="equalSumStatus" class="sr-only" role="status" aria-live="polite"></span>
+  </section>
+</PuzzleLayout>
+<script>import '../scripts/equal-sum-sudoku.js';</script>
+<style>
+.equal-sum-rules{line-height:1.7}.equal-sum-rules p{margin:0}.equal-sum-rules p+p{margin-top:8px}
+.equal-sum-game{width:100%;margin-inline:auto}.equal-sum-board-tools{display:flex;justify-content:flex-end;margin-bottom:8px}.equal-sum-notes-toggle{background:none;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:0 0 1px;color:#888;font-family:inherit;font-size:.82rem;line-height:1.5;cursor:pointer}.equal-sum-notes-toggle[aria-pressed=true]{color:#4a6fa5;border-color:#4a6fa5;font-weight:700}
+.equal-sum-board{display:grid;grid-template-columns:repeat(var(--sudoku-size),minmax(0,1fr));border:2px solid #444;background:#fff}
+.equal-sum-cell{appearance:none;position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:1;min-width:0;padding:0;margin:0;border:0;border-right:1px solid #aaa;border-bottom:1px solid #aaa;border-radius:0;background:#fff;color:#4a6fa5;font:700 clamp(18px,5vw,27px) 'Noto Sans KR',sans-serif;cursor:pointer;touch-action:manipulation}
+.equal-sum-cell.shaded{background:#d7d7d7}.equal-sum-cell:nth-child(3n){border-right:2px solid #444}.equal-sum-cell:nth-child(9n){border-right:0}.equal-sum-cell:nth-child(n+19):nth-child(-n+27),.equal-sum-cell:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid #444}.equal-sum-cell:nth-child(n+73){border-bottom:0}
+.equal-sum-cell:hover{box-shadow:inset 0 0 0 999px rgba(244,241,235,.45)}.equal-sum-cell.selected{box-shadow:inset 0 0 0 999px rgba(111,155,208,.26)}.equal-sum-cell.given{color:#222}.equal-sum-cell.conflict{color:#a43d3d;box-shadow:inset 0 0 0 999px rgba(225,133,133,.35)}.equal-sum-cell:focus{outline:none}.equal-sum-cell:focus-visible{outline:2px solid #4a6fa5;outline-offset:-4px}
+.equal-sum-cell :global(.notes){position:absolute;inset:2px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);font-size:clamp(8px,2.2vw,12px);font-weight:500;color:#555f6b}.equal-sum-cell :global(.notes span){display:flex;align-items:center;justify-content:center}
+.equal-sum-numbers{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:4px;margin-top:14px}.equal-sum-numbers button{padding:8px 0;border:1px solid #d6d4cd;border-radius:3px;background:#faf8f4;color:#555;font-family:inherit;cursor:pointer}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+</style>
