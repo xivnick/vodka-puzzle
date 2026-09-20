@@ -59,5 +59,18 @@ test('260921 preview renders all cells and remains outside catalog, saving and r
   assert.match(html, /data-preview="true"/);
   assert.ok(!html.includes('id="cloudBtns"'));
   assert.ok(!html.includes('id="leaderboard"'));
-  assert.ok(!catalog.includes('260921'));
+  assert.ok(!catalog.includes('equal-sum-260921'));
+});
+
+test('published 260921 equal-sum Sudoku uses its official ID with saving and rankings', () => {
+  const html = fs.readFileSync('dist/260921_01/index.html', 'utf8');
+  const home = fs.readFileSync('dist/index.html', 'utf8');
+  const catalog = fs.readFileSync('src/data/puzzles.json', 'utf8');
+  assert.match(html, /260921 같은 합 스도쿠/);
+  assert.match(html, /data-puzzle-id="260921_01"/);
+  assert.match(html, /data-preview="false"/);
+  assert.ok(html.includes('id="cloudBtns"'));
+  assert.ok(html.includes('id="leaderboard"'));
+  assert.ok(home.includes('data-puzzle-id="260921_01"'));
+  assert.ok(catalog.includes('"id": "260921_01"'));
 });
