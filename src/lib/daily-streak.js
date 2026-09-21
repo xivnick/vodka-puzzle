@@ -20,12 +20,34 @@ export function renderStreakRankings(element,rows) {
  if(!rows?.length){
   const empty=document.createElement('div');empty.className='lb-empty';empty.textContent='아직 기록이 없습니다.';element.append(empty);return;
  }
- const list=document.createElement('div');list.className='lb-list';element.append(list);
- for(const row of rows){
+ const myIndex=rows.findIndex(row=>row.is_me);
+ const rowElement=row=>{
   const line=document.createElement('div');line.className=`lb-row${row.is_me?' lb-me':''}`;
   const rank=document.createElement('span');rank.className='lb-rank';rank.textContent=row.rank;
   const name=document.createElement('span');name.className='lb-name';name.textContent=row.nickname;
   const streak=document.createElement('span');streak.className='daily-streak';renderStreak(streak,row);
-  line.append(rank,name,streak);list.append(line);
+  line.append(rank,name,streak);return line;
+ };
+ const render=(expanded=false)=>{
+  const list=document.createElement('div');list.className='lb-list';
+  const visible=expanded||rows.length<=10?rows:rows.slice(0,10);
+  for(const row of visible)list.append(rowElement(row));
+  if(!expanded&&rows.length>10){
+   const ellipsis=()=>{
+    const line=document.createElement('div');line.className='lb-row lb-ellipsis lb-ellipsis-toggle';line.setAttribute('role','button');line.setAttribute('tabindex','0');line.setAttribute('aria-label','전체 랭킹 펼치기');
+    const rank=document.createElement('span');rank.className='lb-rank';rank.textContent='⋯';
+    const name=document.createElement('span');name.className='lb-name';
+    const streak=document.createElement('span');streak.className='lb-time';line.append(rank,name,streak);
+    const expand=()=>render(true);line.addEventListener('click',expand,{once:true});line.addEventListener('keydown',event=>{if(event.key!=='Enter'&&event.key!==' ')return;event.preventDefault();expand();},{once:true});
+    return line;
+   };
+   list.append(ellipsis());
+   if(myIndex>=10){
+    list.append(rowElement(rows[myIndex]));
+    if(myIndex<rows.length-1)list.append(ellipsis());
+   }
+  }
+  element.replaceChildren(list);
+ };
+ render();
  }
-}

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {renderStreak,renderStreakRankings} from '../src/lib/daily-streak.js';
 import {context} from '../src/lib/daily-sudoku-client.js';
-function node(){return {children:[],hidden:false,attributes:{},replaceChildren(){this.children=[];},append(...children){this.children.push(...children);},setAttribute(k,v){this.attributes[k]=v;},removeAttribute(k){delete this.attributes[k];}};}
+function node(){return {children:[],hidden:false,attributes:{},listeners:{},replaceChildren(...children){this.children=children;},append(...children){this.children.push(...children);},setAttribute(k,v){this.attributes[k]=v;},removeAttribute(k){delete this.attributes[k];},addEventListener(type,listener){this.listeners[type]=listener;}};}
 test('streak renders no record, outline, rest and restored completion with accessible labels',()=>{
  const original=globalThis.document;globalThis.document={createElement:node};
  try{
@@ -55,5 +55,26 @@ test('streak leaderboard displays server order, nicknames and numeric icons with
   const [first,second]=el.children[0].children;
   assert.equal(first.className,'lb-row lb-me');assert.equal(first.children[0].textContent,1);assert.equal(first.children[1].textContent,'<solver>');assert.equal(first.children[2].children[0].textContent,'6');assert.equal(first.children[2].children[1].src,'/icons/daily-streak/flame-filled.svg');assert.equal(second.children[2].children[1].src,'/icons/daily-streak/zzz.svg');assert.equal(first.children.length,3);
   renderStreakRankings(el,[]);assert.equal(el.children[0].textContent,'아직 기록이 없습니다.');
+ }finally{globalThis.document=original;}
+});
+
+test('streak leaderboard folds after ten rows and keeps an out-of-range personal rank visible',()=>{
+ const original=globalThis.document;globalThis.document={createElement:node};
+ try{
+  const el=node();
+  const rows=Array.from({length:13},(_,index)=>({rank:index+1,nickname:`solver-${index+1}`,count:13-index,status:'completed',is_me:index===11}));
+  renderStreakRankings(el,rows);
+  const folded=el.children[0];
+  assert.equal(folded.children.length,13);
+  assert.deepEqual(folded.children.slice(0,10).map(row=>row.children[0].textContent),[1,2,3,4,5,6,7,8,9,10]);
+  assert.equal(folded.children[10].children[0].textContent,'⋯');
+  assert.equal(folded.children[10].attributes.role,'button');
+  assert.equal(folded.children[10].attributes.tabindex,'0');
+  assert.equal(folded.children[11].children[0].textContent,12);
+  assert.equal(folded.children[11].className,'lb-row lb-me');
+  assert.equal(folded.children[12].children[0].textContent,'⋯');
+  folded.children[10].listeners.click();
+  assert.equal(el.children[0].children.length,13);
+  assert.equal(el.children[0].children.some(row=>row.className.includes('lb-ellipsis')),false);
  }finally{globalThis.document=original;}
 });
