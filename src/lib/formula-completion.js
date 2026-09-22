@@ -1,8 +1,15 @@
-export const formulaCompletion260922 = {
-  id: 'formula-completion-260922',
-  title: '260922 수식완성',
+export const formulaCompletion260922_01 = {
+  id: 'formula-completion-260922-1',
+  title: '260922 수식완성 1',
   numbers: [3, 3, 8, 8],
   target: 24,
+};
+
+export const formulaCompletion260922_02 = {
+  id: 'formula-completion-260922-2',
+  title: '260922 수식완성 2',
+  numbers: [5, 6, 13, 25],
+  target: 34,
 };
 
 function gcd(a, b) {

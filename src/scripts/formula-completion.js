@@ -10,6 +10,7 @@ const numberCounts = puzzle.numbers.reduce((map, value) => {
   return map;
 }, new Map());
 const validTokens = new Set([...numberCounts.keys(), '+', '-', '*', '/', '(', ')']);
+const availableNumbers = [...numberCounts.keys()];
 const expression = document.getElementById('formulaExpression');
 const resultElement = document.getElementById('formulaResult');
 const complete = document.getElementById('formulaComplete');
@@ -17,6 +18,8 @@ const status = document.getElementById('formulaStatus');
 let tokens = [];
 let ready = preview;
 let completionRecorded = false;
+let keyboardNumberBuffer = '';
+let keyboardNumberTimer;
 
 function state() { return { version: 1, puzzleId, tokens: [...tokens] }; }
 function announce(message) { status.textContent = message; }
@@ -109,6 +112,28 @@ function backspace() {
   persist();
   render();
 }
+function clearKeyboardNumberBuffer() {
+  keyboardNumberBuffer = '';
+  clearTimeout(keyboardNumberTimer);
+}
+function inputNumberKey(key) {
+  clearTimeout(keyboardNumberTimer);
+  let candidate = keyboardNumberBuffer + key;
+  let matches = availableNumbers.filter(number => number.startsWith(candidate));
+  if (!matches.length) {
+    candidate = key;
+    matches = availableNumbers.filter(number => number.startsWith(candidate));
+  }
+  if (!matches.length) { clearKeyboardNumberBuffer(); return; }
+  if (matches.includes(candidate) && !matches.some(number => number.length > candidate.length)) {
+    clearKeyboardNumberBuffer();
+    insert(candidate);
+    return;
+  }
+  keyboardNumberBuffer = candidate;
+  announce(`${candidate} 다음 숫자 입력 대기`);
+  keyboardNumberTimer = setTimeout(clearKeyboardNumberBuffer, 800);
+}
 function parseState(saved) {
   if (!saved || saved.version !== 1 || saved.puzzleId !== puzzleId || !Array.isArray(saved.tokens)) return null;
   if (!saved.tokens.every(token => typeof token === 'string' && validTokens.has(token))) return null;
@@ -120,11 +145,18 @@ function parseState(saved) {
   return [...saved.tokens];
 }
 
-document.querySelectorAll('#formulaKeypad [data-token]').forEach(button => button.addEventListener('click', () => insert(button.dataset.token)));
-document.querySelector('#formulaKeypad [data-action="backspace"]').addEventListener('click', backspace);
+document.querySelectorAll('#formulaKeypad [data-token]').forEach(button => button.addEventListener('click', () => {
+  clearKeyboardNumberBuffer();
+  insert(button.dataset.token);
+}));
+document.querySelector('#formulaKeypad [data-action="backspace"]').addEventListener('click', () => {
+  clearKeyboardNumberBuffer();
+  backspace();
+});
 document.getElementById('formulaReset').addEventListener('click', () => {
   if (!ready || !tokens.length) return;
   if (!confirm('입력한 수식을 초기화할까요?')) return;
+  clearKeyboardNumberBuffer();
   tokens = [];
   completionRecorded = false;
   persist();
@@ -133,8 +165,13 @@ document.getElementById('formulaReset').addEventListener('click', () => {
 });
 game.addEventListener('keydown', event => {
   const key = event.key;
-  if (numberCounts.has(key) || '+-*/()'.includes(key)) { event.preventDefault(); insert(key); }
-  else if (key === 'Backspace' || key === 'Delete') { event.preventDefault(); backspace(); }
+  if (/^\d$/.test(key)) { event.preventDefault(); inputNumberKey(key); }
+  else if ('+-*/()'.includes(key)) { event.preventDefault(); clearKeyboardNumberBuffer(); insert(key); }
+  else if (key === 'Backspace' || key === 'Delete') {
+    event.preventDefault();
+    if (keyboardNumberBuffer) clearKeyboardNumberBuffer();
+    else backspace();
+  }
 });
 
 function init() {
