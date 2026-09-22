@@ -1,4 +1,4 @@
-import { evaluateFormula, formatFraction, hasExactNumbers, isSolvedFormula } from '../lib/formula-completion.js';
+import { evaluateFormula, formatFraction, hasExactNumbers } from '../lib/formula-completion.js';
 
 const game = document.getElementById('formulaGame');
 const puzzle = JSON.parse(game.dataset.puzzle);
@@ -15,11 +15,19 @@ const expression = document.getElementById('formulaExpression');
 const resultElement = document.getElementById('formulaResult');
 const complete = document.getElementById('formulaComplete');
 const status = document.getElementById('formulaStatus');
+const numberButtons = [...document.querySelectorAll('#formulaKeypad [data-number]')];
+const operatorButtons = [...document.querySelectorAll('#formulaKeypad [data-operator]')];
+const openButton = document.querySelector('#formulaKeypad [data-token="("]');
+const closeButton = document.querySelector('#formulaKeypad [data-token=")"]');
+const backspaceButton = document.querySelector('#formulaKeypad [data-action="backspace"]');
+const resetButton = document.getElementById('formulaReset');
 let tokens = [];
 let ready = preview;
 let completionRecorded = false;
 let keyboardNumberBuffer = '';
 let keyboardNumberTimer;
+let persistTimer;
+let persistPending = false;
 
 function state() { return { version: 1, puzzleId, tokens: [...tokens] }; }
 function announce(message) { status.textContent = message; }
@@ -37,13 +45,20 @@ function tokenState() {
   const canUseOperator = numberCounts.has(last) || last === ')';
   return { needsValue, canUseOperator, canClose: canUseOperator && open > close };
 }
-function persist() {
-  if (preview || !ready) return;
+function flushPersist() {
+  if (!persistPending || preview || !ready) return;
+  persistPending = false;
+  clearTimeout(persistTimer);
   try { window.saveLocalState(puzzleId, state()); }
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
-function checkComplete() {
-  const solved = isSolvedFormula(puzzle, tokens);
+function persist() {
+  if (preview || !ready) return;
+  persistPending = true;
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(flushPersist, 120);
+}
+function checkComplete(solved) {
   complete.hidden = !solved;
   expression.classList.toggle('solved', solved);
   if (!solved) { completionRecorded = false; return; }
@@ -68,25 +83,29 @@ function render() {
       expression.append(element);
     });
   }
+  let solved = false;
   try {
     const result = evaluateFormula(tokens);
     resultElement.textContent = result ? `= ${formatFraction(result.value)}` : '';
+    solved = Boolean(result)
+      && result.value.n === BigInt(puzzle.target) * result.value.d
+      && hasExactNumbers(puzzle.numbers, result.used);
   } catch { resultElement.textContent = ''; }
 
   const used = usedCounts();
   const current = tokenState();
-  document.querySelectorAll('#formulaKeypad [data-number]').forEach(button => {
+  numberButtons.forEach(button => {
     const number = button.dataset.number;
     const exhausted = (used.get(number) || 0) >= numberCounts.get(number);
     button.classList.toggle('used', exhausted);
     button.disabled = !ready || !current.needsValue || exhausted;
   });
-  document.querySelectorAll('#formulaKeypad [data-operator]').forEach(button => { button.disabled = !ready || !current.canUseOperator; });
-  document.querySelector('#formulaKeypad [data-token="("]').disabled = !ready || !current.needsValue;
-  document.querySelector('#formulaKeypad [data-token=")"]').disabled = !ready || !current.canClose;
-  document.querySelector('#formulaKeypad [data-action="backspace"]').disabled = !ready || tokens.length === 0;
-  document.getElementById('formulaReset').disabled = !ready || tokens.length === 0;
-  checkComplete();
+  operatorButtons.forEach(button => { button.disabled = !ready || !current.canUseOperator; });
+  openButton.disabled = !ready || !current.needsValue;
+  closeButton.disabled = !ready || !current.canClose;
+  backspaceButton.disabled = !ready || tokens.length === 0;
+  resetButton.disabled = !ready || tokens.length === 0;
+  checkComplete(solved);
 }
 function insert(token) {
   if (!ready) return;
@@ -149,11 +168,18 @@ document.querySelectorAll('#formulaKeypad [data-token]').forEach(button => butto
   clearKeyboardNumberBuffer();
   insert(button.dataset.token);
 }));
-document.querySelector('#formulaKeypad [data-action="backspace"]').addEventListener('click', () => {
+backspaceButton.addEventListener('pointerdown', event => {
+  if (event.button !== 0) return;
+  event.preventDefault();
   clearKeyboardNumberBuffer();
   backspace();
 });
-document.getElementById('formulaReset').addEventListener('click', () => {
+backspaceButton.addEventListener('click', event => {
+  if (event.detail !== 0) return;
+  clearKeyboardNumberBuffer();
+  backspace();
+});
+resetButton.addEventListener('click', () => {
   if (!ready || !tokens.length) return;
   if (!confirm('입력한 수식을 초기화할까요?')) return;
   clearKeyboardNumberBuffer();
@@ -163,6 +189,7 @@ document.getElementById('formulaReset').addEventListener('click', () => {
   render();
   announce('퍼즐을 초기화했습니다.');
 });
+window.addEventListener('pagehide', flushPersist);
 game.addEventListener('keydown', event => {
   const key = event.key;
   if (/^\d$/.test(key)) { event.preventDefault(); inputNumberKey(key); }
