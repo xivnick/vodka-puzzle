@@ -21,7 +21,6 @@ test('formula validation rejects missing, joined, extra and signed numbers', () 
 test('260922 formula previews render their numbers and stay outside catalog, saving and rankings', () => {
   const first = fs.readFileSync('dist/test/formula-completion/260922/index.html', 'utf8');
   const second = fs.readFileSync('dist/test/formula-completion/260922-2/index.html', 'utf8');
-  const catalog = fs.readFileSync('src/data/puzzles.json', 'utf8');
   assert.match(first, /260922 수식완성 1/);
   assert.match(first, /3, 3, 8, 8/);
   assert.equal((first.match(/data-number="3"/g) || []).length, 2);
@@ -34,5 +33,20 @@ test('260922 formula previews render their numbers and stay outside catalog, sav
     assert.ok(!html.includes('id="cloudBtns"'));
     assert.ok(!html.includes('id="leaderboard"'));
   }
-  assert.ok(!catalog.includes('formula-completion-260922'));
+});
+
+test('published formula pages use official IDs with saving and rankings', () => {
+  const first = fs.readFileSync('dist/260922_01/index.html', 'utf8');
+  const second = fs.readFileSync('dist/260922_02/index.html', 'utf8');
+  const home = fs.readFileSync('dist/index.html', 'utf8');
+  const catalog = fs.readFileSync('src/data/puzzles.json', 'utf8');
+  for (const [html, id, title] of [[first, '260922_01', '260922 수식완성 1'], [second, '260922_02', '260922 수식완성 2']]) {
+    assert.match(html, new RegExp(title));
+    assert.match(html, new RegExp(`data-puzzle-id="${id}"`));
+    assert.match(html, /data-preview="false"/);
+    assert.ok(html.includes('id="cloudBtns"'));
+    assert.ok(html.includes('id="leaderboard"'));
+    assert.ok(home.includes(`data-puzzle-id="${id}"`));
+    assert.ok(catalog.includes(`"id": "${id}"`));
+  }
 });
