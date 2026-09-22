@@ -170,7 +170,6 @@ document.querySelectorAll('#formulaKeypad [data-token]').forEach(button => butto
 }));
 backspaceButton.addEventListener('pointerdown', event => {
   if (event.button !== 0) return;
-  event.preventDefault();
   clearKeyboardNumberBuffer();
   backspace();
 });
