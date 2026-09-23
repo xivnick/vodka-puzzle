@@ -21,7 +21,7 @@ const title = `260923 밸런스 루프 ${puzzle.number}`;
   <div slot="controls">
     <p>칸의 중심을 따라 드래그하거나 같은 행·열의 두 칸을 차례로 누르면 사이를 직선으로 연결합니다. 떨어진 칸도 연결할 수 있습니다. 그려진 선을 누르면 해당 구간을 지웁니다.</p>
     <p>방향키로 칸을 이동하고, Shift + 방향키로 선을 연결하거나 지웁니다. Delete 또는 Backspace로 선택한 칸의 선을 지웁니다. Ctrl/⌘ + Z로 되돌립니다.</p>
-    <p>두 팔의 끝이 정해지면 길이를 검사합니다. 조건을 만족한 모양은 초록색으로, 규칙에 어긋나는 칸은 붉게 표시됩니다.</p>
+    <p>현재 팔 길이로 조건을 모두 만족하면 초록색, 합이 숫자를 넘으면 붉게 표시됩니다. 팔이 완성되기 전에는 모양 조건 불일치나 숫자 부족을 오류로 표시하지 않습니다.</p>
   </div>
   <section id="balanceGame" data-clues={JSON.stringify(puzzle.clues)} data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label={title}>
     <svg id="balanceBoard" role="application" tabindex="0" aria-label="밸런스 루프 격자. 방향키로 이동, Shift와 방향키로 선 연결 또는 삭제"></svg>

@@ -25,7 +25,7 @@ test('black shape and number are separate simultaneous constraints',()=>{
 test('incomplete arms wait; open paths cannot complete',()=>{
   const clues=grid();clues[0][0]='w4';
   const result=validateBalanceLoop(clues,new Set(['0:1','0:5']));
-  assert.equal(result.complete,false);assert.deepEqual(result.errors,[]);assert.deepEqual(result.arms[0],[null,null]);
+  assert.equal(result.complete,false);assert.deepEqual(result.errors,[]);assert.deepEqual(result.arms[0],[1,1]);
 });
 test('missing clue, separate loops, branches and nonadjacent edges fail',()=>{
   const clues=grid();clues[4][4]='w';assert.equal(validateBalanceLoop(clues,rectangle()).complete,false);
@@ -109,4 +109,25 @@ test('runtime isolates previews, restores per account and records a completed in
   normal.window.puzzleAccount.user={id:'b'};normal.events['puzzle-auth-ready']();
   assert.equal(normal.nodes.get('balanceComplete').hidden,true);
   assert.equal(normal.writes.at(-1).owner,'b');assert.equal(normal.writes.at(-1).state.edges.length,0);
+});
+
+test('unfinished arms show matches and excess only, without completing the puzzle',()=>{
+  const clues=grid(), edges=new Set(['0:1','1:2','0:5']);
+  const check=clue=>{clues[0][0]=clue;return validateBalanceLoop(clues,edges);};
+  assert.deepEqual(check('b3').satisfied,[0]);
+  assert.equal(check('b3').complete,false);
+  assert.deepEqual(check('w3').errors,[]);
+  assert.deepEqual(check('w3').satisfied,[]);
+  assert.deepEqual(check('b4').errors,[]);
+  assert.deepEqual(check('b4').satisfied,[]);
+  assert.deepEqual(check('b2').errors,[0]);
+  edges.add('5:10');
+  assert.deepEqual(check('w4').satisfied,[0]);
+  assert.deepEqual(check('b4').errors,[]);
+  assert.deepEqual(check('b4').satisfied,[]);
+  edges.add('2:7');edges.add('10:11');
+  assert.deepEqual(check('b4').errors,[0],'finished equal arms violate a black clue');
+  assert.deepEqual(check('w5').errors,[0],'finished short sum is an error');
+  clues[0][0]='b2';
+  assert.deepEqual(validateBalanceLoop(clues,new Set(['0:1','1:2','2:3'])).errors,[0]);
 });

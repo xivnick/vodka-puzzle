@@ -60,25 +60,34 @@ export function validateBalanceLoop(clues, edges) {
     while (!visited.has(current)) {
       visited.add(current);
       const neighbors=adjacency[current];
+      if(neighbors.length === 1) return {length, finished:false};
       if(neighbors.length !== 2) return null;
       const onward=neighbors.find(i => i !== previous);
-      if(onward-current !== current-previous) return length;
+      if(onward-current !== current-previous) return {length, finished:true};
       previous=current; current=onward; length++;
     }
     return null;
   }
-  const arms = {};
+  const arms = {}, satisfied=[];
   clues.forEach((row,r) => row.forEach((clue,c) => {
     if(!clue) return;
-    const i=r*cols+c;
-    if(adjacency[i].length !== 2) { if(closed) errors.add(i); return; }
-    const lengths=adjacency[i].map(next => arm(i,next));
+    const i=r*cols+c, degree=adjacency[i].length;
+    if(degree !== 2 && closed) errors.add(i);
+    if(degree === 0 || degree > 2) return;
+    const segments=adjacency[i].map(next => arm(i,next));
+    const lengths=segments.map(segment=>segment?.length ?? null);
     arms[i]=lengths;
-    if(lengths.includes(null)) return;
-    const [a,b]=lengths, total=Number(clue.slice(1));
-    if ((clue[0] === 'w' && a !== b) || (clue[0] === 'b' && a === b) || (total && a+b !== total)) errors.add(i);
+    const total=Number(clue.slice(1));
+    const sum=lengths.reduce((sum,length)=>sum+(length ?? 0),0);
+    // A drawn arm can already exceed the target even before the other arm exists.
+    if(total && sum>total) errors.add(i);
+    if(degree !== 2 || segments.includes(null)) return;
+    const [a,b]=lengths;
+    const matches=(clue[0] === 'w' ? a===b : a!==b) && (!total || sum===total);
+    if(segments.every(segment=>segment.finished) && !matches) errors.add(i);
+    if(matches && !errors.has(i)) satisfied.push(i);
   }));
-  return { complete:closed && connected && !malformed && errors.size === 0, errors:[...errors], arms, closed, malformed };
+  return { complete:closed && connected && !malformed && errors.size === 0, errors:[...errors], arms, satisfied, closed, malformed };
 }
 
 export function parseBalanceLoopState(clues, saved, puzzleId) {
