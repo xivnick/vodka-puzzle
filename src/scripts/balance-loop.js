@@ -53,7 +53,9 @@ if(game) {
       const i=r*cols+c,[x,y]=xy(i);
       if(!clue) return;
       const black=clue[0]==='b', number=clue.slice(1);
-      html+=black ? `<circle cx="${x}" cy="${y}" r="13" fill="#222" stroke="${errors.has(i)?'#c66565':'#666'}" stroke-width="2"/>` : `<rect x="${x-12}" y="${y-12}" width="24" height="24" fill="white" stroke="${errors.has(i)?'#c66565':'#222'}" stroke-width="2"/>`;
+      const satisfied=!!result.arms[i] && !result.arms[i].includes(null) && !errors.has(i);
+      const stroke=errors.has(i)?'#c66565':satisfied?'#5b8c64':black?'#666':'#222';
+      html+=black ? `<circle cx="${x}" cy="${y}" r="13" fill="${satisfied?'#5b8c64':'#222'}" stroke="${stroke}" stroke-width="2"/>` : `<rect x="${x-12}" y="${y-12}" width="24" height="24" fill="${satisfied?'#dcebdc':'white'}" stroke="${stroke}" stroke-width="2"/>`;
       if(number) html+=`<text x="${x}" y="${y}" dy=".35em" text-anchor="middle" font-size="22" font-weight="700" fill="${black?'white':'#222'}">${number}</text>`;
     }));
     html+=`<rect x="1" y="1" width="${cols*40-2}" height="${rows*40-2}" fill="none" stroke="#333" stroke-width="2"/>`;

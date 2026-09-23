@@ -64,11 +64,11 @@ test('saved edges must match puzzle, version and grid, but may contain unfinishe
 test('runtime isolates previews, restores per account and records a completed input only once',async()=>{
   const {runInNewContext}=await import('node:vm');
   const source=readFileSync(new URL('../src/scripts/balance-loop.js',import.meta.url),'utf8').replace(/^import .*;\n/,'');
-  async function setup(preview) {
+  async function setup(preview, clues=grid(), savedEdges=rectangle()) {
     const nodes=new Map(), events={}, writes=[], records=[];
     for(const id of ['balanceGame','balanceBoard','balanceStatus','balanceUndo','balanceComplete','balanceReset']) nodes.set(id,{dataset:{},handlers:{},setAttribute(){},addEventListener(name,fn){this.handlers[name]=fn;}});
-    nodes.get('balanceGame').dataset={clues:JSON.stringify(grid()),preview:String(preview),puzzleId:'sample'};
-    const window={puzzleAccount:{user:{id:'a'}},puzzleAuthReady:Promise.resolve(),addEventListener(name,fn){events[name]=fn;},initCloudBtns(){},showToast(){},loadLocalState(){return window.puzzleAccount.user.id==='a'?{version:1,puzzleId:'sample',edges:[...rectangle()]}:null;},saveLocalState(id,state){writes.push({owner:window.puzzleAccount.user.id,state});},recordCompletion(id,state){records.push(state);},saveProgressCloud(){},loadProgressCloud:async()=>null};
+    nodes.get('balanceGame').dataset={clues:JSON.stringify(clues),preview:String(preview),puzzleId:'sample'};
+    const window={puzzleAccount:{user:{id:'a'}},puzzleAuthReady:Promise.resolve(),addEventListener(name,fn){events[name]=fn;},initCloudBtns(){},showToast(){},loadLocalState(){return window.puzzleAccount.user.id==='a'?{version:1,puzzleId:'sample',edges:[...savedEdges]}:null;},saveLocalState(id,state){writes.push({owner:window.puzzleAccount.user.id,state});},recordCompletion(id,state){records.push(state);},saveProgressCloud(){},loadProgressCloud:async()=>null};
     runInNewContext(source,{window,document:{getElementById:id=>nodes.get(id)},edgeKey,validateBalanceLoop,parseBalanceLoopState});
     await Promise.resolve();
     return {nodes,events,window,writes,records};
@@ -93,6 +93,15 @@ test('runtime isolates previews, restores per account and records a completed in
   click(20,60);
   assert.equal(lineCount(),6,'drag completion also clears the connection origin');
 
+  const greenClues=grid();greenClues[0][0]='w5';greenClues[0][3]='b5';
+  const green=await setup(false,greenClues,loop([0,1,2,3,8,13,12,11,10,5]));
+  assert.match(green.nodes.get('balanceBoard').innerHTML,/<circle[^>]*fill="#5b8c64"/);
+  assert.doesNotMatch(green.nodes.get('balanceBoard').innerHTML,/<rect[^>]*fill="#dcebdc"/,'sum alone does not satisfy a white clue');
+  greenClues[0][0]='w4';
+  const white=await setup(false,greenClues);
+  assert.match(white.nodes.get('balanceBoard').innerHTML,/<rect[^>]*fill="#dcebdc"/);
+  white.nodes.get('balanceReset').handlers.click();
+  assert.doesNotMatch(white.nodes.get('balanceBoard').innerHTML,/#dcebdc|#5b8c64/,'clearing arms clears green status');
   const normal=await setup(false);
   assert.equal(normal.records.length,1);assert.equal(normal.nodes.get('balanceComplete').hidden,false);
   normal.nodes.get('balanceBoard').handlers.keydown({key:'ArrowRight',preventDefault(){}});
