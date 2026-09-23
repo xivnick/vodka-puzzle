@@ -7,7 +7,14 @@ if(game) {
   let edges=new Set(), selected=null, gesture=null;
   const history=[];
   const xy=i => [(i%cols+.5)*40,(Math.floor(i/cols)+.5)*40];
-  const adjacent=(a,b) => a!==null && b!==null && Math.abs(a%cols-b%cols)+Math.abs(Math.floor(a/cols)-Math.floor(b/cols))===1;
+  function straightEdges(a,b) {
+    if(a===null || b===null || a===b) return [];
+    const sameRow=Math.floor(a/cols)===Math.floor(b/cols);
+    if(!sameRow && a%cols!==b%cols) return [];
+    const step=Math.sign(b-a)*(sameRow?1:cols), keys=[];
+    for(let i=a;i!==b;i+=step) keys.push(edgeKey(i,i+step));
+    return keys;
+  }
   const checkpoint=() => { history.push([...edges]); if(history.length>200) history.shift(); };
   board.setAttribute('viewBox',`0 0 ${cols*40} ${rows*40}`);
   function render() {
@@ -22,10 +29,13 @@ if(game) {
     for(const key of edges) {
       const [a,b]=key.split(':').map(Number), [x,y]=xy(a),[u,v]=xy(b);
       html+=`<path d="M${x} ${y}L${u} ${v}" stroke="#4a6fa5" stroke-width="5" stroke-linecap="round"/>`;
+      // Leave cell centers available for selecting a new straight-line endpoint.
+      const dx=(u-x)/40,dy=(v-y)/40;
+      html+=`<path data-edge="${key}" d="M${x+dx*8} ${y+dy*8}L${u-dx*8} ${v-dy*8}" stroke="transparent" stroke-width="14" style="cursor:pointer"/>`;
     }
     clues.forEach((row,r)=>row.forEach((clue,c)=>{
       const i=r*cols+c,[x,y]=xy(i);
-      if(!clue) { html+=`<circle cx="${x}" cy="${y}" r="1.6" fill="#b6bbc2"/>`; return; }
+      if(!clue) return;
       const black=clue[0]==='b', number=clue.slice(1);
       html+=black ? `<circle cx="${x}" cy="${y}" r="13" fill="#222" stroke="${errors.has(i)?'#c66565':'#666'}" stroke-width="2"/>` : `<rect x="${x-12}" y="${y-12}" width="24" height="24" fill="white" stroke="${errors.has(i)?'#c66565':'#222'}" stroke-width="2"/>`;
       if(number) html+=`<text x="${x}" y="${y}" dy=".35em" text-anchor="middle" font-size="22" font-weight="700" fill="${black?'white':'#222'}">${number}</text>`;
@@ -47,15 +57,15 @@ if(game) {
     if(event.button!==0 || gesture) return;
     const current=cell(event); if(current===null) return;
     event.preventDefault(); board.focus({preventScroll:true}); board.setPointerCapture(event.pointerId);
-    gesture={id:event.pointerId,start:current,last:current,previous:selected,moved:false,mode:null,visited:new Set()};
+    gesture={id:event.pointerId,start:current,last:current,previous:selected,moved:false,mode:null,hitEdge:event.target.closest('[data-edge]')?.dataset.edge,visited:new Set()};
     selected=current; render();
   });
   board.addEventListener('pointermove',event=>{
     if(!gesture || gesture.id!==event.pointerId) return;
-    const current=cell(event); if(!adjacent(gesture.last,current)) return;
-    const key=edgeKey(gesture.last,current);
-    if(!gesture.moved) { checkpoint(); gesture.mode=edges.has(key)?'erase':'draw'; gesture.moved=true; }
-    if(!gesture.visited.has(key)) {
+    const current=cell(event), keys=straightEdges(gesture.last,current);
+    if(!keys.length) return;
+    if(!gesture.moved) { checkpoint(); gesture.mode=edges.has(keys[0])?'erase':'draw'; gesture.moved=true; }
+    for(const key of keys) if(!gesture.visited.has(key)) {
       if(gesture.mode==='erase') edges.delete(key); else edges.add(key);
       gesture.visited.add(key);
     }
@@ -63,8 +73,13 @@ if(game) {
   });
   function end(event) {
     if(!gesture || gesture.id!==event.pointerId) return;
-    if(event.type==='pointerup' && !gesture.moved && adjacent(gesture.previous,gesture.start)) {
-      checkpoint(); toggle(gesture.previous,gesture.start);
+    if(event.type==='pointerup' && !gesture.moved) {
+      if(gesture.hitEdge && edges.has(gesture.hitEdge)) {
+        checkpoint(); edges.delete(gesture.hitEdge); selected=null;
+      } else {
+        const keys=straightEdges(gesture.previous,gesture.start);
+        if(keys.some(key=>!edges.has(key))) { checkpoint(); keys.forEach(key=>edges.add(key)); }
+      }
     }
     gesture=null; render();
   }
