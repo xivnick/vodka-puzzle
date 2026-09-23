@@ -1,0 +1,39 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+const { puzzle } = Astro.props;
+const title = `260923 밸런스 루프 ${puzzle.number}`;
+---
+<PuzzleLayout title={title} puzzleId={`test-balance-loop-260923-${puzzle.number}`} description="두 팔의 길이를 맞추며 하나의 루프를 그리는 밸런스 루프" subtitle="테스트 문제" showCloud={false} showLeaderboard={false}>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <div slot="rules">
+    <p>칸의 중심과 중심을 연결하여 격자의 변을 수직으로 통과하는 하나의 폐곡선(루프)을 그리세요.</p>
+    <ul>
+      <li>루프는 한 번 갔던 칸을 다시 지나갈 수 없으며, 자기 자신과 교차할 수 없습니다.</li>
+      <li>숫자나 모양이 표시된 모든 칸을 지나가야 합니다.</li>
+      <li>한 칸의 두 ‘팔’은 그 칸의 중심에서 루프의 양쪽 방향으로 각각 다음 꺾이는 지점까지 이어지는 구간입니다. 현재 칸에서 꺾이더라도 그다음 꺾이는 지점까지 잽니다.</li>
+      <li>팔의 길이는 통과하는 격자 변의 개수이며, 0이 될 수 없습니다.</li>
+      <li>흰색 사각형에서는 두 팔의 길이가 같아야 합니다.</li>
+      <li>검은색 동그라미에서는 두 팔의 길이가 달라야 합니다.</li>
+      <li>숫자는 두 팔의 길이의 합입니다. 모양과 숫자가 함께 있으면 두 조건을 모두 만족해야 합니다.</li>
+    </ul>
+  </div>
+  <div slot="controls">
+    <p>칸의 중심을 따라 드래그하거나 이웃한 두 칸을 차례로 누르면 선을 연결합니다. 이미 있는 선은 같은 방법으로 지웁니다.</p>
+    <p>방향키로 칸을 이동하고, Shift + 방향키로 선을 연결하거나 지웁니다. Delete 또는 Backspace로 선택한 칸의 선을 지웁니다. Ctrl/⌘ + Z로 되돌립니다.</p>
+    <p>규칙에 어긋나는 칸은 붉게 표시됩니다. 두 팔의 끝이 정해지면 길이를 검사합니다.</p>
+  </div>
+  <section id="balanceGame" data-clues={JSON.stringify(puzzle.clues)} aria-label={title}>
+    <svg id="balanceBoard" role="application" tabindex="0" aria-label="밸런스 루프 격자. 방향키로 이동, Shift와 방향키로 선 연결 또는 삭제"></svg>
+    <div class="bottom-buttons"><button id="balanceUndo" type="button">되돌리기</button><button id="balanceReset" type="button" class="danger">초기화</button></div>
+    <p id="balanceStatus" role="status" aria-live="polite" class="sr-only"></p>
+    <PuzzleCompletion id="balanceComplete" />
+  </section>
+</PuzzleLayout>
+<script>import '../scripts/balance-loop.js';</script>
+<style>
+p{margin:0}p+p{margin-top:8px}ul{padding-left:20px;margin-bottom:0}
+#balanceBoard{display:block;width:100%;height:auto;background:white;touch-action:none;user-select:none;outline-offset:3px}
+#balanceBoard:focus{outline:none}#balanceBoard:focus-visible{outline:2px solid #4a6fa5}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+</style>
