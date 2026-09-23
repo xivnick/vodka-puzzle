@@ -4,7 +4,7 @@ import PuzzleCompletion from './PuzzleCompletion.astro';
 const { puzzle } = Astro.props;
 const title = `260923 밸런스 루프 ${puzzle.number}`;
 ---
-<PuzzleLayout title={title} puzzleId={`test-balance-loop-260923-${puzzle.number}`} description="두 팔의 길이를 맞추며 하나의 루프를 그리는 밸런스 루프" subtitle="테스트 문제" showCloud={false} showLeaderboard={false}>
+<PuzzleLayout title={title} puzzleId={`test-balance-loop-260923-${puzzle.number}`} description="숫자와 모양에 맞게 두 팔의 길이를 조절하며 하나의 루프를 그리는 밸런스 루프" subtitle="숫자와 모양에 맞게 두 팔의 길이를 조절해 하나의 루프를 그리세요" showCloud={false} showLeaderboard={false}>
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <div slot="rules">
     <p>칸의 중심과 중심을 연결하여 격자의 변을 수직으로 통과하는 하나의 폐곡선(루프)을 그리세요.</p>
