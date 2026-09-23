@@ -69,7 +69,7 @@ mv -Tf dist-rollback dist
 - `Skyscraper.astro`: 가로·세로 라틴방진과 바깥 시야 단서를 검사하고 후보 숫자 메모를 지원하는 스카이스크레이퍼 화면. 사진 기반 6×6 문제는 `/260920_01/`에서 서비스하며, `/test/skyscraper/260920/`은 기록·저장 없는 시연 경로로 유지한다.
 - `EqualSumSudoku.astro`: 일반 스도쿠 규칙과 회색 연결 영역의 동일 합을 검사하고 후보 숫자 메모를 지원하는 같은 합 스도쿠 화면. 사진 기반 문제는 `/260921_01/`에서 서비스하며, `/test/equal-sum-sudoku/260921/`은 기록·저장 없는 시연 경로로 유지한다.
 - `FormulaCompletion.astro`: 주어진 숫자를 정확히 한 번씩 사용한 사칙연산 수식을 유리수로 계산·검증하는 수식완성 화면. 정식 문제는 `/260922_01/`·`/260922_02/`·`/260922_03/`에서 서비스하며, `/test/formula-completion/260922/`·`/test/formula-completion/260922-2/`·`/test/formula-completion/260922-3/`는 기록·저장 없는 시연 경로로 유지한다.
-- `BalanceLoop.astro`: 260923 밸런스 루프 1(10×10)·2(13×13)를 `/test/balance-loop/260923-1/`·`/test/balance-loop/260923-2/`에서 시연한다. 사진의 단서는 `src/lib/balance-loop.js`의 2차원 배열로 관리하며, 입력된 선의 단일 루프·단서 통과·팔 길이만 검사한다. 정답 탐색·비교·진행 저장·완료 기록은 하지 않는다.
+- `BalanceLoop.astro`: 260923 밸런스 루프 1(10×10)·2(13×13)는 `/260923_01/`·`/260923_02/`에서 서비스한다. 계정별 로컬·클라우드 진행 저장과 완료 기록을 지원한다. `/test/balance-loop/260923-1/`·`/test/balance-loop/260923-2/`에서 시연한다. 사진의 단서는 `src/lib/balance-loop.js`의 2차원 배열로 관리하며, 입력된 선의 단일 루프·단서 통과·팔 길이만 검사한다. 정답 탐색·비교는 하지 않으며 테스트 경로에서는 진행 저장·완료 기록을 하지 않는다.
 - `public/js/common.js`: 일반 문제의 로컬 저장·클라우드 저장·완료 기록·순위
 
 신규 문제는 `src/pages/<YYMMDD_번호>/index.astro`에서 `PuzzleLayout`을 사용한다. `title`, `puzzleId`, `description`과 필요한 `subtitle`을 전달하고 `rules`, `controls` 슬롯에 안내를 넣는다. 판 구성·조작·일반 정답 검증은 문제별 코드에 둔다.

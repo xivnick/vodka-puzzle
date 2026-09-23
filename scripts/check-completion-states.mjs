@@ -1,3 +1,4 @@
+import {balanceLoopPuzzles,parseBalanceLoopState,validateBalanceLoop} from '../src/lib/balance-loop.js';
 // Read JSON from the admin review script; evaluate each puzzle's existing rules.
 import {puzzles,photoPuzzles,solved} from '../src/lib/thermo-sudoku.js';
 import {parseState,analyze} from '../src/lib/mini-rectangles.js';
@@ -14,6 +15,11 @@ export function review(row){
  if(row.puzzle_id==='260921_01')return Array.isArray(row.state.values)&&solvedEqualSumSudoku(equalSumSudoku260921,row.state.values)?'valid':'invalid';
  const formulaPuzzles={'260922_01':formulaCompletion260922_01,'260922_02':formulaCompletion260922_02,'260922_03':formulaCompletion260922_03};
  if(formulaPuzzles[row.puzzle_id])return Array.isArray(row.state.tokens)&&isSolvedFormula(formulaPuzzles[row.puzzle_id],row.state.tokens)?'valid':'invalid';
+ if(['260923_01','260923_02'].includes(row.puzzle_id)){
+  const clues=balanceLoopPuzzles[Number(row.puzzle_id.slice(-1))-1].clues;
+  const edges=parseBalanceLoopState(clues,row.state,row.puzzle_id);
+  return edges && validateBalanceLoop(clues,edges).complete?'valid':'invalid';
+ }
  if(row.puzzle_id.startsWith('daily-sudoku:')){
   const v=row.state.values,g=row.givens;
   if(!g)return 'puzzle_missing';

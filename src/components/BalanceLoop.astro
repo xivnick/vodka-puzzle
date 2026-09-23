@@ -1,11 +1,11 @@
 ---
 import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
-const { puzzle } = Astro.props;
+const { puzzle, preview = false, puzzleId = `test-balance-loop-260923-${puzzle.number}` } = Astro.props;
 const title = `260923 밸런스 루프 ${puzzle.number}`;
 ---
-<PuzzleLayout title={title} puzzleId={`test-balance-loop-260923-${puzzle.number}`} description="숫자와 모양에 맞게 두 팔의 길이를 조절하며 하나의 루프를 그리는 밸런스 루프" subtitle="숫자와 모양에 맞게 두 팔의 길이를 조절해 하나의 루프를 그리세요" showCloud={false} showLeaderboard={false}>
-  <meta slot="head" name="robots" content="noindex, nofollow" />
+<PuzzleLayout title={title} puzzleId={puzzleId} description="숫자와 모양에 맞게 두 팔의 길이를 조절하며 하나의 루프를 그리는 밸런스 루프" subtitle="숫자와 모양에 맞게 두 팔의 길이를 조절해 하나의 루프를 그리세요" showCloud={!preview} showLeaderboard={!preview}>
+  {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
   <div slot="rules">
     <p>칸의 중심과 중심을 연결하여 격자의 변을 수직으로 통과하는 하나의 폐곡선(루프)을 그리세요.</p>
     <ul>
@@ -23,7 +23,7 @@ const title = `260923 밸런스 루프 ${puzzle.number}`;
     <p>방향키로 칸을 이동하고, Shift + 방향키로 선을 연결하거나 지웁니다. Delete 또는 Backspace로 선택한 칸의 선을 지웁니다. Ctrl/⌘ + Z로 되돌립니다.</p>
     <p>규칙에 어긋나는 칸은 붉게 표시됩니다. 두 팔의 끝이 정해지면 길이를 검사합니다.</p>
   </div>
-  <section id="balanceGame" data-clues={JSON.stringify(puzzle.clues)} aria-label={title}>
+  <section id="balanceGame" data-clues={JSON.stringify(puzzle.clues)} data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label={title}>
     <svg id="balanceBoard" role="application" tabindex="0" aria-label="밸런스 루프 격자. 방향키로 이동, Shift와 방향키로 선 연결 또는 삭제"></svg>
     <div class="bottom-buttons"><button id="balanceUndo" type="button">되돌리기</button><button id="balanceReset" type="button" class="danger">초기화</button></div>
     <p id="balanceStatus" role="status" aria-live="polite" class="sr-only"></p>

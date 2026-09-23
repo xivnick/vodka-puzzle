@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { balanceLoopPuzzles, edgeKey, validateBalanceLoop } from '../src/lib/balance-loop.js';
+import { balanceLoopPuzzles, edgeKey, validateBalanceLoop, parseBalanceLoopState } from '../src/lib/balance-loop.js';
 // Artificial small loops exercise rule checking; these are not puzzle solutions.
 const grid=()=>Array.from({length:5},()=>Array(5).fill(''));
 const loop=points=>new Set(points.map((p,i)=>edgeKey(p,points[(i+1)%points.length])));
@@ -35,13 +35,52 @@ test('missing clue, separate loops, branches and nonadjacent edges fail',()=>{
   for(const edge of ['4:5','0:24','-1:0','0:25','0:0','1:0']) assert.equal(validateBalanceLoop(grid(),new Set([edge])).malformed,true);
   assert.equal(validateBalanceLoop(grid(),new Set()).complete,false);
 });
-test('previews have no catalog entries, persistence or completion submission',()=>{
+test('previews stay isolated while official pages have catalog entries and saving',()=>{
   const catalog=readFileSync(new URL('../src/data/puzzles.json',import.meta.url),'utf8');
   assert.ok(!catalog.includes('balance-loop'));
   const script=readFileSync(new URL('../src/scripts/balance-loop.js',import.meta.url),'utf8');
-  assert.doesNotMatch(script,/recordCompletion|localStorage|handleCloud|saveLocalState/);
+  assert.match(script,/if\(preview \|\| !ready/);
+  assert.match(script,/window\.puzzleAuthReady\.then\(init\)/);
   for(const n of [1,2]) {
     const html=readFileSync(new URL(`../dist/test/balance-loop/260923-${n}/index.html`,import.meta.url),'utf8');
+    const official=readFileSync(new URL(`../dist/260923_0${n}/index.html`,import.meta.url),'utf8');
+    assert.ok(official.includes('data-preview="false"'));
+    assert.ok(official.includes(`data-puzzle-id="260923_0${n}"`));
+    assert.ok(official.includes('id="cloudBtns"') && official.includes('id="leaderboard"'));
+    assert.ok(catalog.includes(`"id": "260923_0${n}"`));
+    assert.ok(html.includes('data-preview="true"'));
     assert.ok(html.includes(`260923 밸런스 루프 ${n}`));assert.ok(!html.includes('id="cloudBtns"'));assert.ok(!html.includes('id="leaderboard"'));
   }
+});
+
+test('saved edges must match puzzle, version and grid, but may contain unfinished or invalid play',()=>{
+  const clues=grid(), valid={version:1,puzzleId:'sample',edges:['0:1','1:2','1:6']};
+  assert.deepEqual([...parseBalanceLoopState(clues,valid,'sample')],valid.edges);
+  for(const saved of [null,{...valid,version:2},{...valid,puzzleId:'other'},{...valid,edges:['4:5']},{...valid,edges:['0:1','0:1']},{...valid,edges:['00:1']},{...valid,edges:[{}]},{...valid,edges:'0:1'}]) {
+    assert.equal(parseBalanceLoopState(clues,saved,'sample'),null);
+  }
+});
+
+test('runtime isolates previews, restores per account and records a completed input only once',async()=>{
+  const {runInNewContext}=await import('node:vm');
+  const source=readFileSync(new URL('../src/scripts/balance-loop.js',import.meta.url),'utf8').replace(/^import .*;\n/,'');
+  async function setup(preview) {
+    const nodes=new Map(), events={}, writes=[], records=[];
+    for(const id of ['balanceGame','balanceBoard','balanceStatus','balanceUndo','balanceComplete','balanceReset']) nodes.set(id,{dataset:{},handlers:{},setAttribute(){},addEventListener(name,fn){this.handlers[name]=fn;}});
+    nodes.get('balanceGame').dataset={clues:JSON.stringify(grid()),preview:String(preview),puzzleId:'sample'};
+    const window={puzzleAccount:{user:{id:'a'}},puzzleAuthReady:Promise.resolve(),addEventListener(name,fn){events[name]=fn;},initCloudBtns(){},showToast(){},loadLocalState(){return window.puzzleAccount.user.id==='a'?{version:1,puzzleId:'sample',edges:[...rectangle()]}:null;},saveLocalState(id,state){writes.push({owner:window.puzzleAccount.user.id,state});},recordCompletion(id,state){records.push(state);},saveProgressCloud(){},loadProgressCloud:async()=>null};
+    runInNewContext(source,{window,document:{getElementById:id=>nodes.get(id)},edgeKey,validateBalanceLoop,parseBalanceLoopState});
+    await Promise.resolve();
+    return {nodes,events,window,writes,records};
+  }
+  const preview=await setup(true);
+  assert.equal(preview.writes.length,0);assert.equal(preview.records.length,0);
+  assert.equal(preview.window.handleCloudSave,undefined);
+  const normal=await setup(false);
+  assert.equal(normal.records.length,1);assert.equal(normal.nodes.get('balanceComplete').hidden,false);
+  normal.nodes.get('balanceBoard').handlers.keydown({key:'ArrowRight',preventDefault(){}});
+  assert.equal(normal.records.length,1);
+  normal.window.puzzleAccount.user={id:'b'};normal.events['puzzle-auth-ready']();
+  assert.equal(normal.nodes.get('balanceComplete').hidden,true);
+  assert.equal(normal.writes.at(-1).owner,'b');assert.equal(normal.writes.at(-1).state.edges.length,0);
 });

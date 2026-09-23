@@ -80,3 +80,13 @@ export function validateBalanceLoop(clues, edges) {
   }));
   return { complete:closed && connected && !malformed && errors.size === 0, errors:[...errors], arms, closed, malformed };
 }
+
+export function parseBalanceLoopState(clues, saved, puzzleId) {
+  if (!saved || saved.version !== 1 || saved.puzzleId !== puzzleId || !Array.isArray(saved.edges)) return null;
+  const rows=clues.length, cols=clues[0].length;
+  if (saved.edges.length > rows*(cols-1)+cols*(rows-1)) return null;
+  if (!saved.edges.every(key => typeof key === 'string' && /^(0|[1-9][0-9]*):(0|[1-9][0-9]*)$/.test(key))) return null;
+  const edges=new Set(saved.edges);
+  if (edges.size !== saved.edges.length || validateBalanceLoop(clues, edges).malformed) return null;
+  return edges;
+}

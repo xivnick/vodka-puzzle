@@ -32,7 +32,7 @@
 - 승인된 일반 문제 목록은 `src/data/puzzles.json`에 등록한다. 완료 표시와 링크를 위해 고유 문제 ID를 유지한다.
 - 판 구성과 규칙 검증은 문제별 코드로 유지한다. 모든 종류를 하나의 범용 엔진이나 DB 데이터 형식으로 강제 통합하지 않는다.
 - 온도계 스도쿠는 `ThermoSudoku.astro`를 재사용한다. 크기는 `givens`의 행 수를 따르며 6×6은 `boxRows: 2`, `boxCols: 3`으로 영역을 지정한다. 정식 문제에는 고유 `puzzleId`를 전달하고 테스트 문제는 `preview`로 기록·저장을 분리한다.
-- 밸런스 루프 테스트는 `BalanceLoop.astro`와 `src/lib/balance-loop.js`를 사용한다. 현재 칸의 꺾임은 팔의 끝에 포함하지 않고 양방향의 다음 꺾임까지 세며, 입력된 선만 검사한다.
+- 밸런스 루프는 `BalanceLoop.astro`와 `src/lib/balance-loop.js`를 사용한다. 정식 문제는 `260923_01`·`260923_02`이며 테스트 경로는 `preview`로 기록·저장을 분리한다. 현재 칸의 꺾임은 팔의 끝에 포함하지 않고 양방향의 다음 꺾임까지 세며, 입력된 선만 검사한다.
 - 초기 보드·숫자·마스크 데이터는 2차원 배열로 정의한다. 런타임 Set·Map·객체는 배열에서 파생한다.
 - 일반 문제의 정답 검증은 브라우저에서 처리할 수 있다. 데일리도 브라우저에서 규칙 준수를 확인하고 `submit_completion` RPC로 완료 보드를 제출한다. 서버는 정답을 비교하지 않는다.
 - 일반 문제 완료 시 `recordCompletion(puzzleId, state)`를 호출한다. 저장 기능은 `handleCloudSave`와 `handleCloudLoad`를 구현한다.

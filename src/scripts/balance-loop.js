@@ -1,4 +1,4 @@
-import { edgeKey, validateBalanceLoop } from '../lib/balance-loop.js';
+import { edgeKey, validateBalanceLoop, parseBalanceLoopState } from '../lib/balance-loop.js';
 const game=document.getElementById('balanceGame');
 if(game) {
   const clues=JSON.parse(game.dataset.clues), rows=clues.length, cols=clues[0].length;
@@ -6,6 +6,22 @@ if(game) {
   const undo=document.getElementById('balanceUndo'), complete=document.getElementById('balanceComplete');
   let edges=new Set(), selected=null, gesture=null;
   const history=[];
+  const preview=game.dataset.preview==='true', ID=game.dataset.puzzleId;
+  let ready=preview, owner=null, completionRecorded=false, lastSaved=null;
+  const account=()=>window.puzzleAccount?.user?.id || 'guest';
+  const state=()=>({version:1,puzzleId:ID,edges:[...edges]});
+  function syncProgress(result) {
+    if(preview || !ready || owner!==account() || gesture) return;
+    const snapshot=state(), serialized=JSON.stringify(snapshot);
+    if(serialized!==lastSaved) {
+      try { window.saveLocalState(ID,snapshot); lastSaved=serialized; }
+      catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
+    }
+    if(result.complete && !completionRecorded) {
+      completionRecorded=true;
+      window.recordCompletion(ID,snapshot);
+    }
+  }
   const xy=i => [(i%cols+.5)*40,(Math.floor(i/cols)+.5)*40];
   function straightEdges(a,b) {
     if(a===null || b===null || a===b) return [];
@@ -43,7 +59,8 @@ if(game) {
     html+=`<rect x="1" y="1" width="${cols*40-2}" height="${rows*40-2}" fill="none" stroke="#333" stroke-width="2"/>`;
     board.innerHTML=html;
     complete.hidden=!result.complete;
-    undo.disabled=!history.length;
+    undo.disabled=!ready || !history.length;
+    syncProgress(result);
     const location=selected===null?'':`${Math.floor(selected/cols)+1}행 ${selected%cols+1}열. `;
     const lengths=result.arms[selected];
     status.textContent=location+(lengths && !lengths.includes(null)?`팔 길이 ${lengths.join(', ')}. `:'')+(result.complete?'퍼즐을 완성했습니다.':errors.size?`규칙에 어긋나는 칸 ${errors.size}개.`:'');
@@ -54,7 +71,7 @@ if(game) {
   }
   function toggle(a,b) { const key=edgeKey(a,b); if(edges.has(key)) edges.delete(key); else edges.add(key); }
   board.addEventListener('pointerdown',event=>{
-    if(event.button!==0 || gesture) return;
+    if(!ready || owner!==account() && !preview || event.button!==0 || gesture) return;
     const current=cell(event); if(current===null) return;
     event.preventDefault(); board.focus({preventScroll:true}); board.setPointerCapture(event.pointerId);
     gesture={id:event.pointerId,start:current,last:current,previous:selected,moved:false,mode:null,hitEdge:event.target.closest('[data-edge]')?.dataset.edge,visited:new Set()};
@@ -84,13 +101,14 @@ if(game) {
     gesture=null; render();
   }
   board.addEventListener('pointerup',end); board.addEventListener('pointercancel',end); board.addEventListener('lostpointercapture',end);
-  function revert() { if(history.length) { edges=new Set(history.pop()); render(); } }
+  function revert() { if(ready && history.length) { edges=new Set(history.pop()); render(); } }
   undo.addEventListener('click',revert);
   document.getElementById('balanceReset').addEventListener('click',()=>{
-    if(!edges.size) return;
+    if(!ready || !edges.size) return;
     checkpoint(); edges.clear(); selected=null; render();
   });
   board.addEventListener('keydown',event=>{
+    if(!ready || !preview && owner!==account()) return;
     if((event.ctrlKey||event.metaKey) && event.key.toLowerCase()==='z') { event.preventDefault(); revert(); return; }
     const directions={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};
     if(directions[event.key]) {
@@ -103,5 +121,31 @@ if(game) {
       if(incident.length) {checkpoint();incident.forEach(key=>edges.delete(key));render();}
     } else if(event.key==='Escape') { selected=null;render(); }
   });
+  function init() {
+    const nextOwner=account();
+    if(ready && owner===nextOwner) return;
+    owner=nextOwner; ready=false; gesture=null; selected=null; history.length=0;
+    completionRecorded=false; lastSaved=null;
+    let saved=null;
+    try { saved=window.loadLocalState(ID); } catch {}
+    edges=parseBalanceLoopState(clues,saved,ID) || new Set();
+    ready=true; render(); window.initCloudBtns();
+  }
+  if(!preview) {
+    window.handleCloudSave=()=>{
+      if(ready && owner===account()) return window.saveProgressCloud(ID,state());
+    };
+    window.handleCloudLoad=async()=>{
+      if(!ready || owner!==account()) return;
+      const requestedOwner=owner, before=JSON.stringify(state());
+      const saved=await window.loadProgressCloud(ID);
+      if(saved==null || requestedOwner!==account() || before!==JSON.stringify(state())) return;
+      const restored=parseBalanceLoopState(clues,saved,ID);
+      if(!restored) {window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.');return;}
+      checkpoint(); edges=restored; selected=null; gesture=null; render();
+    };
+    window.puzzleAuthReady.then(init);
+    window.addEventListener('puzzle-auth-ready',init);
+  }
   render();
 }
