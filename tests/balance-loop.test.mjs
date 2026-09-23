@@ -76,6 +76,23 @@ test('runtime isolates previews, restores per account and records a completed in
   const preview=await setup(true);
   assert.equal(preview.writes.length,0);assert.equal(preview.records.length,0);
   assert.equal(preview.window.handleCloudSave,undefined);
+  const board=preview.nodes.get('balanceBoard');
+  board.focus=()=>{};board.setPointerCapture=()=>{};
+  board.getBoundingClientRect=()=>({left:0,top:0,width:200,height:200});
+  const pointer=(type,x,y)=>board.handlers[type]({type,pointerId:1,button:0,clientX:x,clientY:y,preventDefault(){},target:{closest(){return null;}}});
+  const click=(x,y)=>{pointer('pointerdown',x,y);pointer('pointerup',x,y);};
+  const lineCount=()=> (board.innerHTML.match(/data-edge=/g)||[]).length;
+  click(20,20);click(140,20);
+  assert.equal(lineCount(),3);
+  assert.doesNotMatch(board.innerHTML,/#e7eef7/);
+  click(140,140);
+  assert.equal(lineCount(),3,'the next click starts a fresh selection');
+  pointer('pointerdown',140,140);pointer('pointermove',20,140);pointer('pointerup',20,140);
+  assert.equal(lineCount(),6);
+  assert.doesNotMatch(board.innerHTML,/#e7eef7/);
+  click(20,60);
+  assert.equal(lineCount(),6,'drag completion also clears the connection origin');
+
   const normal=await setup(false);
   assert.equal(normal.records.length,1);assert.equal(normal.nodes.get('balanceComplete').hidden,false);
   normal.nodes.get('balanceBoard').handlers.keydown({key:'ArrowRight',preventDefault(){}});

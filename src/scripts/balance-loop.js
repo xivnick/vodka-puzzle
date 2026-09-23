@@ -96,8 +96,10 @@ if(game) {
       } else {
         const keys=straightEdges(gesture.previous,gesture.start);
         if(keys.some(key=>!edges.has(key))) { checkpoint(); keys.forEach(key=>edges.add(key)); }
+        if(keys.length) selected=null;
       }
     }
+    if(gesture.moved) selected=null;
     gesture=null; render();
   }
   board.addEventListener('pointerup',end); board.addEventListener('pointercancel',end); board.addEventListener('lostpointercapture',end);
