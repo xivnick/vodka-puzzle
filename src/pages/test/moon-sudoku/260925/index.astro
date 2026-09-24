@@ -1,0 +1,68 @@
+---
+import PuzzleLayout from '../../../../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from '../../../../components/PuzzleCompletion.astro';
+import { givens, point, cellPath } from '../../../../lib/moon-sudoku.js';
+---
+<PuzzleLayout title="보름달 스도쿠" puzzleId="test-moon-sudoku-260925" subtitle="추석맞이 · 1부터 6까지 채우는 둥근 스도쿠" description="보름달 모양의 원형 스도쿠 테스트 페이지" showCloud={false} showLeaderboard={false}>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <div slot="rules">
+    빈칸에 1부터 6까지의 숫자를 채우세요.<br />
+    ① 중심부터 바깥까지, 각각의 <strong>동심원 띠</strong>에 1~6이 한 번씩 들어갑니다.<br />
+    ② 중심에서 바깥으로 뻗은 각각의 <strong>부채꼴</strong>에도 1~6이 한 번씩 들어갑니다.<br />
+    ③ 굵은 선으로 둘러싸인 <strong>6칸 영역</strong>(띠 2개 × 부채꼴 3개)에도 1~6이 한 번씩 들어갑니다.
+  </div>
+  <div slot="controls">
+    칸을 누른 뒤 숫자 버튼 또는 키보드 1~6으로 입력하세요.<br />
+    ← →는 원을 따라 이동하고, ↑ ↓는 중심과 바깥 방향으로 이동합니다.<br />
+    Backspace·Delete·0으로 지우고, 되돌리기로 마지막 입력을 취소합니다.
+  </div>
+  <section id="moonGame" data-preview="true" aria-label="보름달 스도쿠 테스트">
+    <svg id="moonBoard" viewBox="0 0 440 440" role="group" aria-label="동심원 띠 6개와 부채꼴 6개로 나눈 원형 스도쿠">
+      {givens.flat().map((n, i) => {
+        const r = Math.floor(i / 6), c = i % 6;
+        const [x, y] = point(r === 0 ? 23 : (r + .5) * 35, c * 60 + 30);
+        return <g class:list={['moon-cell', { given: !!n, shade: (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0 }]} data-cell={i} role="button" tabindex={i === 0 ? 0 : -1} aria-label={`안쪽부터 ${r + 1}번째 띠, 시계 방향 ${c + 1}번째 부채꼴, ${n || '빈칸'}${n ? ', 고정 숫자' : ''}`}>
+          <path d={cellPath(r, c)} />
+          <text x={x} y={y} dy=".35em" text-anchor="middle" aria-hidden="true">{n || ''}</text>
+        </g>;
+      })}
+      <g class="region-lines" aria-hidden="true">
+        {[70, 140, 210].map(radius => <circle cx="220" cy="220" r={radius} />)}
+        <path d="M220,10 V430" />
+      </g>
+    </svg>
+    <div class="moon-numbers" id="moonNumbers" aria-label="숫자 입력">
+      {[1,2,3,4,5,6].map(n => <button type="button" data-number={n}>{n}</button>)}
+    </div>
+    <div class="bottom-buttons">
+      <button id="moonErase" type="button">지우기</button>
+      <button id="moonUndo" type="button" disabled>되돌리기</button>
+      <button id="moonReset" type="button" class="danger">초기화</button>
+    </div>
+    <p id="moonStatus" role="status" class="moon-status"></p>
+    <PuzzleCompletion id="moonComplete" />
+    <p class="preview-note">테스트 문제 · 진행 상황과 완료 기록은 저장되지 않습니다.</p>
+  </section>
+</PuzzleLayout>
+<script>import '../../../../scripts/moon-sudoku.js';</script>
+<style>
+  #moonGame { width:100%; }
+  #moonBoard { display:block; width:100%; height:auto; touch-action:manipulation; }
+  .moon-cell { cursor:pointer; outline:none; }
+  .moon-cell path { fill:#fcf7e9; stroke:#c7bd9d; stroke-width:1; }
+  .moon-cell.shade path { fill:#f2e6bf; }
+  .moon-cell text { fill:#4a6fa5; font-size:20px; font-family:inherit; font-weight:600; pointer-events:none; }
+  .moon-cell.given text { fill:#494337; font-weight:700; }
+  .moon-cell.related path { fill:#e8e9de; }
+  .moon-cell.selected path { fill:#cedfef; }
+  .moon-cell.conflict path { fill:#f3d8d4; }
+  .moon-cell.conflict text { fill:#a33333; }
+  .moon-cell.selected path, .moon-cell:focus-visible path { stroke:#4a6fa5; stroke-width:2.5; }
+  .region-lines { fill:none; stroke:#85774e; stroke-width:2.5; pointer-events:none; }
+  .moon-numbers { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px; margin-top:14px; }
+  .moon-numbers button { min-height:44px; padding:8px 0; border:1px solid #d6d4cd; border-radius:3px; background:#faf8f4; color:#555; }
+  button:disabled { opacity:.45; cursor:default; }
+  .moon-status { min-height:1.5em; text-align:center; color:#a33333; font-size:.82rem; margin:10px 0 0; }
+  .preview-note { color:#888; font-size:.75rem; text-align:center; margin:10px 0 0; }
+  [hidden] { display:none!important; }
+</style>
