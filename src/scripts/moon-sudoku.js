@@ -1,4 +1,4 @@
-import { givens, units, conflicts, solved } from '../lib/moon-sudoku.js';
+import { givens, conflicts, solved } from '../lib/moon-sudoku.js';
 
 const $ = id => document.getElementById(id);
 const fixed = givens.flat();
@@ -8,10 +8,8 @@ let notes = Array.from({length:81}, () => []), notesMode = false;
 
 function render() {
   const bad = conflicts(values);
-  const related = new Set(units.filter(unit => unit.includes(selected)).flat());
   cells.forEach((cell, i) => {
     cell.classList.toggle('selected', i === selected);
-    cell.classList.toggle('related', i !== selected && related.has(i));
     cell.classList.toggle('conflict', bad.has(i));
     cell.tabIndex = i === selected ? 0 : -1;
     cell.setAttribute('aria-pressed', String(i === selected));
@@ -30,9 +28,6 @@ function render() {
       cell.append(box);
     }
   });
-  $('moonErase').disabled = Boolean(fixed[selected]) || (!values[selected] && !notes[selected].length);
-  $('moonNumbers').querySelectorAll('button').forEach(button => { button.disabled = Boolean(fixed[selected]); });
-  $('moonStatus').textContent = bad.size ? '붉게 표시된 칸의 숫자가 중복됩니다.' : '';
   $('moonComplete').hidden = !solved(values);
 }
 

@@ -1,6 +1,7 @@
 ---
 import PuzzleLayout from '../../../../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from '../../../../components/PuzzleCompletion.astro';
+import '../../../../styles/daily-sudoku.css';
 import { givens } from '../../../../lib/moon-sudoku.js';
 ---
 <PuzzleLayout title="보름달 스도쿠" puzzleId="test-moon-sudoku-260925" subtitle="추석맞이 · 숫자 힌트로 그린 보름달" description="숫자 힌트가 원 모양으로 놓인 정통 9×9 스도쿠 테스트 페이지" showCloud={false} showLeaderboard={false}>
@@ -16,22 +17,20 @@ import { givens } from '../../../../lib/moon-sudoku.js';
     Backspace·Delete·0으로 선택한 칸의 숫자와 메모를 지웁니다.
   </div>
   <section id="moonGame" data-preview="true" aria-label="보름달 스도쿠 테스트">
-    <div id="moonBoard" role="group" aria-label="9행 9열 스도쿠">
+    <div class="sudoku-board-tools"><button id="moonNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <div id="moonBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
       {givens.flat().map((n, i) => <button type="button"
-        class:list={['moon-cell', { given: !!n }]}
-        style={`border-right:${i % 9 === 8 ? '0' : i % 3 === 2 ? '2px solid #555' : '1px solid #c9ced4'};border-bottom:${i >= 72 ? '0' : Math.floor(i / 9) % 3 === 2 ? '2px solid #555' : '1px solid #c9ced4'}`}
+        class:list={['sudoku-cell', { given: !!n }]}
         data-cell={i} tabindex={i === 0 ? 0 : -1}
         aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${n || '빈칸'}${n ? ', 고정 숫자' : ''}`}>{n || ''}</button>)}
     </div>
-    <div class="moon-numbers" id="moonNumbers" aria-label="숫자 입력">
+    <div class="sudoku-numbers" id="moonNumbers" aria-label="숫자 입력">
       {[1,2,3,4,5,6,7,8,9].map(n => <button type="button" data-number={n}>{n}</button>)}
     </div>
     <div class="bottom-buttons">
       <button id="moonErase" type="button">지우기</button>
-      <button id="moonNotes" type="button" aria-pressed="false">메모하기</button>
       <button id="moonReset" type="button" class="danger">초기화</button>
     </div>
-    <p id="moonStatus" role="status" class="moon-status"></p>
     <PuzzleCompletion id="moonComplete" />
     <p class="preview-note">테스트 문제 · 진행 상황과 완료 기록은 저장되지 않습니다.</p>
   </section>
@@ -39,20 +38,5 @@ import { givens } from '../../../../lib/moon-sudoku.js';
 <script>import '../../../../scripts/moon-sudoku.js';</script>
 <style>
   #moonGame { width:100%; }
-  #moonBoard { display:grid; grid-template-columns:repeat(9,minmax(0,1fr)); width:100%; border:2px solid #555; box-sizing:border-box; background:#fff; }
-  .moon-cell { position:relative; aspect-ratio:1; border:0; border-radius:0; padding:0; background:#fff; font-family:inherit; font-size:clamp(18px,5vw,27px); font-weight:600; color:#4a6fa5; cursor:pointer; touch-action:manipulation; line-height:1; }
-  .moon-cell.given { color:#333; font-weight:700; }
-  .moon-cell.related { background:#faf8f2; }
-  .moon-cell.selected { background:#dce8f5; }
-  .moon-cell.conflict { background:#f3d8d4; color:#a33333; }
-  .moon-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; }
-  .moon-cell :global(.notes) { position:absolute; inset:2px; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); font-size:clamp(9px,2.4vw,13px); font-weight:400; color:#606975; pointer-events:none; }
-  .moon-cell :global(.notes span) { display:flex; align-items:center; justify-content:center; }
-  #moonNotes[aria-pressed=true] { color:#4a6fa5; background:#dce8f5; border-color:#4a6fa5; }
-  .moon-numbers { display:grid; grid-template-columns:repeat(9,minmax(0,1fr)); gap:4px; margin-top:14px; }
-  .moon-numbers button { min-height:44px; padding:8px 0; border:1px solid #d6d4cd; border-radius:3px; background:#faf8f4; color:#555; }
-  button:disabled { opacity:.45; cursor:default; }
-  .moon-status { min-height:1.5em; text-align:center; color:#a33333; font-size:.82rem; margin:10px 0 0; }
   .preview-note { color:#888; font-size:.75rem; text-align:center; margin:10px 0 0; }
-  [hidden] { display:none!important; }
 </style>
