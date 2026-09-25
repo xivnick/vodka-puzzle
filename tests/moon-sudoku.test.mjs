@@ -56,13 +56,15 @@ test('moon preview is unlisted, has no saving, and shows only a mock seasonal ra
   assert(!html.includes('Backspace·Delete·0으로'));
   assert(html.includes('풍성한 한가위 되세요!'));
   assert(!html.includes('테스트 문제 · 진행 상황과 완료 기록은 저장되지 않습니다.'));
-  assert(html.includes('transition:background-color .45s'));
   assert.equal((html.match(/class="[^"]*moon-area/g) || []).length, 61);
   assert.equal((html.match(/\/icons\/seasonal\/rabbit\.svg/g) || []).length, 3);
   assert.equal((html.match(/width="18" height="18"/g) || []).length, 3);
   assert(html.indexOf('달토끼') < html.indexOf('/icons/seasonal/rabbit.svg'));
   assert(!fs.readFileSync('src/data/puzzles.json', 'utf8').includes('moon-sudoku'));
   const script = fs.readFileSync('src/scripts/moon-sudoku.js', 'utf8');
+  const page = fs.readFileSync('src/pages/test/moon-sudoku/260925/index.astro', 'utf8');
+  assert(page.includes('#moonBoard.moon-complete .moon-area { background:#fff4c7; transition:background-color .45s ease; }'));
+  assert(!page.includes('#moonBoard .moon-area { transition'));
   assert(script.includes("get('completed') === '1'"));
   assert(script.includes("get('completion-test') === '1'"));
   assert(script.includes('selected = completionTest ? 40 : 0'));
