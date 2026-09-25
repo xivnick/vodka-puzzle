@@ -34,13 +34,16 @@ test('moon completion rejects partial, malformed or conflicting player input', (
   assert.equal(solved(Array(80).fill(1)), false);
 });
 
-test('moon preview is unlisted and has no saving or leaderboard', () => {
+test('moon preview is unlisted, has no saving, and shows only a mock seasonal ranking', () => {
   const html = fs.readFileSync('dist/test/moon-sudoku/260925/index.html', 'utf8');
   assert.equal((html.match(/data-cell=/g) || []).length, 81);
   assert.equal((html.match(/data-number=/g) || []).length, 9);
   assert(html.includes('noindex, nofollow'));
   assert(html.includes('data-preview="true"'));
-  assert(!html.includes('id="cloudBtns"') && !html.includes('id="leaderboard"'));
+  assert(!html.includes('id="cloudBtns"'));
+  assert(html.includes('id="leaderboard"'));
+  assert(html.includes('토끼 아이콘 랭킹 시안'));
+  assert.equal((html.match(/\/icons\/seasonal\/rabbit\.svg/g) || []).length, 3);
   assert(!fs.readFileSync('src/data/puzzles.json', 'utf8').includes('moon-sudoku'));
   const script = fs.readFileSync('src/scripts/moon-sudoku.js', 'utf8');
   assert(!/recordCompletion|saveLocalState|saveProgressCloud|localStorage/.test(script));

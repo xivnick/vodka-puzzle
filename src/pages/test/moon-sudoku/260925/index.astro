@@ -4,7 +4,7 @@ import PuzzleCompletion from '../../../../components/PuzzleCompletion.astro';
 import '../../../../styles/daily-sudoku.css';
 import { givens } from '../../../../lib/moon-sudoku.js';
 ---
-<PuzzleLayout title="보름달 스도쿠" puzzleId="test-moon-sudoku-260925" subtitle="추석맞이 · 숫자 힌트로 그린 보름달" description="숫자 힌트가 원 모양으로 놓인 정통 9×9 스도쿠 테스트 페이지" showCloud={false} showLeaderboard={false}>
+<PuzzleLayout title="보름달 스도쿠" puzzleId="test-moon-sudoku-260925" subtitle="추석맞이 · 숫자 힌트로 그린 보름달" description="숫자 힌트가 원 모양으로 놓인 정통 9×9 스도쿠 테스트 페이지" showCloud={false}>
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <div slot="rules">
     빈칸에 1부터 9까지의 숫자를 채우세요.<br />
@@ -34,9 +34,23 @@ import { givens } from '../../../../lib/moon-sudoku.js';
     <PuzzleCompletion id="moonComplete" />
     <p class="preview-note">테스트 문제 · 진행 상황과 완료 기록은 저장되지 않습니다.</p>
   </section>
+  <div slot="leaderboard" class="lb-list moon-preview-ranking" aria-label="토끼 아이콘 랭킹 시안">
+    {[
+      ['1', '달토끼', '09.25 10:42'],
+      ['2', '송편한입', '09.25 11:08'],
+      ['3', '보름달', '09.25 12:31'],
+    ].map(([rank, name, time]) => <div class="lb-row">
+      <span class="lb-rank">{rank}</span>
+      <span class="lb-name moon-rabbit-name"><img src="/icons/seasonal/rabbit.svg" width="16" height="16" alt="" aria-hidden="true" />{name}</span>
+      <span class="lb-time">{time}</span>
+    </div>)}
+  </div>
 </PuzzleLayout>
 <script>import '../../../../scripts/moon-sudoku.js';</script>
 <style>
   #moonGame { width:100%; }
   .preview-note { color:#888; font-size:.75rem; text-align:center; margin:10px 0 0; }
+  .moon-preview-ranking { border-top:1px solid #e8e5df; }
+  .moon-rabbit-name { display:flex; align-items:center; gap:6px; }
+  .moon-rabbit-name img { flex:0 0 auto; opacity:.72; }
 </style>
