@@ -1,13 +1,15 @@
-import { givens, conflicts, solved } from '../lib/moon-sudoku.js';
+import { givens, solution, conflicts, solved } from '../lib/moon-sudoku.js';
 
 const $ = id => document.getElementById(id);
 const fixed = givens.flat();
 const cells = [...$('moonBoard').querySelectorAll('[data-cell]')];
-let values = fixed.slice(), selected = 0;
+const completedExample = new URLSearchParams(location.search).get('completed') === '1';
+let values = completedExample ? solution.flat() : fixed.slice(), selected = 0;
 let notes = Array.from({length:81}, () => []), notesMode = false;
 
 function render() {
   const bad = conflicts(values);
+  const complete = solved(values);
   cells.forEach((cell, i) => {
     cell.classList.toggle('selected', i === selected);
     cell.classList.toggle('conflict', bad.has(i));
@@ -28,7 +30,8 @@ function render() {
       cell.append(box);
     }
   });
-  $('moonComplete').hidden = !solved(values);
+  $('moonBoard').classList.toggle('moon-complete', complete);
+  $('moonComplete').hidden = !complete;
 }
 
 function select(index) {

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { givens, conflicts, solved } from '../src/lib/moon-sudoku.js';
+import { givens, solution, moonArea, conflicts, solved } from '../src/lib/moon-sudoku.js';
 import { countSolutions, grade } from '../src/lib/sudoku.js';
 
 test('moon clues have one solution with placement deductions below daily medium techniques', () => {
@@ -28,10 +28,16 @@ test('moon checks classic rows, columns and three by three boxes', () => {
 });
 
 test('moon completion rejects partial, malformed or conflicting player input', () => {
+  assert.equal(solved(solution.flat()), true);
   assert.equal(solved(Array(81).fill(0)), false);
   assert.equal(solved(Array(81).fill(1)), false);
   assert.equal(solved(Array(81).fill(10)), false);
   assert.equal(solved(Array(80).fill(1)), false);
+});
+
+test('completed moon fills a circular area while leaving the corners clear', () => {
+  assert.deepEqual(moonArea.map(row => row.reduce((sum, cell) => sum + cell, 0)), [3, 7, 7, 9, 9, 9, 7, 7, 3]);
+  assert.equal(moonArea.flat().reduce((sum, cell) => sum + cell, 0), 61);
 });
 
 test('moon preview is unlisted, has no saving, and shows only a mock seasonal ranking', () => {
@@ -43,10 +49,13 @@ test('moon preview is unlisted, has no saving, and shows only a mock seasonal ra
   assert(!html.includes('id="cloudBtns"'));
   assert(html.includes('id="leaderboard"'));
   assert(html.includes('토끼 아이콘 랭킹 시안'));
+  assert(html.includes('풍성한 한가위 되세요!'));
+  assert.equal((html.match(/moon-area/g) || []).length, 62);
   assert.equal((html.match(/\/icons\/seasonal\/rabbit\.svg/g) || []).length, 3);
   assert.equal((html.match(/width="18" height="18"/g) || []).length, 3);
   assert(html.indexOf('달토끼') < html.indexOf('/icons/seasonal/rabbit.svg'));
   assert(!fs.readFileSync('src/data/puzzles.json', 'utf8').includes('moon-sudoku'));
   const script = fs.readFileSync('src/scripts/moon-sudoku.js', 'utf8');
+  assert(script.includes("get('completed') === '1'"));
   assert(!/recordCompletion|saveLocalState|saveProgressCloud|localStorage/.test(script));
 });

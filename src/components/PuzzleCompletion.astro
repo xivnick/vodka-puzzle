@@ -1,5 +1,5 @@
 ---
-const { id } = Astro.props;
+const { id, message = '퍼즐을 완성했습니다!' } = Astro.props;
 ---
-<p id={id} class="message" role="status" hidden>퍼즐을 완성했습니다!</p>
+<p id={id} class="message" role="status" hidden>{message}</p>
 <style>.message { margin-top:12px; }</style>
