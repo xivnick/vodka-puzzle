@@ -4,12 +4,14 @@ import fs from 'node:fs';
 import { givens, conflicts, solved } from '../src/lib/moon-sudoku.js';
 import { countSolutions, grade } from '../src/lib/sudoku.js';
 
-test('moon clues have one solution reachable with beginner techniques', () => {
+test('moon clues have one solution with placement deductions below daily medium techniques', () => {
   const input = givens.flat().join('');
   assert.equal(countSolutions(input, 2), 1);
   const result = grade(input);
   assert.equal(result.solved, true);
   assert.equal(result.difficulty, 'easy');
+  assert(result.techniques.hiddenSingle >= 14);
+  assert(result.techniques.hiddenSingle <= 20);
   assert.equal(result.techniques.locked, 0);
   assert.equal(result.techniques.pair, 0);
 });
