@@ -10,9 +10,10 @@ import { givens } from '../../../../lib/moon-sudoku.js';
     각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9가 한 번씩 들어가야 합니다.
   </div>
   <div slot="controls">
-    칸을 누른 뒤 숫자 버튼 또는 키보드 1~9으로 입력하세요.<br />
+    칸을 누른 뒤 숫자 버튼 또는 키보드 1~9로 입력하세요.<br />
     방향키로 칸을 이동합니다.<br />
-    Backspace·Delete·0으로 지우고, 되돌리기로 마지막 입력을 취소합니다.
+    메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요. 같은 숫자를 다시 누르면 해당 메모가 지워집니다.<br />
+    Backspace·Delete·0으로 선택한 칸의 숫자와 메모를 지웁니다.
   </div>
   <section id="moonGame" data-preview="true" aria-label="보름달 스도쿠 테스트">
     <div id="moonBoard" role="group" aria-label="9행 9열 스도쿠">
@@ -27,7 +28,7 @@ import { givens } from '../../../../lib/moon-sudoku.js';
     </div>
     <div class="bottom-buttons">
       <button id="moonErase" type="button">지우기</button>
-      <button id="moonUndo" type="button" disabled>되돌리기</button>
+      <button id="moonNotes" type="button" aria-pressed="false">메모하기</button>
       <button id="moonReset" type="button" class="danger">초기화</button>
     </div>
     <p id="moonStatus" role="status" class="moon-status"></p>
@@ -39,12 +40,15 @@ import { givens } from '../../../../lib/moon-sudoku.js';
 <style>
   #moonGame { width:100%; }
   #moonBoard { display:grid; grid-template-columns:repeat(9,minmax(0,1fr)); width:100%; border:2px solid #555; box-sizing:border-box; background:#fff; }
-  .moon-cell { aspect-ratio:1; border:0; border-radius:0; padding:0; background:#fff; font-family:inherit; font-size:clamp(18px,5vw,27px); font-weight:600; color:#4a6fa5; cursor:pointer; touch-action:manipulation; line-height:1; }
+  .moon-cell { position:relative; aspect-ratio:1; border:0; border-radius:0; padding:0; background:#fff; font-family:inherit; font-size:clamp(18px,5vw,27px); font-weight:600; color:#4a6fa5; cursor:pointer; touch-action:manipulation; line-height:1; }
   .moon-cell.given { color:#333; font-weight:700; }
   .moon-cell.related { background:#faf8f2; }
   .moon-cell.selected { background:#dce8f5; }
   .moon-cell.conflict { background:#f3d8d4; color:#a33333; }
   .moon-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; }
+  .moon-cell :global(.notes) { position:absolute; inset:2px; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); font-size:clamp(9px,2.4vw,13px); font-weight:400; color:#606975; pointer-events:none; }
+  .moon-cell :global(.notes span) { display:flex; align-items:center; justify-content:center; }
+  #moonNotes[aria-pressed=true] { color:#4a6fa5; background:#dce8f5; border-color:#4a6fa5; }
   .moon-numbers { display:grid; grid-template-columns:repeat(9,minmax(0,1fr)); gap:4px; margin-top:14px; }
   .moon-numbers button { min-height:44px; padding:8px 0; border:1px solid #d6d4cd; border-radius:3px; background:#faf8f4; color:#555; }
   button:disabled { opacity:.45; cursor:default; }

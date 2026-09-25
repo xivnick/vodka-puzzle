@@ -4,7 +4,7 @@ const $ = id => document.getElementById(id);
 const fixed = givens.flat();
 const cells = [...$('moonBoard').querySelectorAll('[data-cell]')];
 let values = fixed.slice(), selected = 0;
-const history = [];
+let notes = Array.from({length:81}, () => []), notesMode = false;
 
 function render() {
   const bad = conflicts(values);
@@ -15,11 +15,22 @@ function render() {
     cell.classList.toggle('conflict', bad.has(i));
     cell.tabIndex = i === selected ? 0 : -1;
     cell.setAttribute('aria-pressed', String(i === selected));
-    cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${values[i] || '빈칸'}${fixed[i] ? ', 고정 숫자' : ''}${bad.has(i) ? ', 숫자 중복' : ''}`);
-    cell.textContent = values[i] || '';
+    cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${values[i] || '빈칸'}${fixed[i] ? ', 고정 숫자' : ''}${bad.has(i) ? ', 숫자 중복' : ''}${notes[i].length ? ', 메모 ' + notes[i].join(', ') : ''}`);
+    cell.replaceChildren();
+    if (values[i]) cell.textContent = values[i];
+    else if (notes[i].length) {
+      const box = document.createElement('span');
+      box.className = 'notes';
+      box.setAttribute('aria-hidden', 'true');
+      for (let n = 1; n <= 9; n++) {
+        const digit = document.createElement('span');
+        digit.textContent = notes[i].includes(n) ? n : '';
+        box.append(digit);
+      }
+      cell.append(box);
+    }
   });
-  $('moonUndo').disabled = history.length === 0;
-  $('moonErase').disabled = Boolean(fixed[selected]) || !values[selected];
+  $('moonErase').disabled = Boolean(fixed[selected]) || (!values[selected] && !notes[selected].length);
   $('moonNumbers').querySelectorAll('button').forEach(button => { button.disabled = Boolean(fixed[selected]); });
   $('moonStatus').textContent = bad.size ? '붉게 표시된 칸의 숫자가 중복됩니다.' : '';
   $('moonComplete').hidden = !solved(values);
@@ -32,12 +43,29 @@ function select(index) {
 }
 
 function change(number) {
-  if (fixed[selected] || values[selected] === number) return;
-  history.push({values: values.slice(), selected});
-  values[selected] = number;
+  if (fixed[selected]) return;
+  if (notesMode && number) {
+    if (values[selected]) return;
+    notes[selected] = notes[selected].includes(number)
+      ? notes[selected].filter(n => n !== number)
+      : [...notes[selected], number].sort((a,b) => a-b);
+  } else {
+    values[selected] = number;
+    notes[selected] = [];
+  }
   render();
   cells[selected].focus({preventScroll:true});
 }
+
+function toggleNotes() {
+  notesMode = !notesMode;
+  $('moonNotes').setAttribute('aria-pressed', String(notesMode));
+}
+
+$('moonNotes').addEventListener('click', () => {
+  toggleNotes();
+  cells[selected].focus({preventScroll:true});
+});
 
 $('moonBoard').addEventListener('click', event => {
   const cell = event.target.closest('[data-cell]');
@@ -46,6 +74,7 @@ $('moonBoard').addEventListener('click', event => {
 $('moonBoard').addEventListener('keydown', event => {
   if (/^[1-9]$/.test(event.key)) { event.preventDefault(); change(Number(event.key)); }
   else if (['Backspace', 'Delete', '0'].includes(event.key)) { event.preventDefault(); change(0); }
+  else if (event.key.toLowerCase() === 'm') { event.preventDefault(); toggleNotes(); }
   else if (['Enter', ' '].includes(event.key)) { event.preventDefault(); select(selected); }
   else {
     const r = Math.floor(selected / 9), c = selected % 9;
@@ -61,15 +90,11 @@ $('moonNumbers').addEventListener('click', event => {
   if (button) change(Number(button.dataset.number));
 });
 $('moonErase').addEventListener('click', () => change(0));
-$('moonUndo').addEventListener('click', () => {
-  const previous = history.pop();
-  if (previous) { values = previous.values; select(previous.selected); }
-});
 $('moonReset').addEventListener('click', () => {
-  if (!values.some((n, i) => n !== fixed[i])) return;
-  if (confirm('입력한 숫자를 모두 초기화할까요?')) {
-    history.push({values: values.slice(), selected});
+  if (!values.some((n, i) => n !== fixed[i]) && !notes.some(a => a.length)) return;
+  if (confirm('입력한 숫자와 메모를 모두 초기화할까요?')) {
     values = fixed.slice();
+    notes = Array.from({length:81}, () => []);
     render();
   }
 });
