@@ -49,6 +49,7 @@ import { givens, moonArea } from '../../../../lib/moon-sudoku.js';
   .moon-preview-ranking { border-top:1px solid #e8e5df; }
   .moon-rabbit-name { display:flex; align-items:center; gap:4px; }
   .moon-rabbit-name img { flex:0 0 auto; }
-  #moonBoard.moon-complete .moon-area { background:#fff4c7; transition:background-color .45s ease; }
-  @media (prefers-reduced-motion:reduce) { #moonBoard.moon-complete .moon-area { transition:none; } }
+  #moonBoard.moon-complete .moon-area { background:#fff4c7; animation:moonlight-fill .45s ease both; }
+  @keyframes moonlight-fill { from { background-color:#fffdf3; } to { background-color:#fff4c7; } }
+  @media (prefers-reduced-motion:reduce) { #moonBoard.moon-complete .moon-area { animation:none; } }
 </style>

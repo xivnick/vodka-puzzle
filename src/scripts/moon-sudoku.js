@@ -15,7 +15,7 @@ function render() {
   const bad = conflicts(values);
   const complete = solved(values);
   cells.forEach((cell, i) => {
-    cell.classList.toggle('selected', i === selected);
+    cell.classList.toggle('selected', !complete && i === selected);
     cell.classList.toggle('conflict', bad.has(i));
     cell.tabIndex = i === selected ? 0 : -1;
     cell.setAttribute('aria-pressed', String(i === selected));

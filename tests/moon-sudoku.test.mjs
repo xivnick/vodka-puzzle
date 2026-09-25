@@ -63,8 +63,10 @@ test('moon preview is unlisted, has no saving, and shows only a mock seasonal ra
   assert(!fs.readFileSync('src/data/puzzles.json', 'utf8').includes('moon-sudoku'));
   const script = fs.readFileSync('src/scripts/moon-sudoku.js', 'utf8');
   const page = fs.readFileSync('src/pages/test/moon-sudoku/260925/index.astro', 'utf8');
-  assert(page.includes('#moonBoard.moon-complete .moon-area { background:#fff4c7; transition:background-color .45s ease; }'));
-  assert(!page.includes('#moonBoard .moon-area { transition'));
+  assert(page.includes('#moonBoard.moon-complete .moon-area { background:#fff4c7; animation:moonlight-fill .45s ease both; }'));
+  assert(page.includes('@keyframes moonlight-fill { from { background-color:#fffdf3; } to { background-color:#fff4c7; } }'));
+  assert(!page.includes('transition:background-color'));
+  assert(script.includes("cell.classList.toggle('selected', !complete && i === selected)"));
   assert(script.includes("get('completed') === '1'"));
   assert(script.includes("get('completion-test') === '1'"));
   assert(script.includes('selected = completionTest ? 40 : 0'));
