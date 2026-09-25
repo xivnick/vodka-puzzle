@@ -1,0 +1,72 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import '../styles/daily-sudoku.css';
+import { givens, moonArea } from '../lib/moon-sudoku.js';
+
+const { puzzleId, preview = false } = Astro.props;
+const mockRanking = [
+  ['1', '달토끼', '09.25 10:42'],
+  ['2', '송편한입', '09.25 11:08'],
+  ['3', '보름달', '09.25 12:31'],
+];
+---
+<PuzzleLayout
+  title="260925 한가위 스도쿠"
+  {puzzleId}
+  subtitle="한가위 맞이 스도쿠를 풀어보세요"
+  description="한가위 맞이 스도쿠를 풀어보세요"
+  showCloud={!preview}
+  showLeaderboard={!preview}
+>
+  {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
+  <div slot="rules">
+    빈칸에 1부터 9까지의 숫자를 채우세요.<br />
+    각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9가 한 번씩 들어가야 합니다.
+  </div>
+  <div slot="controls">
+    칸을 누른 뒤 숫자 버튼 또는 키보드 1~9로 입력하세요.<br />
+    메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요
+  </div>
+  <section id="moonGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="한가위 스도쿠">
+    <div class="sudoku-board-tools"><button id="moonNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <div id="moonBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
+      {givens.flat().map((n, i) => <button type="button"
+        class:list={['sudoku-cell', { given: !!n, 'moon-area': !!moonArea.flat()[i] }]}
+        data-cell={i} tabindex={i === 0 ? 0 : -1}
+        aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${n || '빈칸'}${n ? ', 고정 숫자' : ''}`}>{n || ''}</button>)}
+    </div>
+    <div class="sudoku-numbers" id="moonNumbers" aria-label="숫자 입력">
+      {[1,2,3,4,5,6,7,8,9].map(n => <button type="button" data-number={n}>{n}</button>)}
+    </div>
+    <div class="bottom-buttons">
+      <button id="moonErase" type="button">지우기</button>
+      <button id="moonReset" type="button" class="danger">초기화</button>
+    </div>
+    <PuzzleCompletion id="moonComplete" message="풍성한 한가위 되세요!" />
+  </section>
+  {preview && <div class="moon-preview-lb-section">
+    <div class="lb-title">푼 사람</div>
+    <div id="leaderboard" class="lb-list moon-preview-ranking" aria-label="토끼 아이콘 랭킹 시안">
+      {mockRanking.map(([rank, name, time]) => <div class="lb-row">
+        <span class="lb-rank">{rank}</span>
+        <span class="lb-name moon-rabbit-name">{name}<img src="/icons/seasonal/rabbit.svg" width="18" height="18" alt="" aria-hidden="true" /></span>
+        <span class="lb-time">{time}</span>
+      </div>)}
+    </div>
+  </div>}
+</PuzzleLayout>
+<script>import '../scripts/moon-sudoku.js';</script>
+<style>
+  #moonGame { width:100%; }
+  .moon-preview-lb-section { margin-top:24px; }
+  .moon-preview-ranking { border-top:1px solid #e8e5df; }
+  .moon-rabbit-name { display:flex; align-items:center; gap:4px; }
+  .moon-rabbit-name img { flex:0 0 auto; }
+  #moonBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
+  #moonBoard .sudoku-cell:focus { outline:none; }
+  #moonBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; }
+  #moonBoard.moon-complete .moon-area { background:#fff4c7; animation:moonlight-fill .45s ease both; }
+  @keyframes moonlight-fill { from { background-color:#fffdf3; } to { background-color:#fff4c7; } }
+  @media (prefers-reduced-motion:reduce) { #moonBoard.moon-complete .moon-area { animation:none; } }
+</style>

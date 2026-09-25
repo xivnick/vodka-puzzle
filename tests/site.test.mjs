@@ -39,6 +39,21 @@ test('new reads are semester-scoped and paginate beyond 1000 rows',async()=>{
  const calls=[];const r=runtime('public/js/common.js',async url=>{calls.push(url);const p=new URL(url).searchParams;assert.equal(p.get('season_id'),'eq.2026-2');return{ok:true,json:async()=>Array.from({length:calls.length<3?500:7},()=>({nickname:'n'}))}});
  const rows=await r.run("sbSelect('completions','select=nickname')");assert.equal(rows.length,1007);assert.equal(calls.length,3);
 });
+test('overall rankings mark moon solvers and the badge is limited to the Chuseok holiday',async()=>{
+ const r=runtime('public/js/common.js',async()=>({ok:true,json:async()=>[
+  {nickname:'moon',puzzle_id:'260925_01',completed_at:'2026-09-25T01:00:00Z'},
+  {nickname:'moon',puzzle_id:'260923_01',completed_at:'2026-09-24T01:00:00Z'},
+  {nickname:'plain',puzzle_id:'260923_01',completed_at:'2026-09-23T01:00:00Z'},
+ ]}));
+ const rows=await r.run("getSolverRankings(['260925_01','260923_01'])");
+ assert.equal(rows[0].nick,'moon');assert.equal(rows[0].hasMoonBadge,true);
+ assert.equal(rows[1].hasMoonBadge,false);
+ const home=read('public/js/home.js');
+ assert.ok(home.includes("day >= '2026-09-24' && day <= '2026-09-27'"));
+ assert.ok(home.includes("timeZone: 'Asia/Seoul'"));
+ assert.ok(home.includes('/icons/seasonal/rabbit.svg'));
+ assert.ok(home.includes('showMoonBadges && hasMoonBadge'));
+});
 test('writes require a session; identity and local state follow account IDs',async()=>{
  const calls=[];const r=runtime('public/js/common.js',async(url,opts)=>{calls.push([url,opts]);return{ok:true}});
  r.values.set('vodka_nickname:2026-2','someone');

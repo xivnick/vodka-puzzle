@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { givens, solution, moonArea, conflicts, solved } from '../src/lib/moon-sudoku.js';
+import { givens, solution, moonArea, conflicts, solved, parseMoonSudokuState } from '../src/lib/moon-sudoku.js';
 import { countSolutions, grade } from '../src/lib/sudoku.js';
 
 test('moon clues have one solution with placement deductions below daily medium techniques', () => {
@@ -40,6 +40,21 @@ test('completed moon fills a circular area while leaving the corners clear', () 
   assert.equal(moonArea.flat().reduce((sum, cell) => sum + cell, 0), 61);
 });
 
+test('moon progress accepts only matching, well-formed state and preserves clues', () => {
+  const puzzleId = '260925_01';
+  const values = givens.flat();
+  const notes = Array.from({ length: 81 }, () => []);
+  values[0] = 5;
+  notes[1] = [9, 4, 9];
+  const parsed = parseMoonSudokuState({ version: 1, puzzleId, values, notes }, puzzleId);
+  assert.deepEqual(parsed.values, values);
+  assert.deepEqual(parsed.notes[1], [4, 9]);
+  assert.equal(parseMoonSudokuState({ version: 1, puzzleId: 'other', values, notes }, puzzleId), null);
+  const changedClue = [...values];
+  changedClue[3] = 8;
+  assert.equal(parseMoonSudokuState({ version: 1, puzzleId, values: changedClue, notes }, puzzleId), null);
+});
+
 test('moon preview is unlisted, has no saving, and shows only a mock seasonal ranking', () => {
   const html = fs.readFileSync('dist/test/moon-sudoku/260925/index.html', 'utf8');
   assert.equal((html.match(/data-cell=/g) || []).length, 81);
@@ -60,18 +75,33 @@ test('moon preview is unlisted, has no saving, and shows only a mock seasonal ra
   assert.equal((html.match(/\/icons\/seasonal\/rabbit\.svg/g) || []).length, 3);
   assert.equal((html.match(/width="18" height="18"/g) || []).length, 3);
   assert(html.indexOf('달토끼') < html.indexOf('/icons/seasonal/rabbit.svg'));
-  assert(!fs.readFileSync('src/data/puzzles.json', 'utf8').includes('moon-sudoku'));
+  assert(!html.includes('data-puzzle-id="260925_01"'));
   const script = fs.readFileSync('src/scripts/moon-sudoku.js', 'utf8');
-  const page = fs.readFileSync('src/pages/test/moon-sudoku/260925/index.astro', 'utf8');
-  assert(page.includes('#moonBoard.moon-complete .moon-area { background:#fff4c7; animation:moonlight-fill .45s ease both; }'));
-  assert(page.includes('@keyframes moonlight-fill { from { background-color:#fffdf3; } to { background-color:#fff4c7; } }'));
-  assert(!page.includes('transition:background-color'));
-  assert(page.includes('#moonBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }'));
-  assert(page.includes('#moonBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; }'));
+  const component = fs.readFileSync('src/components/MoonSudoku.astro', 'utf8');
+  assert(component.includes('#moonBoard.moon-complete .moon-area { background:#fff4c7; animation:moonlight-fill .45s ease both; }'));
+  assert(component.includes('@keyframes moonlight-fill { from { background-color:#fffdf3; } to { background-color:#fff4c7; } }'));
+  assert(!component.includes('transition:background-color'));
+  assert(component.includes('#moonBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }'));
+  assert(component.includes('#moonBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; }'));
   assert(script.includes("cell.classList.toggle('selected', !complete && i === selected)"));
-  assert(script.includes("get('completed') === '1'"));
-  assert(script.includes("get('completion-test') === '1'"));
+  assert(script.includes("preview && params.get('completed') === '1'"));
+  assert(script.includes("preview && params.get('completion-test') === '1'"));
   assert(script.includes('selected = completionTest ? 40 : 0'));
   assert(script.includes('values[selected] = 0'));
-  assert(!/recordCompletion|saveLocalState|saveProgressCloud|localStorage/.test(script));
+});
+
+test('released moon page is listed and connects completion and progress storage', () => {
+  const html = fs.readFileSync('dist/260925_01/index.html', 'utf8');
+  const catalog = JSON.parse(fs.readFileSync('src/data/puzzles.json', 'utf8'));
+  const script = fs.readFileSync('src/scripts/moon-sudoku.js', 'utf8');
+  assert(html.includes('data-puzzle-id="260925_01"'));
+  assert(html.includes('data-preview="false"'));
+  assert(html.includes('id="cloudBtns"'));
+  assert(html.includes('id="leaderboard"'));
+  assert(!html.includes('noindex, nofollow'));
+  assert(catalog.some(puzzle => puzzle.id === '260925_01' && puzzle.href === '/260925_01/'));
+  assert(script.includes('window.recordCompletion(puzzleId, state())'));
+  assert(script.includes('window.saveLocalState(puzzleId, state())'));
+  assert(script.includes('window.saveProgressCloud(puzzleId, state())'));
+  assert(script.includes('window.loadProgressCloud(puzzleId)'));
 });

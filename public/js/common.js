@@ -627,6 +627,7 @@ async function getSolverRankings(puzzleIds = null) {
     const includeSet = Array.isArray(puzzleIds) ? new Set(puzzleIds) : null;
     const nickPuzzles = new Map(); // nickname -> Set of puzzle_ids
     const nickLastAt = new Map(); // nickname -> 가장 최근 completed_at
+    const moonSolvers = new Set();
     for (const row of rows) {
       if (EXCLUDE.has(row.puzzle_id)) continue;
       if (includeSet && !includeSet.has(row.puzzle_id)) continue;
@@ -635,12 +636,13 @@ async function getSolverRankings(puzzleIds = null) {
         nickLastAt.set(row.nickname, row.completed_at);
       }
       nickPuzzles.get(row.nickname).add(row.puzzle_id);
+      if (row.puzzle_id === '260925_01') moonSolvers.add(row.nickname);
       if (row.completed_at > nickLastAt.get(row.nickname)) {
         nickLastAt.set(row.nickname, row.completed_at);
       }
     }
     return [...nickPuzzles.entries()]
-      .map(([nick, puzzles]) => ({ nick, count: puzzles.size, lastAt: nickLastAt.get(nick) }))
+      .map(([nick, puzzles]) => ({ nick, count: puzzles.size, lastAt: nickLastAt.get(nick), hasMoonBadge: moonSolvers.has(nick) }))
       .sort((a, b) => b.count - a.count || new Date(a.lastAt) - new Date(b.lastAt));
   } catch (e) {
     return [];
