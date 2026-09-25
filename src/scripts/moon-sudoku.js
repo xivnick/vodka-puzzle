@@ -3,8 +3,12 @@ import { givens, solution, conflicts, solved } from '../lib/moon-sudoku.js';
 const $ = id => document.getElementById(id);
 const fixed = givens.flat();
 const cells = [...$('moonBoard').querySelectorAll('[data-cell]')];
-const completedExample = new URLSearchParams(location.search).get('completed') === '1';
-let values = completedExample ? solution.flat() : fixed.slice(), selected = 0;
+const params = new URLSearchParams(location.search);
+const completedExample = params.get('completed') === '1';
+const completionTest = params.get('completion-test') === '1';
+let values = completedExample || completionTest ? solution.flat() : fixed.slice();
+let selected = completionTest ? 40 : 0;
+if (completionTest) values[selected] = 0;
 let notes = Array.from({length:81}, () => []), notesMode = false;
 
 function render() {

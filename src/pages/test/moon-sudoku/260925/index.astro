@@ -30,7 +30,6 @@ import { givens, moonArea } from '../../../../lib/moon-sudoku.js';
       <button id="moonReset" type="button" class="danger">초기화</button>
     </div>
     <PuzzleCompletion id="moonComplete" message="풍성한 한가위 되세요!" />
-    <p class="preview-note">테스트 문제 · 진행 상황과 완료 기록은 저장되지 않습니다.</p>
   </section>
   <div slot="leaderboard" class="lb-list moon-preview-ranking" aria-label="토끼 아이콘 랭킹 시안">
     {[
@@ -47,9 +46,10 @@ import { givens, moonArea } from '../../../../lib/moon-sudoku.js';
 <script>import '../../../../scripts/moon-sudoku.js';</script>
 <style>
   #moonGame { width:100%; }
-  .preview-note { color:#888; font-size:.75rem; text-align:center; margin:10px 0 0; }
   .moon-preview-ranking { border-top:1px solid #e8e5df; }
   .moon-rabbit-name { display:flex; align-items:center; gap:4px; }
   .moon-rabbit-name img { flex:0 0 auto; }
+  #moonBoard .moon-area { transition:background-color .45s ease; }
   #moonBoard.moon-complete .moon-area { background:#fff4c7; }
+  @media (prefers-reduced-motion:reduce) { #moonBoard .moon-area { transition:none; } }
 </style>
