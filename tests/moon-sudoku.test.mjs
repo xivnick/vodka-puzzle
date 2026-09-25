@@ -45,6 +45,7 @@ test('moon preview is unlisted, has no saving, and shows only a mock seasonal ra
   assert(html.includes('토끼 아이콘 랭킹 시안'));
   assert.equal((html.match(/\/icons\/seasonal\/rabbit\.svg/g) || []).length, 3);
   assert.equal((html.match(/width="20" height="20"/g) || []).length, 3);
+  assert(html.indexOf('달토끼') < html.indexOf('/icons/seasonal/rabbit.svg'));
   assert(!fs.readFileSync('src/data/puzzles.json', 'utf8').includes('moon-sudoku'));
   const script = fs.readFileSync('src/scripts/moon-sudoku.js', 'utf8');
   assert(!/recordCompletion|saveLocalState|saveProgressCloud|localStorage/.test(script));
