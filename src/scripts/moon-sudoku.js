@@ -15,8 +15,8 @@ function render() {
     cell.classList.toggle('conflict', bad.has(i));
     cell.tabIndex = i === selected ? 0 : -1;
     cell.setAttribute('aria-pressed', String(i === selected));
-    cell.setAttribute('aria-label', `안쪽부터 ${Math.floor(i / 6) + 1}번째 띠, 시계 방향 ${i % 6 + 1}번째 부채꼴, ${values[i] || '빈칸'}${fixed[i] ? ', 고정 숫자' : ''}${bad.has(i) ? ', 숫자 중복' : ''}`);
-    cell.querySelector('text').textContent = values[i] || '';
+    cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${values[i] || '빈칸'}${fixed[i] ? ', 고정 숫자' : ''}${bad.has(i) ? ', 숫자 중복' : ''}`);
+    cell.textContent = values[i] || '';
   });
   $('moonUndo').disabled = history.length === 0;
   $('moonErase').disabled = Boolean(fixed[selected]) || !values[selected];
@@ -44,14 +44,14 @@ $('moonBoard').addEventListener('click', event => {
   if (cell) select(Number(cell.dataset.cell));
 });
 $('moonBoard').addEventListener('keydown', event => {
-  if (/^[1-6]$/.test(event.key)) { event.preventDefault(); change(Number(event.key)); }
+  if (/^[1-9]$/.test(event.key)) { event.preventDefault(); change(Number(event.key)); }
   else if (['Backspace', 'Delete', '0'].includes(event.key)) { event.preventDefault(); change(0); }
   else if (['Enter', ' '].includes(event.key)) { event.preventDefault(); select(selected); }
   else {
-    const r = Math.floor(selected / 6), c = selected % 6;
+    const r = Math.floor(selected / 9), c = selected % 9;
     const next = {
-      ArrowLeft: r * 6 + (c + 5) % 6, ArrowRight: r * 6 + (c + 1) % 6,
-      ArrowUp: Math.max(0, r - 1) * 6 + c, ArrowDown: Math.min(5, r + 1) * 6 + c,
+      ArrowLeft: r * 9 + Math.max(0, c - 1), ArrowRight: r * 9 + Math.min(8, c + 1),
+      ArrowUp: Math.max(0, r - 1) * 9 + c, ArrowDown: Math.min(8, r + 1) * 9 + c,
     }[event.key];
     if (next !== undefined) { event.preventDefault(); select(next); }
   }
