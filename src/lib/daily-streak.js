@@ -15,7 +15,7 @@ export function renderStreak(element,streak,{label=false}={}) {
  element.setAttribute('aria-label',`${label?text:streak.count+'일 스트릭'}, ${completed?'오늘 완료':streak.status==='rest'?'하루 휴식 중, 오늘 완료하면 이어집니다':'오늘 도전 중'}`);
 }
 
-export function renderStreakRankings(element,rows) {
+export function renderStreakRankings(element,rows,{moonSolvers=new Set()}={}) {
  element.replaceChildren();
  if(!rows?.length){
   const empty=document.createElement('div');empty.className='lb-empty';empty.textContent='아직 기록이 없습니다.';element.append(empty);return;
@@ -24,7 +24,11 @@ export function renderStreakRankings(element,rows) {
  const rowElement=row=>{
   const line=document.createElement('div');line.className=`lb-row${row.is_me?' lb-me':''}`;
   const rank=document.createElement('span');rank.className='lb-rank';rank.textContent=row.rank;
-  const name=document.createElement('span');name.className='lb-name';name.textContent=row.nickname;
+  const name=document.createElement('span');name.className='lb-name seasonal-rank-name';
+  const nickname=document.createElement('span');nickname.textContent=row.nickname;name.append(nickname);
+  if(moonSolvers.has(row.nickname)){
+   const badge=document.createElement('img');badge.className='seasonal-rank-badge';badge.src='/icons/seasonal/rabbit.svg';badge.width=18;badge.height=18;badge.alt='한가위 스도쿠 완성';badge.title='한가위 스도쿠 완성';name.append(badge);
+  }
   const streak=document.createElement('span');streak.className='daily-streak';renderStreak(streak,row);
   line.append(rank,name,streak);return line;
  };

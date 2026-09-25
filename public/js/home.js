@@ -12,13 +12,6 @@
 }
 
 const PAGE_SIZE = 10;
-  function isChuseokHoliday(date = new Date()) {
-    const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
-    }).formatToParts(date).filter(part => part.type !== 'literal').map(part => [part.type, part.value]));
-    const day = `${parts.year}-${parts.month}-${parts.day}`;
-    return day >= '2026-09-24' && day <= '2026-09-27';
-  }
   function getCurrentPage(totalPages) {
     const hash = window.location.hash.match(/^#page-(\d+)$/);
     const page = hash ? parseInt(hash[1], 10) : 1;
@@ -154,11 +147,11 @@ const PAGE_SIZE = 10;
     function rowHtml(rank, nick, count, hasMoonBadge, extra) {
       const isMe = myNick && nick === myNick;
       const moonBadge = showMoonBadges && hasMoonBadge
-        ? '<img class="moon-rank-badge" src="/icons/seasonal/rabbit.svg" width="18" height="18" alt="한가위 스도쿠 완성" title="한가위 스도쿠 완성">'
+        ? '<img class="seasonal-rank-badge" src="/icons/seasonal/rabbit.svg" width="18" height="18" alt="한가위 스도쿠 완성" title="한가위 스도쿠 완성">'
         : '';
       return `<div class="lb-row${isMe ? ' lb-me' : ''}${extra ? ' ' + extra : ''}">` +
         `<span class="lb-rank">${rank}</span>` +
-        `<span class="lb-name moon-rank-name"><span>${escHtml(nick)}</span>${moonBadge}</span>` +
+        `<span class="lb-name seasonal-rank-name"><span>${escHtml(nick)}</span>${moonBadge}</span>` +
         `<span class="lb-time">${count}개</span>` +
         `</div>`;
     }

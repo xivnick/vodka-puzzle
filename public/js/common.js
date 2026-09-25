@@ -403,6 +403,7 @@ async function recordCompletion(puzzleId, state) {
   }
 
   if (getUserId() !== owner) return;
+  if (puzzleId === '260925_01') _moonBadgeSolversPromise = null;
   showToast('🎉 완료 기록을 저장했습니다!');
   _recentBannerIndex = 0;
   refreshRecentBanner(true);
@@ -510,6 +511,31 @@ function confirmPuzzleReset(puzzleId, resetFn, message = '정말 초기화하시
 }
 
 // ── Leaderboard ──────────────────────────────────────────────────────────────
+function isChuseokHoliday(date = new Date()) {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(date).filter(part => part.type !== 'literal').map(part => [part.type, part.value]));
+  const day = `${parts.year}-${parts.month}-${parts.day}`;
+  return day >= '2026-09-24' && day <= '2026-09-27';
+}
+
+let _moonBadgeSolversPromise = null;
+function getMoonBadgeSolvers() {
+  if (!isChuseokHoliday()) return Promise.resolve(new Set());
+  if (!_moonBadgeSolversPromise) {
+    _moonBadgeSolversPromise = sbSelect(
+      'completions',
+      'puzzle_id=eq.260925_01&select=nickname&limit=500'
+    ).then(rows => new Set(rows.map(row => row.nickname))).catch(() => new Set());
+  }
+  return _moonBadgeSolversPromise;
+}
+
+function moonBadgeHtml(nickname, moonSolvers) {
+  if (!moonSolvers.has(nickname)) return '';
+  return '<img class="seasonal-rank-badge" src="/icons/seasonal/rabbit.svg" width="18" height="18" alt="한가위 스도쿠 완성" title="한가위 스도쿠 완성">';
+}
+
 async function renderLeaderboard(puzzleId, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -517,12 +543,15 @@ async function renderLeaderboard(puzzleId, containerId) {
   const titleEl = container.closest('.lb-section')?.querySelector('.lb-title');
   container.innerHTML = '<div class="lb-loading">불러오는 중...</div>';
 
-  let rows;
+  let rows, moonSolvers;
   try {
-    rows = await sbSelect(
-      'completions',
-      `puzzle_id=eq.${encodeURIComponent(puzzleId)}&select=nickname,completed_at&order=completed_at.asc&limit=500`
-    );
+    [rows, moonSolvers] = await Promise.all([
+      sbSelect(
+        'completions',
+        `puzzle_id=eq.${encodeURIComponent(puzzleId)}&select=nickname,completed_at&order=completed_at.asc&limit=500`
+      ),
+      getMoonBadgeSolvers(),
+    ]);
   } catch (e) {
     container.innerHTML = '<div class="lb-empty">기록을 불러오지 못했습니다.</div>';
     return;
@@ -554,7 +583,7 @@ async function renderLeaderboard(puzzleId, containerId) {
     const isMe = myNick && nick === myNick;
     return `<div class="lb-row${isMe ? ' lb-me' : ''}${extra ? ' ' + extra : ''}">` +
       `<span class="lb-rank">${rank}</span>` +
-      `<span class="lb-name">${escHtml(nick)}</span>` +
+      `<span class="lb-name seasonal-rank-name"><span>${escHtml(nick)}</span>${moonBadgeHtml(nick, moonSolvers)}</span>` +
       `<span class="lb-time">${fmtDatetime(completedAt)}</span>` +
       `</div>`;
   }

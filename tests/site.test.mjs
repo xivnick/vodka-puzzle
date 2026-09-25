@@ -48,9 +48,11 @@ test('overall rankings mark moon solvers and the badge is limited to the Chuseok
  const rows=await r.run("getSolverRankings(['260925_01','260923_01'])");
  assert.equal(rows[0].nick,'moon');assert.equal(rows[0].hasMoonBadge,true);
  assert.equal(rows[1].hasMoonBadge,false);
- const home=read('public/js/home.js');
- assert.ok(home.includes("day >= '2026-09-24' && day <= '2026-09-27'"));
- assert.ok(home.includes("timeZone: 'Asia/Seoul'"));
+ const common=read('public/js/common.js');const home=read('public/js/home.js');
+ assert.ok(common.includes("day >= '2026-09-24' && day <= '2026-09-27'"));
+ assert.ok(common.includes("timeZone: 'Asia/Seoul'"));
+ assert.ok(common.includes("puzzle_id=eq.260925_01&select=nickname"));
+ assert.ok(common.includes('seasonal-rank-name'));
  assert.ok(home.includes('/icons/seasonal/rabbit.svg'));
  assert.ok(home.includes('showMoonBadges && hasMoonBadge'));
 });

@@ -17,19 +17,19 @@ function updateCard(rows,streak=null){
  if(rows.length){const count=document.createElement('span');count.className='solver-count';count.textContent=`(${rows.length})`;text.append(count);}
  if(rows.some(row=>row.is_me)){const check=document.createElement('span');check.className='check-mark';check.textContent='✓';text.append(check);}
 }
-function apply(data){
+function apply(data,moonSolvers=new Set()){
  current=data.current_day;label.textContent=title(current);card.href=`/daily-sudoku/?day=${current}`;
  updateCard(data.rankings,data.streak);document.getElementById('rankTitle').dataset.dailyCount=String(data.streak_rankings?.length||0);updateRankTitle();
- renderStreakRankings(panel,data.streak_rankings);
+ renderStreakRankings(panel,data.streak_rankings,{moonSolvers});
 }
 localLabel();
 async function refresh(){
  if(busy){refreshPending=true;return;}busy=true;
- try{const data=await context();offset=new Date(data.server_now).getTime()-Date.now();clearTimeout(rollover);rollover=setTimeout(refresh,Math.max(1000,new Date(data.next_opens_at)-new Date(data.server_now)+100));apply(data);}
+ try{const [data,moonSolvers]=await Promise.all([context(),getMoonBadgeSolvers()]);offset=new Date(data.server_now).getTime()-Date.now();clearTimeout(rollover);rollover=setTimeout(refresh,Math.max(1000,new Date(data.next_opens_at)-new Date(data.server_now)+100));apply(data,moonSolvers);}
  catch{rankMessage(panel,'기록을 불러오지 못했습니다.');}
  finally{busy=false;if(refreshPending){refreshPending=false;refresh();}}
 }
-async function loadRank(){try{apply(await context());}catch{rankMessage(panel,'기록을 불러오지 못했습니다.');}}
+async function loadRank(){try{const [data,moonSolvers]=await Promise.all([context(),getMoonBadgeSolvers()]);apply(data,moonSolvers);}catch{rankMessage(panel,'기록을 불러오지 못했습니다.');}}
 const buttons=[...document.querySelectorAll('[data-rank-mode]')];
 for(const button of buttons)button.addEventListener('click',()=>{
  const daily=button.dataset.rankMode==='daily';

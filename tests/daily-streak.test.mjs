@@ -53,8 +53,22 @@ test('streak leaderboard displays server order, nicknames and numeric icons with
   const el=node();
   renderStreakRankings(el,[{rank:1,nickname:'<solver>',count:6,status:'completed',is_me:true},{rank:2,nickname:'resting',count:6,status:'rest',is_me:false}]);
   const [first,second]=el.children[0].children;
-  assert.equal(first.className,'lb-row lb-me');assert.equal(first.children[0].textContent,1);assert.equal(first.children[1].textContent,'<solver>');assert.equal(first.children[2].children[0].textContent,'6');assert.equal(first.children[2].children[1].src,'/icons/daily-streak/flame-filled.svg');assert.equal(second.children[2].children[1].src,'/icons/daily-streak/zzz.svg');assert.equal(first.children.length,3);
+  assert.equal(first.className,'lb-row lb-me');assert.equal(first.children[0].textContent,1);assert.equal(first.children[1].children[0].textContent,'<solver>');assert.equal(first.children[2].children[0].textContent,'6');assert.equal(first.children[2].children[1].src,'/icons/daily-streak/flame-filled.svg');assert.equal(second.children[2].children[1].src,'/icons/daily-streak/zzz.svg');assert.equal(first.children.length,3);
   renderStreakRankings(el,[]);assert.equal(el.children[0].textContent,'아직 기록이 없습니다.');
+ }finally{globalThis.document=original;}
+});
+
+test('streak leaderboard adds a rabbit after moon solver names',()=>{
+ const original=globalThis.document;globalThis.document={createElement:node};
+ try{
+  const el=node();
+  renderStreakRankings(el,[{rank:1,nickname:'moon',count:3,status:'completed'}],{moonSolvers:new Set(['moon'])});
+  const name=el.children[0].children[0].children[1];
+  assert.equal(name.className,'lb-name seasonal-rank-name');
+  assert.equal(name.children[0].textContent,'moon');
+  assert.equal(name.children[1].src,'/icons/seasonal/rabbit.svg');
+  assert.equal(name.children[1].width,18);
+  assert.equal(name.children[1].alt,'한가위 스도쿠 완성');
  }finally{globalThis.document=original;}
 });
 

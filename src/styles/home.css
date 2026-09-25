@@ -122,9 +122,6 @@ body.home .list a { position: relative; }
 body.home .pager:empty { display:none; }
 body.home .home-rank { width:100%; margin-top:32px; }
 body.home .home-rank > .lb-section { margin-top:0; }
-body.home .moon-rank-name { display:flex; align-items:center; gap:4px; min-width:0; }
-body.home .moon-rank-name > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-body.home .moon-rank-badge { flex:0 0 auto; width:18px; height:18px; }
 
 body.home .list a.daily-card { order:-1; background:#f1f4f0; border-top:1px solid #e8e5df; border-bottom:1px solid #e8e5df; }
 body.home .list a.daily-card:hover { background:#e8eee6; }
