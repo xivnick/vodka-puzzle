@@ -49,6 +49,11 @@ test('moon preview is unlisted, has no saving, and shows only a mock seasonal ra
   assert(!html.includes('id="cloudBtns"'));
   assert(html.includes('id="leaderboard"'));
   assert(html.includes('토끼 아이콘 랭킹 시안'));
+  assert(html.includes('260925 한가위 스도쿠'));
+  assert(html.includes('한가위 맞이 스도쿠를 풀어보세요'));
+  assert(html.includes('메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요'));
+  assert(!html.includes('방향키로 칸을 이동합니다.'));
+  assert(!html.includes('Backspace·Delete·0으로'));
   assert(html.includes('풍성한 한가위 되세요!'));
   assert.equal((html.match(/moon-area/g) || []).length, 62);
   assert.equal((html.match(/\/icons\/seasonal\/rabbit\.svg/g) || []).length, 3);
