@@ -66,6 +66,8 @@ test('moon preview is unlisted, has no saving, and shows only a mock seasonal ra
   assert(page.includes('#moonBoard.moon-complete .moon-area { background:#fff4c7; animation:moonlight-fill .45s ease both; }'));
   assert(page.includes('@keyframes moonlight-fill { from { background-color:#fffdf3; } to { background-color:#fff4c7; } }'));
   assert(!page.includes('transition:background-color'));
+  assert(page.includes('#moonBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }'));
+  assert(page.includes('#moonBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; }'));
   assert(script.includes("cell.classList.toggle('selected', !complete && i === selected)"));
   assert(script.includes("get('completed') === '1'"));
   assert(script.includes("get('completion-test') === '1'"));
