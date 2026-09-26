@@ -40,7 +40,7 @@ async function submit(){
   message(e.message?.includes('CLOSED')?'순위 집계가 마감되었습니다.':e.message?.includes('PROFILE_REQUIRED')?'닉네임을 설정해 주세요.':'제출하지 못했습니다. 잠시 후 자동으로 다시 시도합니다.');
  }finally{submitting=false;if(state?.values.every(Boolean)&&state.values.join('')!==answer)submit();}
 }
-async function refreshRanks(){const requestedDay=data?.day;if(!requestedDay)return;const result=await context(requestedDay);if(data?.day!==requestedDay)return;updateStreak(result);if(!day&&result.current_day!==data.day){await init();return;}rankings($('sudokuRank'),result.rankings);const mine=result.rankings.find(r=>r.is_me);if(mine){completedAnswer=state?.values.every(Boolean)?state.values.join(''):null;if(isSolved())complete();}closed=data.day!==result.current_day;$('dailyStatus').textContent=closed?'마감':'';}
+async function refreshRanks(){const requestedDay=data?.day;if(!requestedDay)return;const [result,moonSolvers]=await Promise.all([context(requestedDay),getMoonBadgeSolvers()]);if(data?.day!==requestedDay)return;updateStreak(result);if(!day&&result.current_day!==data.day){await init();return;}rankings($('sudokuRank'),result.rankings,{moonSolvers});const mine=result.rankings.find(r=>r.is_me);if(mine){completedAnswer=state?.values.every(Boolean)?state.values.join(''):null;if(isSolved())complete();}closed=data.day!==result.current_day;$('dailyStatus').textContent=closed?'마감':'';}
 function showPuzzle(puzzle, preserve=false){
  data=puzzle;updateStreak(puzzle);document.querySelector('h1').textContent=title(data.day);document.title=`${title(data.day)} · vodka puzzle`;
  $('dailyGame').hidden=false;$('dailyUnavailable').hidden=true;
@@ -82,14 +82,14 @@ async function init(){
  }
  if(cached)window.initCloudBtns();
  try{
-  const result=await context(day);
+  const [result,moonSolvers]=await Promise.all([context(day),getMoonBadgeSolvers()]);
   document.querySelector('h1').textContent=title(result.day);document.title=`${title(result.day)} · vodka puzzle`;
   clearTimeout(rollover);rollover=setTimeout(()=>{updateStreak(null);if(!day)init();else if(data?.available)refreshRanks().catch(()=>{});else init();},Math.max(1000,new Date(result.next_opens_at)-new Date(result.server_now)+100));
   if(!result.available){if(result.day===result.current_day)clearPuzzleCache(localStorage);showUnavailable('문제가 준비되지 않았습니다');return;}
   const preserve=ready&&data?.day===result.day&&data?.givens===result.givens;
   showPuzzle(result,preserve);setReady(true);window.initCloudBtns();writePuzzleCache(localStorage,result);
   if(!day)historyReplace(result.day);
-  rankings($('sudokuRank'),result.rankings);$('dailyStatus').textContent=closed?'마감':'';
+  rankings($('sudokuRank'),result.rankings,{moonSolvers});$('dailyStatus').textContent=closed?'마감':'';
   submit();
  }catch{
   if(ready&&data?.available&&data.day===(day||dailyDate())){rankMessage($('sudokuRank'),'기록을 불러오지 못했습니다.');$('dailyStatus').textContent='';}
