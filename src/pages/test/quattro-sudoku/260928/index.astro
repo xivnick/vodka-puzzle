@@ -5,6 +5,7 @@ import '../../../../styles/daily-sudoku.css';
 import { givens } from '../../../../lib/quattro-sudoku.js';
 ---
 <PuzzleLayout title="260928 콰트로 스도쿠" puzzleId="test-quattro-sudoku-260928"
+  subtitle="모든 2×2 공간에 홀수와 짝수가 함께 있어야 합니다"
   description="어떤 2×2 공간도 모두 홀수이거나 모두 짝수일 수 없는 스도쿠"
   showCloud={false} showLeaderboard={false}>
   <meta slot="head" name="robots" content="noindex, nofollow" />
@@ -19,13 +20,13 @@ import { givens } from '../../../../lib/quattro-sudoku.js';
     방향키로 이동하고 Backspace·Delete·0으로 지울 수 있습니다.
   </div>
   <section id="quattroGame" aria-label="콰트로 스도쿠">
+    <div class="sudoku-board-tools"><button id="quattroNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
     <div id="quattroBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
       {givens.flat().map((n, i) => <button type="button"
         class:list={['sudoku-cell', { given: !!n }]}
         data-cell={i} tabindex={i === 0 ? 0 : -1}
         aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${n || '빈칸'}${n ? ', 고정 숫자' : ''}`}>{n || ''}</button>)}
     </div>
-    <div class="quattro-tools"><button id="quattroNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
     <div class="sudoku-numbers" id="quattroNumbers" aria-label="숫자 입력">
       {[1,2,3,4,5,6,7,8,9].map(n => <button type="button" data-number={n}>{n}</button>)}
     </div>
@@ -39,7 +40,6 @@ import { givens } from '../../../../lib/quattro-sudoku.js';
 <script>import '../../../../scripts/quattro-sudoku.js';</script>
 <style>
   #quattroGame { width:100%; }
-  .quattro-tools { display:flex; justify-content:flex-end; margin-top:12px; }
   #quattroBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
   #quattroBoard .sudoku-cell.conflict { background:#fbeaea; }
   #quattroBoard .sudoku-cell.selected { box-shadow:inset 0 0 0 2px #4a6fa5; }
