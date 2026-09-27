@@ -1,4 +1,4 @@
-// Photo transcription for the 260928 preview. No solution is stored or searched.
+// Photo transcription for 260928. No solution is stored or searched.
 export const givens = [
   [0, 0, 3, 9, 0, 5, 7, 0, 0],
   [1, 0, 0, 0, 0, 0, 0, 0, 9],
@@ -42,4 +42,21 @@ export function solved(values) {
   return values.length === 81 && values.every((n, i) =>
     Number.isInteger(n) && n >= 1 && n <= 9 && (!fixed[i] || fixed[i] === n)
   ) && conflicts(values).size === 0;
+}
+
+export function parseQuattroSudokuState(saved, puzzleId) {
+  if (!saved || saved.version !== 1 || saved.puzzleId !== puzzleId
+    || !Array.isArray(saved.values) || saved.values.length !== 81
+    || !saved.values.every(value => Number.isInteger(value) && value >= 0 && value <= 9)
+    || !Array.isArray(saved.notes) || saved.notes.length !== 81
+    || !saved.notes.every(note => Array.isArray(note)
+      && note.every(value => Number.isInteger(value) && value >= 1 && value <= 9))) return null;
+  if (saved.values.some((value, index) => fixed[index] && value !== fixed[index])) return null;
+  const values = [...saved.values];
+  return {
+    values,
+    notes: saved.notes.map((note, index) => values[index]
+      ? []
+      : [...new Set(note)].sort((a, b) => a - b)),
+  };
 }

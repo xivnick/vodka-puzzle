@@ -1,10 +1,24 @@
-import { givens, conflicts, solved } from '../lib/quattro-sudoku.js';
+import { givens, conflicts, solved, parseQuattroSudokuState } from '../lib/quattro-sudoku.js';
 
 const $ = id => document.getElementById(id);
+const game = $('quattroGame');
+const puzzleId = game.dataset.puzzleId;
+const preview = game.dataset.preview === 'true';
 const fixed = givens.flat();
 const cells = [...$('quattroBoard').querySelectorAll('[data-cell]')];
 let values = fixed.slice(), selected = 0;
 let notes = Array.from({length:81}, () => []), notesMode = false;
+let ready = preview, completionRecorded = false;
+
+function state() {
+  return { version: 1, puzzleId, values: [...values], notes: notes.map(note => [...note]) };
+}
+
+function persist() {
+  if (preview || !ready) return;
+  try { window.saveLocalState(puzzleId, state()); }
+  catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
+}
 
 function render() {
   const bad = conflicts(values);
@@ -30,6 +44,11 @@ function render() {
     }
   });
   $('quattroComplete').hidden = !complete;
+  if (!complete) completionRecorded = false;
+  else if (!preview && ready && !completionRecorded) {
+    completionRecorded = true;
+    window.recordCompletion(puzzleId, state());
+  }
 }
 
 function select(index) {
@@ -39,7 +58,7 @@ function select(index) {
 }
 
 function change(number) {
-  if (fixed[selected]) return;
+  if (!ready || fixed[selected]) return;
   if (notesMode && number) {
     if (values[selected]) return;
     notes[selected] = notes[selected].includes(number)
@@ -49,6 +68,7 @@ function change(number) {
     values[selected] = number;
     notes[selected] = [];
   }
+  persist();
   render();
   cells[selected].focus({preventScroll:true});
 }
@@ -87,11 +107,43 @@ $('quattroNumbers').addEventListener('click', event => {
 });
 $('quattroErase').addEventListener('click', () => change(0));
 $('quattroReset').addEventListener('click', () => {
+  if (!ready) return;
   if (!values.some((n, i) => n !== fixed[i]) && !notes.some(a => a.length)) return;
   if (confirm('입력한 숫자와 메모를 모두 초기화할까요?')) {
     values = fixed.slice();
     notes = Array.from({length:81}, () => []);
+    completionRecorded = false;
+    persist();
     render();
   }
 });
 render();
+
+function init() {
+  if (ready) return;
+  let saved = null;
+  try { saved = window.loadLocalState(puzzleId); } catch {}
+  const parsed = parseQuattroSudokuState(saved, puzzleId);
+  values = parsed?.values || fixed.slice();
+  notes = parsed?.notes || Array.from({length:81}, () => []);
+  ready = true;
+  render();
+  window.initCloudBtns();
+}
+
+if (!preview) {
+  window.handleCloudSave = () => window.saveProgressCloud(puzzleId, state());
+  window.handleCloudLoad = async () => {
+    const saved = await window.loadProgressCloud(puzzleId);
+    if (saved == null) return;
+    const parsed = parseQuattroSudokuState(saved, puzzleId);
+    if (!parsed) { window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.'); return; }
+    values = parsed.values;
+    notes = parsed.notes;
+    completionRecorded = false;
+    persist();
+    render();
+  };
+  window.puzzleAuthReady.then(init);
+  window.addEventListener('puzzle-auth-ready', init);
+}

@@ -1,0 +1,48 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import '../styles/daily-sudoku.css';
+import { givens } from '../lib/quattro-sudoku.js';
+const { puzzleId, preview = false } = Astro.props;
+---
+<PuzzleLayout title="260928 콰트로 스도쿠" {puzzleId}
+  subtitle="모든 2×2 공간에 홀수와 짝수가 함께 있어야 합니다"
+  description="어떤 2×2 공간도 모두 홀수이거나 모두 짝수일 수 없는 스도쿠"
+  showCloud={!preview} showLeaderboard={!preview}>
+  {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
+  <div slot="rules">
+    빈칸에 1부터 9까지의 숫자를 채우세요.<br />
+    각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9가 한 번씩 들어가야 합니다.<br />
+    어떤 2×2 공간도 모두 홀수이거나 모두 짝수일 수 없습니다.
+  </div>
+  <div slot="controls">
+    칸을 누른 뒤 숫자 버튼 또는 키보드 1~9로 입력하세요.<br />
+    메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br />
+    방향키로 이동하고 Backspace·Delete·0으로 지울 수 있습니다.
+  </div>
+  <section id="quattroGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="콰트로 스도쿠">
+    <div class="sudoku-board-tools"><button id="quattroNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <div id="quattroBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
+      {givens.flat().map((n, i) => <button type="button"
+        class:list={['sudoku-cell', { given: !!n }]}
+        data-cell={i} tabindex={i === 0 ? 0 : -1}
+        aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${n || '빈칸'}${n ? ', 고정 숫자' : ''}`}>{n || ''}</button>)}
+    </div>
+    <div class="sudoku-numbers" id="quattroNumbers" aria-label="숫자 입력">
+      {[1,2,3,4,5,6,7,8,9].map(n => <button type="button" data-number={n}>{n}</button>)}
+    </div>
+    <div class="bottom-buttons">
+      <button id="quattroErase" type="button">지우기</button>
+      <button id="quattroReset" type="button" class="danger">초기화</button>
+    </div>
+    <PuzzleCompletion id="quattroComplete" />
+  </section>
+</PuzzleLayout>
+<script>import '../scripts/quattro-sudoku.js';</script>
+<style>
+  #quattroGame { width:100%; }
+  #quattroBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
+  #quattroBoard .sudoku-cell.conflict { background:#fbeaea; }
+  #quattroBoard .sudoku-cell:focus { outline:none; }
+  #quattroBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; }
+</style>

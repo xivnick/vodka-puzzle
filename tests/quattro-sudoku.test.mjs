@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { givens, conflicts, solved } from '../src/lib/quattro-sudoku.js';
+import { givens, conflicts, solved, parseQuattroSudokuState } from '../src/lib/quattro-sudoku.js';
 
 test('quattro checks odd and even squares at every position, including box boundaries', () => {
   for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
@@ -42,7 +42,41 @@ test('quattro preview renders the photo clues and remains unlisted without stora
   assert(!html.includes('id="leaderboard"'));
   assert(html.includes('260928 콰트로 스도쿠'));
   const catalog = JSON.parse(fs.readFileSync('src/data/puzzles.json', 'utf8'));
-  assert(!catalog.some(puzzle => /quattro|260928/.test(JSON.stringify(puzzle))));
+  assert(!catalog.some(puzzle => puzzle.href.includes('/test/quattro-sudoku/')));
   const script = fs.readFileSync('src/scripts/quattro-sudoku.js', 'utf8');
-  assert(!/recordCompletion|saveLocalState|saveProgressCloud|localStorage/.test(script));
+  assert(html.includes('data-preview="true"'));
+  assert(script.includes('if (preview || !ready) return;'));
+  assert(script.includes('if (!preview) {'));
+  assert(script.includes('else if (!preview && ready && !completionRecorded)'));
+});
+
+
+test('released quattro connects the official catalog, progress and completion', () => {
+  const html = fs.readFileSync('dist/260928_01/index.html', 'utf8');
+  const home = fs.readFileSync('dist/index.html', 'utf8');
+  assert(html.includes('data-puzzle-id="260928_01"'));
+  assert(html.includes('data-preview="false"'));
+  assert(html.includes('id="cloudBtns"'));
+  assert(html.includes('id="leaderboard"'));
+  assert(!html.includes('noindex, nofollow'));
+  assert(home.includes('/260928_01/'));
+});
+
+test('quattro progress validates identity, clues, values and notes', () => {
+  const puzzleId = '260928_01';
+  const saved = { version: 1, puzzleId, values: givens.flat(), notes: Array.from({length:81}, () => []) };
+  saved.values[0] = 6;
+  saved.notes[1] = [4, 2, 4];
+  const parsed = parseQuattroSudokuState(saved, puzzleId);
+  assert.equal(parsed.values[0], 6);
+  assert.deepEqual(parsed.notes[1], [2, 4]);
+  assert.equal(parseQuattroSudokuState({...saved, puzzleId: 'test-quattro-sudoku-260928'}, puzzleId), null);
+  for (const invalid of [null, {...saved, version: 2}, {...saved, values: []}, {...saved, notes: []}]) {
+    assert.equal(parseQuattroSudokuState(invalid, puzzleId), null);
+  }
+  saved.values[2] = 8;
+  assert.equal(parseQuattroSudokuState(saved, puzzleId), null);
+  saved.values[2] = 3;
+  saved.notes[1] = [10];
+  assert.equal(parseQuattroSudokuState(saved, puzzleId), null);
 });
