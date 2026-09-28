@@ -479,22 +479,31 @@ function toggleRules(id = 'rulesBox') {
 }
 
 function saveLocalState(key, state) {
-  localStorage.setItem(`${SEASON_ID}:${getUserId() || 'guest'}:${key}`, JSON.stringify(state));
+  localStorage.setItem(`${SEASON_ID}:local:${key}`, JSON.stringify(state));
 }
 
 function loadLocalState(key) {
-  const storageKey = `${SEASON_ID}:${getUserId() || 'guest'}:${key}`;
-  let raw = localStorage.getItem(storageKey);
-  if (!raw && !getUserId()) {
-    raw = localStorage.getItem(`${SEASON_ID}::${key}`);
-    if (raw) localStorage.setItem(storageKey, raw);
+  const sharedKey = `${SEASON_ID}:local:${key}`;
+  const legacyKeys = [
+    getUserId() && `${SEASON_ID}:${getUserId()}:${key}`,
+    `${SEASON_ID}:guest:${key}`,
+    `${SEASON_ID}::${key}`,
+  ].filter(Boolean);
+  for (const storageKey of [sharedKey, ...legacyKeys]) {
+    const raw = localStorage.getItem(storageKey);
+    if (raw === null) continue;
+    try {
+      const state = JSON.parse(raw);
+      if (state === null) continue;
+      if (storageKey !== sharedKey) {
+        try { localStorage.setItem(sharedKey, raw); } catch (e) { /* The old entry still restores. */ }
+      }
+      return state;
+    } catch (e) {
+      // Keep the old entry so it can be recovered without deleting any progress.
+    }
   }
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch (e) {
-    return null;
-  }
+  return null;
 }
 
 async function loadCloudState(puzzleId, applyState) {

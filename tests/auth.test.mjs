@@ -40,3 +40,21 @@ test('return path cannot redirect outside this site or back into auth',async()=>
  }
  assert.equal(vm.runInContext("safeNext('/practice/#board')",r.context),'/practice/#board');
 });
+test('login migrates the guest board for the puzzle being resumed',async()=>{
+ const listeners=new Map(),order=[];
+ const element=id=>({hidden:false,disabled:false,value:'',textContent:'',addEventListener:(name,handler)=>listeners.set(`${id}:${name}`,handler)});
+ const elements=new Map();
+ const getElement=id=>{if(!elements.has(id))elements.set(id,element(id));return elements.get(id);};
+ let resolve;
+ const ready=new Promise(done=>{resolve=done;});
+ const client={auth:{onAuthStateChange(){},async getSession(){return{data:{session:null}};},async signInWithOAuth(){order.push('oauth');return{error:null};}}};
+ const context=vm.createContext({createClient:()=>client,URL,URLSearchParams,Event,setTimeout,
+  location:{origin:'https://puzzle.xivnick.me',pathname:'/nickname/',search:'?next=%2F260928_02%2F'},
+  sessionStorage:{value:null,getItem(){return this.value;},setItem(key,value){this.value=value;}},
+  document:{documentElement:{dataset:{season:'2026-2'}},getElementById:getElement,querySelector(){return null;}},
+  window:{puzzleAccount:{user:null,profile:null},resolvePuzzleAuth:resolve,dispatchEvent(){},loadLocalState:id=>order.push(`migrate:${id}`)}
+ });
+ vm.runInContext(source,context);await ready;
+ await listeners.get('googleLogin:click')();
+ assert.deepEqual(order,['migrate:260928_02','oauth']);
+});

@@ -1,12 +1,29 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import vm from 'node:vm';
 import {countSolutions,grade,generateMedium,dailyDate,units} from '../src/lib/sudoku.js';
 import {rankings} from '../src/lib/daily-sudoku-client.js';
 test('daily date changes at Korean midnight, including year boundary',()=>{
  assert.equal(dailyDate(new Date('2026-09-16T14:59:59Z')),'2026-09-16');
  assert.equal(dailyDate(new Date('2026-09-16T15:00:00Z')),'2026-09-17');
  assert.equal(dailyDate(new Date('2025-12-31T14:59:59Z')),'2025-12-31');
+});
+test('daily local play uses one key and preserves old account and guest saves',()=>{
+ const source=fs.readFileSync('src/scripts/daily-sudoku.js','utf8');
+ const start=source.indexOf('function loadLocalDay('),end=source.indexOf('function isSolved()',start);
+ const values=new Map([
+  ['daily-sudoku:guest:2026-09-28',JSON.stringify({values:[1]})],
+  ['daily-sudoku:account-a:2026-09-29',JSON.stringify({values:[2]})],
+ ]);
+ const sandbox=vm.createContext({window:{puzzleAccount:{user:null}},localStorage:{getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value)}});
+ vm.runInContext(source.slice(start,end),sandbox);
+ assert.equal(vm.runInContext("loadLocalDay('2026-09-28').values[0]",sandbox),1);
+ assert.equal(values.get('daily-sudoku:local:2026-09-28'),values.get('daily-sudoku:guest:2026-09-28'));
+ sandbox.window.puzzleAccount.user={id:'account-a'};
+ assert.equal(vm.runInContext("loadLocalDay('2026-09-28').values[0]",sandbox),1);
+ assert.equal(vm.runInContext("loadLocalDay('2026-09-29').values[0]",sandbox),2);
+ assert.equal(values.get('daily-sudoku:account-a:2026-09-29'),JSON.stringify({values:[2]}));
 });
 test('generated medium puzzles have one solution and need candidate elimination',()=>{
  let seed=472;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/2**32;};

@@ -71,7 +71,7 @@ test('flower badge follows completions and ends after October 2 in Korea',async(
  assert.match(read('src/scripts/daily-home.js'),/getFlowerBadgeSolvers\(\)/);
  assert.match(read('src/scripts/daily-sudoku.js'),/getFlowerBadgeSolvers\(\)/);
 });
-test('writes require a session; identity and local state follow account IDs',async()=>{
+test('writes require a session; local play survives account changes',async()=>{
  const calls=[];const r=runtime('public/js/common.js',async(url,opts)=>{calls.push([url,opts]);return{ok:true}});
  r.values.set('vodka_nickname:2026-2','someone');
  assert.equal(r.run('isGuest()'),true);
@@ -79,14 +79,32 @@ test('writes require a session; identity and local state follow account IDs',asy
  assert.equal(calls.length,0);
  r.run("window.puzzleAccount={user:{id:'account-a'},profile:{nickname:'a'},client:{auth:{getSession:async()=>({data:{session:{access_token:'session-token'}}})}}}");
  r.run("saveLocalState('puzzle_test',{n:1})");
- assert.ok(r.values.has('2026-2:account-a:puzzle_test'));
+ assert.ok(r.values.has('2026-2:local:puzzle_test'));
  r.run("window.puzzleAccount.profile.nickname='renamed'");
  assert.equal(r.run("loadLocalState('puzzle_test').n"),1);
  await r.run("sbUpsert('progress',{nickname:'renamed',user_id:'forged',puzzle_id:'test',state:{}},'season_id,user_id,puzzle_id')");
  const body=JSON.parse(calls[0][1].body);
  assert.equal(body.season_id,'2026-2');assert.equal(body.user_id,'account-a');
  assert.equal(calls[0][1].headers.Authorization,'Bearer session-token');
- r.run("window.puzzleAccount.user.id='account-b'");assert.equal(r.run("loadLocalState('puzzle_test')"),null);
+ r.run("window.puzzleAccount.user.id='account-b'");assert.equal(r.run("loadLocalState('puzzle_test').n"),1);
+ r.run("window.puzzleAccount.user=null");assert.equal(r.run("loadLocalState('puzzle_test').n"),1);
+});
+test('old account and guest local saves restore without deleting other users\u2019 data',()=>{
+ const r=runtime('public/js/common.js',async()=>{throw Error('unexpected request')});
+ r.values.set('2026-2:account-a:puzzle-a',JSON.stringify({n:1}));
+ r.values.set('2026-2:account-b:puzzle-a',JSON.stringify({n:2}));
+ r.values.set('2026-2:guest:puzzle-b',JSON.stringify({n:3}));
+ r.values.set('2026-2::puzzle-c',JSON.stringify({n:4}));
+ r.run("window.puzzleAccount={user:{id:'account-a'}}");
+ assert.equal(r.run("loadLocalState('puzzle-a').n"),1);
+ assert.equal(r.values.get('2026-2:local:puzzle-a'),JSON.stringify({n:1}));
+ r.run("window.puzzleAccount.user.id='account-b'");
+ assert.equal(r.run("loadLocalState('puzzle-a').n"),1);
+ assert.equal(r.run("loadLocalState('puzzle-b').n"),3);
+ assert.equal(r.run("loadLocalState('puzzle-c').n"),4);
+ assert.equal(r.values.get('2026-2:account-b:puzzle-a'),JSON.stringify({n:2}));
+ assert.equal(r.values.get('2026-2:guest:puzzle-b'),JSON.stringify({n:3}));
+ assert.equal(r.values.get('2026-2::puzzle-c'),JSON.stringify({n:4}));
 });
 test('registered puzzle titles remain available to the banner offline',async()=>{
  const calls=[];const r=runtime('public/js/common.js',async url=>{calls.push(url);throw new Error('offline')});

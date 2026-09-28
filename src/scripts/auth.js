@@ -99,6 +99,8 @@ function setupAccountPage() {
     login.disabled = true;
     status.textContent = '';
     try {
+      const puzzleId = /^\/(\d{6}_\d{2})(?:\/|$)/.exec(nextPage())?.[1];
+      if (puzzleId) { try { window.loadLocalState?.(puzzleId); } catch {} }
       const { error } = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/auth/callback/' } });
       if (error) throw error;
     } catch {
