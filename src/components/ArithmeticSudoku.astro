@@ -50,7 +50,13 @@ const puzzleId = 'test-arithmetic-sudoku-260928';
 <style>
   #arithmeticGame { width:100%; }
   .arithmetic-board-wrap { position:relative; width:100%; }
-  #arithmeticBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; font-size:clamp(17px,4.5vw,24px); }
+  #arithmeticBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; font-size:clamp(17px,4.5vw,24px); border:0; }
+  #arithmeticBoard .sudoku-cell::after { content:''; position:absolute; inset:0; border-right:1px solid #ddd; border-bottom:1px solid #ddd; pointer-events:none; }
+  #arithmeticBoard .sudoku-cell:nth-child(3n)::after { border-right:2px solid #777; }
+  #arithmeticBoard .sudoku-cell:nth-child(9n)::after { border-right:0; }
+  #arithmeticBoard .sudoku-cell:nth-child(n+19):nth-child(-n+27)::after,
+  #arithmeticBoard .sudoku-cell:nth-child(n+46):nth-child(-n+54)::after { border-bottom:2px solid #777; }
+  #arithmeticBoard .sudoku-cell:nth-child(n+73)::after { border-bottom:0; }
   #arithmeticBoard .sudoku-cell.conflict { background:#fbeaea; }
   #arithmeticBoard .sudoku-cell:focus { outline:none; }
   #arithmeticBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; }
