@@ -10,6 +10,10 @@ function runtime(file, fetch) {
  const context=vm.createContext({ URLSearchParams, fetch, console, setTimeout, clearTimeout, setInterval, clearInterval,
  window:{addEventListener(){}}, document:{querySelector(){return null;},addEventListener(){},documentElement:{dataset:{season:'2026-2'}},getElementById(){return null;}},
  localStorage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)} });
+ if(file==='public/js/common.js'){
+  vm.runInContext(read('public/js/ranking-ui.js'),context);
+  context.window.rankingUi=context.rankingUi;
+ }
  vm.runInContext(read(file),context);return {context,values,run:code=>vm.runInContext(code,context)};
 }
 test('all built HTML scripts compile and local links resolve',()=>{
@@ -46,15 +50,15 @@ test('overall rankings mark moon solvers and the badge is limited to the Chuseok
   {nickname:'plain',puzzle_id:'260923_01',completed_at:'2026-09-23T01:00:00Z'},
  ]}));
  const rows=await r.run("getSolverRankings(['260925_01','260923_01'])");
- assert.equal(rows[0].nick,'moon');assert.equal(rows[0].hasMoonBadge,true);
- assert.equal(rows[1].hasMoonBadge,false);
+ assert.equal(rows[0].nick,'moon');assert.equal(rows[1].nick,'plain');
  const common=read('public/js/common.js');const home=read('public/js/home.js');
- assert.ok(common.includes("day >= '2026-09-24' && day <= '2026-09-27'"));
- assert.ok(common.includes("timeZone: 'Asia/Seoul'"));
- assert.ok(common.includes("puzzle_id=eq.260925_01&select=nickname"));
- assert.ok(common.includes('seasonal-rank-name'));
- assert.ok(home.includes('/icons/seasonal/rabbit.svg'));
- assert.ok(home.includes('showMoonBadges && hasMoonBadge'));
+ const rankingUi=read('public/js/ranking-ui.js');
+ assert.ok(rankingUi.includes("from: '2026-09-24', through: '2026-09-27'"));
+ assert.ok(rankingUi.includes("timeZone: 'Asia/Seoul'"));
+ assert.ok(common.includes('window.rankingUi.badges[0].puzzleId'));
+ assert.ok(rankingUi.includes('seasonal-rank-name'));
+ assert.ok(rankingUi.includes('/icons/seasonal/rabbit.svg'));
+ assert.ok(home.includes('getMoonBadgeSolvers()'));
 });
 test('flower badge follows completions and ends after October 2 in Korea',async()=>{
  const r=runtime('public/js/common.js',async()=>({ok:true,json:async()=>[
@@ -62,12 +66,12 @@ test('flower badge follows completions and ends after October 2 in Korea',async(
   {nickname:'plain',puzzle_id:'260923_01',completed_at:'2026-09-23T01:00:00Z'},
  ]}));
  const rows=await r.run("getSolverRankings(['260928_03','260923_01'])");
- assert.equal(rows.find(row=>row.nick==='flower').hasFlowerBadge,true);
- assert.equal(rows.find(row=>row.nick==='plain').hasFlowerBadge,false);
+ assert.equal(rows.find(row=>row.nick==='flower').count,1);
+ assert.equal(rows.find(row=>row.nick==='plain').count,1);
  assert.equal(r.run("isFlowerBadgePeriod(new Date('2026-09-27T15:00:00Z'))"),true);
  assert.equal(r.run("isFlowerBadgePeriod(new Date('2026-10-02T14:59:59Z'))"),true);
  assert.equal(r.run("isFlowerBadgePeriod(new Date('2026-10-02T15:00:00Z'))"),false);
- assert.match(read('public/js/home.js'),/showFlowerBadges && hasFlowerBadge/);
+ assert.match(read('public/js/home.js'),/getFlowerBadgeSolvers\(\)/);
  assert.match(read('src/scripts/daily-home.js'),/getFlowerBadgeSolvers\(\)/);
  assert.match(read('src/scripts/daily-sudoku.js'),/getFlowerBadgeSolvers\(\)/);
 });

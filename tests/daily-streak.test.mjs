@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {renderStreak,renderStreakRankings} from '../src/lib/daily-streak.js';
 import {context} from '../src/lib/daily-sudoku-client.js';
+import '../public/js/ranking-ui.js';
 function node(){return {children:[],hidden:false,attributes:{},listeners:{},replaceChildren(...children){this.children=children;},append(...children){this.children.push(...children);},setAttribute(k,v){this.attributes[k]=v;},removeAttribute(k){delete this.attributes[k];},addEventListener(type,listener){this.listeners[type]=listener;}};}
 test('streak renders no record, outline, rest and restored completion with accessible labels',()=>{
  const original=globalThis.document;globalThis.document={createElement:node};

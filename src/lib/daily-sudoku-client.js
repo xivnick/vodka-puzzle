@@ -11,17 +11,7 @@ export function rankMessage(element,text) {
  const empty=document.createElement('div');empty.className='lb-empty';empty.textContent=text;element.replaceChildren(empty);
 }
 export function rankings(element,rows,{moonSolvers=new Set(),flowerSolvers=new Set()}={}) {
- element.replaceChildren();
- if(!rows.length){rankMessage(element,'아직 기록이 없습니다.');return;}
- const list=document.createElement('div');list.className='lb-list';element.append(list);
- for(const row of rows){
-  const div=document.createElement('div');div.className=`lb-row${row.is_me?' lb-me':''}`;
-  const rank=document.createElement('span');rank.className='lb-rank';rank.textContent=row.rank;
-  const name=document.createElement('span');name.className='lb-name seasonal-rank-name';
-  const nickname=document.createElement('span');nickname.textContent=row.nickname;name.append(nickname);
-  if(moonSolvers.has(row.nickname)){const badge=document.createElement('img');badge.className='seasonal-rank-badge';badge.src='/icons/seasonal/rabbit.svg';badge.width=18;badge.height=18;badge.alt='한가위 스도쿠 완성';badge.title='한가위 스도쿠 완성';name.append(badge);}
-  if(flowerSolvers.has(row.nickname)){const badge=document.createElement('img');badge.className='seasonal-rank-badge';badge.src='/icons/flower/flower.svg';badge.width=18;badge.height=18;badge.alt='란영 스도쿠 완성';badge.title='란영 스도쿠 완성';name.append(badge);}
-  const completed=document.createElement('span');completed.className='lb-time';completed.textContent=time(row.completed_at);
-  div.append(rank,name,completed);list.append(div);
- }
+ globalThis.rankingUi.render(element,rows.map(row=>({rank:row.rank,nickname:row.nickname,completedAt:row.completed_at,isMe:row.is_me})),{
+  solvers:{moon:moonSolvers,flower:flowerSolvers},showLast:true,value:row=>time(row.completedAt),
+ });
 }

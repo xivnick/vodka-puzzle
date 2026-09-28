@@ -127,71 +127,19 @@ const PAGE_SIZE = 10;
     const scopeIds = [...document.querySelectorAll('.list a[data-puzzle-id]')]
       .map(a => a.dataset.puzzleId);
 
-    const rankings = await getSolverRankings(scopeIds);
+    const [rankings, moonSolvers, flowerSolvers] = await Promise.all([
+      getSolverRankings(scopeIds), getMoonBadgeSolvers(), getFlowerBadgeSolvers(),
+    ]);
     const myNick = getNickname();
     const container = document.getElementById('solverRank');
     const rankTitle = document.getElementById('rankTitle');
     rankTitle.dataset.regularCount = String(rankings.length);
     if (document.getElementById('regularRankBtn').getAttribute('aria-pressed') === 'true') rankTitle.textContent = `랭킹 (${rankings.length})`;
 
-    if (rankings.length === 0) {
-      container.innerHTML = '<div class="lb-empty">아직 기록이 없습니다.</div>';
-      return;
-    }
-
-
     const myIdx = (!myNick || isGuest()) ? -1 : rankings.findIndex(r => r.nick === myNick);
-    const top = Math.min(10, rankings.length);
-
-    const showMoonBadges = isChuseokHoliday();
-    const showFlowerBadges = isFlowerBadgePeriod();
-    function rowHtml(rank, nick, count, hasMoonBadge, hasFlowerBadge, extra) {
-      const isMe = myNick && nick === myNick;
-      const moonBadge = showMoonBadges && hasMoonBadge
-        ? '<img class="seasonal-rank-badge" src="/icons/seasonal/rabbit.svg" width="18" height="18" alt="한가위 스도쿠 완성" title="한가위 스도쿠 완성">'
-        : '';
-      const flowerBadge = showFlowerBadges && hasFlowerBadge
-        ? '<img class="seasonal-rank-badge" src="/icons/flower/flower.svg" width="18" height="18" alt="란영 스도쿠 완성" title="란영 스도쿠 완성">'
-        : '';
-      return `<div class="lb-row${isMe ? ' lb-me' : ''}${extra ? ' ' + extra : ''}">` +
-        `<span class="lb-rank">${rank}</span>` +
-        `<span class="lb-name seasonal-rank-name"><span>${escHtml(nick)}</span>${moonBadge}${flowerBadge}</span>` +
-        `<span class="lb-time">${count}개</span>` +
-        `</div>`;
-    }
-
-    function ellipsisRow() {
-      return `<div class="lb-row lb-ellipsis lb-ellipsis-toggle" data-expand-rankings="1">` +
-        `<span class="lb-rank">⋯</span><span class="lb-name"></span><span class="lb-time"></span>` +
-        `</div>`;
-    }
-
-    function render(expanded = false) {
-      let html = '<div class="lb-list">';
-      if (expanded || rankings.length <= 10) {
-        for (let i = 0; i < rankings.length; i++) {
-          html += rowHtml(i + 1, rankings[i].nick, rankings[i].count, rankings[i].hasMoonBadge, rankings[i].hasFlowerBadge);
-        }
-      } else {
-        for (let i = 0; i < top; i++) {
-          html += rowHtml(i + 1, rankings[i].nick, rankings[i].count, rankings[i].hasMoonBadge, rankings[i].hasFlowerBadge);
-        }
-        if (myIdx >= 10) {
-          html += ellipsisRow();
-          html += rowHtml(myIdx + 1, rankings[myIdx].nick, rankings[myIdx].count, rankings[myIdx].hasMoonBadge, rankings[myIdx].hasFlowerBadge);
-          if (myIdx < rankings.length - 1) html += ellipsisRow();
-        } else if (rankings.length > 10) {
-          html += ellipsisRow();
-        }
-      }
-      html += '</div>';
-      container.innerHTML = html;
-      container.querySelectorAll('[data-expand-rankings]').forEach(el => {
-        el.addEventListener('click', () => render(true), { once: true });
-      });
-    }
-
-    render(false);
+    window.rankingUi.render(container, rankings.map((row, index) => ({
+      rank: index + 1, nickname: row.nick, count: row.count, isMe: index === myIdx,
+    })), { solvers: { moon: moonSolvers, flower: flowerSolvers }, value: row => `${row.count}개` });
   }
 
   loadSolverRankings();

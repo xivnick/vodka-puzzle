@@ -75,6 +75,7 @@ mv -Tf dist-rollback dist
 - 산수 스도쿠: `/260928_02/`에서 서비스한다. `ArithmeticSudoku.astro`와 `src/lib/arithmetic-sudoku.js`에서 사진의 왼쪽 첫 열 1~9와 가로 수식을 검사하고 기기 공용 로컬 풀이·계정별 클라우드 진행 저장과 완료 기록을 지원한다. `/test/arithmetic-sudoku/260928/`는 저장·기록을 분리한 시연 경로다.
 - 란영 스도쿠: `/260928_03/`에서 서비스한다. `FlowerSudoku.astro`와 `src/lib/flower-sudoku.js`가 일반 스도쿠 규칙과 꽃 칸 주변 8칸의 숫자 차이를 검사한다. 기기 공용 로컬 풀이·계정별 클라우드 진행 저장과 완료 기록을 지원한다. 2026-09-28~10-02(한국 시간)에는 완성자의 전체·데일리 랭킹과 각 문제의 `푼 사람` 이름 오른쪽에 꽃 아이콘을 표시한다. `/test/flower-sudoku/260928/`는 저장·기록을 분리한 시연 경로다.
 - `public/js/common.js`: 일반 문제의 로컬 저장·클라우드 저장·완료 기록·순위
+- `public/js/ranking-ui.js`: 홈 전체·데일리 랭킹과 문제별 `푼 사람`의 공통 행·닉네임·기간 한정 아이콘 표시. 기본적으로 상위 10명과 범위 밖의 내 순위를 보여주며 문제 내부 랭킹은 마지막 순위도 표시한다. 생략 행은 클릭하거나 Enter·Space로 펼친다. 한가위·란영 아이콘은 닉네임 옆 표시 시안이며 업적 획득·선택 정보는 저장하지 않는다.
 
 신규 문제는 `src/pages/<YYMMDD_번호>/index.astro`에서 `PuzzleLayout`을 사용한다. `title`, `puzzleId`, `description`과 필요한 `subtitle`을 전달하고 `rules`, `controls` 슬롯에 안내를 넣는다. 판 구성·조작·일반 정답 검증은 문제별 코드에 둔다.
 

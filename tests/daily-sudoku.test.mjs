@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {countSolutions,grade,generateMedium,dailyDate,units} from '../src/lib/sudoku.js';
 import {rankings} from '../src/lib/daily-sudoku-client.js';
+import '../public/js/ranking-ui.js';
 test('daily date changes at Korean midnight, including year boundary',()=>{
  assert.equal(dailyDate(new Date('2026-09-16T14:59:59Z')),'2026-09-16');
  assert.equal(dailyDate(new Date('2026-09-16T15:00:00Z')),'2026-09-17');
@@ -59,6 +60,25 @@ test('daily puzzle rankings add a flower after Ran-yeong solver names',()=>{
   const badge=element.children[0].children[0].children[1].children[1];
   assert.equal(badge.src,'/icons/flower/flower.svg');
   assert.equal(badge.alt,'란영 스도쿠 완성');
+ }finally{globalThis.document=original;}
+});
+
+test('daily puzzle ranking folds like a regular puzzle and keeps the final rank visible',()=>{
+ const original=globalThis.document;
+ const node=()=>({children:[],attributes:{},listeners:{},replaceChildren(...children){this.children=children;},append(...children){this.children.push(...children);},setAttribute(key,value){this.attributes[key]=value;},addEventListener(type,listener){this.listeners[type]=listener;}});
+ globalThis.document={createElement:node};
+ try{
+  const element=node();
+  const rows=Array.from({length:13},(_,index)=>({rank:index+1,nickname:`solver-${index+1}`,completed_at:'2026-09-28T01:00:00Z',is_me:index===11}));
+  rankings(element,rows);
+  const folded=element.children[0].children;
+  assert.equal(folded.length,14);
+  assert.equal(folded[10].children[0].textContent,'⋯');
+  assert.equal(folded[11].children[0].textContent,12);
+  assert.equal(folded[12].children[0].textContent,'⋯');
+  assert.equal(folded[13].children[0].textContent,13);
+  folded[10].listeners.click();
+  assert.equal(element.children[0].children.length,13);
  }finally{globalThis.document=original;}
 });
 
