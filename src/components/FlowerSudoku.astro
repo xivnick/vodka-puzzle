@@ -1,0 +1,53 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import '../styles/daily-sudoku.css';
+import { givens, flowers } from '../lib/flower-sudoku.js';
+const { puzzleId } = Astro.props;
+---
+<PuzzleLayout title="란영 스도쿠" {puzzleId}
+  subtitle="꽃 칸은 주변 8칸과 숫자가 다릅니다"
+  description="꽃 칸의 숫자가 주변 8칸의 숫자와 모두 다른 스도쿠"
+  showCloud={false} showLeaderboard={false}>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <div slot="rules">
+    빈칸에 1부터 9까지의 숫자를 채우세요.<br />
+    각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9가 한 번씩 들어가야 합니다.<br />
+    꽃 칸의 숫자는 그 칸을 둘러싼 8칸의 숫자와 모두 달라야 합니다.
+  </div>
+  <div slot="controls">
+    칸을 누른 뒤 숫자 버튼 또는 키보드 1~9로 입력하세요.<br />
+    메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br />
+    방향키로 이동하고 Backspace·Delete·0으로 지울 수 있습니다.
+  </div>
+  <section id="flowerGame" data-puzzle-id={puzzleId} data-preview="true" aria-label="란영 스도쿠">
+    <div class="sudoku-board-tools"><button id="flowerNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <div id="flowerBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
+      {givens.flat().map((n, i) => <button type="button"
+        class:list={['sudoku-cell', { given: !!n, flower: !!flowers.flat()[i] }]}
+        data-cell={i} tabindex={i === 0 ? 0 : -1}
+        aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${n || '빈칸'}${n ? ', 고정 숫자' : ''}${flowers.flat()[i] ? ', 꽃 칸' : ''}`}>{n || ''}</button>)}
+    </div>
+    <div class="sudoku-numbers" id="flowerNumbers" aria-label="숫자 입력">
+      {[1,2,3,4,5,6,7,8,9].map(n => <button type="button" data-number={n}>{n}</button>)}
+    </div>
+    <div class="bottom-buttons">
+      <button id="flowerErase" type="button">지우기</button>
+      <button id="flowerReset" type="button" class="danger">초기화</button>
+    </div>
+    <PuzzleCompletion id="flowerComplete" />
+  </section>
+</PuzzleLayout>
+<script>import '../scripts/flower-sudoku.js';</script>
+<style>
+  #flowerGame { width:100%; }
+  #flowerBoard .sudoku-cell.flower { background:#f2f2f0; }
+  #flowerBoard .sudoku-cell.flower.selected { background:#e1e9f3; }
+  #flowerBoard .sudoku-cell.flower.conflict { background:#fbeaea; }
+  #flowerBoard .sudoku-cell.flower::after { content:""; position:absolute; top:2px; left:2px; width:clamp(10px,2.5vw,14px); height:clamp(10px,2.5vw,14px); background:url('/icons/flower/flower.svg') center / contain no-repeat; opacity:.6; pointer-events:none; }
+  #flowerBoard .sudoku-cell.flower.has-notes::after { display:none; }
+  #flowerBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
+  #flowerBoard .sudoku-cell.conflict { background:#fbeaea; }
+  #flowerBoard .sudoku-cell:focus { outline:none; }
+  #flowerBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; }
+</style>
