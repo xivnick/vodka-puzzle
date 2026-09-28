@@ -404,6 +404,7 @@ async function recordCompletion(puzzleId, state) {
 
   if (getUserId() !== owner) return;
   if (puzzleId === '260925_01') _moonBadgeSolversPromise = null;
+  if (puzzleId === '260928_03') _flowerBadgeSolversPromise = null;
   showToast('🎉 완료 기록을 저장했습니다!');
   _recentBannerIndex = 0;
   refreshRecentBanner(true);
@@ -519,6 +520,14 @@ function isChuseokHoliday(date = new Date()) {
   return day >= '2026-09-24' && day <= '2026-09-27';
 }
 
+function isFlowerBadgePeriod(date = new Date()) {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(date).filter(part => part.type !== 'literal').map(part => [part.type, part.value]));
+  const day = `${parts.year}-${parts.month}-${parts.day}`;
+  return day >= '2026-09-28' && day <= '2026-10-02';
+}
+
 let _moonBadgeSolversPromise = null;
 function getMoonBadgeSolvers() {
   if (!isChuseokHoliday()) return Promise.resolve(new Set());
@@ -536,6 +545,23 @@ function moonBadgeHtml(nickname, moonSolvers) {
   return '<img class="seasonal-rank-badge" src="/icons/seasonal/rabbit.svg" width="18" height="18" alt="한가위 스도쿠 완성" title="한가위 스도쿠 완성">';
 }
 
+let _flowerBadgeSolversPromise = null;
+function getFlowerBadgeSolvers() {
+  if (!isFlowerBadgePeriod()) return Promise.resolve(new Set());
+  if (!_flowerBadgeSolversPromise) {
+    _flowerBadgeSolversPromise = sbSelect(
+      'completions',
+      'puzzle_id=eq.260928_03&select=nickname&limit=500'
+    ).then(rows => new Set(rows.map(row => row.nickname))).catch(() => new Set());
+  }
+  return _flowerBadgeSolversPromise;
+}
+
+function flowerBadgeHtml(nickname, flowerSolvers) {
+  if (!flowerSolvers.has(nickname)) return '';
+  return '<img class="seasonal-rank-badge" src="/icons/flower/flower.svg" width="18" height="18" alt="란영 스도쿠 완성" title="란영 스도쿠 완성">';
+}
+
 async function renderLeaderboard(puzzleId, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -543,14 +569,15 @@ async function renderLeaderboard(puzzleId, containerId) {
   const titleEl = container.closest('.lb-section')?.querySelector('.lb-title');
   container.innerHTML = '<div class="lb-loading">불러오는 중...</div>';
 
-  let rows, moonSolvers;
+  let rows, moonSolvers, flowerSolvers;
   try {
-    [rows, moonSolvers] = await Promise.all([
+    [rows, moonSolvers, flowerSolvers] = await Promise.all([
       sbSelect(
         'completions',
         `puzzle_id=eq.${encodeURIComponent(puzzleId)}&select=nickname,completed_at&order=completed_at.asc&limit=500`
       ),
       getMoonBadgeSolvers(),
+      getFlowerBadgeSolvers(),
     ]);
   } catch (e) {
     container.innerHTML = '<div class="lb-empty">기록을 불러오지 못했습니다.</div>';
@@ -583,7 +610,7 @@ async function renderLeaderboard(puzzleId, containerId) {
     const isMe = myNick && nick === myNick;
     return `<div class="lb-row${isMe ? ' lb-me' : ''}${extra ? ' ' + extra : ''}">` +
       `<span class="lb-rank">${rank}</span>` +
-      `<span class="lb-name seasonal-rank-name"><span>${escHtml(nick)}</span>${moonBadgeHtml(nick, moonSolvers)}</span>` +
+      `<span class="lb-name seasonal-rank-name"><span>${escHtml(nick)}</span>${moonBadgeHtml(nick, moonSolvers)}${flowerBadgeHtml(nick, flowerSolvers)}</span>` +
       `<span class="lb-time">${fmtDatetime(completedAt)}</span>` +
       `</div>`;
   }
@@ -657,6 +684,7 @@ async function getSolverRankings(puzzleIds = null) {
     const nickPuzzles = new Map(); // nickname -> Set of puzzle_ids
     const nickLastAt = new Map(); // nickname -> 가장 최근 completed_at
     const moonSolvers = new Set();
+    const flowerSolvers = new Set();
     for (const row of rows) {
       if (EXCLUDE.has(row.puzzle_id)) continue;
       if (includeSet && !includeSet.has(row.puzzle_id)) continue;
@@ -666,12 +694,13 @@ async function getSolverRankings(puzzleIds = null) {
       }
       nickPuzzles.get(row.nickname).add(row.puzzle_id);
       if (row.puzzle_id === '260925_01') moonSolvers.add(row.nickname);
+      if (row.puzzle_id === '260928_03') flowerSolvers.add(row.nickname);
       if (row.completed_at > nickLastAt.get(row.nickname)) {
         nickLastAt.set(row.nickname, row.completed_at);
       }
     }
     return [...nickPuzzles.entries()]
-      .map(([nick, puzzles]) => ({ nick, count: puzzles.size, lastAt: nickLastAt.get(nick), hasMoonBadge: moonSolvers.has(nick) }))
+      .map(([nick, puzzles]) => ({ nick, count: puzzles.size, lastAt: nickLastAt.get(nick), hasMoonBadge: moonSolvers.has(nick), hasFlowerBadge: flowerSolvers.has(nick) }))
       .sort((a, b) => b.count - a.count || new Date(a.lastAt) - new Date(b.lastAt));
   } catch (e) {
     return [];

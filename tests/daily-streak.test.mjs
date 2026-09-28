@@ -72,6 +72,17 @@ test('streak leaderboard adds a rabbit after moon solver names',()=>{
  }finally{globalThis.document=original;}
 });
 
+test('streak leaderboard adds a flower after Ran-yeong solver names',()=>{
+ const original=globalThis.document;globalThis.document={createElement:node};
+ try{
+  const el=node();
+  renderStreakRankings(el,[{rank:1,nickname:'flower',count:3,status:'completed'}],{flowerSolvers:new Set(['flower'])});
+  const name=el.children[0].children[0].children[1];
+  assert.equal(name.children[1].src,'/icons/flower/flower.svg');
+  assert.equal(name.children[1].alt,'란영 스도쿠 완성');
+ }finally{globalThis.document=original;}
+});
+
 test('streak leaderboard folds after ten rows and keeps an out-of-range personal rank visible',()=>{
  const original=globalThis.document;globalThis.document={createElement:node};
  try{

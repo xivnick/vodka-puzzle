@@ -144,14 +144,18 @@ const PAGE_SIZE = 10;
     const top = Math.min(10, rankings.length);
 
     const showMoonBadges = isChuseokHoliday();
-    function rowHtml(rank, nick, count, hasMoonBadge, extra) {
+    const showFlowerBadges = isFlowerBadgePeriod();
+    function rowHtml(rank, nick, count, hasMoonBadge, hasFlowerBadge, extra) {
       const isMe = myNick && nick === myNick;
       const moonBadge = showMoonBadges && hasMoonBadge
         ? '<img class="seasonal-rank-badge" src="/icons/seasonal/rabbit.svg" width="18" height="18" alt="한가위 스도쿠 완성" title="한가위 스도쿠 완성">'
         : '';
+      const flowerBadge = showFlowerBadges && hasFlowerBadge
+        ? '<img class="seasonal-rank-badge" src="/icons/flower/flower.svg" width="18" height="18" alt="란영 스도쿠 완성" title="란영 스도쿠 완성">'
+        : '';
       return `<div class="lb-row${isMe ? ' lb-me' : ''}${extra ? ' ' + extra : ''}">` +
         `<span class="lb-rank">${rank}</span>` +
-        `<span class="lb-name seasonal-rank-name"><span>${escHtml(nick)}</span>${moonBadge}</span>` +
+        `<span class="lb-name seasonal-rank-name"><span>${escHtml(nick)}</span>${moonBadge}${flowerBadge}</span>` +
         `<span class="lb-time">${count}개</span>` +
         `</div>`;
     }
@@ -166,15 +170,15 @@ const PAGE_SIZE = 10;
       let html = '<div class="lb-list">';
       if (expanded || rankings.length <= 10) {
         for (let i = 0; i < rankings.length; i++) {
-          html += rowHtml(i + 1, rankings[i].nick, rankings[i].count, rankings[i].hasMoonBadge);
+          html += rowHtml(i + 1, rankings[i].nick, rankings[i].count, rankings[i].hasMoonBadge, rankings[i].hasFlowerBadge);
         }
       } else {
         for (let i = 0; i < top; i++) {
-          html += rowHtml(i + 1, rankings[i].nick, rankings[i].count, rankings[i].hasMoonBadge);
+          html += rowHtml(i + 1, rankings[i].nick, rankings[i].count, rankings[i].hasMoonBadge, rankings[i].hasFlowerBadge);
         }
         if (myIdx >= 10) {
           html += ellipsisRow();
-          html += rowHtml(myIdx + 1, rankings[myIdx].nick, rankings[myIdx].count, rankings[myIdx].hasMoonBadge);
+          html += rowHtml(myIdx + 1, rankings[myIdx].nick, rankings[myIdx].count, rankings[myIdx].hasMoonBadge, rankings[myIdx].hasFlowerBadge);
           if (myIdx < rankings.length - 1) html += ellipsisRow();
         } else if (rankings.length > 10) {
           html += ellipsisRow();

@@ -56,6 +56,21 @@ test('overall rankings mark moon solvers and the badge is limited to the Chuseok
  assert.ok(home.includes('/icons/seasonal/rabbit.svg'));
  assert.ok(home.includes('showMoonBadges && hasMoonBadge'));
 });
+test('flower badge follows completions and ends after October 2 in Korea',async()=>{
+ const r=runtime('public/js/common.js',async()=>({ok:true,json:async()=>[
+  {nickname:'flower',puzzle_id:'260928_03',completed_at:'2026-09-28T08:00:00Z'},
+  {nickname:'plain',puzzle_id:'260923_01',completed_at:'2026-09-23T01:00:00Z'},
+ ]}));
+ const rows=await r.run("getSolverRankings(['260928_03','260923_01'])");
+ assert.equal(rows.find(row=>row.nick==='flower').hasFlowerBadge,true);
+ assert.equal(rows.find(row=>row.nick==='plain').hasFlowerBadge,false);
+ assert.equal(r.run("isFlowerBadgePeriod(new Date('2026-09-27T15:00:00Z'))"),true);
+ assert.equal(r.run("isFlowerBadgePeriod(new Date('2026-10-02T14:59:59Z'))"),true);
+ assert.equal(r.run("isFlowerBadgePeriod(new Date('2026-10-02T15:00:00Z'))"),false);
+ assert.match(read('public/js/home.js'),/showFlowerBadges && hasFlowerBadge/);
+ assert.match(read('src/scripts/daily-home.js'),/getFlowerBadgeSolvers\(\)/);
+ assert.match(read('src/scripts/daily-sudoku.js'),/getFlowerBadgeSolvers\(\)/);
+});
 test('writes require a session; identity and local state follow account IDs',async()=>{
  const calls=[];const r=runtime('public/js/common.js',async(url,opts)=>{calls.push([url,opts]);return{ok:true}});
  r.values.set('vodka_nickname:2026-2','someone');

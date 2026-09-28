@@ -32,12 +32,25 @@ test('daily puzzle rankings add a rabbit after moon solver names',()=>{
  }finally{globalThis.document=original;}
 });
 
+test('daily puzzle rankings add a flower after Ran-yeong solver names',()=>{
+ const original=globalThis.document;
+ const node=()=>({children:[],replaceChildren(...children){this.children=children;},append(...children){this.children.push(...children);}});
+ globalThis.document={createElement:node};
+ try{
+  const element=node();
+  rankings(element,[{rank:1,nickname:'flower',completed_at:'2026-09-28T01:00:00Z'}],{flowerSolvers:new Set(['flower'])});
+  const badge=element.children[0].children[0].children[1].children[1];
+  assert.equal(badge.src,'/icons/flower/flower.svg');
+  assert.equal(badge.alt,'란영 스도쿠 완성');
+ }finally{globalThis.document=original;}
+});
+
 test('malformed or conflicting boards have no solution',()=>{assert.equal(countSolutions('1'.repeat(81)),0);assert.equal(countSolutions('0'.repeat(80)),0);});
 
 test('full valid board submits automatically once; partial and conflicting boards do not',async()=>{
  const {default:vm}=await import('node:vm');
  const elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id,{addEventListener(){},setAttribute(){},textContent:''});return elements.get(id);};
- const calls=[];const sandbox=vm.createContext({units,URLSearchParams,location:{search:''},document:{getElementById:element,addEventListener(){}},window:{addEventListener(){},puzzleAccount:{user:{id:'test'},profile:{nickname:'test'},client:{rpc:async(name,args)=>{calls.push({name,args});return {data:{rank:1,completed_at:'2026-09-16T03:00:00Z'}};}}}},context:async()=>({current_day:'2026-09-16',rankings:[]}),getMoonBadgeSolvers:async()=>new Set(),rankings(){},renderStreak(){},time:()=> '12:00:00'});
+ const calls=[];const sandbox=vm.createContext({units,URLSearchParams,location:{search:''},document:{getElementById:element,addEventListener(){}},window:{addEventListener(){},puzzleAccount:{user:{id:'test'},profile:{nickname:'test'},client:{rpc:async(name,args)=>{calls.push({name,args});return {data:{rank:1,completed_at:'2026-09-16T03:00:00Z'}};}}}},context:async()=>({current_day:'2026-09-16',rankings:[]}),getMoonBadgeSolvers:async()=>new Set(),getFlowerBadgeSolvers:async()=>new Set(),rankings(){},renderStreak(){},time:()=> '12:00:00'});
  const source=fs.readFileSync('src/scripts/daily-sudoku.js','utf8').replace(/^import .*;\n/gm,'').split('init();setInterval(')[0];
  vm.runInContext(source,sandbox);
  const solution=Array.from({length:81},(_,i)=>((Math.floor(i/9)*3+Math.floor(Math.floor(i/9)/3)+i%9)%9)+1);

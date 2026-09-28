@@ -3,13 +3,13 @@ import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
 import '../styles/daily-sudoku.css';
 import { givens, flowers } from '../lib/flower-sudoku.js';
-const { puzzleId } = Astro.props;
+const { puzzleId, preview = false } = Astro.props;
 ---
-<PuzzleLayout title="란영 스도쿠" {puzzleId}
+<PuzzleLayout title="260928 란영 스도쿠" {puzzleId}
   subtitle="꽃 칸은 주변 8칸과 숫자가 다릅니다"
   description="꽃 칸의 숫자가 주변 8칸의 숫자와 모두 다른 스도쿠"
-  showCloud={false} showLeaderboard={false}>
-  <meta slot="head" name="robots" content="noindex, nofollow" />
+  showCloud={!preview} showLeaderboard={!preview}>
+  {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
   <div slot="rules">
     빈칸에 1부터 9까지의 숫자를 채우세요.<br />
     각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9가 한 번씩 들어가야 합니다.<br />
@@ -20,7 +20,7 @@ const { puzzleId } = Astro.props;
     메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br />
     방향키로 이동하고 Backspace·Delete·0으로 지울 수 있습니다.
   </div>
-  <section id="flowerGame" data-puzzle-id={puzzleId} data-preview="true" aria-label="란영 스도쿠">
+  <section id="flowerGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="란영 스도쿠">
     <div class="sudoku-board-tools"><button id="flowerNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
     <div id="flowerBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
       {givens.flat().map((n, i) => <button type="button"
