@@ -3,13 +3,13 @@ import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
 import '../styles/daily-sudoku.css';
 import { givens, groups, operators } from '../lib/arithmetic-sudoku.js';
-const puzzleId = 'test-arithmetic-sudoku-260928';
+const { puzzleId, preview = false } = Astro.props;
 ---
 <PuzzleLayout title="260928 산수 스도쿠" {puzzleId}
   subtitle="스도쿠를 완성하고 가로 수식을 성립시키세요"
   description="일반 스도쿠 규칙과 각 가로줄의 산수 수식을 함께 만족시키는 퍼즐"
-  showCloud={false} showLeaderboard={false}>
-  <meta slot="head" name="robots" content="noindex, nofollow" />
+  showCloud={!preview} showLeaderboard={!preview}>
+  {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
   <div slot="rules">
     빈칸에 1부터 9까지의 숫자를 채우세요.<br />
     각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9가 한 번씩 들어가야 합니다.<br />
@@ -20,7 +20,7 @@ const puzzleId = 'test-arithmetic-sudoku-260928';
     메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br />
     방향키로 이동하고 Backspace·Delete·0으로 지울 수 있습니다.
   </div>
-  <section id="arithmeticGame" data-puzzle-id={puzzleId} aria-label="산수 스도쿠">
+  <section id="arithmeticGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="산수 스도쿠">
     <div class="sudoku-board-tools"><button id="arithmeticNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
     <div class="arithmetic-board-wrap">
       <div id="arithmeticBoard" class="sudoku-board" role="group" aria-label="9행 9열 산수 스도쿠">

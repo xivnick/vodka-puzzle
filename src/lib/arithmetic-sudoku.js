@@ -94,3 +94,21 @@ export function solved(values) {
     Number.isInteger(value) && value >= 1 && value <= 9 && (!givens[Math.floor(index / 9)][index % 9] ||
       givens[Math.floor(index / 9)][index % 9] === value)) && conflicts(values).size === 0;
 }
+
+export function parseArithmeticSudokuState(saved, puzzleId) {
+  if (!saved || saved.version !== 1 || saved.puzzleId !== puzzleId
+    || !Array.isArray(saved.values) || saved.values.length !== 81
+    || !saved.values.every(value => Number.isInteger(value) && value >= 0 && value <= 9)
+    || !Array.isArray(saved.notes) || saved.notes.length !== 81
+    || !saved.notes.every(note => Array.isArray(note)
+      && note.every(value => Number.isInteger(value) && value >= 1 && value <= 9))) return null;
+  const fixed = givens.flat();
+  if (saved.values.some((value, index) => fixed[index] && value !== fixed[index])) return null;
+  const values = [...saved.values];
+  return {
+    values,
+    notes: saved.notes.map((note, index) => values[index]
+      ? []
+      : [...new Set(note)].sort((a, b) => a - b)),
+  };
+}
