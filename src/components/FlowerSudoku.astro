@@ -45,7 +45,6 @@ const { puzzleId, preview = false } = Astro.props;
   #flowerBoard .sudoku-cell.flower.selected { background:#e1e9f3; }
   #flowerBoard .sudoku-cell.flower.conflict { background:#fbeaea; }
   #flowerBoard .sudoku-cell.flower::before { content:""; position:absolute; inset:4%; background:url('/icons/flower/flower.svg') center / contain no-repeat; opacity:.12; pointer-events:none; }
-  #flowerBoard .sudoku-cell.flower.has-notes::before { display:none; }
   #flowerBoard .sudoku-cell .cell-value { position:relative; z-index:1; }
   #flowerBoard .sudoku-cell.flower .cell-value { text-shadow:0 0 4px #fff, 0 0 4px #fff; }
   #flowerBoard .sudoku-cell .notes { z-index:1; }
