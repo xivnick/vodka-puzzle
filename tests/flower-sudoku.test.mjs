@@ -2,11 +2,22 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { givens, flowers, conflicts } from '../src/lib/flower-sudoku.js';
+import { gradeFlower } from '../scripts/grade-flower-sudoku.mjs';
+import { grade as gradeClassic } from '../src/lib/sudoku.js';
 
 test('flower preview places five flowers at the requested box corners and center', () => {
   assert.deepEqual(flowers.flat().flatMap((value, index) => value ? [index] : []),
     [20, 24, 40, 56, 60]);
-  assert.equal(givens.flat().filter(Boolean).length, 40);
+  assert.equal(givens.flat().filter(Boolean).length, 36);
+});
+
+test('flower clues require hidden singles but no locked candidates or pairs', () => {
+  const result = gradeFlower(givens.flat());
+  assert.equal(result.solved, true);
+  assert.ok(result.techniques.hiddenSingle > 0);
+  assert.equal(result.techniques.locked, 0);
+  assert.equal(result.techniques.pair, 0);
+  assert.equal(gradeClassic(givens.flat().join('')).solved, false);
 });
 
 test('flower rule catches a diagonal match across box boundaries', () => {

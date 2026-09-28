@@ -18,7 +18,12 @@ function render() {
     cell.setAttribute('aria-pressed', String(i === selected));
     cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${values[i] || '빈칸'}${flowerCells[i] ? ', 꽃 칸' : ''}${fixed[i] ? ', 고정 숫자' : ''}${bad.has(i) ? ', 규칙 위반' : ''}${notes[i].length ? ', 메모 ' + notes[i].join(', ') : ''}`);
     cell.replaceChildren();
-    if (values[i]) cell.textContent = values[i];
+    if (values[i]) {
+      const digit = document.createElement('span');
+      digit.className = 'cell-value';
+      digit.textContent = values[i];
+      cell.append(digit);
+    }
     else if (notes[i].length) {
       const box = document.createElement('span');
       box.className = 'notes';

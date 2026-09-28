@@ -44,8 +44,11 @@ const { puzzleId } = Astro.props;
   #flowerBoard .sudoku-cell.flower { background:#f2f2f0; }
   #flowerBoard .sudoku-cell.flower.selected { background:#e1e9f3; }
   #flowerBoard .sudoku-cell.flower.conflict { background:#fbeaea; }
-  #flowerBoard .sudoku-cell.flower::after { content:""; position:absolute; top:2px; left:2px; width:clamp(10px,2.5vw,14px); height:clamp(10px,2.5vw,14px); background:url('/icons/flower/flower.svg') center / contain no-repeat; opacity:.6; pointer-events:none; }
-  #flowerBoard .sudoku-cell.flower.has-notes::after { display:none; }
+  #flowerBoard .sudoku-cell.flower::before { content:""; position:absolute; inset:4%; background:url('/icons/flower/flower.svg') center / contain no-repeat; opacity:.22; pointer-events:none; }
+  #flowerBoard .sudoku-cell.flower.has-notes::before { display:none; }
+  #flowerBoard .sudoku-cell .cell-value { position:relative; z-index:1; }
+  #flowerBoard .sudoku-cell.flower .cell-value { text-shadow:0 0 4px #fff, 0 0 4px #fff; }
+  #flowerBoard .sudoku-cell .notes { z-index:1; }
   #flowerBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
   #flowerBoard .sudoku-cell.conflict { background:#fbeaea; }
   #flowerBoard .sudoku-cell:focus { outline:none; }
