@@ -1,0 +1,60 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import '../styles/daily-sudoku.css';
+import { givens, groups, operators } from '../lib/arithmetic-sudoku.js';
+const puzzleId = 'test-arithmetic-sudoku-260928';
+---
+<PuzzleLayout title="260928 산수 스도쿠" {puzzleId}
+  subtitle="스도쿠를 완성하고 가로 수식을 성립시키세요"
+  description="일반 스도쿠 규칙과 각 가로줄의 산수 수식을 함께 만족시키는 퍼즐"
+  showCloud={false} showLeaderboard={false}>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <div slot="rules">
+    빈칸에 1부터 9까지의 숫자를 채우세요.<br />
+    각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9가 한 번씩 들어가야 합니다.<br />
+    테두리로 묶인 칸은 왼쪽부터 읽어 하나의 수로 계산합니다. 각 가로줄의 수식도 성립해야 합니다.
+  </div>
+  <div slot="controls">
+    칸을 누른 뒤 숫자 버튼 또는 키보드 1~9로 입력하세요.<br />
+    메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br />
+    방향키로 이동하고 Backspace·Delete·0으로 지울 수 있습니다.
+  </div>
+  <section id="arithmeticGame" data-puzzle-id={puzzleId} aria-label="산수 스도쿠">
+    <div class="sudoku-board-tools"><button id="arithmeticNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <div class="arithmetic-board-wrap">
+      <div id="arithmeticBoard" class="sudoku-board" role="group" aria-label="9행 9열 산수 스도쿠">
+        {givens.flat().map((n, i) => <button type="button"
+          class:list={['sudoku-cell', { given: !!n }]}
+          data-cell={i} tabindex={i === 0 ? 0 : -1}
+          aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${n || '빈칸'}${n ? ', 고정 숫자' : ''}`}>{n || ''}</button>)}
+      </div>
+      <div class="arithmetic-overlay" aria-hidden="true">
+        {groups.map((rowGroups, row) => rowGroups.map(cols =>
+          <span class="number-outline" style={`top:${(row + 0.15) / 9 * 100}%;left:${(cols[0] + 0.13) / 9 * 100}%;width:${(cols.length - 0.26) / 9 * 100}%;height:${0.7 / 9 * 100}%`}></span>))}
+        {operators.map((rowOps, row) => rowOps.map(([col, symbol]) =>
+          <span class="arithmetic-operator" style={`top:${(row + 0.5) / 9 * 100}%;left:${(col + 1) / 9 * 100}%`}>{symbol}</span>))}
+      </div>
+    </div>
+    <div class="sudoku-numbers" id="arithmeticNumbers" aria-label="숫자 입력">
+      {[1,2,3,4,5,6,7,8,9].map(n => <button type="button" data-number={n}>{n}</button>)}
+    </div>
+    <div class="bottom-buttons">
+      <button id="arithmeticErase" type="button">지우기</button>
+      <button id="arithmeticReset" type="button" class="danger">초기화</button>
+    </div>
+    <PuzzleCompletion id="arithmeticComplete" />
+  </section>
+</PuzzleLayout>
+<script>import '../scripts/arithmetic-sudoku.js';</script>
+<style>
+  #arithmeticGame { width:100%; }
+  .arithmetic-board-wrap { position:relative; width:100%; }
+  #arithmeticBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; font-size:clamp(17px,4.5vw,24px); }
+  #arithmeticBoard .sudoku-cell.conflict { background:#fbeaea; }
+  #arithmeticBoard .sudoku-cell:focus { outline:none; }
+  #arithmeticBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; }
+  .arithmetic-overlay { position:absolute; inset:0; pointer-events:none; }
+  .number-outline { position:absolute; box-sizing:border-box; border:2px solid #a9aaa8; border-radius:999px; }
+  .arithmetic-operator { position:absolute; transform:translate(-50%,-50%); padding:0 2px; background:#fff; color:#222; font-size:clamp(11px,2.8vw,17px); line-height:1; font-weight:700; white-space:nowrap; }
+</style>
