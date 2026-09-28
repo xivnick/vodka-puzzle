@@ -1,6 +1,6 @@
 // Preview clues. Rows and columns are zero-indexed in the data.
 export const givens = [
-  [0, 0, 7, 0, 0, 0, 3, 6, 1],
+  [0, 0, 0, 0, 0, 0, 3, 0, 1],
   [0, 6, 0, 8, 0, 9, 2, 0, 0],
   [0, 5, 0, 0, 3, 0, 0, 9, 8],
   [6, 0, 0, 0, 4, 0, 0, 3, 5],
@@ -8,7 +8,7 @@ export const givens = [
   [5, 3, 0, 0, 8, 0, 0, 0, 9],
   [2, 1, 0, 0, 6, 0, 0, 4, 0],
   [0, 0, 9, 2, 0, 1, 0, 8, 0],
-  [3, 8, 6, 0, 0, 0, 5, 0, 0],
+  [3, 0, 6, 0, 0, 0, 0, 0, 0],
 ];
 
 // Upper-left and upper-right boxes: lower inner corners;

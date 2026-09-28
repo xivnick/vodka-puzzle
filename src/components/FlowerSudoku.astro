@@ -41,7 +41,7 @@ const { puzzleId } = Astro.props;
 <script>import '../scripts/flower-sudoku.js';</script>
 <style>
   #flowerGame { width:100%; }
-  #flowerBoard .sudoku-cell.flower { background:#f2f2f0; }
+  #flowerBoard .sudoku-cell.flower { background:#fff; }
   #flowerBoard .sudoku-cell.flower.selected { background:#e1e9f3; }
   #flowerBoard .sudoku-cell.flower.conflict { background:#fbeaea; }
   #flowerBoard .sudoku-cell.flower::before { content:""; position:absolute; inset:4%; background:url('/icons/flower/flower.svg') center / contain no-repeat; opacity:.22; pointer-events:none; }

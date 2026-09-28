@@ -8,7 +8,7 @@ import { grade as gradeClassic } from '../src/lib/sudoku.js';
 test('flower preview places five flowers at the requested box corners and center', () => {
   assert.deepEqual(flowers.flat().flatMap((value, index) => value ? [index] : []),
     [20, 24, 40, 56, 60]);
-  assert.equal(givens.flat().filter(Boolean).length, 36);
+  assert.equal(givens.flat().filter(Boolean).length, 32);
 });
 
 test('flower clues require hidden singles but no locked candidates or pairs', () => {
