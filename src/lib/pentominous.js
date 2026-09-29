@@ -40,7 +40,7 @@ export function edgeKey(a, b) {
 }
 
 export function parsePentominousState(puzzle, state, puzzleId) {
-  if (!state || state.version !== 2 || state.puzzleId !== puzzleId ||
+  if (!state || ![1, 2].includes(state.version) || state.puzzleId !== puzzleId ||
       !Array.isArray(state.lines) || !Array.isArray(state.crosses)) return null;
   const { rows, cols } = puzzle;
   const valid = new Set();

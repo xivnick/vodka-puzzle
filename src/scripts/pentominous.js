@@ -26,7 +26,7 @@ if (game) {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
       if (Array.isArray(saved)) edges = new Set(saved.filter(key => validEdges.has(key)));
-      else if (saved?.version === 2 && Array.isArray(saved.lines) && Array.isArray(saved.crosses)) {
+      else if ([1, 2].includes(saved?.version) && Array.isArray(saved.lines) && Array.isArray(saved.crosses)) {
         edges = new Set(saved.lines.filter(key => validEdges.has(key)));
         crosses = new Set(saved.crosses.filter(key => validEdges.has(key) && !edges.has(key)));
       }
@@ -38,7 +38,7 @@ if (game) {
   const account = () => window.puzzleAccount?.user?.id || 'guest';
   board.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
-  const snapshot = () => ({ version: 2, puzzleId, lines: [...edges], crosses: [...crosses] });
+  const snapshot = () => ({ version: 1, puzzleId, lines: [...edges], crosses: [...crosses] });
   function persist() {
     if (!ready) return;
     try {
