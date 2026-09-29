@@ -23,8 +23,7 @@ const shapeOrder = 'FILNPTUVWXYZ'.split('');
     </ul>
   </div>
   <div slot="controls">
-    <p>칸 사이를 짧게 눌러 선을 긋고, 길게 눌러 X를 표시하세요. 같은 표시를 다시 누르면 지워집니다. X는 빈 변으로 취급합니다.</p>
-    <p>보드 오른쪽 위의 버튼을 누르면 짧게 누르기와 길게 누르기의 동작이 서로 바뀝니다.</p>
+    <p>칸 사이 짧게 누르기: 선<br />길게 누르기: X (빈 변)<br />같은 표시 다시 누르기: 지우기<br />오른쪽 위 버튼: 두 동작 바꾸기</p>
   </div>
   <section id="pentominousGame" data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="260929 펜토미너스">
     <div class="board-tools"><button id="pentominousMode" class="mode-toggle" type="button" aria-pressed="false">길게 눌러 x 표시</button></div>
