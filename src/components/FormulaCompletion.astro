@@ -35,7 +35,6 @@ const keys = [...puzzle.numbers.map(String), '+', '-', '*', '/', '(', ')'];
     data-puzzle-id={puzzleId}
     data-preview={String(preview)}
     aria-label={title}
-    tabindex="0"
   >
     <div class="formula-card">
       <div class="problem-line">
@@ -70,7 +69,7 @@ const keys = [...puzzle.numbers.map(String), '+', '-', '*', '/', '(', ')'];
 <script>import '../scripts/formula-completion.js';</script>
 <style>
 .formula-rules{line-height:1.7}.formula-rules p{margin:0}.formula-rules ul{margin:8px 0 0;padding-left:1.25rem}.formula-rules li+li{margin-top:2px}
-.formula-game{width:100%;max-width:480px;margin-inline:auto;outline:none}.formula-game:focus-visible{outline:2px solid #4a6fa5;outline-offset:4px;border-radius:6px}
+.formula-game{width:100%;max-width:480px;margin-inline:auto;outline:none}
 .formula-card{width:100%;border:1px solid #e0ddd6;border-radius:6px;background:#fff;padding:18px}
 .problem-line{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.problem-value{display:flex;align-items:baseline;gap:7px;min-width:0;white-space:nowrap;color:#222}.problem-value span{font-size:.76rem;color:#999}.problem-value strong{font-size:1.35rem;line-height:1}
 .formula-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px}.expression-box{display:flex;align-items:center;flex-wrap:wrap;gap:4px;width:100%;min-width:0;min-height:52px;border:1.5px solid #c8c3b8;border-radius:4px;padding:7px 10px;background:#fff;color:#222;font:1.05rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.expression-box.solved{border-color:#6b9b5f;background:#fbfff8}.expression-box :global(.expression-placeholder){color:#aaa;font:.9rem 'Noto Sans KR',sans-serif}.expression-box :global(.expression-token){display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:32px;padding:0 7px;border-radius:4px;background:#f4f1eb;color:#555;font-weight:700;line-height:1}.expression-box :global(.expression-token.number){border:1px solid #d9d4ca;background:#faf8f4;color:#222}

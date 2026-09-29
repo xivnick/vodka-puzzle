@@ -38,7 +38,7 @@ const cells = Array.from({ length: size ** 2 }, (_, index) => ({
     style={`--sky-size:${size}`}
     aria-label={title}
   >
-    {enableNotes && <div class="sky-board-tools"><button id="skyNotes" class="sky-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>}
+    {enableNotes && <div class="sky-board-tools"><button id="skyNotes" class="sky-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>}
     <div id="skyBoard" class="sky-board" role="grid" aria-label={`${size}행 ${size}열 스카이스크레이퍼 퍼즐`}>
       <span class="sky-corner" aria-hidden="true"></span>
       {puzzle.clues.top.map((clue, index) => <span class="sky-clue" data-clue={`top-${index}`} aria-label={clue == null ? undefined : `위쪽 ${index + 1}열 단서 ${clue}`}>{clue}</span>)}
@@ -83,7 +83,7 @@ const cells = Array.from({ length: size ** 2 }, (_, index) => ({
 .sky-clue{display:flex;align-items:center;justify-content:center;font-weight:700;color:#333;font-size:1rem}.sky-clue.error{color:#b05050}.sky-corner{display:block}
 .sky-cell{appearance:none;display:flex;align-items:center;justify-content:center;min-width:0;padding:0;margin:0;border:0;border-top:1px solid #aaa;border-left:1px solid #aaa;border-radius:0;background:#fff;color:#4a6fa5;font:700 1.15rem 'Noto Sans KR',sans-serif;cursor:pointer;touch-action:manipulation}
 .sky-cell:nth-of-type(6n){border-right:2px solid #333}.sky-cell:nth-of-type(-n+6){border-top:2px solid #333}.sky-cell:nth-last-of-type(-n+6){border-bottom:2px solid #333}.sky-cell:nth-of-type(6n+1){border-left:2px solid #333}
-.sky-cell:hover{background:#f4f1eb}.sky-cell.selected{background:#e8edf5}.sky-cell.given{color:#222}.sky-cell.conflict{background:#f5d0d0;color:#b05050}.sky-cell:focus{outline:none}.sky-cell:focus-visible{outline:2px solid #4a6fa5;outline-offset:-4px}
+.sky-cell:hover{background:#f4f1eb}.sky-cell.selected{background:#e8edf5}.sky-cell.given{color:#222}.sky-cell.conflict{background:#f5d0d0;color:#b05050}.sky-cell:focus{outline:none}
 .sky-cell :global(.notes){position:absolute;inset:2px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);font-size:clamp(9px,2.4vw,12px);font-weight:500;color:#606975}.sky-cell :global(.notes span){display:flex;align-items:center;justify-content:center}.sky-cell{position:relative}
 .sky-input-area,.bottom-buttons{width:calc(var(--sky-size) * var(--sky-cell));margin-left:var(--sky-clue)}.sky-game .bottom-buttons{margin:8px 0 0 var(--sky-clue)!important}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}

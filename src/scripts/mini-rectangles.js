@@ -35,7 +35,7 @@ function cell(event,clamp=false){
 function remove(index){if(index<0)return;update(rects.filter((_,i)=>i!==index));announce('사각형을 삭제했습니다.');}
 board.addEventListener('pointerdown',event=>{
  if(!ready||event.button!==0||!event.isPrimary||pointer)return;const p=cell(event);if(!p)return;
- event.preventDefault();board.focus({preventScroll:true});keyboard=false;cursor=p;anchor=null;end=null;
+ event.preventDefault();keyboard=false;cursor=p;anchor=null;end=null;
  if(blocked(p.r,p.c)){render();return;}
  pointer={id:event.pointerId,index:rects.findIndex(q=>contains(q,p.r,p.c)),x:event.clientX,y:event.clientY,moved:false};
  if(pointer.index<0){anchor=p;end=p;}
@@ -54,7 +54,10 @@ board.addEventListener('pointerup',event=>{
 });
 board.addEventListener('pointercancel',cancel);
 board.addEventListener('lostpointercapture',()=>{if(pointer)cancel();});
-board.addEventListener('keydown',event=>{
+let keyboardActive = false;
+document.addEventListener('pointerdown', event => { keyboardActive = board.contains(event.target); });
+document.addEventListener('keydown',event=>{
+  if (!keyboardActive) return;
  if(!ready||pointer)return;
  const directions={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};
  if(directions[event.key]){event.preventDefault();keyboard=true;const [r,c]=directions[event.key];cursor={r:Math.max(0,Math.min(8,cursor.r+r)),c:Math.max(0,Math.min(8,cursor.c+c))};if(anchor)end=cursor;render();announce(`${cursor.r+1}행 ${cursor.c+1}열${blocked(cursor.r,cursor.c)?', 검은 칸':''}`);return;}

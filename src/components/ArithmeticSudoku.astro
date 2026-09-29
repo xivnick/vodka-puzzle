@@ -22,7 +22,7 @@ const { puzzleId, preview = false } = Astro.props;
     방향키로 이동하고 Backspace·Delete·0으로 지울 수 있습니다.
   </div>
   <section id="arithmeticGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="산수 스도쿠">
-    <div class="sudoku-board-tools"><button id="arithmeticNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <div class="sudoku-board-tools"><button id="arithmeticNotes" class="sudoku-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>
     <div class="arithmetic-board-wrap">
       <div id="arithmeticBoard" class="sudoku-board" role="group" aria-label="9행 9열 산수 스도쿠">
         {givens.flat().map((n, i) => <button type="button"
@@ -58,7 +58,7 @@ const { puzzleId, preview = false } = Astro.props;
   #arithmeticBoard .sudoku-cell:nth-child(n+73)::after { border-bottom:0; }
   #arithmeticBoard .sudoku-cell.conflict { background:#fbeaea; }
   #arithmeticBoard .sudoku-cell:focus { outline:none; }
-  #arithmeticBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; }
+
   .arithmetic-overlay { position:absolute; inset:2px; z-index:1; pointer-events:none; }
   #arithmeticBoard :global(.notes) { z-index:2; }
   .number-outline { position:absolute; box-sizing:border-box; border:2px solid #a9aaa8; border-radius:999px; }

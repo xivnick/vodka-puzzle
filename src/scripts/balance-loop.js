@@ -76,7 +76,7 @@ if(game) {
   board.addEventListener('pointerdown',event=>{
     if(!ready || owner!==account() && !preview || event.button!==0 || gesture) return;
     const current=cell(event); if(current===null) return;
-    event.preventDefault(); board.focus({preventScroll:true}); board.setPointerCapture(event.pointerId);
+    event.preventDefault(); board.setPointerCapture(event.pointerId);
     gesture={id:event.pointerId,start:current,last:current,previous:selected,moved:false,mode:null,hitEdge:event.target.closest('[data-edge]')?.dataset.edge,visited:new Set()};
     selected=current; render();
   });
@@ -112,7 +112,10 @@ if(game) {
     if(!ready || !edges.size) return;
     checkpoint(); edges.clear(); selected=null; render();
   });
-  board.addEventListener('keydown',event=>{
+  let keyboardActive = false;
+  document.addEventListener('pointerdown', event => { keyboardActive = board.contains(event.target); });
+  document.addEventListener('keydown',event=>{
+    if (!keyboardActive) return;
     if(!ready || !preview && owner!==account()) return;
     if((event.ctrlKey||event.metaKey) && event.key.toLowerCase()==='z') { event.preventDefault(); revert(); return; }
     const directions={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};

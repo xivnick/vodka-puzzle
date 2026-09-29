@@ -31,7 +31,7 @@ const mockRanking = [
     메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요
   </div>
   <section id="moonGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="한가위 스도쿠">
-    <div class="sudoku-board-tools"><button id="moonNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <div class="sudoku-board-tools"><button id="moonNotes" class="sudoku-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>
     <div id="moonBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
       {givens.flat().map((n, i) => <button type="button"
         class:list={['sudoku-cell', { given: !!n, 'moon-area': !!moonArea.flat()[i] }]}
@@ -65,7 +65,7 @@ const mockRanking = [
   .moon-rabbit-name img { flex:0 0 auto; }
   #moonBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
   #moonBoard .sudoku-cell:focus { outline:none; }
-  #moonBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; }
+
   #moonBoard.moon-complete .moon-area { background:#fff4c7; animation:moonlight-fill .45s ease both; }
   @keyframes moonlight-fill { from { background-color:#fffdf3; } to { background-color:#fff4c7; } }
   @media (prefers-reduced-motion:reduce) { #moonBoard.moon-complete .moon-area { animation:none; } }

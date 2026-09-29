@@ -189,7 +189,9 @@ resetButton.addEventListener('click', () => {
   announce('퍼즐을 초기화했습니다.');
 });
 window.addEventListener('pagehide', flushPersist);
-game.addEventListener('keydown', event => {
+document.addEventListener('keydown', event => {
+  if (event.target.closest('input, textarea, select, [contenteditable]')) return;
+  if (event.target.closest('button') && !game.contains(event.target)) return;
   const key = event.key;
   if (/^\d$/.test(key)) { event.preventDefault(); inputNumberKey(key); }
   else if ('+-*/()'.includes(key)) { event.preventDefault(); clearKeyboardNumberBuffer(); insert(key); }

@@ -22,7 +22,7 @@ const { puzzleId, preview = false } = Astro.props;
     방향키로 이동하고 Backspace·Delete·0으로 지울 수 있습니다.
   </div>
   <section id="flowerGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="란영 스도쿠">
-    <div class="sudoku-board-tools"><button id="flowerNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <div class="sudoku-board-tools"><button id="flowerNotes" class="sudoku-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>
     <div id="flowerBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
       {givens.flat().map((n, i) => <button type="button"
         class:list={['sudoku-cell', { given: !!n, flower: !!flowers.flat()[i] }]}
@@ -50,5 +50,5 @@ const { puzzleId, preview = false } = Astro.props;
   #flowerBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
   #flowerBoard .sudoku-cell.conflict { background:#fbeaea; }
   #flowerBoard .sudoku-cell:focus { outline:none; }
-  #flowerBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; }
+
 </style>

@@ -12,7 +12,7 @@ import PuzzleCompletion from '../../components/PuzzleCompletion.astro';
     만든 사각형을 누르면 삭제됩니다.
   </div>
   <section class="mr-game" aria-label="Mini Rectangles 퍼즐">
-    <svg id="mr-board" viewBox="-2 -2 454 454" role="application" aria-label="9행 9열 직사각형 퍼즐. 드래그로 만들고 누르면 삭제합니다." tabindex="0"></svg>
+    <svg id="mr-board" viewBox="-2 -2 454 454" role="application" aria-label="9행 9열 직사각형 퍼즐. 드래그로 만들고 누르면 삭제합니다."></svg>
     <div class="bottom-buttons"><button id="mr-reset" class="danger" type="button">초기화</button></div>
     <span id="mr-status" class="sr-only" role="status" aria-live="polite"></span>
   </section>
@@ -20,5 +20,5 @@ import PuzzleCompletion from '../../components/PuzzleCompletion.astro';
 </PuzzleLayout>
 <script>import '../../scripts/mini-rectangles.js';</script>
 <style>
-.mr-rules{line-height:1.7}.mr-rules p+p{margin-top:8px}.mr-game{width:100%;max-width:480px}#mr-board{display:block;width:100%;height:auto;margin:0;touch-action:none;user-select:none;cursor:crosshair;background:white}#mr-board:focus{outline:none}#mr-board[data-keyboard=true]:focus-visible{outline:2px solid #4a6fa5;outline-offset:4px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.mr-rules{line-height:1.7}.mr-rules p+p{margin-top:8px}.mr-game{width:100%;max-width:480px}#mr-board{display:block;width:100%;height:auto;margin:0;touch-action:none;user-select:none;cursor:crosshair;background:white}#mr-board:focus{outline:none}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 </style>

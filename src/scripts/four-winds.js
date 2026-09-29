@@ -174,7 +174,6 @@ board.addEventListener('pointerdown', event => {
   const cell = eventCell(event);
   if (!cell || !active(cell)) return;
   event.preventDefault();
-  board.focus({ preventScroll: true });
   keyboard = false;
   cursor = cell;
   const occupied = arrowAt(cell);
@@ -216,7 +215,10 @@ board.addEventListener('pointerup', event => {
 
 board.addEventListener('pointercancel', () => { pointer = null; selected = null; render(); });
 
-board.addEventListener('keydown', event => {
+let keyboardActive = false;
+document.addEventListener('pointerdown', event => { keyboardActive = board.contains(event.target); });
+document.addEventListener('keydown', event => {
+  if (!keyboardActive) return;
   if (!ready) return;
   const directions = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
   if (directions[event.key]) {
