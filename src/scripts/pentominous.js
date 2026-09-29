@@ -78,7 +78,7 @@ if (game) {
     }
     if (selected !== null) {
       const r = Math.floor(selected / cols), c = selected % cols;
-      html += `<rect x="${c * size + 2}" y="${r * size + 2}" width="${size - 4}" height="${size - 4}" fill="none" stroke="#75a3d4" stroke-width="2"/>`;
+      html += `<rect x="${c * size + 2}" y="${r * size + 2}" width="${size - 4}" height="${size - 4}" fill="#e7eef7"/>`;
     }
     for (let r = 1; r < rows; r++) html += `<path d="M0 ${r * size}H${width}" stroke="#d2d8df" stroke-width="1" stroke-dasharray="3 4"/>`;
     for (let c = 1; c < cols; c++) html += `<path d="M${c * size} 0V${height}" stroke="#d2d8df" stroke-width="1" stroke-dasharray="3 4"/>`;

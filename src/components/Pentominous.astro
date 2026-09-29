@@ -57,13 +57,12 @@ const shapeOrder = 'FILNPTUVWXYZ'.split('');
   p { margin: 0; }
   ul { padding-left: 20px; margin: 8px 0 0; }
   #pentominousBoard { display: block; width: 100%; height: auto; background: white; touch-action: none; user-select: none; }
-  #pentominousBoard:focus { outline: none; }
-  #pentominousBoard:focus-visible { outline: 2px solid #4a6fa5; outline-offset: 3px; }
+  #pentominousBoard:focus, #pentominousBoard:focus-visible { outline: none; }
   .shape-reference { margin-top: 22px; font-size: 14px; }
-  .shape-reference summary { color: #4a6fa5; cursor: pointer; }
+  .shape-reference summary { color: #333; cursor: pointer; }
   .shape-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px 4px; margin-top: 12px; }
   .shape-item { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 82px; }
-  .shape-item svg { width: 42px; height: 58px; fill: #dce8f5; }
+  .shape-item svg { width: 42px; height: 58px; fill: #333; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   @media (max-width: 420px) { .shape-grid { grid-template-columns: repeat(4, 1fr); } }
 </style>
