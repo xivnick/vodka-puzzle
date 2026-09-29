@@ -16,6 +16,7 @@ const hasCustomLeaderboard = Astro.slots.has('leaderboard');
 {hasControls && <div class="rules-box" id="controlsBox"><slot name="controls" /></div>}
 <div class="puzzle-body"><slot /></div>
 {showCloud && <div class="cloud-btns" id="cloudBtns" style="display:none"><button class="cloud-btn" onclick="handleCloudSave()">저장하기</button><button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button></div>}
+<slot name="after-cloud" />
 {showLeaderboard && <div class="lb-section"><div class="lb-title">푼 사람</div><div id="leaderboard"><slot name="leaderboard" /></div></div>}</div>
 <script is:inline define:vars={{puzzleId, showLeaderboard, hasCustomLeaderboard}}>window.addEventListener('DOMContentLoaded',()=>{
   const panels=[['rulesToggle','rulesBox'],['controlsToggle','controlsBox']]

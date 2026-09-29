@@ -34,23 +34,23 @@ const shapeOrder = 'FILNPTUVWXYZ'.split('');
     </div>
     <p id="pentominousStatus" role="status" aria-live="polite" class="sr-only"></p>
     <PuzzleCompletion id="pentominousComplete" />
-    <details class="shape-reference">
-      <summary>펜토미노 모양 보기</summary>
-      <div class="shape-grid">
-        {shapeOrder.map(name => {
-          const points = pentominoes[name];
-          const width = Math.max(...points.map(([x]) => x)) + 1;
-          const height = Math.max(...points.map(([, y]) => y)) + 1;
-          return <div class="shape-item" aria-label={`${name} 펜토미노`}>
-            <strong>{name}</strong>
-            <svg viewBox={`0 0 ${width * 20} ${height * 20}`} aria-hidden="true">
-              {points.map(([x, y]) => <rect x={x * 20 + 1} y={y * 20 + 1} width="18" height="18" rx="2" />)}
-            </svg>
-          </div>;
-        })}
-      </div>
-    </details>
   </section>
+  <details slot="after-cloud" class="shape-reference">
+    <summary>펜토미노 모양 보기</summary>
+    <div class="shape-grid">
+      {shapeOrder.map(name => {
+        const points = pentominoes[name];
+        const width = Math.max(...points.map(([x]) => x)) + 1;
+        const height = Math.max(...points.map(([, y]) => y)) + 1;
+        return <div class="shape-item" aria-label={`${name} 펜토미노`}>
+          <strong>{name}</strong>
+          <svg viewBox={`0 0 ${width * 20} ${height * 20}`} aria-hidden="true">
+            {points.map(([x, y]) => <rect x={x * 20 + 1} y={y * 20 + 1} width="18" height="18" rx="2" />)}
+          </svg>
+        </div>;
+      })}
+    </div>
+  </details>
 </PuzzleLayout>
 <script>import '../scripts/pentominous.js';</script>
 <style>
