@@ -2,7 +2,7 @@
 import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
 import { pentominous260929 as puzzle, pentominoes } from '../lib/pentominous.js';
-const puzzleId = 'test-pentominous-260929';
+const { puzzleId, preview = false } = Astro.props;
 const shapeOrder = 'FILNPTUVWXYZ'.split('');
 ---
 <PuzzleLayout
@@ -10,9 +10,9 @@ const shapeOrder = 'FILNPTUVWXYZ'.split('');
   {puzzleId}
   subtitle="격자를 펜토미노 영역으로 나누세요"
   description="알파벳 단서를 따라 격자를 펜토미노로 분할하는 퍼즐"
-  showCloud={false}
-  showLeaderboard={false}>
-  <meta slot="head" name="robots" content="noindex, nofollow" />
+  showCloud={!preview}
+  showLeaderboard={!preview}>
+  {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
   <div slot="rules">
     <p>격자를 아래 규칙을 따르는 펜토미노들로 완전히 분할하세요.</p>
     <ul>
@@ -26,7 +26,7 @@ const shapeOrder = 'FILNPTUVWXYZ'.split('');
     <p>칸 사이를 짧게 눌러 선을 긋고, 길게 눌러 X를 표시하세요. 같은 표시를 다시 누르면 지워집니다. X는 빈 변으로 취급합니다.</p>
     <p>보드 오른쪽 위의 버튼을 누르면 짧게 누르기와 길게 누르기의 동작이 서로 바뀝니다.</p>
   </div>
-  <section id="pentominousGame" data-puzzle={JSON.stringify(puzzle)} aria-label="260929 펜토미너스">
+  <section id="pentominousGame" data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="260929 펜토미너스">
     <div class="board-tools"><button id="pentominousMode" class="mode-toggle" type="button" aria-pressed="false">길게 눌러 x 표시</button></div>
     <svg id="pentominousBoard" role="group" aria-label="15행 15열 펜토미너스 격자. 칸 사이를 짧게 누르거나 길게 눌러 표시하세요"></svg>
     <div class="bottom-buttons">

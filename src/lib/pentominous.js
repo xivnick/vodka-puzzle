@@ -39,6 +39,23 @@ export function edgeKey(a, b) {
   return `${Math.min(a, b)}:${Math.max(a, b)}`;
 }
 
+export function parsePentominousState(puzzle, state, puzzleId) {
+  if (!state || state.version !== 2 || state.puzzleId !== puzzleId ||
+      !Array.isArray(state.lines) || !Array.isArray(state.crosses)) return null;
+  const { rows, cols } = puzzle;
+  const valid = new Set();
+  for (let row = 0; row < rows; row++) for (let col = 0; col < cols; col++) {
+    const index = row * cols + col;
+    if (col < cols - 1) valid.add(edgeKey(index, index + 1));
+    if (row < rows - 1) valid.add(edgeKey(index, index + cols));
+  }
+  const lines = new Set(state.lines), crosses = new Set(state.crosses);
+  if (lines.size !== state.lines.length || crosses.size !== state.crosses.length ||
+      [...lines, ...crosses].some(key => typeof key !== 'string' || !valid.has(key)) ||
+      [...crosses].some(key => lines.has(key))) return null;
+  return { lines, crosses };
+}
+
 function normalized(points) {
   const minX = Math.min(...points.map(([x]) => x));
   const minY = Math.min(...points.map(([, y]) => y));

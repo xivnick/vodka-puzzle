@@ -1,8 +1,10 @@
-import { edgeKey, validatePentominous } from '../lib/pentominous.js';
+import { edgeKey, parsePentominousState, validatePentominous } from '../lib/pentominous.js';
 
 const game = document.getElementById('pentominousGame');
 if (game) {
   const puzzle = JSON.parse(game.dataset.puzzle);
+  const puzzleId = game.dataset.puzzleId;
+  const preview = game.dataset.preview === 'true';
   const { rows, cols, clues } = puzzle;
   const board = document.getElementById('pentominousBoard');
   const modeButton = document.getElementById('pentominousMode');
@@ -20,21 +22,29 @@ if (game) {
     if (r < rows - 1) validEdges.add(edgeKey(index, index + cols));
   }
   let edges = new Set(), crosses = new Set();
-  try {
-    const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
-    if (Array.isArray(saved)) edges = new Set(saved.filter(key => validEdges.has(key)));
-    else if (saved?.version === 2 && Array.isArray(saved.lines) && Array.isArray(saved.crosses)) {
-      edges = new Set(saved.lines.filter(key => validEdges.has(key)));
-      crosses = new Set(saved.crosses.filter(key => validEdges.has(key) && !edges.has(key)));
-    }
-  } catch { /* Storage may be unavailable. */ }
+  if (preview) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
+      if (Array.isArray(saved)) edges = new Set(saved.filter(key => validEdges.has(key)));
+      else if (saved?.version === 2 && Array.isArray(saved.lines) && Array.isArray(saved.crosses)) {
+        edges = new Set(saved.lines.filter(key => validEdges.has(key)));
+        crosses = new Set(saved.crosses.filter(key => validEdges.has(key) && !edges.has(key)));
+      }
+    } catch { /* Storage may be unavailable. */ }
+  }
   const history = [];
   let press = null, longPressMeans = 'cross';
+  let ready = preview, owner = null, completionRecorded = false;
+  const account = () => window.puzzleAccount?.user?.id || 'guest';
   board.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
-  const snapshot = () => ({ version: 2, lines: [...edges], crosses: [...crosses] });
+  const snapshot = () => ({ version: 2, puzzleId, lines: [...edges], crosses: [...crosses] });
   function persist() {
-    try { localStorage.setItem(storageKey, JSON.stringify(snapshot())); } catch { /* Optional local progress. */ }
+    if (!ready) return;
+    try {
+      if (preview) localStorage.setItem(storageKey, JSON.stringify(snapshot()));
+      else if (owner === account()) window.saveLocalState(puzzleId, snapshot());
+    } catch { window.showToast?.('브라우저에 저장하지 못했습니다.'); }
   }
   function checkpoint() {
     history.push(snapshot());
@@ -63,6 +73,7 @@ if (game) {
       y: (event.clientY - rect.top) / rect.height * height };
   }
   function toggleMark(key, mark) {
+    if (!ready || !preview && owner !== account()) return;
     checkpoint();
     const target = mark === 'line' ? edges : crosses;
     const other = mark === 'line' ? crosses : edges;
@@ -109,10 +120,14 @@ if (game) {
     html += `<rect x="1.5" y="1.5" width="${width - 3}" height="${height - 3}" fill="none" stroke="#202a36" stroke-width="3" pointer-events="none"/>`;
     board.innerHTML = html;
     complete.hidden = !result.complete;
-    undo.disabled = !history.length;
-    reset.disabled = !edges.size && !crosses.size;
+    undo.disabled = !ready || !history.length;
+    reset.disabled = !ready || !edges.size && !crosses.size;
     const formed = result.regions.filter(region => region.shape && !region.clueMismatch && !region.sameShapeNeighbor).length;
     status.textContent = result.complete ? '퍼즐을 완성했습니다.' : `규칙에 맞는 펜토미노 영역 ${formed}개.`;
+    if (!preview && ready && owner === account() && result.complete && !completionRecorded) {
+      completionRecorded = true;
+      window.recordCompletion(puzzleId, snapshot());
+    }
   }
   modeButton.addEventListener('click', () => {
     longPressMeans = longPressMeans === 'cross' ? 'line' : 'cross';
@@ -121,7 +136,7 @@ if (game) {
   });
   board.addEventListener('contextmenu', event => event.preventDefault());
   board.addEventListener('pointerdown', event => {
-    if (event.button !== 0 || press) return;
+    if (!ready || !preview && owner !== account() || event.button !== 0 || press) return;
     const point = position(event), key = edgeAt(point.x, point.y);
     if (!key) return;
     press = { id: event.pointerId, key, x: event.clientX, y: event.clientY, long: false, timer: null };
@@ -153,7 +168,7 @@ if (game) {
     press = null;
   });
   function revert() {
-    if (!history.length) return;
+    if (!ready || !preview && owner !== account() || !history.length) return;
     const previous = history.pop();
     edges = new Set(previous.lines);
     crosses = new Set(previous.crosses);
@@ -161,8 +176,46 @@ if (game) {
   }
   undo.addEventListener('click', revert);
   reset.addEventListener('click', () => {
-    if (!edges.size && !crosses.size) return;
+    if (!ready || !preview && owner !== account() || !edges.size && !crosses.size) return;
     checkpoint(); edges.clear(); crosses.clear(); persist(); render();
   });
+  function init() {
+    const nextOwner = account();
+    if (ready && owner === nextOwner) return;
+    owner = nextOwner;
+    ready = false;
+    if (press) clearTimeout(press.timer);
+    press = null;
+    history.length = 0;
+    completionRecorded = false;
+    let saved = null;
+    try { saved = window.loadLocalState(puzzleId); } catch {}
+    const parsed = parsePentominousState(puzzle, saved, puzzleId);
+    edges = parsed?.lines || new Set();
+    crosses = parsed?.crosses || new Set();
+    ready = true;
+    render();
+    window.initCloudBtns();
+  }
+  if (!preview) {
+    window.handleCloudSave = () => {
+      if (ready && owner === account()) return window.saveProgressCloud(puzzleId, snapshot());
+    };
+    window.handleCloudLoad = async () => {
+      if (!ready || owner !== account()) return;
+      const requestedOwner = owner, before = JSON.stringify(snapshot());
+      const saved = await window.loadProgressCloud(puzzleId);
+      if (saved == null || requestedOwner !== account() || before !== JSON.stringify(snapshot())) return;
+      const parsed = parsePentominousState(puzzle, saved, puzzleId);
+      if (!parsed) { window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.'); return; }
+      checkpoint();
+      edges = parsed.lines;
+      crosses = parsed.crosses;
+      persist();
+      render();
+    };
+    window.puzzleAuthReady.then(init);
+    window.addEventListener('puzzle-auth-ready', init);
+  }
   render();
 }
