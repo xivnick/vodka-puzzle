@@ -13,7 +13,7 @@ const shaded = new Set(puzzle.regions.flat().map(([row, column]) => `${row - 1},
   puzzleId={puzzleId}
   subtitle="모든 회색 영역의 숫자 합이 같아야 합니다"
   description="모든 회색 영역의 합이 같은 변형 스도쿠"
-  showCloud={!preview}
+  preview={preview} showCloud={!preview}
   showLeaderboard={!preview}
 >
   <div slot="rules" class="equal-sum-rules">
@@ -54,9 +54,9 @@ const shaded = new Set(puzzle.regions.flat().map(([row, column]) => `${row - 1},
       <button id="equalSumErase" type="button">지우기</button>
       <button id="equalSumReset" class="danger" type="button">초기화</button>
     </div>
-    <PuzzleCompletion id="equalSumComplete" />
     <span id="equalSumStatus" class="sr-only" role="status" aria-live="polite"></span>
   </section>
+  <PuzzleCompletion slot="completion" id="equalSumComplete" />
 </PuzzleLayout>
 <script>import '../scripts/equal-sum-sudoku.js';</script>
 <style>

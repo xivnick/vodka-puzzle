@@ -25,9 +25,9 @@ import '../../styles/daily-streak.css';
    <button id="sudokuErase" disabled type="button">지우기</button>
    <button id="sudokuReset" disabled class="danger" type="button">초기화</button>
   </div>
-  <PuzzleCompletion id="sudokuComplete" />
   <p id="sudokuMessage" class="daily-status" role="status"></p>
  </section>
+  <PuzzleCompletion slot="completion" id="sudokuComplete" />
  <div slot="leaderboard" id="sudokuRank"><div class="lb-loading">불러오는 중...</div></div>
 </PuzzleLayout>
 <script>import '../../scripts/daily-sudoku.js';</script>

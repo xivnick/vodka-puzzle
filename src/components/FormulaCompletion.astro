@@ -10,7 +10,7 @@ const keys = [...puzzle.numbers.map(String), '+', '-', '*', '/', '(', ')'];
   puzzleId={puzzleId}
   subtitle="주어진 숫자를 모두 사용해 타겟 숫자를 만드는 수식을 완성하세요"
   description="주어진 네 숫자와 사칙연산, 괄호만 사용해 타겟 숫자를 만드는 수식 퍼즐"
-  showCloud={!preview}
+  preview={preview} showCloud={!preview}
   showLeaderboard={!preview}
 >
   <div slot="rules" class="formula-rules">
@@ -63,9 +63,9 @@ const keys = [...puzzle.numbers.map(String), '+', '-', '*', '/', '(', ')'];
     <div class="bottom-buttons">
       <button id="formulaReset" class="danger" type="button">초기화</button>
     </div>
-    <PuzzleCompletion id="formulaComplete" />
     <span id="formulaStatus" class="sr-only" role="status" aria-live="polite"></span>
   </section>
+  <PuzzleCompletion slot="completion" id="formulaComplete" />
 </PuzzleLayout>
 <script>import '../scripts/formula-completion.js';</script>
 <style>

@@ -8,7 +8,7 @@ const { puzzle, title = puzzle.label, puzzleId = `test-four-winds-${puzzle.id}`,
   puzzleId={puzzleId}
   subtitle="숫자 칸에서 화살표를 뻗어 모든 빈 칸을 채우세요"
   description="숫자 칸에서 뻗은 화살표로 모든 빈 칸을 채우는 사풍 퍼즐"
-  showCloud={!preview}
+  preview={preview} showCloud={!preview}
   showLeaderboard={!preview}
 >
   <div slot="rules" class="fw-rules">
@@ -24,8 +24,8 @@ const { puzzle, title = puzzle.label, puzzleId = `test-four-winds-${puzzle.id}`,
     <svg id="fwBoard" role="application" tabindex="0" aria-label={title}></svg>
     <span id="fwStatus" class="sr-only" role="status" aria-live="polite"></span>
     <div class="bottom-buttons"><button id="fwReset" class="danger" type="button">초기화</button></div>
-    <PuzzleCompletion id="fwComplete" />
   </section>
+  <PuzzleCompletion slot="completion" id="fwComplete" />
 </PuzzleLayout>
 <script>import '../scripts/four-winds.js';</script>
 <style>

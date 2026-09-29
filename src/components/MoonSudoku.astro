@@ -17,8 +17,9 @@ const mockRanking = [
   {puzzleId}
   subtitle="한가위 맞이 스도쿠를 풀어보세요"
   description="한가위 맞이 스도쿠를 풀어보세요"
-  showCloud={!preview}
+  preview={preview} showCloud={!preview}
   showLeaderboard={!preview}
+  showPreviewLeaderboard={false}
 >
   {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
   <div slot="rules">
@@ -42,9 +43,9 @@ const mockRanking = [
       <button id="moonErase" type="button">지우기</button>
       <button id="moonReset" type="button" class="danger">초기화</button>
     </div>
-    <PuzzleCompletion id="moonComplete" message="풍성한 한가위 되세요!" />
   </section>
-  {preview && <div class="moon-preview-lb-section">
+  <PuzzleCompletion slot="completion" id="moonComplete" message="풍성한 한가위 되세요!" />
+  {preview && <div slot="after-cloud" class="moon-preview-lb-section">
     <div class="lb-title">푼 사람</div>
     <div id="leaderboard" class="lb-list moon-preview-ranking" aria-label="토끼 아이콘 랭킹 시안">
       {mockRanking.map(([rank, name, time]) => <div class="lb-row">

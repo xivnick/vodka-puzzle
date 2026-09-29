@@ -9,7 +9,7 @@ const { puzzleId, preview = false } = Astro.props;
 <PuzzleLayout title="260928 란영 스도쿠" {puzzleId}
   subtitle="꽃 칸은 주변 8칸과 숫자가 다릅니다"
   description="꽃 칸의 숫자가 주변 8칸의 숫자와 모두 다른 스도쿠"
-  showCloud={!preview} showLeaderboard={!preview}>
+  preview={preview} showCloud={!preview} showLeaderboard={!preview}>
   {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
   <div slot="rules">
     빈칸에 1부터 9까지의 숫자를 채우세요.<br />
@@ -34,8 +34,8 @@ const { puzzleId, preview = false } = Astro.props;
       <button id="flowerErase" type="button">지우기</button>
       <button id="flowerReset" type="button" class="danger">초기화</button>
     </div>
-    <PuzzleCompletion id="flowerComplete" />
   </section>
+  <PuzzleCompletion slot="completion" id="flowerComplete" />
 </PuzzleLayout>
 <script>import '../scripts/flower-sudoku.js';</script>
 <style>

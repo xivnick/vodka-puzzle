@@ -16,7 +16,7 @@ const cells = Array.from({ length: size ** 2 }, (_, index) => ({
   puzzleId={puzzleId}
   subtitle={`${size}×${size} · 바깥 단서만큼 보이도록 건물 높이를 채우세요`}
   description={`${size}×${size} 라틴방진에 각 방향의 스카이스크레이퍼 단서를 만족하도록 숫자를 채우는 퍼즐`}
-  showCloud={!preview}
+  preview={preview} showCloud={!preview}
   showLeaderboard={!preview}
 >
   <div slot="rules" class="sky-rules">
@@ -70,9 +70,9 @@ const cells = Array.from({ length: size ** 2 }, (_, index) => ({
       <button id="skyErase" type="button">지우기</button>
       <button id="skyReset" class="danger" type="button">초기화</button>
     </div>
-    <PuzzleCompletion id="skyComplete" />
     <span id="skyStatus" class="sr-only" role="status" aria-live="polite"></span>
   </section>
+  <PuzzleCompletion slot="completion" id="skyComplete" />
 </PuzzleLayout>
 <script>import '../scripts/skyscraper.js';</script>
 <style>
@@ -86,6 +86,6 @@ const cells = Array.from({ length: size ** 2 }, (_, index) => ({
 .sky-cell:hover{background:#f4f1eb}.sky-cell.selected{background:#e8edf5}.sky-cell.given{color:#222}.sky-cell.conflict{background:#f5d0d0;color:#b05050}.sky-cell:focus{outline:none}.sky-cell:focus-visible{outline:2px solid #4a6fa5;outline-offset:-4px}
 .sky-cell :global(.notes){position:absolute;inset:2px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);font-size:clamp(9px,2.4vw,12px);font-weight:500;color:#606975}.sky-cell :global(.notes span){display:flex;align-items:center;justify-content:center}.sky-cell{position:relative}
 .sky-input-area,.bottom-buttons{width:calc(var(--sky-size) * var(--sky-cell));margin-left:var(--sky-clue)}.sky-game .bottom-buttons{margin:8px 0 0 var(--sky-clue)!important}
-.sky-game :global(.message){text-align:center;margin-left:var(--sky-clue);width:calc(var(--sky-size) * var(--sky-cell))}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 @media(max-width:420px){.sky-game{--sky-cell:min(58px,11.7vw);--sky-clue:min(34px,6.8vw)}.sky-clue{font-size:.9rem}}
 </style>

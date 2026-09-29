@@ -1,8 +1,9 @@
 ---
 import PageLayout from './PageLayout.astro';
-const { title, puzzleId, description, subtitle, showCloud = true, showLeaderboard = true } = Astro.props;
+const { title, puzzleId, description, subtitle, showCloud = true, showLeaderboard = true, preview = false, showPreviewLeaderboard = true } = Astro.props;
 const hasControls = Astro.slots.has('controls');
 const hasCustomLeaderboard = Astro.slots.has('leaderboard');
+const hasCompletion = Astro.slots.has('completion');
 ---
 <PageLayout title={title} description={description} subtitle={subtitle} puzzle>
 <slot name="head" slot="head" />
@@ -15,10 +16,13 @@ const hasCustomLeaderboard = Astro.slots.has('leaderboard');
 <div class="rules-box" id="rulesBox"><slot name="rules" /></div>
 {hasControls && <div class="rules-box" id="controlsBox"><slot name="controls" /></div>}
 <div class="puzzle-body"><slot /></div>
-{showCloud && <div class="cloud-btns" id="cloudBtns" style="display:none"><button class="cloud-btn" onclick="handleCloudSave()">저장하기</button><button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button></div>}
+{preview
+  ? <div class="cloud-btns" aria-label="시연용 저장·불러오기"><button class="cloud-btn" type="button" disabled>저장하기</button><button class="cloud-btn" type="button" disabled>불러오기</button></div>
+  : showCloud && <div class="cloud-btns" id="cloudBtns" style="display:none"><button class="cloud-btn" onclick="handleCloudSave()">저장하기</button><button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button></div>}
+{hasCompletion && <div class="completion"><slot name="completion" /></div>}
 <slot name="after-cloud" />
-{showLeaderboard && <div class="lb-section"><div class="lb-title">푼 사람</div><div id="leaderboard"><slot name="leaderboard" /></div></div>}</div>
-<script is:inline define:vars={{puzzleId, showLeaderboard, hasCustomLeaderboard}}>window.addEventListener('DOMContentLoaded',()=>{
+{(showLeaderboard || preview && showPreviewLeaderboard) && <div class="lb-section"><div class="lb-title">푼 사람</div><div id="leaderboard"><slot name="leaderboard">{preview && <div class="lb-empty">시연에서는 완료 기록이 표시되지 않습니다.</div>}</slot></div></div>}</div>
+<script is:inline define:vars={{puzzleId, showLeaderboard, hasCustomLeaderboard, preview}}>window.addEventListener('DOMContentLoaded',()=>{
   const panels=[['rulesToggle','rulesBox'],['controlsToggle','controlsBox']]
     .map(([buttonId,panelId])=>[document.getElementById(buttonId),document.getElementById(panelId)])
     .filter(([button,panel])=>button && panel);
@@ -30,7 +34,7 @@ const hasCustomLeaderboard = Astro.slots.has('leaderboard');
       otherButton.setAttribute('aria-expanded',String(open));
     });
   }));
-  initCloudBtns();if(showLeaderboard && !hasCustomLeaderboard)renderLeaderboard(puzzleId,'leaderboard');
+  if(!preview) initCloudBtns();if(showLeaderboard && !preview && !hasCustomLeaderboard)renderLeaderboard(puzzleId,'leaderboard');
 });</script>
 </PageLayout>
 <style>
@@ -45,5 +49,7 @@ const hasCustomLeaderboard = Astro.slots.has('leaderboard');
 .puzzle-body { width:100%; margin-top:16px; }
 .puzzle-body :global(.bottom-buttons) { margin:12px 0 0; }
 .cloud-btns { margin-top:12px; }
+.cloud-btn:disabled { cursor:default; }
+.completion { width:100%; text-align:center; }
 .lb-section { margin-top:24px; }
 </style>

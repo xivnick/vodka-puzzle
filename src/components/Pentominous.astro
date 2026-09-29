@@ -10,7 +10,7 @@ const shapeOrder = 'FILNPTUVWXYZ'.split('');
   {puzzleId}
   subtitle="격자를 펜토미노 영역으로 나누세요"
   description="알파벳 단서를 따라 격자를 펜토미노로 분할하는 퍼즐"
-  showCloud={!preview}
+  preview={preview} showCloud={!preview}
   showLeaderboard={!preview}>
   {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
   <div slot="rules">
@@ -33,8 +33,8 @@ const shapeOrder = 'FILNPTUVWXYZ'.split('');
       <button id="pentominousReset" class="danger" type="button">초기화</button>
     </div>
     <p id="pentominousStatus" role="status" aria-live="polite" class="sr-only"></p>
-    <PuzzleCompletion id="pentominousComplete" />
   </section>
+  <PuzzleCompletion slot="completion" id="pentominousComplete" />
   <details slot="after-cloud" class="shape-reference">
     <summary>펜토미노 모양 보기</summary>
     <div class="shape-grid">

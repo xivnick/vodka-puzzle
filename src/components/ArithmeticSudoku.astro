@@ -9,7 +9,7 @@ const { puzzleId, preview = false } = Astro.props;
 <PuzzleLayout title="260928 산수 스도쿠" {puzzleId}
   subtitle="스도쿠를 완성하고 가로 수식을 성립시키세요"
   description="일반 스도쿠 규칙과 각 가로줄의 산수 수식을 함께 만족시키는 퍼즐"
-  showCloud={!preview} showLeaderboard={!preview}>
+  preview={preview} showCloud={!preview} showLeaderboard={!preview}>
   {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
   <div slot="rules">
     빈칸에 1부터 9까지의 숫자를 채우세요.<br />
@@ -42,8 +42,8 @@ const { puzzleId, preview = false } = Astro.props;
       <button id="arithmeticErase" type="button">지우기</button>
       <button id="arithmeticReset" type="button" class="danger">초기화</button>
     </div>
-    <PuzzleCompletion id="arithmeticComplete" />
   </section>
+  <PuzzleCompletion slot="completion" id="arithmeticComplete" />
 </PuzzleLayout>
 <script>import '../scripts/arithmetic-sudoku.js';</script>
 <style>

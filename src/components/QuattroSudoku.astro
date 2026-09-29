@@ -9,7 +9,7 @@ const { puzzleId, preview = false } = Astro.props;
 <PuzzleLayout title="260928 콰트로 스도쿠" {puzzleId}
   subtitle="모든 2×2 공간에 홀수와 짝수가 함께 있어야 합니다"
   description="어떤 2×2 공간도 모두 홀수이거나 모두 짝수일 수 없는 스도쿠"
-  showCloud={!preview} showLeaderboard={!preview}>
+  preview={preview} showCloud={!preview} showLeaderboard={!preview}>
   {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
   <div slot="rules">
     빈칸에 1부터 9까지의 숫자를 채우세요.<br />
@@ -34,8 +34,8 @@ const { puzzleId, preview = false } = Astro.props;
       <button id="quattroErase" type="button">지우기</button>
       <button id="quattroReset" type="button" class="danger">초기화</button>
     </div>
-    <PuzzleCompletion id="quattroComplete" />
   </section>
+  <PuzzleCompletion slot="completion" id="quattroComplete" />
 </PuzzleLayout>
 <script>import '../scripts/quattro-sudoku.js';</script>
 <style>

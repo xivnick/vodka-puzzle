@@ -14,9 +14,9 @@ import PuzzleCompletion from '../../components/PuzzleCompletion.astro';
   <section class="mr-game" aria-label="Mini Rectangles 퍼즐">
     <svg id="mr-board" viewBox="-2 -2 454 454" role="application" aria-label="9행 9열 직사각형 퍼즐. 드래그로 만들고 누르면 삭제합니다." tabindex="0"></svg>
     <div class="bottom-buttons"><button id="mr-reset" class="danger" type="button">초기화</button></div>
-    <PuzzleCompletion id="mr-complete" />
     <span id="mr-status" class="sr-only" role="status" aria-live="polite"></span>
   </section>
+  <PuzzleCompletion slot="completion" id="mr-complete" />
 </PuzzleLayout>
 <script>import '../../scripts/mini-rectangles.js';</script>
 <style>
