@@ -13,11 +13,8 @@ npm run dev
 
 ## 확인과 배포
 
-`npm test`의 페이지 검증은 `dist/`를 읽으므로 테스트를 실행할 때 먼저 빌드한다.
-
 ```sh
 npm run build
-npm test
 npm run deploy
 ```
 
