@@ -1,6 +1,7 @@
 ---
 import PuzzleLayout from '../../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from '../../components/PuzzleCompletion.astro';
+import NumberPad from '../../components/NumberPad.astro';
 import '../../styles/daily-sudoku.css';
 import '../../styles/daily-streak.css';
 ---
@@ -19,7 +20,7 @@ import '../../styles/daily-streak.css';
   <div id="sudokuBoard" class="sudoku-board sudoku-loading" role="group" aria-label="스도쿠 9행 9열" aria-busy="true">
    {Array.from({length:81},(_,i)=><button class="sudoku-cell" type="button" disabled aria-label={`${Math.floor(i/9)+1}행 ${i%9+1}열, 불러오는 중`} />)}
   </div>
-  <div class="sudoku-numbers" id="sudokuNumbers">{Array.from({length:9},(_,i)=><button type="button" data-number={i+1} disabled>{i+1}</button>)}</div>
+  <NumberPad id="sudokuNumbers" max={9} disabled />
   <div class="bottom-buttons">
    <button id="sudokuErase" disabled type="button">지우기</button>
    <button id="sudokuReset" disabled class="danger" type="button">초기화</button>

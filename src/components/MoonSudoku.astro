@@ -1,6 +1,7 @@
 ---
 import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
+import NumberPad from './NumberPad.astro';
 import '../styles/daily-sudoku.css';
 import { givens, moonArea } from '../lib/moon-sudoku.js';
 
@@ -36,9 +37,7 @@ const mockRanking = [
         data-cell={i} tabindex={i === 0 ? 0 : -1}
         aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${n || '빈칸'}${n ? ', 고정 숫자' : ''}`}>{n || ''}</button>)}
     </div>
-    <div class="sudoku-numbers" id="moonNumbers" aria-label="숫자 입력">
-      {[1,2,3,4,5,6,7,8,9].map(n => <button type="button" data-number={n}>{n}</button>)}
-    </div>
+    <NumberPad id="moonNumbers" max={9} />
     <div class="bottom-buttons">
       <button id="moonErase" type="button">지우기</button>
       <button id="moonReset" type="button" class="danger">초기화</button>

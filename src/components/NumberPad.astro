@@ -1,0 +1,11 @@
+---
+const { id, max, disabled = false } = Astro.props;
+---
+<div {id} class="number-pad" style={`--number-pad-columns:${max}`} aria-label="숫자 입력">
+  {Array.from({ length: max }, (_, index) => <button type="button" data-number={index + 1} disabled={disabled}>{index + 1}</button>)}
+</div>
+<style>
+  .number-pad { display:grid; grid-template-columns:repeat(var(--number-pad-columns),minmax(0,1fr)); gap:4px; width:100%; margin-top:14px; }
+  .number-pad button { min-width:0; padding:8px 0; border:1px solid #d6d4cd; border-radius:3px; background:#faf8f4; color:#555; font:inherit; touch-action:manipulation; }
+  .number-pad button:disabled { opacity:.5; cursor:default; }
+</style>

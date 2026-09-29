@@ -1,6 +1,7 @@
 ---
 import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
+import NumberPad from './NumberPad.astro';
 import '../styles/daily-sudoku.css';
 import { givens, groups, operators } from '../lib/arithmetic-sudoku.js';
 const { puzzleId, preview = false } = Astro.props;
@@ -36,9 +37,7 @@ const { puzzleId, preview = false } = Astro.props;
           <span class="arithmetic-operator" style={`top:${(row + 0.5) / 9 * 100}%;left:${(col + 1) / 9 * 100}%`}>{symbol}</span>))}
       </div>
     </div>
-    <div class="sudoku-numbers" id="arithmeticNumbers" aria-label="숫자 입력">
-      {[1,2,3,4,5,6,7,8,9].map(n => <button type="button" data-number={n}>{n}</button>)}
-    </div>
+    <NumberPad id="arithmeticNumbers" max={9} />
     <div class="bottom-buttons">
       <button id="arithmeticErase" type="button">지우기</button>
       <button id="arithmeticReset" type="button" class="danger">초기화</button>
