@@ -194,3 +194,30 @@ test('completion requests cannot send a solved board after changing accounts',as
  await r.run("recordCompletion('260917_01',{version:1,values:[1]})");
  r.run("window.puzzleAccount.user.id='b'");await timers[0]();assert.equal(calls.length,1);
 });
+
+test('Pentominous restores old progress and submits a rule-complete board in the server state version',async()=>{
+ const {edgeKey,parsePentominousState,validatePentominous}=await import('../src/lib/pentominous.js');
+ const calls=[];
+ const r=runtime('public/js/common.js',async(url,opts)=>{
+  calls.push([url,opts]);
+  return {ok:true,json:async()=>({completed_at:'2026-09-29T05:00:00Z'})};
+ });
+ const nodes=new Map();
+ for(const id of ['pentominousGame','pentominousBoard','pentominousMode','pentominousUndo','pentominousReset','pentominousComplete','pentominousStatus']) {
+  nodes.set(id,{dataset:{},setAttribute(){},addEventListener(){}});
+ }
+ nodes.get('pentominousGame').dataset={puzzle:JSON.stringify({rows:1,cols:5,clues:['I....']}),puzzleId:'260929_01',preview:'false'};
+ r.context.document.getElementById=id=>nodes.get(id);
+ Object.assign(r.context,{edgeKey,parsePentominousState,validatePentominous});
+ r.run("window.puzzleAuthReady=Promise.resolve();window.puzzleAccount={user:{id:'account-a'},profile:{nickname:'a'},client:{auth:{getSession:async()=>({data:{session:{access_token:'token'}}})}}};window.recordCompletion=recordCompletion;window.initCloudBtns=()=>{};window.loadLocalState=()=>({version:2,puzzleId:'260929_01',lines:[],crosses:[]});showToast=()=>{};refreshRecentBanner=()=>{};renderLeaderboard=()=>{};");
+ const script=read('src/scripts/pentominous.js').replace(/^import .*;\n/,'');
+ vm.runInContext(script,r.context);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(nodes.get('pentominousComplete').hidden,false);
+ assert.equal(calls.length,1);
+ const body=JSON.parse(calls[0][1].body);
+ assert.equal(body.requested_puzzle,'260929_01');
+ assert.equal(body.state_version,1);
+ assert.deepEqual(body.submitted_state,{version:1,puzzleId:'260929_01',lines:[],crosses:[]});
+ assert.equal(r.values.get('completion_saved_2026-2_account-a_260929_01'),'1');
+});
