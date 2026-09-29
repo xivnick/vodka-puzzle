@@ -7,17 +7,18 @@ if(game) {
   let edges=new Set(), selected=null, gesture=null;
   const history=[];
   const preview=game.dataset.preview==='true', ID=game.dataset.puzzleId;
-  let ready=preview, owner=null, completionRecorded=false, lastSaved=null;
+  let ready=preview, owner=null, completionRecorded=false, lastSaved=null, authReady=false;
   const account=()=>window.puzzleAccount?.user?.id || 'guest';
   const state=()=>({version:1,puzzleId:ID,edges:[...edges]});
   function syncProgress(result) {
     if(preview || !ready || owner!==account() || gesture) return;
     const snapshot=state(), serialized=JSON.stringify(snapshot);
+    if(!authReady && lastSaved===null) lastSaved=serialized;
     if(serialized!==lastSaved) {
       try { window.saveLocalState(ID,snapshot); lastSaved=serialized; }
       catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
     }
-    if(result.complete && !completionRecorded) {
+    if(authReady && result.complete && !completionRecorded) {
       completionRecorded=true;
       window.recordCompletion(ID,snapshot);
     }
@@ -148,7 +149,8 @@ if(game) {
       if(!restored) {window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.');return;}
       checkpoint(); edges=restored; selected=null; gesture=null; render();
     };
-    window.puzzleAuthReady.then(init);
+    init();
+    window.puzzleAuthReady.then(()=>{authReady=true;init();render();});
     window.addEventListener('puzzle-auth-ready',init);
   }
   render();

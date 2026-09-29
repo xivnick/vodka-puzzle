@@ -93,6 +93,21 @@ test('writes require a session; local play survives account changes',async()=>{
  r.run("window.puzzleAccount.user.id='account-b'");assert.equal(r.run("loadLocalState('puzzle_test').n"),1);
  r.run("window.puzzleAccount.user=null");assert.equal(r.run("loadLocalState('puzzle_test').n"),1);
 });
+test('device progress appears before auth and late legacy migration cannot replace new input',()=>{
+ const r=runtime('public/js/common.js',async()=>{throw Error('unexpected request')});
+ r.values.set('2026-2:account-a:puzzle-a',JSON.stringify({n:1}));
+ r.run("window.puzzleAccount={user:null};window.puzzleAuthReady=new Promise(()=>{});window.addEventListener=(name,fn)=>{if(name==='puzzle-auth-ready')window.authDone=fn};window.restore=()=>{window.state=loadLocalState('puzzle-a')};startLocalPuzzle('puzzle-a',window.restore,window.restore)");
+ assert.equal(r.run('window.state'),null);
+ r.run("window.puzzleAccount.user={id:'account-a'};window.authDone()");
+ assert.equal(r.run('window.state.n'),1);
+ assert.equal(JSON.parse(r.values.get('2026-2:local:puzzle-a')).n,1);
+
+ const edited=runtime('public/js/common.js',async()=>{throw Error('unexpected request')});
+ edited.values.set('2026-2:account-a:puzzle-a',JSON.stringify({n:1}));
+ edited.run("window.puzzleAccount={user:null};window.puzzleAuthReady=new Promise(()=>{});window.addEventListener=(name,fn)=>{if(name==='puzzle-auth-ready')window.authDone=fn};window.restore=()=>{window.state=loadLocalState('puzzle-a')};startLocalPuzzle('puzzle-a',window.restore,window.restore)");
+ edited.run("saveLocalState('puzzle-a',{n:2});window.puzzleAccount.user={id:'account-a'};window.authDone()");
+ assert.equal(JSON.parse(edited.values.get('2026-2:local:puzzle-a')).n,2);
+});
 test('old account and guest local saves restore without deleting other users\u2019 data',()=>{
  const r=runtime('public/js/common.js',async()=>{throw Error('unexpected request')});
  r.values.set('2026-2:account-a:puzzle-a',JSON.stringify({n:1}));

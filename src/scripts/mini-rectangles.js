@@ -74,6 +74,5 @@ window.handleCloudLoad=async()=>{
  if(!next){window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.');return;}cancel();update(next);
 };
 function restore(){cancel();let saved=null;try{saved=window.loadLocalState(ID);}catch{}rects=parseState(saved)||[];ready=true;render();window.initCloudBtns();checkComplete();}
-window.puzzleAuthReady.then(restore);
-window.addEventListener('puzzle-auth-ready',restore);
+window.startLocalPuzzle(ID, restore, restore);
 render();

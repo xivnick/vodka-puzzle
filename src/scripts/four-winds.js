@@ -283,6 +283,5 @@ function init() {
 if (preview) render();
 else {
   render();
-  window.puzzleAuthReady.then(init);
-  window.addEventListener('puzzle-auth-ready', init);
+  window.startLocalPuzzle(ID, init, () => { ready = false; init(); });
 }

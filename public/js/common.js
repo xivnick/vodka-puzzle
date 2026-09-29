@@ -506,6 +506,26 @@ function loadLocalState(key) {
   return null;
 }
 
+// Restore device progress as soon as the puzzle script loads. Account lookup is
+// only needed for old account-specific keys and cloud controls.
+function startLocalPuzzle(key, restore, restoreLegacy) {
+  restore();
+  let authChecked = false;
+  const onAuthReady = () => {
+    if (!authChecked) {
+      authChecked = true;
+      let hasSharedSave = true;
+      try { hasSharedSave = localStorage.getItem(`${SEASON_ID}:local:${key}`) !== null; } catch {}
+      if (!hasSharedSave) restoreLegacy();
+    }
+    initCloudBtns();
+    if (typeof window.checkComplete === 'function') window.checkComplete();
+  };
+  window.puzzleAuthReady.then(onAuthReady);
+  window.addEventListener('puzzle-auth-ready', onAuthReady);
+}
+window.startLocalPuzzle = startLocalPuzzle;
+
 async function loadCloudState(puzzleId, applyState) {
   const state = await loadProgressCloud(puzzleId);
   if (state == null) return false;

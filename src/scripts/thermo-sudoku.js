@@ -42,6 +42,5 @@ if(!preview){
  function restore(){ready=false;completed=false;let saved=null;try{saved=window.loadLocalState(ID);}catch{}
   const next=parseState(puzzle,saved,ID);values=next?.values||givens.slice();notes=next?.notes||Array.from({length:size*size},()=>[]);ready=true;render();window.initCloudBtns();checkComplete();
  }
- window.puzzleAuthReady.then(restore);
- window.addEventListener('puzzle-auth-ready',restore);
+ window.startLocalPuzzle(ID, restore, restore);
 }

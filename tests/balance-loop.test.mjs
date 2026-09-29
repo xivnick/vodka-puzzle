@@ -40,7 +40,7 @@ test('previews stay isolated while official pages have catalog entries and savin
   assert.ok(!catalog.includes('balance-loop'));
   const script=readFileSync(new URL('../src/scripts/balance-loop.js',import.meta.url),'utf8');
   assert.match(script,/if\(preview \|\| !ready/);
-  assert.match(script,/window\.puzzleAuthReady\.then\(init\)/);
+  assert.match(script,/init\(\);\s*window\.puzzleAuthReady\.then/);
   for(const n of [1,2]) {
     const html=readFileSync(new URL(`../dist/test/balance-loop/260923-${n}/index.html`,import.meta.url),'utf8');
     const official=readFileSync(new URL(`../dist/260923_0${n}/index.html`,import.meta.url),'utf8');
@@ -49,7 +49,8 @@ test('previews stay isolated while official pages have catalog entries and savin
     assert.ok(official.includes('id="cloudBtns"') && official.includes('id="leaderboard"'));
     assert.ok(catalog.includes(`"id": "260923_0${n}"`));
     assert.ok(html.includes('data-preview="true"'));
-    assert.ok(html.includes(`260923 밸런스 루프 ${n}`));assert.ok(!html.includes('id="cloudBtns"'));assert.ok(!html.includes('id="leaderboard"'));
+    assert.ok(html.includes(`260923 밸런스 루프 ${n}`));assert.ok(!html.includes('id="cloudBtns"'));
+    assert.ok(html.includes('시연에서는 완료 기록이 표시되지 않습니다.'));
   }
 });
 

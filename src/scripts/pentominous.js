@@ -214,6 +214,7 @@ if (game) {
       persist();
       render();
     };
+    init();
     window.puzzleAuthReady.then(init);
     window.addEventListener('puzzle-auth-ready', init);
   }

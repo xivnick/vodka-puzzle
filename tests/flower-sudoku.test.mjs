@@ -41,7 +41,7 @@ test('official flower puzzle records completion while the preview remains isolat
   assert.match(official, /260928 란영 스도쿠/);
   assert.match(script, /if \(!preview\) \{/);
   assert.match(script, /recordCompletion\(puzzleId, state\(\)\)/);
-  assert.match(script, /window\.puzzleAuthReady\.then\(init\)/);
+  assert.match(script, /window\.startLocalPuzzle\(puzzleId, init/);
 });
 
 test('saved flower state is tied to this puzzle and preserves fixed clues', () => {
