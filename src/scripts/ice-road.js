@@ -19,12 +19,12 @@ if(game) {
   const checkpoint=() => { history.push([...edges]); if(history.length>200) history.shift(); };
   board.setAttribute('viewBox',`0 0 ${cols*40} ${rows*40}`);
   function render() {
-    const result=validateIceRoad(cells,edges), errors=new Set(result.errors);
+    const result=validateIceRoad(cells,edges), errors=new Set(result.errors), satisfied=new Set(result.satisfied);
     let html='';
     for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) {
       const i=r*cols+c;
       if(cells[r][c]==='ice') html+=`<rect x="${c*40}" y="${r*40}" width="40" height="40" fill="#b6b4b7"/>`;
-      if(errors.has(i)||i===selected) html+=`<rect x="${c*40}" y="${r*40}" width="40" height="40" fill="${errors.has(i)?'#fbe0df':'#e7eef7'}" fill-opacity=".7"/>`;
+      if(errors.has(i)||satisfied.has(i)||i===selected) html+=`<rect x="${c*40}" y="${r*40}" width="40" height="40" fill="${errors.has(i)?'#fbe0df':satisfied.has(i)?'#dcebdc':'#e7eef7'}" fill-opacity=".7"/>`;
     }
     for(let r=1;r<rows;r++) html+=`<path d="M0 ${r*40}H${cols*40}" stroke="#c9c9c9" stroke-dasharray="2 3"/>`;
     for(let c=1;c<cols;c++) html+=`<path d="M${c*40} 0V${rows*40}" stroke="#c9c9c9" stroke-dasharray="2 3"/>`;
@@ -38,8 +38,7 @@ if(game) {
     cells.forEach((row,r)=>row.forEach((clue,c)=>{
       if(typeof clue!=='number' || !clue) return;
       const i=r*cols+c,[x,y]=xy(i);
-      const color=errors.has(i)?'#b74646':'#222';
-      html+=`<text x="${x}" y="${y}" dy=".35em" text-anchor="middle" font-size="18" font-weight="700" fill="${color}" stroke="white" stroke-width="2" paint-order="stroke" style="pointer-events:none">${clue}</text>`;
+      html+=`<text x="${x}" y="${y}" dy=".35em" text-anchor="middle" font-size="18" font-weight="700" fill="#222" stroke="white" stroke-width="2" paint-order="stroke" style="pointer-events:none">${clue}</text>`;
     }));
     html+=`<rect x="1" y="1" width="${cols*40-2}" height="${rows*40-2}" fill="none" stroke="#333" stroke-width="2"/>`;
     board.innerHTML=html;
