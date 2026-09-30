@@ -39,7 +39,7 @@ if(game) {
       if(typeof clue!=='number' || !clue) return;
       const i=r*cols+c,[x,y]=xy(i);
       const color=errors.has(i)?'#b74646':result.satisfied.includes(i)?'#397746':'#222';
-      html+=`<text x="${x}" y="${y}" dy=".35em" text-anchor="middle" font-size="24" fill="${color}" stroke="white" stroke-width="3" paint-order="stroke" style="pointer-events:none">${clue}</text>`;
+      html+=`<text x="${x}" y="${y}" dy=".35em" text-anchor="middle" font-size="18" font-weight="700" fill="${color}" stroke="white" stroke-width="2" paint-order="stroke" style="pointer-events:none">${clue}</text>`;
     }));
     html+=`<rect x="1" y="1" width="${cols*40-2}" height="${rows*40-2}" fill="none" stroke="#333" stroke-width="2"/>`;
     board.innerHTML=html;
