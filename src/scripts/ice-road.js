@@ -1,4 +1,4 @@
-import { edgeKey, validateIceRoad } from '../lib/ice-road.js';
+import { edgeKey, validateIceRoad, parseIceRoadState } from '../lib/ice-road.js';
 const game=document.getElementById('iceGame');
 if(game) {
   const cells=JSON.parse(game.dataset.cells), rows=cells.length, cols=cells[0].length;
@@ -6,7 +6,23 @@ if(game) {
   const undo=document.getElementById('iceUndo'), complete=document.getElementById('iceComplete');
   let edges=new Set(), selected=null, gesture=null;
   const history=[];
-  const ready=true;
+  const preview=game.dataset.preview==='true', ID=game.dataset.puzzleId;
+  let ready=preview, owner=null, completionRecorded=false, lastSaved=null, authReady=false;
+  const account=()=>window.puzzleAccount?.user?.id || 'guest';
+  const state=()=>({version:1,puzzleId:ID,edges:[...edges]});
+  function syncProgress(result) {
+    if(preview || !ready || owner!==account() || gesture) return;
+    const snapshot=state(), serialized=JSON.stringify(snapshot);
+    if(!authReady && lastSaved===null) lastSaved=serialized;
+    if(serialized!==lastSaved) {
+      try { window.saveLocalState(ID,snapshot); lastSaved=serialized; }
+      catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
+    }
+    if(authReady && result.complete && !completionRecorded) {
+      completionRecorded=true;
+      window.recordCompletion(ID,snapshot);
+    }
+  }
   const xy=i => [(i%cols+.5)*40,(Math.floor(i/cols)+.5)*40];
   function straightEdges(a,b) {
     if(a===null || b===null || a===b) return [];
@@ -41,6 +57,7 @@ if(game) {
     html+=`<rect x="1" y="1" width="${cols*40-2}" height="${rows*40-2}" fill="none" stroke="#333" stroke-width="2"/>`;
     board.innerHTML=html;
     complete.hidden=!result.complete;
+    syncProgress(result);
     undo.disabled=!ready || !history.length;
     const location=selected===null?'':`${Math.floor(selected/cols)+1}행 ${selected%cols+1}열. `;
     const length=result.segments[selected];
@@ -52,7 +69,7 @@ if(game) {
   }
   function toggle(a,b) { const key=edgeKey(a,b); if(edges.has(key)) edges.delete(key); else edges.add(key); }
   board.addEventListener('pointerdown',event=>{
-    if(!ready || event.button!==0 || gesture) return;
+    if(!ready || !preview && owner!==account() || event.button!==0 || gesture) return;
     const current=cell(event); if(current===null) return;
     event.preventDefault(); board.setPointerCapture(event.pointerId);
     gesture={id:event.pointerId,start:current,previous:selected,moved:false};
@@ -87,7 +104,7 @@ if(game) {
   document.addEventListener('pointerdown', event => { keyboardActive = board.contains(event.target); });
   document.addEventListener('keydown',event=>{
     if (!keyboardActive) return;
-    if(!ready) return;
+    if(!ready || !preview && owner!==account()) return;
     if((event.ctrlKey||event.metaKey) && event.key.toLowerCase()==='z') { event.preventDefault(); revert(); return; }
     const directions={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};
     if(directions[event.key]) {
@@ -100,5 +117,32 @@ if(game) {
       if(incident.length) {checkpoint();incident.forEach(key=>edges.delete(key));render();}
     } else if(event.key==='Escape') { selected=null;render(); }
   });
+  function init() {
+    const nextOwner=account();
+    if(ready && owner===nextOwner) return;
+    owner=nextOwner; ready=false; gesture=null; selected=null; history.length=0;
+    completionRecorded=false; lastSaved=null;
+    let saved=null;
+    try { saved=window.loadLocalState(ID); } catch {}
+    edges=parseIceRoadState(cells,saved,ID) || new Set();
+    ready=true; render(); window.initCloudBtns();
+  }
+  if(!preview) {
+    window.handleCloudSave=()=>{
+      if(ready && owner===account()) return window.saveProgressCloud(ID,state());
+    };
+    window.handleCloudLoad=async()=>{
+      if(!ready || owner!==account()) return;
+      const requestedOwner=owner, before=JSON.stringify(state());
+      const saved=await window.loadProgressCloud(ID);
+      if(saved==null || requestedOwner!==account() || before!==JSON.stringify(state())) return;
+      const restored=parseIceRoadState(cells,saved,ID);
+      if(!restored) {window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.');return;}
+      checkpoint(); edges=restored; selected=null; gesture=null; render();
+    };
+    init();
+    window.puzzleAuthReady.then(()=>{authReady=true;init();render();});
+    window.addEventListener('puzzle-auth-ready',init);
+  }
   render();
 }

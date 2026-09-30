@@ -67,3 +67,13 @@ export function validateIceRoad(cells, edges) {
   for(let i=0;i<size;i++) if(clue(i) && closed && !adjacency[i].length) errors.add(i);
   return {complete:closed && singleLoop && used.some(ice) && used.some(i=>!ice(i)) && !malformed && errors.size===0, errors:[...errors], satisfied, segments, closed, malformed};
 }
+
+export function parseIceRoadState(cells, saved, puzzleId) {
+  if (!saved || saved.version !== 1 || saved.puzzleId !== puzzleId || !Array.isArray(saved.edges)) return null;
+  const rows=cells.length, cols=cells[0].length;
+  if (saved.edges.length > rows*(cols-1)+cols*(rows-1)) return null;
+  if (!saved.edges.every(key => typeof key === 'string' && /^(0|[1-9][0-9]*):(0|[1-9][0-9]*)$/.test(key))) return null;
+  const edges=new Set(saved.edges);
+  if (edges.size !== saved.edges.length || validateIceRoad(cells, edges).malformed) return null;
+  return edges;
+}

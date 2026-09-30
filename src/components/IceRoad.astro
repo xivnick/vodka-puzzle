@@ -1,11 +1,11 @@
 ---
 import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
-const { puzzle } = Astro.props;
+const { puzzle, preview = false, puzzleId = "test-ice-road-261001-1" } = Astro.props;
 const title = `261001 빙판길 ${puzzle.number}`;
 ---
-<PuzzleLayout title={title} puzzleId="test-ice-road-261001-1" description="얼음 칸에서 직진하고 숫자에 맞게 도로를 연결하는 빙판길 퍼즐" subtitle="얼음 위에서는 직진하며 하나의 루프를 그리세요" preview showCloud={false} showLeaderboard={false}>
-  <meta slot="head" name="robots" content="noindex, nofollow" />
+<PuzzleLayout title={title} {puzzleId} description="얼음 칸에서 직진하고 숫자에 맞게 도로를 연결하는 빙판길 퍼즐" subtitle="얼음 위에서는 직진하며 하나의 루프를 그리세요" preview={preview} showCloud={!preview} showLeaderboard={!preview}>
+  {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
   <div slot="rules">
     <p>칸의 중심과 중심을 연결하여, 격자의 변을 수직으로 통과하는 하나의 폐곡선(루프)을 그리세요.</p>
     <ul>
@@ -20,7 +20,7 @@ const title = `261001 빙판길 ${puzzle.number}`;
   <div slot="controls">
     <p>같은 행·열의 두 칸을 차례로 눌러 선을 그리세요. 두 칸 사이가 모두 연결되어 있으면 선을 지웁니다.</p>
   </div>
-  <section id="iceGame" data-cells={JSON.stringify(puzzle.cells)} aria-label={title}>
+  <section id="iceGame" data-cells={JSON.stringify(puzzle.cells)} data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label={title}>
     <svg id="iceBoard" role="application" aria-label="빙판길 격자"></svg>
     <div class="bottom-buttons"><button id="iceUndo" type="button">되돌리기</button><button id="iceReset" type="button" class="danger">초기화</button></div>
     <p id="iceStatus" role="status" aria-live="polite" class="sr-only"></p>
