@@ -1,3 +1,4 @@
+import {floodedRoadPuzzle,parseFloodedRoadState,validateFloodedRoad} from '../src/lib/flooded-road.js';
 import {iceRoadPuzzle,parseIceRoadState,validateIceRoad} from '../src/lib/ice-road.js';
 import {balanceLoopPuzzles,parseBalanceLoopState,validateBalanceLoop} from '../src/lib/balance-loop.js';
 // Read JSON from the admin review script; evaluate each puzzle's existing rules.
@@ -22,6 +23,10 @@ export function review(row){
   const clues=balanceLoopPuzzles[Number(row.puzzle_id.slice(-1))-1].clues;
   const edges=parseBalanceLoopState(clues,row.state,row.puzzle_id);
   return edges && validateBalanceLoop(clues,edges).complete?'valid':'invalid';
+ }
+ if(row.puzzle_id==='261001_02'){
+  const edges=parseFloodedRoadState(floodedRoadPuzzle.cells,row.state,row.puzzle_id);
+  return edges && validateFloodedRoad(floodedRoadPuzzle.cells,edges).complete?'valid':'invalid';
  }
  if(row.puzzle_id==='261001_01'){
   const edges=parseIceRoadState(iceRoadPuzzle.cells,row.state,row.puzzle_id);
