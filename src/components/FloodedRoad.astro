@@ -1,0 +1,38 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+const { puzzle, preview = false, puzzleId = "test-flooded-road-261001-1" } = Astro.props;
+const title = `261001 침수된 길 ${puzzle.number}`;
+---
+<PuzzleLayout title={title} {puzzleId} description="물 구간은 최대 두 칸, 숫자에 맞게 육지 구간을 연결하는 침수된 길 퍼즐" subtitle="물 구간의 길이와 숫자에 맞게 하나의 루프를 그리세요" preview={preview} showCloud={!preview} showLeaderboard={!preview}>
+  {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
+  <div slot="rules">
+    <p>칸의 중심과 중심을 연결하여, 격자의 변을 수직으로 통과하는 하나의 폐곡선(루프)을 그리세요.</p>
+    <ul>
+      <li>루프는 한 번 갔던 칸을 다시 지나갈 수 없으며, 자기 자신과 교차할 수 없습니다.</li>
+      <li>루프는 모든 칸을 다 지나갈 필요는 없습니다.</li>
+      <li>물결 모양 무늬가 있는 칸을 물 칸이라고 합니다.</li>
+      <li>루프는 하나 이상의 물 칸과 하나 이상의 물 칸이 아닌 칸을 번갈아가며 지납니다. 같은 종류의 칸을 연속해서 지나는 각각의 구간을 ‘도로의 한 분할’이라고 합니다.</li>
+      <li>‘도로의 한 분할’에 포함된 칸의 개수가 그 분할의 크기입니다.</li>
+      <li>모든 물 칸의 도로 분할 크기는 최대 2입니다.</li>
+      <li>숫자가 적힌 칸은 반드시 지나야 합니다. 숫자는 해당 칸이 속한 물 칸이 아닌 도로의 분할 크기를 나타냅니다.</li>
+    </ul>
+  </div>
+  <div slot="controls">
+    <p>같은 행·열의 두 칸을 차례로 눌러 선을 그리세요. 두 칸 사이가 모두 연결되어 있으면 선을 지웁니다.</p>
+  </div>
+  <section id="floodGame" data-cells={JSON.stringify(puzzle.cells)} data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label={title}>
+    <svg id="floodBoard" role="application" aria-label="침수된 길 격자"></svg>
+    <div class="bottom-buttons"><button id="floodUndo" type="button">되돌리기</button><button id="floodReset" type="button" class="danger">초기화</button></div>
+    <p id="floodStatus" role="status" aria-live="polite" class="sr-only"></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="floodComplete" />
+</PuzzleLayout>
+<script>import '../scripts/flooded-road.js';</script>
+<style>
+p{margin:0}p+p{margin-top:8px}ul{padding-left:20px;margin-bottom:0}
+#floodBoard{display:block;width:100%;height:auto;background:white;touch-action:none;user-select:none}
+#floodBoard :global(text){font-family:'Noto Sans KR',sans-serif;font-style:normal}
+#floodBoard:focus,#floodBoard:focus-visible{outline:none}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+</style>
