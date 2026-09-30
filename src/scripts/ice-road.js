@@ -24,16 +24,14 @@ if(game) {
     for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) {
       const i=r*cols+c;
       if(cells[r][c]==='ice') html+=`<rect x="${c*40}" y="${r*40}" width="40" height="40" fill="#b6b4b7"/>`;
-      if(errors.has(i)||satisfied.has(i)||i===selected) html+=`<rect x="${c*40}" y="${r*40}" width="40" height="40" fill="${errors.has(i)?'#fbe0df':satisfied.has(i)?'#dcebdc':'#e7eef7'}" fill-opacity=".7"/>`;
+      if(errors.has(i)||satisfied.has(i)||i===selected) html+=`<rect x="${c*40}" y="${r*40}" width="40" height="40" fill="${errors.has(i)?'#f4d5d5':satisfied.has(i)?'#dcebdc':'#e7eef7'}"/>`;
     }
     for(let r=1;r<rows;r++) html+=`<path d="M0 ${r*40}H${cols*40}" stroke="#c9c9c9" stroke-dasharray="2 3"/>`;
     for(let c=1;c<cols;c++) html+=`<path d="M${c*40} 0V${rows*40}" stroke="#c9c9c9" stroke-dasharray="2 3"/>`;
     for(const key of edges) {
       const [a,b]=key.split(':').map(Number), [x,y]=xy(a),[u,v]=xy(b);
       html+=`<path d="M${x} ${y}L${u} ${v}" stroke="#4a6fa5" stroke-width="5" stroke-linecap="round"/>`;
-      // Leave cell centers available for selecting a new straight-line endpoint.
-      const dx=(u-x)/40,dy=(v-y)/40;
-      html+=`<path data-edge="${key}" d="M${x+dx*8} ${y+dy*8}L${u-dx*8} ${v-dy*8}" stroke="transparent" stroke-width="14" style="cursor:pointer"/>`;
+
     }
     cells.forEach((row,r)=>row.forEach((clue,c)=>{
       if(typeof clue!=='number' || !clue) return;
@@ -57,7 +55,7 @@ if(game) {
     if(!ready || event.button!==0 || gesture) return;
     const current=cell(event); if(current===null) return;
     event.preventDefault(); board.setPointerCapture(event.pointerId);
-    gesture={id:event.pointerId,start:current,last:current,previous:selected,moved:false,mode:null,hitEdge:event.target.closest('[data-edge]')?.dataset.edge,visited:new Set()};
+    gesture={id:event.pointerId,start:current,last:current,previous:selected,moved:false,mode:null,visited:new Set()};
     selected=current; render();
   });
   board.addEventListener('pointermove',event=>{
@@ -74,12 +72,12 @@ if(game) {
   function end(event) {
     if(!gesture || gesture.id!==event.pointerId) return;
     if(event.type==='pointerup' && !gesture.moved) {
-      if(gesture.hitEdge && edges.has(gesture.hitEdge)) {
-        checkpoint(); edges.delete(gesture.hitEdge); selected=null;
-      } else {
-        const keys=straightEdges(gesture.previous,gesture.start);
-        if(keys.some(key=>!edges.has(key))) { checkpoint(); keys.forEach(key=>edges.add(key)); }
-        if(keys.length) selected=null;
+      const keys=straightEdges(gesture.previous,gesture.start);
+      if(keys.length) {
+        checkpoint();
+        const erase=keys.every(key=>edges.has(key));
+        keys.forEach(key=>erase?edges.delete(key):edges.add(key));
+        selected=null;
       }
     }
     if(gesture.moved) selected=null;

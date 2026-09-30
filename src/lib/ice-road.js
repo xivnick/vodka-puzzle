@@ -61,8 +61,8 @@ export function validateIceRoad(cells, edges) {
     const finished=group.every(i=>adjacency[i].length===2);
     for(const i of group) segments[i]=group.length;
     const mismatch=targets.size>1 || numbers.some(i=>group.length>clue(i) || finished && group.length!==clue(i));
-    if(mismatch) numbers.forEach(i=>errors.add(i));
-    else if(finished) numbers.forEach(i=>satisfied.push(i));
+    if(mismatch || group.some(i=>errors.has(i))) group.forEach(i=>errors.add(i));
+    else if(finished && numbers.length) satisfied.push(...group);
   }
   for(let i=0;i<size;i++) if(clue(i) && closed && !adjacency[i].length) errors.add(i);
   return {complete:closed && singleLoop && used.some(ice) && used.some(i=>!ice(i)) && !malformed && errors.size===0, errors:[...errors], satisfied, segments, closed, malformed};
