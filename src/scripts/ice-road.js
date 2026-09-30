@@ -55,19 +55,12 @@ if(game) {
     if(!ready || event.button!==0 || gesture) return;
     const current=cell(event); if(current===null) return;
     event.preventDefault(); board.setPointerCapture(event.pointerId);
-    gesture={id:event.pointerId,start:current,last:current,previous:selected,moved:false,mode:null,visited:new Set()};
+    gesture={id:event.pointerId,start:current,previous:selected,moved:false};
     selected=current; render();
   });
   board.addEventListener('pointermove',event=>{
     if(!gesture || gesture.id!==event.pointerId) return;
-    const current=cell(event), keys=straightEdges(gesture.last,current);
-    if(!keys.length) return;
-    if(!gesture.moved) { checkpoint(); gesture.mode=edges.has(keys[0])?'erase':'draw'; gesture.moved=true; }
-    for(const key of keys) if(!gesture.visited.has(key)) {
-      if(gesture.mode==='erase') edges.delete(key); else edges.add(key);
-      gesture.visited.add(key);
-    }
-    gesture.last=current; selected=current; render();
+    if(cell(event)!==gesture.start) gesture.moved=true;
   });
   function end(event) {
     if(!gesture || gesture.id!==event.pointerId) return;
