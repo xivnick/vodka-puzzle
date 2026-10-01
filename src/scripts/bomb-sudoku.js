@@ -1,4 +1,4 @@
-import { givens, bombs, bombValues, isBomb, validValue, conflicts, solved } from '../lib/bomb-sudoku.js';
+import { givens, bombValues, isBomb, validValue, conflicts, solved } from '../lib/bomb-sudoku.js';
 
 const $ = id => document.getElementById(id);
 const fixed = givens.flat();
@@ -35,19 +35,6 @@ function render() {
       cell.append(box);
     }
   });
-  const bomb = isBomb(selected);
-  $('bombNumbers').hidden = bomb;
-  $('bombValues').hidden = !bomb;
-  for (const button of document.querySelectorAll('.bomb-number-pad [data-number]')) {
-    const n = Number(button.dataset.number);
-    const used = n % 1 !== 0 && bombs.some(i => i !== selected && values[i] === n);
-    button.classList.toggle('used', used);
-    button.classList.toggle('active', notesMode ? notes[selected].includes(n) : values[selected] === n);
-    button.disabled = !!fixed[selected];
-    button.setAttribute('aria-label', `${n}${used ? ', 다른 폭탄에서 사용 중' : ''}`);
-    button.setAttribute('aria-pressed', String(notesMode ? notes[selected].includes(n) : values[selected] === n));
-  }
-  $('bombErase').disabled = !!fixed[selected];
   $('bombNotes').setAttribute('aria-pressed', String(notesMode));
   $('bombComplete').hidden = !complete;
 }
@@ -101,7 +88,7 @@ $('bombBoard').addEventListener('keydown', event => {
 });
 for (const id of ['bombNumbers', 'bombValues']) $(id).addEventListener('click', event => {
   const button = event.target.closest('[data-number]');
-  if (button && !button.disabled) change(Number(button.dataset.number));
+  if (button) change(Number(button.dataset.number));
 });
 $('bombErase').addEventListener('click', () => change(0));
 $('bombReset').addEventListener('click', () => {
