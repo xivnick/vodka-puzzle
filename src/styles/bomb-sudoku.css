@@ -1,0 +1,22 @@
+#bombGame { width:100%; }
+#bombBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
+#bombBoard .sudoku-cell:focus { outline:none; }
+#bombBoard .sudoku-cell .cell-value { position:relative; z-index:1; }
+#bombBoard .sudoku-cell.bomb::before { content:""; position:absolute; inset:8%; background:url('/icons/bomb/bomb.svg') center / contain no-repeat; opacity:.12; pointer-events:none; }
+#bombBoard .sudoku-cell.bomb .cell-value { font-size:.82em; text-shadow:0 0 4px #fff, 0 0 4px #fff; }
+#bombBoard .sudoku-cell.conflict { background:#fbe0e0; color:#4a6fa5; }
+#bombBoard .sudoku-cell.given.conflict { color:#333; }
+#bombBoard .sudoku-cell.bomb, #bombBoard .sudoku-cell.bomb .notes { color:#c34242; }
+#bombBoard .sudoku-cell .notes { z-index:1; }
+#bombBoard .sudoku-cell.bomb .notes { inset:2px; font-size:clamp(8px,2.1vw,11px); }
+.bomb-input-label { margin:12px 0 7px; font-size:.82rem; color:#666; text-align:center; }
+.bomb-number-pad { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:4px; width:100%; }
+.bomb-number-pad button { min-width:0; padding:9px 0; border:1px solid #d6d4cd; border-radius:3px; background:#faf8f4; color:#555; font:inherit; touch-action:manipulation; }
+.bomb-value-pad { grid-template-columns:repeat(9,minmax(0,1fr)); }
+.bomb-value-pad button { color:#c34242; font-size:clamp(12px,3.4vw,16px); }
+.bomb-number-pad button.used { opacity:.45; }
+.bomb-number-pad button.active { border-color:#777; box-shadow:inset 0 0 0 1px #777; opacity:1; }
+.bomb-number-pad button:disabled { opacity:.4; }
+.bomb-pad-help, .bomb-demo-note { font-size:.75rem; color:#888; text-align:center; line-height:1.6; }
+.bomb-pad-help { margin:7px 0 0; min-height:1.6em; }
+.bomb-demo-note { margin:16px 0 0; }
