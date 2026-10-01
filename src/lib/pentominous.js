@@ -35,6 +35,35 @@ export const pentominous260929 = {
   ],
 };
 
+export const pentominousFlooded261001 = {
+  rows: 10,
+  cols: 10,
+  clues: [
+    '..W....F..',
+    '..........',
+    '..........',
+    '.........V',
+    '.....N....',
+    'Y.........',
+    '..........',
+    '..........',
+    '..........',
+    '..P....U..',
+  ],
+  water: [
+    '.~~....~~.',
+    '..~~..~~..',
+    '...~...~..',
+    '.....~...~',
+    '~...~~...~',
+    '~~..~..~~~',
+    '~...~.....',
+    '~.........',
+    '..~~..~.~.',
+    '.~~~..~~~.',
+  ],
+};
+
 export function edgeKey(a, b) {
   return `${Math.min(a, b)}:${Math.max(a, b)}`;
 }
@@ -108,7 +137,8 @@ export function validatePentominous(puzzle, edges) {
       const clue = clues[Math.floor(index / cols)][index % cols];
       return clue !== '.' && shape !== null && clue !== shape;
     });
-    regions.push({ cells, shape, clueMismatch, sameShapeNeighbor: false });
+    const waterCount = cells.filter(index => puzzle.water?.[Math.floor(index / cols)][index % cols] === '~').length;
+    regions.push({ cells, shape, clueMismatch, waterCount, tooMuchWater: waterCount > 2, sameShapeNeighbor: false });
   }
   for (let index = 0; index < count; index++) {
     const row = Math.floor(index / cols), col = index % cols;
@@ -124,6 +154,6 @@ export function validatePentominous(puzzle, edges) {
   return {
     regions,
     regionOf,
-    complete: regions.every(region => region.shape && !region.clueMismatch && !region.sameShapeNeighbor),
+    complete: regions.every(region => region.shape && !region.clueMismatch && !region.sameShapeNeighbor && !region.tooMuchWater),
   };
 }

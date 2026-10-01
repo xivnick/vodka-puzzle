@@ -1,12 +1,12 @@
 ---
 import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
-import { pentominous260929 as puzzle, pentominoes } from '../lib/pentominous.js';
-const { puzzleId, preview = false } = Astro.props;
+import { pentominous260929, pentominoes } from '../lib/pentominous.js';
+const { puzzleId, preview = false, puzzle = pentominous260929, title = '260929 펜토미너스' } = Astro.props;
 const shapeOrder = 'FILNPTUVWXYZ'.split('');
 ---
 <PuzzleLayout
-  title="260929 펜토미너스"
+  {title}
   {puzzleId}
   subtitle="격자를 펜토미노 영역으로 나누세요"
   description="알파벳 단서를 따라 격자를 펜토미노로 분할하는 퍼즐"
@@ -20,14 +20,15 @@ const shapeOrder = 'FILNPTUVWXYZ'.split('');
       <li>같은 모양의 펜토미노끼리는 변을 맞댈 수 없습니다. 대각선으로는 닿아도 됩니다.</li>
       <li>알파벳 칸은 해당 모양의 펜토미노가 차지해야 합니다.</li>
       <li>한 영역에 알파벳이 여러 개 있거나 없어도 됩니다. 같은 펜토미노를 여러 번 사용할 수 있으며, 쓰지 않는 모양이 있어도 됩니다.</li>
+      {puzzle.water && <li>물결 무늬가 있는 칸은 물 칸입니다. 하나의 펜토미노에는 물 칸이 최대 2칸까지 들어갈 수 있습니다.</li>}
     </ul>
   </div>
   <div slot="controls">
     <p>칸 사이 짧게 누르기: 선<br />길게 누르기: X (빈 변)<br />같은 표시 다시 누르기: 지우기<br />오른쪽 위 버튼: 두 동작 바꾸기</p>
   </div>
-  <section id="pentominousGame" data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="260929 펜토미너스">
+  <section id="pentominousGame" data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label={title}>
     <div class="board-tools"><button id="pentominousMode" class="mode-toggle" type="button" aria-pressed="false">길게 눌러 x 표시</button></div>
-    <svg id="pentominousBoard" role="group" aria-label="15행 15열 펜토미너스 격자. 칸 사이를 짧게 누르거나 길게 눌러 표시하세요"></svg>
+    <svg id="pentominousBoard" role="group" aria-label={`${puzzle.rows}행 ${puzzle.cols}열 펜토미너스 격자. 칸 사이를 짧게 누르거나 길게 눌러 표시하세요`}></svg>
     <div class="bottom-buttons">
       <button id="pentominousUndo" type="button">되돌리기</button>
       <button id="pentominousReset" class="danger" type="button">초기화</button>

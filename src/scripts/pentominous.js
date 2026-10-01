@@ -12,7 +12,7 @@ if (game) {
   const reset = document.getElementById('pentominousReset');
   const complete = document.getElementById('pentominousComplete');
   const status = document.getElementById('pentominousStatus');
-  const storageKey = 'pentominous-260929-preview';
+  const storageKey = puzzleId === 'test-pentominous-260929' ? 'pentominous-260929-preview' : `${puzzleId}-preview`;
   const size = 40;
   const width = cols * size, height = rows * size;
   const validEdges = new Set();
@@ -83,10 +83,10 @@ if (game) {
   }
   function render() {
     const result = validatePentominous(puzzle, edges);
-    let html = '';
+    let html = puzzle.water ? '<defs><pattern id="pentominousWater" width="16" height="8" patternUnits="userSpaceOnUse"><path d="M-4 4Q0 0 4 4T12 4T20 4" fill="none" stroke="#83afc6" stroke-width="1.6"/></pattern></defs>' : '';
     for (const region of result.regions) {
       if (region.shape || region.cells.length < 5) {
-        const bad = !region.shape || region.clueMismatch || region.sameShapeNeighbor;
+        const bad = !region.shape || region.clueMismatch || region.sameShapeNeighbor || region.tooMuchWater;
         const fill = bad ? '#fce8e7' : '#e9f4e9';
         for (const index of region.cells) {
           const r = Math.floor(index / cols), c = index % cols;
@@ -94,6 +94,9 @@ if (game) {
         }
       }
     }
+    puzzle.water?.forEach((row, r) => [...row].forEach((cell, c) => {
+      if (cell === '~') html += `<rect x="${c * size + 2}" y="${r * size + 2}" width="${size - 4}" height="${size - 4}" fill="url(#pentominousWater)" pointer-events="none"/>`;
+    }));
     for (let r = 1; r < rows; r++) html += `<path d="M0 ${r * size}H${width}" stroke="#d2d8df" stroke-width="1" stroke-dasharray="3 4"/>`;
     for (let c = 1; c < cols; c++) html += `<path d="M${c * size} 0V${height}" stroke="#d2d8df" stroke-width="1" stroke-dasharray="3 4"/>`;
     for (const key of edges) {
@@ -115,14 +118,14 @@ if (game) {
     }
     clues.forEach((row, r) => [...row].forEach((clue, c) => {
       if (clue === '.') return;
-      html += `<text x="${(c + .5) * size}" y="${(r + .5) * size}" dy=".35em" text-anchor="middle" font-size="25" font-weight="600" fill="#202a36" pointer-events="none">${clue}</text>`;
+      html += `<text x="${(c + .5) * size}" y="${(r + .5) * size}" dy=".35em" text-anchor="middle" font-size="25" font-weight="600" fill="#202a36" ${puzzle.water ? 'stroke="white" stroke-width="3" stroke-linejoin="round" paint-order="stroke"' : ''} pointer-events="none">${clue}</text>`;
     }));
     html += `<rect x="1.5" y="1.5" width="${width - 3}" height="${height - 3}" fill="none" stroke="#202a36" stroke-width="3" pointer-events="none"/>`;
     board.innerHTML = html;
     complete.hidden = !result.complete;
     undo.disabled = !ready || !history.length;
     reset.disabled = !ready || !edges.size && !crosses.size;
-    const formed = result.regions.filter(region => region.shape && !region.clueMismatch && !region.sameShapeNeighbor).length;
+    const formed = result.regions.filter(region => region.shape && !region.clueMismatch && !region.sameShapeNeighbor && !region.tooMuchWater).length;
     status.textContent = result.complete ? '퍼즐을 완성했습니다.' : `규칙에 맞는 펜토미노 영역 ${formed}개.`;
     if (!preview && ready && owner === account() && result.complete && !completionRecorded) {
       completionRecorded = true;
