@@ -1,10 +1,22 @@
-import { givens, bombValues, isBomb, validValue, conflicts, solved } from '../lib/bomb-sudoku.js';
+import { givens, bombValues, boardSignature, isBomb, validValue, conflicts, solved, parseBombSudokuState } from '../lib/bomb-sudoku.js';
 
 const $ = id => document.getElementById(id);
+const puzzleId = $('bombGame').dataset.puzzleId;
 const fixed = givens.flat();
 const cells = [...$('bombBoard').querySelectorAll('[data-cell]')];
 let values = fixed.slice(), selected = fixed.findIndex(n => !n);
 let notes = Array.from({length:81}, () => []), notesMode = false;
+let ready = false;
+
+function persist() {
+  if (!ready) return;
+  try {
+    window.saveLocalState(puzzleId, {
+      version: 1, puzzleId, boardSignature,
+      values: [...values], notes: notes.map(note => [...note]),
+    });
+  } catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
+}
 
 function render() {
   const bad = conflicts(values);
@@ -46,7 +58,7 @@ function select(index) {
 }
 
 function change(number) {
-  if (fixed[selected] || number !== 0 && !validValue(number, selected)) return;
+  if (!ready || fixed[selected] || number !== 0 && !validValue(number, selected)) return;
   if (notesMode && number) {
     if (values[selected]) return;
     notes[selected] = notes[selected].includes(number)
@@ -56,6 +68,7 @@ function change(number) {
     values[selected] = number;
     notes[selected] = [];
   }
+  persist();
   render();
   cells[selected].focus({preventScroll:true});
 }
@@ -92,10 +105,21 @@ for (const id of ['bombNumbers', 'bombValues']) $(id).addEventListener('click', 
 });
 $('bombErase').addEventListener('click', () => change(0));
 $('bombReset').addEventListener('click', () => {
+  if (!ready) return;
   if (!values.some((n, i) => n !== fixed[i]) && !notes.some(a => a.length)) return;
   if (confirm('입력한 숫자와 메모를 모두 초기화할까요?')) {
     values = fixed.slice(); notes = Array.from({length:81}, () => []);
+    persist();
     render();
   }
 });
-render();
+function restore() {
+  let saved = null;
+  try { saved = window.loadLocalState(puzzleId); } catch {}
+  const parsed = parseBombSudokuState(saved, puzzleId);
+  values = parsed?.values || fixed.slice();
+  notes = parsed?.notes || Array.from({length:81}, () => []);
+  ready = true;
+  render();
+}
+window.startLocalPuzzle(puzzleId, restore, restore);

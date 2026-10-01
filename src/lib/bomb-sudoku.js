@@ -13,6 +13,7 @@ export const givens = [
   [1, 2, 0, 0, 0, 0, 6, 0, 4],
 ];
 export const bombValues = Array.from({ length: 9 }, (_, n) => n + 0.5);
+export const boardSignature = `${givens.flat().join(',')}|${bombs.join(',')}`;
 const bombSet = new Set(bombs);
 const fixed = givens.flat();
 const units = [
@@ -58,4 +59,21 @@ export function conflicts(values) {
 
 export function solved(values) {
   return values.length === 81 && values.every(validValue) && conflicts(values).size === 0;
+}
+
+export function parseBombSudokuState(saved, puzzleId) {
+  if (!saved || saved.version !== 1 || saved.puzzleId !== puzzleId
+    || saved.boardSignature !== boardSignature
+    || !Array.isArray(saved.values) || saved.values.length !== 81
+    || !saved.values.every((value, index) => value === 0 || validValue(value, index))
+    || !Array.isArray(saved.notes) || saved.notes.length !== 81
+    || !saved.notes.every((note, index) => Array.isArray(note)
+      && note.every(value => validValue(value, index)))) return null;
+  if (saved.values.some((value, index) => fixed[index] && value !== fixed[index])) return null;
+  return {
+    values: [...saved.values],
+    notes: saved.notes.map((note, index) => saved.values[index]
+      ? []
+      : [...new Set(note)].sort((a, b) => a - b)),
+  };
 }

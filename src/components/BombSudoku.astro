@@ -22,7 +22,7 @@ const puzzleId = 'test-bomb-sudoku-261001';
     메모하기 버튼 또는 M 키로 메모 입력을 켜고 끄세요.<br />
     지우기 버튼으로 입력을 지우세요.
   </div>
-  <section id="bombGame" aria-label="폭탄 스도쿠">
+  <section id="bombGame" data-puzzle-id={puzzleId} aria-label="폭탄 스도쿠">
     <div class="sudoku-board-tools"><button id="bombNotes" class="sudoku-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>
     <div id="bombBoard" class="sudoku-board" role="group" aria-label="9행 9열 폭탄 스도쿠">
       {givens.flat().map((n, i) => <button type="button"
