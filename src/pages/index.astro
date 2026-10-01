@@ -11,8 +11,13 @@ import '../styles/daily-streak.css';
 </div>
 <div class="list">
   <a id="dailyCard" class="daily-card" href="/daily-sudoku/"><span class="title"><span id="dailyTitle">Daily Sudoku</span></span><span id="dailyStreak" class="daily-streak" hidden></span></a>
-  <div id="puzzleListStatus" role="status">문제를 불러오는 중...</div>
-  <div id="puzzleList" class="puzzle-list"></div>
+  <div id="puzzleListStatus" class="is-loading" role="status">문제를 불러오는 중...</div>
+  <div id="puzzleList" class="puzzle-list" aria-busy="true">
+    {Array.from({length:10},(_,index)=><div class="puzzle-skeleton-row" aria-hidden="true">
+      <span class="puzzle-skeleton-title" style={`width:${[64,52,58,48,62][index%5]}%`}></span>
+      <span class="puzzle-skeleton-count"></span>
+    </div>)}
+  </div>
 </div>
 <div class="pager" id="pager"></div>
 
@@ -30,7 +35,7 @@ import '../styles/daily-streak.css';
   </div>
 </div>
 <ArchiveLink slot="footer" />
-<script is:inline src="/js/home.js?v=12"></script>
+<script is:inline src="/js/home.js?v=13"></script>
 </PageLayout>
 
 <script>import '../scripts/daily-home.js';</script>

@@ -2,6 +2,13 @@
 
 body.home .puzzle-list { display:contents; }
 body.home #puzzleListStatus { padding:16px 18px; color:#888; font-size:.85rem; }
+body.home #puzzleListStatus.is-loading { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%); }
+body.home .puzzle-skeleton-row { display:flex; align-items:center; gap:6px; height:47px; box-sizing:border-box; padding:14px 18px; border-bottom:1px solid #e8e5df; }
+body.home .puzzle-skeleton-row:first-child { border-top:1px solid #e8e5df; }
+body.home .puzzle-skeleton-title,body.home .puzzle-skeleton-count { display:block; flex-shrink:0; height:16px; background:#eeece8; border-radius:3px; animation:puzzle-skeleton-pulse 1.5s ease-in-out infinite; }
+body.home .puzzle-skeleton-count { width:22px; height:11px; }
+@keyframes puzzle-skeleton-pulse { 50% { opacity:.45; } }
+@media(prefers-reduced-motion:reduce) { body.home .puzzle-skeleton-title,body.home .puzzle-skeleton-count { animation:none; } }
 
 body.home .list {
     width: min(94vw, 480px);

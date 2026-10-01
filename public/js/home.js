@@ -14,9 +14,9 @@
 const PAGE_SIZE = 10;
   async function loadPuzzleList() {
     const status = document.getElementById('puzzleListStatus');
+    const list = document.getElementById('puzzleList');
     try {
       const puzzles = await getPublishedPuzzles();
-      const list = document.getElementById('puzzleList');
       list.replaceChildren();
       for (const puzzle of puzzles) {
         const link = document.createElement('a');
@@ -33,8 +33,13 @@ const PAGE_SIZE = 10;
       renderPagination();
       return true;
     } catch {
+      list.replaceChildren();
+      status.hidden = false;
       status.textContent = '문제 목록을 불러오지 못했습니다. 새로고침해 주세요.';
       return false;
+    } finally {
+      status.classList.remove('is-loading');
+      list.setAttribute('aria-busy', 'false');
     }
   }
   const puzzleListReady = loadPuzzleList();
