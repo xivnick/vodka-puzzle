@@ -34,12 +34,6 @@ python3 scripts/database.py /비공개/경로/daily-sudoku-YYYY-MM-DD.sql
 
 ## 완료 기록과 DB 검증
 
-### 로그인 로딩 시간 확인
-
-로그인한 브라우저에서 `/?authTiming=1`을 열면 개발자 도구 콘솔에 `session`(세션 확인·필요 시 갱신), `profile`(닉네임 조회), `total`(인증 초기화 전체)의 밀리초 단위 시간이 표시된다. 일반 페이지에서도 `window.puzzleAccount.timings` 또는 Performance 항목의 `puzzle-auth:*` 측정값으로 확인할 수 있다. 토큰·계정 정보는 측정값에 포함하지 않는다.
-
-공개 랭킹·완료 인원·최근 완료 배너는 비로그인 권한으로 즉시 조회한다. 데일리 문제도 인증 완료 전에는 공개 데이터를 먼저 표시하고, 인증 완료 후 내 기록과 스트릭을 갱신한다. 내 완료 기록과 클라우드 저장·불러오기는 인증을 기다린다.
-
 `python3 scripts/review-completions.py`는 수집된 완료 보드를 읽기 전용으로 검토한다. 직접 풀었는지는 판정하지 않으며 기록을 자동 변경하지 않는다. `python3 scripts/sync-puzzle-catalog.py`는 승인된 일반 문제의 메타데이터를 등록한다.
 
 DB 권한 검증 도구는 관련 DB 작업 때만 적용 범위를 확인하고 사용한다. 각 도구의 테스트 트랜잭션은 롤백한다.
