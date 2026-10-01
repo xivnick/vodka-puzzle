@@ -1,16 +1,16 @@
 // Unlisted, position-revealed demo. Bombs are a single Sudoku symbol;
 // their nine half-integer values are used once across the entire board.
-export const bombs = [8, 14, 19, 33, 38, 48, 54, 67, 79];
+export const bombs = [7, 12, 20, 32, 44, 46, 54, 69, 76];
 export const givens = [
-  [4, 8, 0, 0, 0, 0, 0, 0, 0],
-  [2, 3, 0, 0, 1, 0, 0, 0, 0],
-  [0, 0, 0, 0, 4, 0, 5, 2, 0],
-  [5, 0, 8, 0, 0, 1, 0, 6, 4],
-  [6, 4, 0, 0, 5, 0, 3, 0, 1],
-  [7, 0, 3, 0, 0, 4, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 7],
-  [0, 0, 2, 1, 0, 0, 4, 0, 0],
-  [0, 5, 4, 0, 0, 0, 0, 0, 6],
+  [2, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 8, 1, 0, 4, 0, 0, 0, 3],
+  [4, 0, 0, 0, 0, 0, 0, 1, 8],
+  [5, 1, 7, 4, 0, 0, 0, 2, 0],
+  [0, 6, 0, 0, 5, 1, 0, 4, 0],
+  [0, 0, 0, 0, 0, 0, 5, 0, 0],
+  [0, 0, 5, 3, 6, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [1, 2, 0, 0, 0, 0, 6, 0, 4],
 ];
 export const bombValues = Array.from({ length: 9 }, (_, n) => n + 0.5);
 const bombSet = new Set(bombs);
