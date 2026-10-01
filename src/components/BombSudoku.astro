@@ -7,21 +7,21 @@ import { givens, isBomb, bombValues } from '../lib/bomb-sudoku.js';
 const puzzleId = 'test-bomb-sudoku-261001';
 ---
 <PuzzleLayout title="261001 폭탄 스도쿠" {puzzleId}
+  subtitle="폭탄의 바로 왼쪽은 더 작게, 바로 오른쪽은 더 크게"
   description="폭탄의 바로 왼쪽과 오른쪽 숫자를 비교하는 스도쿠 테스트"
   preview showCloud={false} showLeaderboard={false} showPreviewCloud={false} showPreviewLeaderboard={false}>
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <div slot="rules">
     각 가로줄, 세로줄, 3×3 상자에는 1~8과 폭탄이 하나씩 들어갑니다.<br />
     폭탄 칸은 정해져 있습니다. 아홉 폭탄에 0.5부터 8.5까지를 각각 한 번씩 넣으세요.<br />
-    폭탄의 <strong>바로 왼쪽 숫자 &lt; 폭탄 값 &lt; 바로 오른쪽 숫자</strong>여야 합니다.<br />
+    폭탄의 바로 왼쪽 숫자 &lt; 폭탄 값 &lt; 바로 오른쪽 숫자여야 합니다.<br />
     판의 양끝에서는 존재하는 이웃만 비교합니다.<br />
     빨간 글자는 폭탄 값이고, 빨간 배경은 규칙 위반입니다.
   </div>
   <div slot="controls">
-    칸을 선택한 뒤 위쪽 줄에서 일반 숫자, 아래쪽 줄에서 폭탄 값을 입력하세요.<br />
-    키보드는 일반 칸에서 1~8, 폭탄 칸에서 0~8로 입력합니다. 폭탄 칸에서 4를 누르면 4.5가 들어갑니다.<br />
-    메모하기 또는 M 키로 후보를 적고, 방향키로 이동하세요.<br />
-    Backspace·Delete로 지웁니다. 일반 칸에서는 0으로도 지울 수 있습니다.
+    칸을 선택하고 숫자 버튼으로 입력하세요.<br />
+    키보드는 일반 칸에서 1~8, 폭탄 칸에서 0~8(.5 자동)로 입력합니다.<br />
+    메모하기·M으로 메모, 방향키로 이동, Backspace·Delete로 지웁니다.
   </div>
   <section id="bombGame" aria-label="폭탄 스도쿠">
     <div class="sudoku-board-tools"><button id="bombNotes" class="sudoku-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>
