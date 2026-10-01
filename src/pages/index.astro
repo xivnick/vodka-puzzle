@@ -1,11 +1,8 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
-import puzzles from '../data/puzzles.json';
-import season from '../data/season.json';
 import ArchiveLink from '../components/ArchiveLink.astro';
 import '../styles/home.css';
 import '../styles/daily-streak.css';
-const visible = puzzles.filter(p => p.listed !== false && p.season === season.id && new Date(p.publishedAt) <= new Date()).sort((a,b) => b.publishedAt.localeCompare(a.publishedAt));
 ---
 <PageLayout title="vodka puzzle" heading="퍼즐" subtitle="puzzle.xivnick.me" home>
 
@@ -14,7 +11,8 @@ const visible = puzzles.filter(p => p.listed !== false && p.season === season.id
 </div>
 <div class="list">
   <a id="dailyCard" class="daily-card" href="/daily-sudoku/"><span class="title"><span id="dailyTitle">Daily Sudoku</span></span><span id="dailyStreak" class="daily-streak" hidden></span></a>
-  {visible.map(p => <a href={p.href} data-puzzle-id={p.id}><span class="title">{p.title}</span></a>)}
+  <div id="puzzleListStatus" role="status">문제를 불러오는 중...</div>
+  <div id="puzzleList" class="puzzle-list"></div>
 </div>
 <div class="pager" id="pager"></div>
 
@@ -32,7 +30,7 @@ const visible = puzzles.filter(p => p.listed !== false && p.season === season.id
   </div>
 </div>
 <ArchiveLink slot="footer" />
-<script is:inline src="/js/home.js?v=11"></script>
+<script is:inline src="/js/home.js?v=12"></script>
 </PageLayout>
 
 <script>import '../scripts/daily-home.js';</script>

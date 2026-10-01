@@ -4,11 +4,20 @@ const { title, puzzleId, description, subtitle, showCloud = true, showLeaderboar
 const hasControls = Astro.slots.has('controls');
 const hasCustomLeaderboard = Astro.slots.has('leaderboard');
 const hasCompletion = Astro.slots.has('completion');
+const managed = !preview && /^\d{6}_\d{2}$/.test(puzzleId || '');
 ---
 <PageLayout title={title} description={description} subtitle={subtitle} puzzle>
-<slot name="head" slot="head" />
+<Fragment slot="head">
+  <slot name="head" />
+  {managed && <script is:inline define:vars={{puzzleId}}>
+    window.puzzlePage = { id: puzzleId, published: false };
+    // Start metadata alongside the static puzzle and account initialization.
+    getPuzzleDetails(puzzleId).catch(() => {});
+  </script>}
+</Fragment>
 <slot name="above-title" slot="above-title" />
 <div class="container">
+{managed && <p id="puzzleReleaseStatus" class="release-status" role="status" hidden></p>}
 <div class="help-toggles">
 <button class="rules-toggle" id="rulesToggle" type="button" aria-expanded="false" aria-controls="rulesBox">규칙 보기</button>
 {hasControls && <button class="rules-toggle" id="controlsToggle" type="button" aria-expanded="false" aria-controls="controlsBox">조작 방법</button>}
@@ -22,7 +31,7 @@ const hasCompletion = Astro.slots.has('completion');
 {hasCompletion && <div class="completion"><slot name="completion" /></div>}
 <slot name="after-cloud" />
 {(showLeaderboard || preview && showPreviewLeaderboard) && <div class="lb-section"><div class="lb-title">푼 사람</div><div id="leaderboard"><slot name="leaderboard">{preview && <div class="lb-empty">시연에서는 완료 기록이 표시되지 않습니다.</div>}</slot></div></div>}</div>
-<script is:inline define:vars={{puzzleId, showLeaderboard, hasCustomLeaderboard, preview}}>window.addEventListener('DOMContentLoaded',()=>{
+<script is:inline define:vars={{puzzleId, showLeaderboard, hasCustomLeaderboard, preview, managed}}>window.addEventListener('DOMContentLoaded',async()=>{
   const panels=[['rulesToggle','rulesBox'],['controlsToggle','controlsBox']]
     .map(([buttonId,panelId])=>[document.getElementById(buttonId),document.getElementById(panelId)])
     .filter(([button,panel])=>button && panel);
@@ -34,11 +43,13 @@ const hasCompletion = Astro.slots.has('completion');
       otherButton.setAttribute('aria-expanded',String(open));
     });
   }));
+  if(managed)await applyPuzzleDetails(puzzleId);
   if(!preview) initCloudBtns();if(showLeaderboard && !preview && !hasCustomLeaderboard)renderLeaderboard(puzzleId,'leaderboard');
 });</script>
 </PageLayout>
 <style>
 .container { width:100%; }
+.release-status { margin:8px 0 12px; color:#888; font-size:.8rem; text-align:center; line-height:1.6; }
 .help-toggles { display:flex; justify-content:center; gap:20px; margin-top:6px; }
 .rules-toggle {
   background:none; border:0; border-bottom:1px solid #ccc; border-radius:0;

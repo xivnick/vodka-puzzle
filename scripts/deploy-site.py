@@ -12,7 +12,6 @@ if not (build / 'index.html').is_file():
 for file in build.rglob('*'):
     if file.is_symlink() or file.name.startswith('.'):
         raise SystemExit(f'Unexpected build entry: {file}')
-subprocess.run(['python3', 'scripts/sync-puzzle-catalog.py'], cwd=root, check=True)
 host = 'xivnick@xivnick.me'
 ssh = ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15']
 release = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid.uuid4().hex[:8]
@@ -23,5 +22,7 @@ subprocess.run(['rsync', '-rtp', '--chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r', '-e', shle
 # Each upload gets a new directory; old releases remain available for rollback.
 link = f'{base}/dist-next-{release}'
 subprocess.run(ssh + [host, f'test -s {destination}/index.html && ln -s releases/{release} {link} && mv -Tf {link} {base}/dist'], check=True)
+# Register only after the complete page is available; never overwrite admin edits.
+subprocess.run(['python3', 'scripts/sync-puzzle-catalog.py'], cwd=root, check=True)
 print(f'Uploaded {destination}')
 print('https://puzzle.xivnick.me/')

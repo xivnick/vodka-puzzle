@@ -63,6 +63,61 @@ async function sbPublicRpc(name, body) {
   return res.json();
 }
 
+let _publicPuzzleListPromise;
+function getPublishedPuzzles() {
+  if (!_publicPuzzleListPromise) {
+    _publicPuzzleListPromise = sbPublicRpc('list_puzzles', { requested_season: SEASON_ID })
+      .catch(error => { _publicPuzzleListPromise = null; throw error; });
+  }
+  return _publicPuzzleListPromise;
+}
+
+const _puzzleDetails = new Map();
+function getPuzzleDetails(puzzleId) {
+  if (!_puzzleDetails.has(puzzleId)) {
+    const request = sbPublicRpc('puzzle_details', { requested_season: SEASON_ID, requested_puzzle: puzzleId });
+    _puzzleDetails.set(puzzleId, request);
+    request.catch(() => _puzzleDetails.delete(puzzleId));
+  }
+  return _puzzleDetails.get(puzzleId);
+}
+
+async function puzzleRecordsEnabled(puzzleId) {
+  if (!/^\d{6}_\d{2}$/.test(puzzleId)) return false;
+  try { return (await getPuzzleDetails(puzzleId))?.published === true; }
+  catch { return false; }
+}
+
+async function applyPuzzleDetails(puzzleId) {
+  const status = document.getElementById('puzzleReleaseStatus');
+  const leaderboard = document.getElementById('leaderboard')?.closest('.lb-section');
+  try {
+    const puzzle = await getPuzzleDetails(puzzleId);
+    if (!puzzle) throw new Error('Puzzle not registered');
+    const heading = document.querySelector('.page-heading h1');
+    const summary = document.querySelector('.page-subtitle');
+    if (heading) heading.textContent = puzzle.title;
+    if (summary) summary.textContent = puzzle.summary;
+    document.title = `${puzzle.title} · vodka puzzle`;
+    window.puzzlePage.published = puzzle.published;
+    if (status) {
+      status.hidden = puzzle.published;
+      const label = puzzle.status === 'test' ? '테스트 중인' : puzzle.status === 'draft' ? '초안 상태인' : '공개 예정인';
+      status.textContent = puzzle.published ? '' : `${label} 문제입니다. 완료 기록과 클라우드 저장은 연결되지 않습니다.`;
+    }
+    if (leaderboard) leaderboard.hidden = !puzzle.published;
+    initCloudBtns();
+    if (puzzle.published && typeof window.checkComplete === 'function') window.checkComplete();
+    return puzzle;
+  } catch {
+    window.puzzlePage.published = false;
+    if (status) { status.hidden = false; status.textContent = '문제 정보를 불러오지 못했습니다. 새로고침해 주세요.'; }
+    if (leaderboard) leaderboard.hidden = true;
+    initCloudBtns();
+    return null;
+  }
+}
+
 async function sbSelect(table, qs = '', { publicRead = false } = {}) {
   const params = new URLSearchParams(qs);
   params.set('season_id', `eq.${SEASON_ID}`);
@@ -182,7 +237,8 @@ async function refreshLatestCompletions(force = false) {
 async function getPuzzleTitleMap() {
   if (_puzzleTitleMapPromise) return _puzzleTitleMapPromise;
   _puzzleTitleMapPromise = (async () => {
-    const map = new Map([...Object.entries(PUZZLE_TITLE_OVERRIDES), ...Object.entries(window.puzzleTitles || {})]);
+    const puzzles = await getPublishedPuzzles().catch(() => []);
+    const map = new Map([...Object.entries(PUZZLE_TITLE_OVERRIDES), ...puzzles.map(p => [p.id, p.title])]);
     const pageTitle = document.querySelector('h1')?.textContent?.trim();
     if (typeof PUZZLE_ID !== 'undefined' && pageTitle && !map.has(PUZZLE_ID)) {
       map.set(PUZZLE_ID, pageTitle);
@@ -357,6 +413,7 @@ const _completionInFlight = new Set();
 const _completionRetries = new Map();
 
 async function recordCompletion(puzzleId, state) {
+  if (!await puzzleRecordsEnabled(puzzleId)) return;
   await window.puzzleAuthReady;
   const savedKey = _completionSavedKey(puzzleId);
 
@@ -390,7 +447,17 @@ async function recordCompletion(puzzleId, state) {
       headers,
       body: JSON.stringify({ requested_puzzle: puzzleId, submitted_state: snapshot, state_version: snapshot.version || 1 }),
     });
-    if (!res.ok) throw new Error(`recordCompletion: ${res.status}`);
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      if (error.message === 'UNAVAILABLE') {
+        _puzzleDetails.delete(puzzleId);
+        clearTimeout(_completionRetries.get(savedKey));
+        _completionRetries.delete(savedKey);
+        if (window.puzzlePage?.id === puzzleId) await applyPuzzleDetails(puzzleId);
+        return;
+      }
+      throw new Error(`recordCompletion: ${res.status}`);
+    }
     await res.json();
     localStorage.setItem(savedKey, '1');
     clearTimeout(_completionRetries.get(savedKey));
@@ -439,6 +506,7 @@ async function sbUpsert(table, data, onConflict) {
 }
 
 async function saveProgressCloud(puzzleId, state) {
+  if (!await puzzleRecordsEnabled(puzzleId)) { showToast('공개된 문제에서만 클라우드 저장을 사용할 수 있습니다.'); return; }
   await window.puzzleAuthReady;
   if (isGuest()) { showToast('구글 로그인 후 닉네임을 설정해 주세요.'); return; }
   try {
@@ -456,6 +524,7 @@ async function saveProgressCloud(puzzleId, state) {
 }
 
 async function loadProgressCloud(puzzleId) {
+  if (!await puzzleRecordsEnabled(puzzleId)) { showToast('공개된 문제에서만 클라우드 저장을 사용할 수 있습니다.'); return null; }
   await window.puzzleAuthReady;
   if (isGuest()) { showToast('구글 로그인 후 닉네임을 설정해 주세요.'); return null; }
   try {
@@ -476,7 +545,7 @@ async function loadProgressCloud(puzzleId) {
 function initCloudBtns() {
   const el = document.getElementById('cloudBtns');
   if (!el) return;
-  el.style.display = isGuest() ? 'none' : 'flex';
+  el.style.display = isGuest() || window.puzzlePage && !window.puzzlePage.published ? 'none' : 'flex';
 }
 
 function toggleRules(id = 'rulesBox') {
@@ -589,6 +658,7 @@ function getFlowerBadgeSolvers() {
 async function renderLeaderboard(puzzleId, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
+  if (!await puzzleRecordsEnabled(puzzleId)) return;
 
   const titleEl = container.closest('.lb-section')?.querySelector('.lb-title');
   container.innerHTML = '<div class="lb-loading">불러오는 중...</div>';

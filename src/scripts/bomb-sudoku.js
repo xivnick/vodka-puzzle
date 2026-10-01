@@ -7,14 +7,24 @@ const cells = [...$('bombBoard').querySelectorAll('[data-cell]')];
 let values = fixed.slice(), selected = fixed.findIndex(n => !n);
 let notes = Array.from({length:81}, () => []), notesMode = false;
 let ready = false;
+let completionRecorded = false;
+
+function state() {
+  return { version: 1, puzzleId, boardSignature, values: [...values], notes: notes.map(note => [...note]) };
+}
+
+function checkComplete() {
+  if (ready && !completionRecorded && solved(values)) {
+    completionRecorded = true;
+    window.recordCompletion(puzzleId, state());
+  }
+}
+window.checkComplete = checkComplete;
 
 function persist() {
   if (!ready) return;
   try {
-    window.saveLocalState(puzzleId, {
-      version: 1, puzzleId, boardSignature,
-      values: [...values], notes: notes.map(note => [...note]),
-    });
+    window.saveLocalState(puzzleId, state());
   } catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
 
@@ -49,6 +59,7 @@ function render() {
   });
   $('bombNotes').setAttribute('aria-pressed', String(notesMode));
   $('bombComplete').hidden = !complete;
+  checkComplete();
 }
 
 function select(index) {
@@ -109,6 +120,7 @@ $('bombReset').addEventListener('click', () => {
   if (!values.some((n, i) => n !== fixed[i]) && !notes.some(a => a.length)) return;
   if (confirm('입력한 숫자와 메모를 모두 초기화할까요?')) {
     values = fixed.slice(); notes = Array.from({length:81}, () => []);
+    completionRecorded = false;
     persist();
     render();
   }
@@ -116,10 +128,25 @@ $('bombReset').addEventListener('click', () => {
 function restore() {
   let saved = null;
   try { saved = window.loadLocalState(puzzleId); } catch {}
+  if (!saved) {
+    try {
+      const previous = window.loadLocalState('test-bomb-sudoku-261001');
+      if (previous) saved = { ...previous, puzzleId };
+    } catch {}
+  }
   const parsed = parseBombSudokuState(saved, puzzleId);
   values = parsed?.values || fixed.slice();
   notes = parsed?.notes || Array.from({length:81}, () => []);
   ready = true;
   render();
 }
+window.handleCloudSave = () => window.saveProgressCloud(puzzleId, state());
+window.handleCloudLoad = async () => {
+  const saved = await window.loadProgressCloud(puzzleId);
+  const parsed = parseBombSudokuState(saved, puzzleId);
+  if (!parsed) return;
+  if (!confirm('클라우드 기록으로 현재 진행 상황을 바꿀까요?')) return;
+  values = parsed.values; notes = parsed.notes; completionRecorded = false;
+  persist(); render();
+};
 window.startLocalPuzzle(puzzleId, restore, restore);

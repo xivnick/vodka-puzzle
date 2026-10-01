@@ -1,9 +1,4 @@
 ---
-import BalanceLoop from '../../../components/BalanceLoop.astro';
-import { balanceLoopPuzzles } from '../../../lib/balance-loop.js';
-export function getStaticPaths() {
-  return balanceLoopPuzzles.map(puzzle => ({ params: { number: `260923-${puzzle.number}` }, props: { puzzle } }));
-}
-const { puzzle } = Astro.props;
+export function getStaticPaths() { return [1,2].map(number=>({params:{number:`260923-${number}`},props:{number}})); }
+return Astro.redirect(`/260923_0${Astro.props.number}/`);
 ---
-<BalanceLoop puzzle={puzzle} preview />

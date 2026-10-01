@@ -1,11 +1,4 @@
 ---
-import FourWinds from '../../../components/FourWinds.astro';
-import { fourWindsPuzzles } from '../../../lib/four-winds.js';
-
-export function getStaticPaths() {
-  return fourWindsPuzzles.map((puzzle, index) => ({ params: { number: String(index + 1) }, props: { puzzle } }));
-}
-
-const { puzzle } = Astro.props;
+export function getStaticPaths() { return [1,2].map(number=>({params:{number:String(number)}})); }
+return Astro.redirect(`/260919_0${Astro.params.number}/`);
 ---
-<FourWinds puzzle={puzzle} puzzleId={`test-four-winds-${Astro.params.number}`} preview />

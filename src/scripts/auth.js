@@ -85,6 +85,10 @@ function setupAccountPage() {
   const save = document.getElementById('useBtn');
   const logout = document.getElementById('logout');
   const deleteAccount = document.getElementById('deleteAccount');
+  const adminLink = document.getElementById('adminLink');
+  if (account.user && adminLink) client.rpc('is_puzzle_admin').then(({ data, error }) => {
+    if (!error) adminLink.hidden = data !== true;
+  }).catch(() => {});
   deleteAccount.hidden = !account.user;
   document.getElementById('accountLoading').hidden = true;
   login.hidden = !!account.user;

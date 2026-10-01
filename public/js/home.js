@@ -12,6 +12,32 @@
 }
 
 const PAGE_SIZE = 10;
+  async function loadPuzzleList() {
+    const status = document.getElementById('puzzleListStatus');
+    try {
+      const puzzles = await getPublishedPuzzles();
+      const list = document.getElementById('puzzleList');
+      list.replaceChildren();
+      for (const puzzle of puzzles) {
+        const link = document.createElement('a');
+        link.href = puzzle.href;
+        link.dataset.puzzleId = puzzle.id;
+        const title = document.createElement('span');
+        title.className = 'title';
+        title.textContent = puzzle.title;
+        link.append(title);
+        list.append(link);
+      }
+      status.hidden = puzzles.length > 0;
+      status.textContent = puzzles.length ? '' : '공개된 문제가 없습니다.';
+      renderPagination();
+      return true;
+    } catch {
+      status.textContent = '문제 목록을 불러오지 못했습니다. 새로고침해 주세요.';
+      return false;
+    }
+  }
+  const puzzleListReady = loadPuzzleList();
   function getCurrentPage(totalPages) {
     const hash = window.location.hash.match(/^#page-(\d+)$/);
     const page = hash ? parseInt(hash[1], 10) : 1;
@@ -87,7 +113,8 @@ const PAGE_SIZE = 10;
   renderPagination();
 
   async function loadCompletions() {
-    const completed = await getMyCompletedPuzzles();
+    const [completed, loaded] = await Promise.all([getMyCompletedPuzzles(), puzzleListReady]);
+    if (!loaded) return;
     document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
       const pid = a.dataset.puzzleId;
       if (completed.has(pid)) {
@@ -105,7 +132,8 @@ const PAGE_SIZE = 10;
   loadCompletions();
 
   async function loadCounts() {
-    const counts = await getSolverCounts();
+    const [counts, loaded] = await Promise.all([getSolverCounts(), puzzleListReady]);
+    if (!loaded) return;
     document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
       const pid = a.dataset.puzzleId;
       const n = counts.get(pid);
@@ -124,12 +152,10 @@ const PAGE_SIZE = 10;
   loadCounts();
 
   async function loadSolverRankings() {
-    const scopeIds = [...document.querySelectorAll('.list a[data-puzzle-id]')]
-      .map(a => a.dataset.puzzleId);
-
-    const [rankings, moonSolvers, flowerSolvers] = await Promise.all([
-      getSolverRankings(scopeIds), getMoonBadgeSolvers(), getFlowerBadgeSolvers(),
+    const [loaded, rankings, moonSolvers, flowerSolvers] = await Promise.all([
+      puzzleListReady, getSolverRankings(), getMoonBadgeSolvers(), getFlowerBadgeSolvers(),
     ]);
+    if (!loaded) return;
     const container = document.getElementById('solverRank');
     const rankTitle = document.getElementById('rankTitle');
     rankTitle.dataset.regularCount = String(rankings.length);

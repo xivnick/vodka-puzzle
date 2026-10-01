@@ -12,8 +12,8 @@ SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims','{claims(u1)}',true);
 INSERT INTO semester_nicknames(season_id,user_id,nickname) VALUES('2026-2','{u1}','__policy_a');
 SELECT public.submit_completion('260916_01','{{"version":1,"rects":[]}}',1);
-INSERT INTO semester_progress(season_id,user_id,nickname,puzzle_id,state) VALUES('2026-2','{u1}','__policy_a','__policy_puzzle','{{"n":1}}');
-INSERT INTO semester_progress(season_id,user_id,nickname,puzzle_id,state) VALUES('2026-2','{u1}','__policy_a','__policy_puzzle','{{"n":2}}') ON CONFLICT(season_id,user_id,puzzle_id) DO UPDATE SET state=excluded.state;
+INSERT INTO semester_progress(season_id,user_id,nickname,puzzle_id,state) VALUES('2026-2','{u1}','__policy_a','260916_01','{{"n":1}}');
+INSERT INTO semester_progress(season_id,user_id,nickname,puzzle_id,state) VALUES('2026-2','{u1}','__policy_a','260916_01','{{"n":2}}') ON CONFLICT(season_id,user_id,puzzle_id) DO UPDATE SET state=excluded.state;
 UPDATE semester_nicknames SET nickname='__policy_renamed' WHERE user_id='{u1}';
 DO $$ BEGIN
  IF (SELECT count(*) FROM semester_completions WHERE user_id='{u1}' AND nickname='__policy_renamed')<>1 THEN RAISE EXCEPTION 'Completion rename failed'; END IF;

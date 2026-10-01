@@ -4,12 +4,11 @@ import PuzzleCompletion from './PuzzleCompletion.astro';
 import '../styles/daily-sudoku.css';
 import '../styles/bomb-sudoku.css';
 import { givens, isBomb, bombValues } from '../lib/bomb-sudoku.js';
-const puzzleId = 'test-bomb-sudoku-261001';
+const { puzzleId = '261001_04' } = Astro.props;
 ---
 <PuzzleLayout title="261001 폭탄 스도쿠" {puzzleId}
   subtitle="폭탄의 바로 왼쪽은 더 작게, 바로 오른쪽은 더 크게"
-  description="폭탄의 바로 왼쪽과 오른쪽 숫자를 비교하는 스도쿠 테스트"
-  preview showCloud={false} showLeaderboard={false} showPreviewCloud={false} showPreviewLeaderboard={false}>
+  description="폭탄의 바로 왼쪽과 오른쪽 숫자를 비교하는 스도쿠">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <div slot="rules">
     각 가로줄, 세로줄, 3×3 상자에는 1~8과 폭탄이 하나씩 들어갑니다.<br />

@@ -1,7 +1,7 @@
 ---
-import ThermoSudoku from '../../../components/ThermoSudoku.astro';
-import {puzzles,photoPuzzles} from '../../../lib/thermo-sudoku.js';
-export function getStaticPaths(){return [...puzzles,...photoPuzzles].map(puzzle=>({params:{difficulty:puzzle.id},props:{puzzle}}));}
-const {puzzle}=Astro.props;
+export function getStaticPaths() {
+  const paths = {easy:'260917_01',medium:'260917_02',hard:'260917_03','photo-20260918-1':'260918_01','photo-20260918-2':'260918_02'};
+  return Object.entries(paths).map(([difficulty,id])=>({params:{difficulty},props:{id}}));
+}
+return Astro.redirect(`/${Astro.props.id}/`);
 ---
-<ThermoSudoku puzzle={puzzle} preview />
