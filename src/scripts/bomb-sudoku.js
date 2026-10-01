@@ -38,10 +38,6 @@ function render() {
   const bomb = isBomb(selected);
   $('bombNumbers').hidden = bomb;
   $('bombValues').hidden = !bomb;
-  $('bombInputLabel').textContent = `${bomb ? '폭탄 값' : '숫자'} ${notesMode ? '메모' : '입력'} · ${bomb ? '0.5~8.5' : '1~8'}${fixed[selected] ? ' · 고정 칸' : ''}`;
-  $('bombPadHelp').textContent = bomb
-    ? '옅은 버튼은 다른 폭탄에서 사용한 값입니다.'
-    : '폭탄 칸을 선택하면 0.5~8.5를 입력할 수 있습니다.';
   for (const button of document.querySelectorAll('.bomb-number-pad [data-number]')) {
     const n = Number(button.dataset.number);
     const used = n % 1 !== 0 && bombs.some(i => i !== selected && values[i] === n);

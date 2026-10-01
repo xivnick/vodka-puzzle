@@ -7,9 +7,8 @@ import { givens, isBomb, bombValues } from '../lib/bomb-sudoku.js';
 const puzzleId = 'test-bomb-sudoku-261001';
 ---
 <PuzzleLayout title="261001 폭탄 스도쿠" {puzzleId}
-  subtitle="폭탄 위치 공개형 · 테스트 문제"
   description="폭탄의 바로 왼쪽과 오른쪽 숫자를 비교하는 스도쿠 테스트"
-  preview showCloud={false} showLeaderboard={false} showPreviewLeaderboard={false}>
+  preview showCloud={false} showLeaderboard={false} showPreviewCloud={false} showPreviewLeaderboard={false}>
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <div slot="rules">
     각 가로줄, 세로줄, 3×3 상자에는 1~8과 폭탄이 하나씩 들어갑니다.<br />
@@ -32,19 +31,16 @@ const puzzleId = 'test-bomb-sudoku-261001';
         data-cell={i} tabindex={i === 0 ? 0 : -1}
         aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${isBomb(i) ? '폭탄 빈칸' : n || '빈칸'}`}><span class="cell-value">{n || ''}</span></button>)}
     </div>
-    <p id="bombInputLabel" class="bomb-input-label" aria-live="polite">숫자 입력 · 1~8</p>
     <div id="bombNumbers" class="bomb-number-pad" aria-label="일반 숫자 입력">
       {Array.from({length: 8}, (_, n) => <button type="button" tabindex="-1" data-number={n + 1}>{n + 1}</button>)}
     </div>
     <div id="bombValues" class="bomb-number-pad bomb-value-pad" aria-label="폭탄 값 입력" hidden>
       {bombValues.map(n => <button type="button" tabindex="-1" data-number={n}>{n}</button>)}
     </div>
-    <p id="bombPadHelp" class="bomb-pad-help">폭탄 칸을 선택하면 0.5~8.5를 입력할 수 있습니다.</p>
     <div class="bottom-buttons">
       <button id="bombErase" type="button">지우기</button>
       <button id="bombReset" type="button" class="danger">초기화</button>
     </div>
-    <p class="bomb-demo-note">테스트 문제는 완료 기록과 클라우드 저장에 반영되지 않습니다.</p>
   </section>
   <PuzzleCompletion slot="completion" id="bombComplete" />
 </PuzzleLayout>
