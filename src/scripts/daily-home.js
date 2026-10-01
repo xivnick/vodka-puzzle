@@ -25,7 +25,7 @@ function apply(data,moonSolvers=new Set(),flowerSolvers=new Set()){
 localLabel();
 async function refresh(){
  if(busy){refreshPending=true;return;}busy=true;
- try{const [data,moonSolvers,flowerSolvers]=await Promise.all([context(),getMoonBadgeSolvers(),getFlowerBadgeSolvers()]);offset=new Date(data.server_now).getTime()-Date.now();clearTimeout(rollover);rollover=setTimeout(refresh,Math.max(1000,new Date(data.next_opens_at)-new Date(data.server_now)+100));apply(data,moonSolvers,flowerSolvers);}
+ try{const [data,moonSolvers,flowerSolvers]=await Promise.all([context(null,{publicOnly:!window.puzzleAccount.ready}),getMoonBadgeSolvers(),getFlowerBadgeSolvers()]);offset=new Date(data.server_now).getTime()-Date.now();clearTimeout(rollover);rollover=setTimeout(refresh,Math.max(1000,new Date(data.next_opens_at)-new Date(data.server_now)+100));apply(data,moonSolvers,flowerSolvers);}
  catch{rankMessage(panel,'기록을 불러오지 못했습니다.');}
  finally{busy=false;if(refreshPending){refreshPending=false;refresh();}}
 }
@@ -40,4 +40,5 @@ for(const button of buttons)button.addEventListener('click',()=>{
  if(daily)loadRank();
 });
 refresh();setInterval(()=>{if(document.hidden)return;localLabel();if(current!==dailyDate(new Date(Date.now()+offset)))updateCard([]);refresh();},30000);
+window.puzzleAuthReady.then(()=>{if(window.puzzleAccount.user)refresh();});
 window.addEventListener('pageshow',event=>{if(event.persisted)refresh();});document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});

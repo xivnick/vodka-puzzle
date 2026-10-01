@@ -7,6 +7,17 @@ const client = createClient('https://hlhrzbylbwebtoytmmpd.supabase.co', 'sb_publ
 const account = window.puzzleAccount;
 account.client = client;
 let initialized = false;
+account.timings = {};
+
+async function measureAuth(name, action) {
+  const start = performance.now();
+  try { return await action(); }
+  finally {
+    const end = performance.now();
+    account.timings[name] = Math.round(end - start);
+    performance.measure(`puzzle-auth:${name}`, { start, end });
+  }
+}
 
 export function safeNext(value) {
   try {
@@ -32,6 +43,7 @@ client.auth.onAuthStateChange((_event, session) => {
 });
 
 async function bootstrap() {
+  const start = performance.now();
   const callback = location.pathname === '/auth/callback/';
   try {
     const params = new URLSearchParams(location.search);
@@ -39,11 +51,11 @@ async function bootstrap() {
     if (callback) {
       const code = params.get('code');
       if (!code) throw new Error('로그인 정보가 없습니다. 다시 로그인해 주세요.');
-      const { error } = await client.auth.exchangeCodeForSession(code);
+      const { error } = await measureAuth('callback', () => client.auth.exchangeCodeForSession(code));
       history.replaceState(null, '', '/auth/callback/');
       if (error) throw new Error('로그인 연결이 만료되었습니다. 다시 시도해 주세요.');
     }
-    const { data, error } = await client.auth.getSession();
+    const { data, error } = await measureAuth('session', () => client.auth.getSession());
     if (error) throw error;
     account.user = data.session?.user || null;
     if (account.user && account.user.app_metadata?.provider !== 'google') {
@@ -52,7 +64,7 @@ async function bootstrap() {
       throw new Error('구글 계정으로 로그인해 주세요.');
     }
     if (callback && !account.user) throw new Error('로그인이 완료되지 않았습니다. 다시 시도해 주세요.');
-    await loadProfile();
+    await measureAuth('profile', loadProfile);
     if (callback && account.user) {
       const target = account.profile ? nextPage() : '/nickname/';
       if (account.profile) sessionStorage.removeItem('puzzle_login_next');
@@ -63,6 +75,9 @@ async function bootstrap() {
     if (callback) history.replaceState(null, '', '/auth/callback/');
   } finally {
     initialized = true;
+    account.ready = true;
+    account.timings.total = Math.round(performance.now() - start);
+    if (new URLSearchParams(location.search).has('authTiming')) console.table(account.timings);
     window.resolvePuzzleAuth();
     window.dispatchEvent(new Event('puzzle-auth-ready'));
     const status = document.getElementById('authCallbackStatus');

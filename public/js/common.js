@@ -50,7 +50,20 @@ document.addEventListener('gesturestart', event => {
 }, { capture: true, passive: false });
 
 // ── Supabase REST helpers ────────────────────────────────────────────────────
-async function sbSelect(table, qs = '') {
+function publicHeaders() {
+  return { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` };
+}
+
+async function sbPublicRpc(name, body) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
+    method: 'POST', headers: { ...publicHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`${name}: ${res.status}`);
+  return res.json();
+}
+
+async function sbSelect(table, qs = '', { publicRead = false } = {}) {
   const params = new URLSearchParams(qs);
   params.set('season_id', `eq.${SEASON_ID}`);
   if (table === 'completions') params.set('excluded', 'eq.false');
@@ -60,7 +73,7 @@ async function sbSelect(table, qs = '') {
     params.set('offset', String(offset));
     params.set('limit', String(Math.min(500, requestedLimit - rows.length)));
     const res = await fetch(`${SUPABASE_URL}/rest/v1/semester_${table}?${params}`, {
-      headers: await accountHeaders()
+      headers: publicRead ? publicHeaders() : await accountHeaders()
     });
     if (!res.ok) throw new Error(`sbSelect ${table}: ${res.status}`);
     const page = await res.json(); rows.push(...page);
@@ -146,13 +159,7 @@ async function getLatestCompletions() {
 }
 
 async function fetchRecentCompletions() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/recent_completions`, {
-    method: 'POST',
-    headers: { ...await accountHeaders(), 'Content-Type': 'application/json' },
-    body: '{}',
-  });
-  if (!res.ok) throw new Error(`recent_completions: ${res.status}`);
-  return res.json();
+  return sbPublicRpc('recent_completions', {});
 }
 
 async function refreshLatestCompletions(force = false) {
@@ -557,7 +564,8 @@ function getMoonBadgeSolvers() {
     _moonBadgeSolversAt = Date.now();
     _moonBadgeSolversPromise = sbSelect(
       'completions',
-      `puzzle_id=eq.${window.rankingUi.badges[0].puzzleId}&select=nickname`
+      `puzzle_id=eq.${window.rankingUi.badges[0].puzzleId}&select=nickname`,
+      { publicRead: true }
     ).then(rows => new Set(rows.map(row => row.nickname))).catch(() => new Set());
   }
   return _moonBadgeSolversPromise;
@@ -571,7 +579,8 @@ function getFlowerBadgeSolvers() {
     _flowerBadgeSolversAt = Date.now();
     _flowerBadgeSolversPromise = sbSelect(
       'completions',
-      `puzzle_id=eq.${window.rankingUi.badges[1].puzzleId}&select=nickname`
+      `puzzle_id=eq.${window.rankingUi.badges[1].puzzleId}&select=nickname`,
+      { publicRead: true }
     ).then(rows => new Set(rows.map(row => row.nickname))).catch(() => new Set());
   }
   return _flowerBadgeSolversPromise;
@@ -589,7 +598,8 @@ async function renderLeaderboard(puzzleId, containerId) {
     [rows, moonSolvers, flowerSolvers] = await Promise.all([
       sbSelect(
         'completions',
-        `puzzle_id=eq.${encodeURIComponent(puzzleId)}&select=nickname,completed_at&order=completed_at.asc&limit=500`
+        `puzzle_id=eq.${encodeURIComponent(puzzleId)}&select=nickname,completed_at&order=completed_at.asc&limit=500`,
+        { publicRead: true }
       ),
       getMoonBadgeSolvers(),
       getFlowerBadgeSolvers(),
@@ -612,15 +622,18 @@ async function renderLeaderboard(puzzleId, containerId) {
 
   if (titleEl) titleEl.textContent = `푼 사람(${total})`;
 
-  const myNick = getNickname();
-  const myIdx = (!myNick || isGuest()) ? -1 : sorted.findIndex(([nick]) => nick === myNick);
-
-  window.rankingUi.render(container, sorted.map(([nickname, completedAt], index) => ({
-    rank: index + 1, nickname, completedAt, isMe: index === myIdx,
-  })), {
-    solvers: { moon: moonSolvers, flower: flowerSolvers }, showLast: true,
-    value: row => fmtDatetime(row.completedAt),
-  });
+  function render() {
+    const myNick = getNickname();
+    const myIdx = (!myNick || isGuest()) ? -1 : sorted.findIndex(([nick]) => nick === myNick);
+    window.rankingUi.render(container, sorted.map(([nickname, completedAt], index) => ({
+      rank: index + 1, nickname, completedAt, isMe: index === myIdx,
+    })), {
+      solvers: { moon: moonSolvers, flower: flowerSolvers }, showLast: true,
+      value: row => fmtDatetime(row.completedAt),
+    });
+  }
+  render();
+  if (!window.puzzleAccount.ready) window.puzzleAuthReady.then(render);
 }
 
 // ── My completed puzzles ─────────────────────────────────────────────────────
@@ -642,7 +655,7 @@ async function getMyCompletedPuzzles() {
 // ── Solver rankings (for index page) ────────────────────────────────────────
 async function getSolverRankings(puzzleIds = null) {
   try {
-    const rows = await sbSelect('completions', 'select=nickname,puzzle_id,completed_at');
+    const rows = await sbSelect('completions', 'select=nickname,puzzle_id,completed_at', { publicRead: true });
     const EXCLUDE = new Set(['puzzle_test']);
     const includeSet = Array.isArray(puzzleIds) ? new Set(puzzleIds) : null;
     const nickPuzzles = new Map(); // nickname -> Set of puzzle_ids
@@ -670,7 +683,7 @@ async function getSolverRankings(puzzleIds = null) {
 // ── Solver counts (for index page) ──────────────────────────────────────────
 async function getSolverCounts() {
   try {
-    const rows = await sbSelect('completions', 'select=puzzle_id,nickname');
+    const rows = await sbSelect('completions', 'select=puzzle_id,nickname', { publicRead: true });
     const countMap = new Map();
     const seen = new Set();
     for (const row of rows) {

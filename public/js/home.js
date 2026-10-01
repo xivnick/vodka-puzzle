@@ -130,16 +130,20 @@ const PAGE_SIZE = 10;
     const [rankings, moonSolvers, flowerSolvers] = await Promise.all([
       getSolverRankings(scopeIds), getMoonBadgeSolvers(), getFlowerBadgeSolvers(),
     ]);
-    const myNick = getNickname();
     const container = document.getElementById('solverRank');
     const rankTitle = document.getElementById('rankTitle');
     rankTitle.dataset.regularCount = String(rankings.length);
     if (document.getElementById('regularRankBtn').getAttribute('aria-pressed') === 'true') rankTitle.textContent = `랭킹 (${rankings.length})`;
 
-    const myIdx = (!myNick || isGuest()) ? -1 : rankings.findIndex(r => r.nick === myNick);
-    window.rankingUi.render(container, rankings.map((row, index) => ({
-      rank: index + 1, nickname: row.nick, count: row.count, isMe: index === myIdx,
-    })), { solvers: { moon: moonSolvers, flower: flowerSolvers }, value: row => `${row.count}개` });
+    function render() {
+      const myNick = getNickname();
+      const myIdx = (!myNick || isGuest()) ? -1 : rankings.findIndex(r => r.nick === myNick);
+      window.rankingUi.render(container, rankings.map((row, index) => ({
+        rank: index + 1, nickname: row.nick, count: row.count, isMe: index === myIdx,
+      })), { solvers: { moon: moonSolvers, flower: flowerSolvers }, value: row => `${row.count}개` });
+    }
+    render();
+    if (!window.puzzleAccount.ready) window.puzzleAuthReady.then(render);
   }
 
   loadSolverRankings();

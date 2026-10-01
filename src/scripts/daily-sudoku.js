@@ -28,6 +28,14 @@ function loadLocalDay(date){
  }
  return null;
 }
+function restoreAccountLocalDay(){
+ if(!data||!state)return;
+ try{
+  if(localStorage.getItem(key)!==null)return;
+  const saved=loadLocalDay(data.day);
+  if(saved){state=clean(saved);render();}
+ }catch{}
+}
 function isSolved(){return state?.values.length===81&&state.values.every(n=>Number.isInteger(n)&&n>=1&&n<=9)&&data.givens.split('').every((n,i)=>n==='0'||Number(n)===state.values[i])&&units.every(u=>new Set(u.map(i=>state.values[i])).size===9);}
 function complete(){ $('sudokuComplete').hidden=false;message(''); }
 function setReady(value){ready=value;$('sudokuBoard').classList.toggle('sudoku-loading',!value);$('sudokuBoard').setAttribute('aria-busy',String(!value));document.querySelectorAll('#dailyGame button,#cloudBtns button').forEach(b=>{b.disabled=!value;});}
@@ -86,15 +94,15 @@ function showUnavailable(text){
 }
 async function init(){
  if(loading){reinitPending=true;return;}loading=true;
+ if(window.puzzleAccount.ready&&window.puzzleAccount.user)restoreAccountLocalDay();
  const cached=readPuzzleCache(localStorage,dailyDate(),day);
  if(!ready||data?.day!==(day||dailyDate()))showLoading();
  if(!ready&&cached){
   showPuzzle(cached);setReady(true);$('dailyStatus').textContent='';
  }
- await window.puzzleAuthReady;
  if(cached)window.initCloudBtns();
  try{
-  const [result,moonSolvers,flowerSolvers]=await Promise.all([context(day),getMoonBadgeSolvers(),getFlowerBadgeSolvers()]);
+  const [result,moonSolvers,flowerSolvers]=await Promise.all([context(day,{publicOnly:!window.puzzleAccount.ready}),getMoonBadgeSolvers(),getFlowerBadgeSolvers()]);
   document.querySelector('h1').textContent=title(result.day);document.title=`${title(result.day)} · vodka puzzle`;
   clearTimeout(rollover);rollover=setTimeout(()=>{updateStreak(null);if(!day)init();else if(data?.available)refreshRanks().catch(()=>{});else init();},Math.max(1000,new Date(result.next_opens_at)-new Date(result.server_now)+100));
   if(!result.available){if(result.day===result.current_day)clearPuzzleCache(localStorage);showUnavailable('문제가 준비되지 않았습니다');return;}
@@ -115,4 +123,4 @@ $('sudokuNumbers').addEventListener('click',e=>{const b=e.target.closest('[data-
 $('sudokuNotes').addEventListener('click',toggleNotes);$('sudokuErase').addEventListener('click',()=>change(0));$('sudokuReset').addEventListener('click',()=>{if(confirm('입력한 숫자와 메모를 초기화할까요?')){state=clean(null);persist();render();}});
 window.handleCloudSave=async()=>{if(!ready||!data?.available||!state)return;try{const {error}=await window.puzzleAccount.client.rpc('save_daily_sudoku_progress',{requested_day:data.day,saved_state:state});if(error)throw error;window.showToast('저장했습니다.');}catch{message('저장하지 못했습니다. 로그인과 연결을 확인해 주세요.');}};
 window.handleCloudLoad=async()=>{if(!ready||!data?.available||!state)return;if(!window.puzzleAccount.user){message('로그인 후 불러올 수 있습니다.');return;}try{const {data:row,error}=await window.puzzleAccount.client.from('daily_sudoku_progress').select('state').eq('day',data.day).eq('user_id',window.puzzleAccount.user.id).maybeSingle();if(error)throw error;if(!row){message('저장된 기록이 없습니다.');return;}if(confirm('클라우드 기록으로 현재 진행 상황을 바꿀까요?')){state=clean(row.state);persist();render();window.showToast('불러왔습니다.');submit();}}catch{message('불러오지 못했습니다. 다시 시도해 주세요.');}};
-init();setInterval(()=>{if(!document.hidden&&data?.available){refreshRanks().catch(()=>{});submit();}else if(!document.hidden&&!loading)init();},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&data?.available)refreshRanks().catch(()=>{});});
+init();window.puzzleAuthReady.then(()=>{if(window.puzzleAccount.user)init();});setInterval(()=>{if(!document.hidden&&data?.available){refreshRanks().catch(()=>{});submit();}else if(!document.hidden&&!loading)init();},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&data?.available)refreshRanks().catch(()=>{});});

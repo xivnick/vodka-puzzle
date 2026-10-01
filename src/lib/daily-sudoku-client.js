@@ -1,4 +1,5 @@
-export async function context(day=null) {
+export async function context(day=null,{publicOnly=false}={}) {
+ if(publicOnly)return window.sbPublicRpc('daily_sudoku_context',{requested_day:day});
  await window.puzzleAuthReady;
  const owner=window.puzzleAccount.user?.id;
  const {data,error}=await window.puzzleAccount.client.rpc('daily_sudoku_context',{requested_day:day});
