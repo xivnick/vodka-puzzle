@@ -3,7 +3,7 @@ globalThis.rankingUi = (() => {
   const badges = [
     { id: 'moon', puzzleId: '260925_01', from: '2026-09-24', through: '2026-09-27', icon: '/icons/seasonal/rabbit.svg', label: '한가위 스도쿠 완성' },
     { id: 'flower', puzzleId: '260928_03', from: '2026-09-28', through: '2026-10-02', icon: '/icons/flower/flower.svg', label: '란영 스도쿠 완성' },
-    { id: 'bomb', puzzleId: '261003_01', from: '2026-10-03', through: null, icon: '/icons/bomb/bomb-red.svg', label: '봄버스터즈 스도쿠 완성' },
+    { id: 'bomb', puzzleId: '261003_01', from: '2026-10-03', through: '2026-10-05', icon: '/icons/bomb/bomb-red.svg', label: '봄버스터즈 스도쿠 완성' },
   ];
 
   function koreanDay(date = new Date()) {
