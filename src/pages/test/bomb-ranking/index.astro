@@ -1,0 +1,33 @@
+---
+import PageLayout from '../../../layouts/PageLayout.astro';
+const ranking = [
+  { nickname: '퍼즐러', count: 18, bomb: true },
+  { nickname: '숫자산책', count: 16, bomb: false },
+  { nickname: '폭탄해체반', count: 13, bomb: true },
+  { nickname: '빈칸수집가', count: 9, bomb: false },
+];
+---
+<PageLayout title="폭탄 아이콘 랭킹 예시" subtitle="봄버스터즈 스도쿠 완료 표시 · 닉네임과 기록은 예시입니다">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="bomb-ranking-preview" aria-label="폭탄 아이콘 랭킹 예시">
+    <div class="lb-title">랭킹 (4)</div>
+    <div class="lb-list">
+      {ranking.map((row, index) => <div class="lb-row">
+        <span class="lb-rank">{index + 1}</span>
+        <span class="lb-name seasonal-rank-name">
+          <span>{row.nickname}</span>
+          {row.bomb && <span class="bomb-rank-badge" role="img" aria-label="261003 봄버스터즈 스도쿠 완성" title="261003 봄버스터즈 스도쿠 완성" />}
+        </span>
+        <span class="lb-time">{row.count}개</span>
+      </div>)}
+    </div>
+  </section>
+</PageLayout>
+<style>
+  .bomb-ranking-preview { width:100%; }
+  .bomb-rank-badge {
+    display:inline-block; width:18px; height:18px; flex:0 0 auto;
+    background:#c34242;
+    mask:url('/icons/bomb/bomb.svg') center / contain no-repeat;
+  }
+</style>
