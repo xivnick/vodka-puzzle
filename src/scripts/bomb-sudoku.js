@@ -126,18 +126,22 @@ $('bombReset').addEventListener('click', () => {
   }
 });
 function restore() {
-  let saved = null;
-  try { saved = window.loadLocalState(puzzleId); } catch {}
-  if (!saved) {
+  let parsed = null;
+  let migrated = false;
+  for (const savedId of [puzzleId, '261001_04', 'test-bomb-sudoku-261001']) {
     try {
-      const previous = window.loadLocalState('test-bomb-sudoku-261001');
-      if (previous) saved = { ...previous, puzzleId };
+      const saved = window.loadLocalState(savedId);
+      parsed = parseBombSudokuState(savedId === puzzleId ? saved : saved && { ...saved, puzzleId }, puzzleId);
     } catch {}
+    if (parsed) {
+      migrated = savedId !== puzzleId;
+      break;
+    }
   }
-  const parsed = parseBombSudokuState(saved, puzzleId);
   values = parsed?.values || fixed.slice();
   notes = parsed?.notes || Array.from({length:81}, () => []);
   ready = true;
+  if (migrated) persist();
   render();
 }
 window.handleCloudSave = () => window.saveProgressCloud(puzzleId, state());
