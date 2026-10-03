@@ -11,8 +11,8 @@ export function time(value) {return new Intl.DateTimeFormat('ko-KR',{timeZone:'A
 export function rankMessage(element,text) {
  const empty=document.createElement('div');empty.className='lb-empty';empty.textContent=text;element.replaceChildren(empty);
 }
-export function rankings(element,rows,{moonSolvers=new Set(),flowerSolvers=new Set()}={}) {
+export function rankings(element,rows,{moonSolvers=new Set(),flowerSolvers=new Set(),bombSolvers=new Set()}={}) {
  globalThis.rankingUi.render(element,rows.map(row=>({rank:row.rank,nickname:row.nickname,completedAt:row.completed_at,isMe:row.is_me})),{
-  solvers:{moon:moonSolvers,flower:flowerSolvers},showLast:true,value:row=>time(row.completedAt),
+  solvers:{moon:moonSolvers,flower:flowerSolvers,bomb:bombSolvers},showLast:true,value:row=>time(row.completedAt),
  });
 }

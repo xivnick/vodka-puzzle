@@ -20,8 +20,8 @@ INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,puzzle_type,
 SET LOCAL ROLE anon;
 SELECT set_config('request.jwt.claims','{{"role":"anon"}}',true);
 DO $$ BEGIN
- IF EXISTS(SELECT 1 FROM jsonb_array_elements(public.list_puzzles('2026-2')) p WHERE p->>'id' LIKE '__catalog_%' OR p->>'id'='261001_04') THEN RAISE EXCEPTION 'Unpublished puzzle listed'; END IF;
- IF (public.puzzle_details('2026-2','261001_04')->>'published')::boolean THEN RAISE EXCEPTION 'Bomb unexpectedly published'; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(public.list_puzzles('2026-2')) p WHERE p->>'id' LIKE '__catalog_%') THEN RAISE EXCEPTION 'Unpublished puzzle listed'; END IF;
+ IF (public.puzzle_details('2026-2','__catalog_test')->>'published')::boolean THEN RAISE EXCEPTION 'Test unexpectedly published'; END IF;
  IF (public.puzzle_details('2026-2','__catalog_future')->>'published')::boolean THEN RAISE EXCEPTION 'Scheduled puzzle prematurely available'; END IF;
  BEGIN PERFORM * FROM public.admin_list_puzzles('2026-2'); RAISE EXCEPTION 'Anonymous admin access'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN PERFORM * FROM public.puzzle_catalog; RAISE EXCEPTION 'Catalog directly exposed'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;

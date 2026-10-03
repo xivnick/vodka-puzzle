@@ -479,6 +479,7 @@ async function recordCompletion(puzzleId, state) {
   if (getUserId() !== owner) return;
   if (puzzleId === window.rankingUi.badges[0].puzzleId) _moonBadgeSolversPromise = null;
   if (puzzleId === window.rankingUi.badges[1].puzzleId) _flowerBadgeSolversPromise = null;
+  if (puzzleId === window.rankingUi.badges[2].puzzleId) _bombBadgeSolversPromise = null;
   showToast('🎉 완료 기록을 저장했습니다!');
   _recentBannerIndex = 0;
   refreshRecentBanner(true);
@@ -655,6 +656,22 @@ function getFlowerBadgeSolvers() {
   return _flowerBadgeSolversPromise;
 }
 
+let _bombBadgeSolversPromise = null;
+let _bombBadgeSolversAt = 0;
+function getBombBadgeSolvers() {
+  const badge = window.rankingUi.badges[2];
+  if (!window.rankingUi.active(badge)) return Promise.resolve(new Set());
+  if (!_bombBadgeSolversPromise || Date.now() - _bombBadgeSolversAt >= 30000) {
+    _bombBadgeSolversAt = Date.now();
+    _bombBadgeSolversPromise = sbSelect(
+      'completions',
+      `puzzle_id=eq.${badge.puzzleId}&select=nickname`,
+      { publicRead: true }
+    ).then(rows => new Set(rows.map(row => row.nickname))).catch(() => new Set());
+  }
+  return _bombBadgeSolversPromise;
+}
+
 async function renderLeaderboard(puzzleId, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -663,9 +680,9 @@ async function renderLeaderboard(puzzleId, containerId) {
   const titleEl = container.closest('.lb-section')?.querySelector('.lb-title');
   container.innerHTML = '<div class="lb-loading">불러오는 중...</div>';
 
-  let rows, moonSolvers, flowerSolvers;
+  let rows, moonSolvers, flowerSolvers, bombSolvers;
   try {
-    [rows, moonSolvers, flowerSolvers] = await Promise.all([
+    [rows, moonSolvers, flowerSolvers, bombSolvers] = await Promise.all([
       sbSelect(
         'completions',
         `puzzle_id=eq.${encodeURIComponent(puzzleId)}&select=nickname,completed_at&order=completed_at.asc&limit=500`,
@@ -673,6 +690,7 @@ async function renderLeaderboard(puzzleId, containerId) {
       ),
       getMoonBadgeSolvers(),
       getFlowerBadgeSolvers(),
+      getBombBadgeSolvers(),
     ]);
   } catch (e) {
     container.innerHTML = '<div class="lb-empty">기록을 불러오지 못했습니다.</div>';
@@ -698,7 +716,7 @@ async function renderLeaderboard(puzzleId, containerId) {
     window.rankingUi.render(container, sorted.map(([nickname, completedAt], index) => ({
       rank: index + 1, nickname, completedAt, isMe: index === myIdx,
     })), {
-      solvers: { moon: moonSolvers, flower: flowerSolvers }, showLast: true,
+      solvers: { moon: moonSolvers, flower: flowerSolvers, bomb: bombSolvers }, showLast: true,
       value: row => fmtDatetime(row.completedAt),
     });
   }

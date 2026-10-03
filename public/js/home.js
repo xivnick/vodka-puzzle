@@ -157,8 +157,8 @@ const PAGE_SIZE = 10;
   loadCounts();
 
   async function loadSolverRankings() {
-    const [loaded, rankings, moonSolvers, flowerSolvers] = await Promise.all([
-      puzzleListReady, getSolverRankings(), getMoonBadgeSolvers(), getFlowerBadgeSolvers(),
+    const [loaded, rankings, moonSolvers, flowerSolvers, bombSolvers] = await Promise.all([
+      puzzleListReady, getSolverRankings(), getMoonBadgeSolvers(), getFlowerBadgeSolvers(), getBombBadgeSolvers(),
     ]);
     if (!loaded) return;
     const container = document.getElementById('solverRank');
@@ -171,7 +171,7 @@ const PAGE_SIZE = 10;
       const myIdx = (!myNick || isGuest()) ? -1 : rankings.findIndex(r => r.nick === myNick);
       window.rankingUi.render(container, rankings.map((row, index) => ({
         rank: index + 1, nickname: row.nick, count: row.count, isMe: index === myIdx,
-      })), { solvers: { moon: moonSolvers, flower: flowerSolvers }, value: row => `${row.count}개` });
+      })), { solvers: { moon: moonSolvers, flower: flowerSolvers, bomb: bombSolvers }, value: row => `${row.count}개` });
     }
     render();
     if (!window.puzzleAccount.ready) window.puzzleAuthReady.then(render);

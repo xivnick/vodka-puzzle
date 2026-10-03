@@ -15,8 +15,8 @@ export function renderStreak(element,streak,{label=false}={}) {
  element.setAttribute('aria-label',`${label?text:streak.count+'일 스트릭'}, ${completed?'오늘 완료':streak.status==='rest'?'하루 휴식 중, 오늘 완료하면 이어집니다':'오늘 도전 중'}`);
 }
 
-export function renderStreakRankings(element,rows,{moonSolvers=new Set(),flowerSolvers=new Set()}={}) {
+export function renderStreakRankings(element,rows,{moonSolvers=new Set(),flowerSolvers=new Set(),bombSolvers=new Set()}={}) {
  globalThis.rankingUi.render(element,rows?.map(row=>({rank:row.rank,nickname:row.nickname,isMe:row.is_me,streak:row}))||[],{
-  solvers:{moon:moonSolvers,flower:flowerSolvers},value:row=>{const streak=document.createElement('span');streak.className='daily-streak';renderStreak(streak,row.streak);return streak;},
+  solvers:{moon:moonSolvers,flower:flowerSolvers,bomb:bombSolvers},value:row=>{const streak=document.createElement('span');streak.className='daily-streak';renderStreak(streak,row.streak);return streak;},
  });
 }
