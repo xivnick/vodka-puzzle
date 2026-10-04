@@ -1,16 +1,16 @@
 // First playtest draft. Coordinates are zero-indexed; no answer is stored.
 export const givens = [
   [0,0,4,0,7,0,0,1,0],
-  [6,0,0,1,9,0,3,0,8],
+  [6,0,0,1,9,0,0,0,8],
   [0,9,0,3,0,0,0,6,0],
   [8,0,9,0,6,0,4,0,0],
   [0,2,6,8,0,0,0,9,0],
   [0,0,3,0,2,0,0,0,6],
-  [9,0,1,0,3,0,2,0,0],
+  [9,0,0,0,3,0,2,0,0],
   [0,8,0,4,0,0,0,0,0],
   [0,4,0,2,0,0,0,7,9],
 ];
-export const tomatoes = [0, 1, 11, 18, 35, 40, 45, 62, 70, 77];
+export const tomatoes = [1, 8, 14, 28, 35, 45, 50, 56, 70, 77];
 export const tomatoDigits = [1, 2, 3, 3, 3, 4, 5, 5, 6, 7];
 export const tomatoQuota = { 1: 1, 2: 1, 3: 3, 4: 1, 5: 2, 6: 1, 7: 1 };
 export const boardSignature = JSON.stringify([givens, tomatoes, tomatoDigits]);
