@@ -23,11 +23,8 @@ const { puzzleId = '261005_01', preview = false } = Astro.props;
     다른 칸을 눌러 이동하고 지우기 버튼으로 입력을 지우세요.
   </div>
   <section id="tomatoGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="토마토스 스도쿠">
-    <div class="tomato-inventory" id="tomatoInventory" role="group" aria-label="토마토에 들어갈 숫자">
-      <span class="tomato-inventory-label">토마토 숫자</span>
-      <div class="tomato-tokens">{tomatoDigits.map(n => <span class="tomato-token" data-tomato-token={n}>{n}</span>)}</div>
-    </div>
-    <div class="sudoku-board-tools tomato-tools"><span id="tomatoCount" role="status">토마토 0/10칸 입력</span><button id="tomatoNotes" class="sudoku-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>
+    <p class="tomato-digits" aria-label="토마토에 들어갈 숫자">{tomatoDigits.join(' · ')}</p>
+    <div class="sudoku-board-tools"><button id="tomatoNotes" class="sudoku-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>
     <div id="tomatoBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
       {givens.flat().map((n, i) => <button type="button"
         class:list={['sudoku-cell', { given: !!n, tomato: tomatoes.includes(i) }]}
@@ -45,20 +42,12 @@ const { puzzleId = '261005_01', preview = false } = Astro.props;
 <script>import '../scripts/tomato-sudoku.js';</script>
 <style>
   #tomatoGame { width:100%; }
-  .tomato-inventory { display:flex; flex-direction:column; align-items:center; gap:8px; margin:0 0 8px; }
-  .tomato-inventory-label, #tomatoCount { font-size:.78rem; color:#777; }
-  .tomato-tokens { display:flex; gap:clamp(3px,1vw,7px); }
-  .tomato-token { display:grid; place-items:center; width:clamp(23px,6vw,32px); height:32px; border:1px solid #ebc9c0; border-radius:50%; background:#fff4ef; color:#963c2c; font-size:1rem; }
-  .tomato-token.used { background:#eee; border-color:#ddd; color:#999; text-decoration:line-through; }
-  .tomato-token.over { background:#fbe1df; border-color:#c34242; color:#a32c2c; }
-  .tomato-tools { justify-content:space-between; align-items:center; }
-  #tomatoGame .sudoku-board-tools { margin-bottom:6px; }
-  #tomatoBoard .sudoku-cell.tomato { background:#fffaf7; }
+  .tomato-digits { margin:0 0 12px; text-align:center; color:#666; font-size:.95rem; }
+  #tomatoBoard .sudoku-cell.tomato { background:#fff; }
   #tomatoBoard .sudoku-cell.selected { background:#e1e9f3; }
   #tomatoBoard .sudoku-cell.conflict { background:#fbeaea; }
-  #tomatoBoard .sudoku-cell.tomato::before { content:""; position:absolute; width:31%; height:31%; top:2%; left:2%; background:url('/icons/tomato.svg') center / contain no-repeat; pointer-events:none; }
+  #tomatoBoard .sudoku-cell.tomato::before { content:""; position:absolute; inset:4%; background:url('/icons/tomato.svg?v=2') center / contain no-repeat; opacity:.12; pointer-events:none; }
   #tomatoBoard .sudoku-cell .cell-value { position:relative; z-index:1; }
-  #tomatoBoard .sudoku-cell.tomato.has-notes::before { opacity:.18; }
   #tomatoBoard .sudoku-cell .notes { z-index:1; }
   #tomatoBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
   #tomatoBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; z-index:2; }

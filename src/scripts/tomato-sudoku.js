@@ -1,4 +1,4 @@
-import { givens, tomatoes, tomatoQuota, boardSignature, conflicts, solved, parseTomatoSudokuState } from '../lib/tomato-sudoku.js';
+import { givens, tomatoes, boardSignature, conflicts, solved, parseTomatoSudokuState } from '../lib/tomato-sudoku.js';
 
 const $ = id => document.getElementById(id);
 const game = $('tomatoGame');
@@ -50,18 +50,6 @@ function render() {
       cell.append(box);
     }
   });
-  const counts = Array(10).fill(0);
-  tomatoes.forEach(i => { if (values[i]) counts[values[i]]++; });
-  const seen = Array(10).fill(0);
-  document.querySelectorAll('[data-tomato-token]').forEach(token => {
-    const n = Number(token.dataset.tomatoToken);
-    token.classList.toggle('used', ++seen[n] <= counts[n]);
-    token.classList.toggle('over', counts[n] > tomatoQuota[n]);
-  });
-  $('tomatoInventory').setAttribute('aria-label', '토마토 숫자 입력 현황: ' +
-    Object.entries(tomatoQuota).map(([n, total]) => `${n}: ${counts[n]}/${total}개`).join(', '));
-  const invalid = counts[8] + counts[9] > 0 || Object.entries(tomatoQuota).some(([n, total]) => counts[n] > total);
-  $('tomatoCount').textContent = invalid ? '토마토 숫자 구성을 확인하세요' : `토마토 ${tomatoes.filter(i => values[i]).length}/10칸 입력`;
   $('tomatoComplete').hidden = !complete;
   if (!complete) completionRecorded = false;
   else if (!preview && ready && !completionRecorded) {
