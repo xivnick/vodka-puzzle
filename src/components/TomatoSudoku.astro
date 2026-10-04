@@ -1,0 +1,65 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import NumberPad from './NumberPad.astro';
+import '../styles/daily-sudoku.css';
+import { givens, tomatoes, tomatoDigits } from '../lib/tomato-sudoku.js';
+const { puzzleId = '261005_01', preview = false } = Astro.props;
+---
+<PuzzleLayout title="261005 토마토스 스도쿠" {puzzleId}
+  subtitle="토마토 열 칸에 정해진 숫자 묶음을 나누어 넣으세요"
+  description="토마토 열 칸에 1, 2, 3, 3, 3, 4, 5, 5, 6, 7을 넣는 스도쿠"
+  preview={preview} showCloud={!preview} showLeaderboard={!preview}>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <div slot="rules">
+    빈칸에 1부터 9까지의 숫자를 채우세요.<br />
+    각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9가 한 번씩 들어가야 합니다.<br />
+    토마토가 표시된 열 칸에는 1, 2, 3, 3, 3, 4, 5, 5, 6, 7이 순서와 관계없이 들어갑니다.<br />
+    토마토에는 3이 세 개, 5가 두 개, 1·2·4·6·7이 하나씩 들어갑니다.
+  </div>
+  <div slot="controls">
+    칸을 선택하고 숫자 버튼으로 입력하세요.<br />
+    메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br />
+    다른 칸을 눌러 이동하고 지우기 버튼으로 입력을 지우세요.
+  </div>
+  <section id="tomatoGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="토마토스 스도쿠">
+    <div class="tomato-inventory" id="tomatoInventory" role="group" aria-label="토마토에 들어갈 숫자">
+      <span class="tomato-inventory-label">토마토 숫자</span>
+      <div class="tomato-tokens">{tomatoDigits.map(n => <span class="tomato-token" data-tomato-token={n}>{n}</span>)}</div>
+    </div>
+    <div class="sudoku-board-tools tomato-tools"><span id="tomatoCount" role="status">토마토 0/10칸 입력</span><button id="tomatoNotes" class="sudoku-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>
+    <div id="tomatoBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
+      {givens.flat().map((n, i) => <button type="button"
+        class:list={['sudoku-cell', { given: !!n, tomato: tomatoes.includes(i) }]}
+        data-cell={i} tabindex={i === 0 ? 0 : -1}
+        aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${n || '빈칸'}${n ? ', 고정 숫자' : ''}${tomatoes.includes(i) ? ', 토마토 칸' : ''}`}>{n || ''}</button>)}
+    </div>
+    <NumberPad id="tomatoNumbers" max={9} />
+    <div class="bottom-buttons">
+      <button id="tomatoErase" type="button">지우기</button>
+      <button id="tomatoReset" type="button" class="danger">초기화</button>
+    </div>
+  </section>
+  <PuzzleCompletion slot="completion" id="tomatoComplete" />
+</PuzzleLayout>
+<script>import '../scripts/tomato-sudoku.js';</script>
+<style>
+  #tomatoGame { width:100%; }
+  .tomato-inventory { display:flex; flex-direction:column; align-items:center; gap:8px; margin:0 0 8px; }
+  .tomato-inventory-label, #tomatoCount { font-size:.78rem; color:#777; }
+  .tomato-tokens { display:flex; gap:clamp(3px,1vw,7px); }
+  .tomato-token { display:grid; place-items:center; width:clamp(23px,6vw,32px); height:32px; border:1px solid #ebc9c0; border-radius:50%; background:#fff4ef; color:#963c2c; font-size:1rem; }
+  .tomato-token.used { background:#eee; border-color:#ddd; color:#999; text-decoration:line-through; }
+  .tomato-token.over { background:#fbe1df; border-color:#c34242; color:#a32c2c; }
+  .tomato-tools { justify-content:space-between; align-items:center; }
+  #tomatoGame .sudoku-board-tools { margin-bottom:6px; }
+  #tomatoBoard .sudoku-cell.tomato { background:#fffaf7; }
+  #tomatoBoard .sudoku-cell.selected { background:#e1e9f3; }
+  #tomatoBoard .sudoku-cell.conflict { background:#fbeaea; }
+  #tomatoBoard .sudoku-cell.tomato::before { content:""; position:absolute; width:31%; height:31%; top:2%; left:2%; background:url('/icons/tomato.svg') center / contain no-repeat; pointer-events:none; }
+  #tomatoBoard .sudoku-cell .cell-value { position:relative; z-index:1; }
+  #tomatoBoard .sudoku-cell.tomato.has-notes::before { opacity:.18; }
+  #tomatoBoard .sudoku-cell .notes { z-index:1; }
+  #tomatoBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
+  #tomatoBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; z-index:2; }
+</style>
