@@ -7,7 +7,7 @@ import { givens, tomatoes, tomatoDigits } from '../lib/tomato-sudoku.js';
 const { puzzleId = '261005_01', preview = false } = Astro.props;
 ---
 <PuzzleLayout title="261005 토마토스 스도쿠" {puzzleId}
-  subtitle="토마토 열 칸에 정해진 숫자 묶음을 나누어 넣으세요"
+  subtitle="열 개의 토마토 칸에 정해진 숫자 묶음을 나누어 넣으세요"
   description="토마토 열 칸에 1, 2, 3, 3, 3, 4, 5, 5, 6, 7을 넣는 스도쿠"
   preview={preview} showCloud={!preview} showLeaderboard={!preview}>
   <meta slot="head" name="robots" content="noindex, nofollow" />
