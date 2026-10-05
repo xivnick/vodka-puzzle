@@ -10,7 +10,6 @@ const { puzzleId = '261005_01', preview = false } = Astro.props;
   subtitle="열 개의 토마토 칸에 정해진 숫자 묶음을 나누어 넣으세요"
   description="토마토 열 칸에 1, 2, 3, 3, 3, 4, 5, 5, 6, 7을 넣는 스도쿠"
   preview={preview} showCloud={!preview} showLeaderboard={!preview}>
-  <meta slot="head" name="robots" content="noindex, nofollow" />
   <div slot="rules">
     각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9를 한 번씩 넣으세요.<br />
     열 개의 토마토 칸에는 {`{1, 2, 3, 3, 3, 4, 5, 5, 6, 7}`} 이 하나씩 들어갑니다. (3은 세개, 5는 두개)
