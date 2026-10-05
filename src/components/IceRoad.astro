@@ -2,7 +2,7 @@
 import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
 const { puzzle, preview = false, puzzleId = "test-ice-road-261001-1" } = Astro.props;
-const title = `261001 빙판길 ${puzzle.number}`;
+const title = `${puzzle.date || '261001'} 빙판길 ${puzzle.number}`;
 ---
 <PuzzleLayout title={title} {puzzleId} description="얼음 칸에서 직진하고 숫자에 맞게 도로를 연결하는 빙판길 퍼즐" subtitle="얼음 위에서는 직진하며 하나의 루프를 그리세요" preview={preview} showCloud={!preview} showLeaderboard={!preview}>
   {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
