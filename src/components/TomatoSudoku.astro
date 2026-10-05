@@ -31,7 +31,7 @@ const { puzzleId = '261005_01', preview = false } = Astro.props;
         aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${n || '빈칸'}${n ? ', 고정 숫자' : ''}${tomatoes.includes(i) ? ', 토마토 칸' : ''}`}>{n || ''}</button>)}
     </div>
     <p class="tomato-digits" aria-label={`토마토에 들어갈 숫자: ${tomatoDigits.join(', ')}`}>
-      <img src="/icons/tomato.svg?v=4" alt="" width="24" height="24" />
+      <img src="/icons/tomato.svg?v=4" alt="" width="16" height="16" />
       <span>{`= {${tomatoDigits.join(', ')}}`}</span>
     </p>
     <NumberPad id="tomatoNumbers" max={9} />
@@ -46,7 +46,7 @@ const { puzzleId = '261005_01', preview = false } = Astro.props;
 <style>
   #tomatoGame { width:100%; }
   .tomato-digits { display:flex; align-items:center; justify-content:center; gap:8px; margin:14px 0 0; color:#666; font-size:clamp(.78rem,2.8vw,.95rem); }
-  .tomato-digits img { flex-shrink:0; opacity:.5; }
+  .tomato-digits img { width:1em; height:1em; flex-shrink:0; opacity:.5; }
   #tomatoBoard .sudoku-cell.tomato { background:#fff; }
   #tomatoBoard .sudoku-cell.selected { background:#e1e9f3; }
   #tomatoBoard .sudoku-cell.conflict { background:#fbeaea; }
