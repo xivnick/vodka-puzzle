@@ -1,5 +1,10 @@
 # Tomato icon
 
-Original SVG created for vodka-puzzle. This replaces the earlier Game-icons.net asset; no paths from that asset remain.
+IconPark Outline "tomato" by ByteDance, used without changes to its SVG geometry.
 
-The icon uses the same drawing conventions as the existing Tabler outline flower: a 24×24 viewBox, no fill, 2-unit strokes, and round caps and joins. It is a custom icon, not an official Tabler icon.
+- Source: https://icon-sets.iconify.design/icon-park-outline/tomato/
+- Project: https://github.com/bytedance/IconPark
+- License: Apache License 2.0, https://github.com/bytedance/IconPark/blob/master/LICENSE
+- Local license copy: ../demos/tomato-icons/LICENSE-IconPark.txt
+
+The puzzle renders the icon in gray using CSS opacity.
