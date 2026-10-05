@@ -2,7 +2,7 @@
 import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
 const { puzzle, preview = false, puzzleId = "test-flooded-road-261001-1" } = Astro.props;
-const title = `261001 침수된 길 ${puzzle.number}`;
+const title = `${puzzle.date || '261001'} 침수된 길 ${puzzle.number}`;
 ---
 <PuzzleLayout title={title} {puzzleId} description="물 구간은 최대 두 칸, 숫자에 맞게 육지 구간을 연결하는 침수된 길 퍼즐" subtitle="물 구간의 길이와 숫자에 맞게 하나의 루프를 그리세요" preview={preview} showCloud={!preview} showLeaderboard={!preview}>
   {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
