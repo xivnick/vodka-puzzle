@@ -32,7 +32,8 @@ const { puzzleId = '261005_01', preview = false } = Astro.props;
     </div>
     <p class="tomato-digits" aria-label={`토마토에 들어갈 숫자: ${tomatoDigits.join(', ')}`}>
       <img src="/icons/tomato.svg?v=4" alt="" width="16" height="16" />
-      <span>{`= {${tomatoDigits.join(', ')}}`}</span>
+      <span>=</span>
+      <span>{`{${tomatoDigits.join(', ')}}`}</span>
     </p>
     <NumberPad id="tomatoNumbers" max={9} />
     <div class="bottom-buttons">
@@ -45,7 +46,7 @@ const { puzzleId = '261005_01', preview = false } = Astro.props;
 <script>import '../scripts/tomato-sudoku.js';</script>
 <style>
   #tomatoGame { width:100%; }
-  .tomato-digits { display:flex; align-items:center; justify-content:center; gap:8px; margin:14px 0 0; color:#666; font-size:clamp(.78rem,2.8vw,.95rem); }
+  .tomato-digits { display:flex; align-items:center; justify-content:center; gap:.3em; margin:14px 0 0; color:#666; font-size:clamp(.78rem,2.8vw,.95rem); line-height:1.4; }
   .tomato-digits img { width:1em; height:1em; flex-shrink:0; opacity:.5; }
   #tomatoBoard .sudoku-cell.tomato { background:#fff; }
   #tomatoBoard .sudoku-cell.selected { background:#e1e9f3; }
