@@ -22,13 +22,15 @@ export const lines = [
 export const regions = Array.from({length:5}, (_,r) => cells.flatMap((cell,i) => cell.region === r ? [i] : []));
 // Draw shared edges once, with heavy boundaries between different regions.
 const edges = new Map();
-for (const cell of cells) cell.points.forEach((a,i) => {
+export const neighbors = [];
+for (const [cellIndex, cell] of cells.entries()) cell.points.forEach((a,i) => {
   const b = cell.points[(i+1)%cell.points.length];
   const key = [a.join(','),b.join(',')].sort().join('|');
   if (edges.has(key)) {
     const edge = edges.get(key);
     edge.heavy = edge.region !== cell.region;
-  } else edges.set(key, {a,b,region:cell.region,heavy:true});
+    neighbors.push([edge.cellIndex, cellIndex]);
+  } else edges.set(key, {a,b,region:cell.region,cellIndex,heavy:true});
 });
 export const borders = [...edges.values()];
 
@@ -36,6 +38,9 @@ export function conflicts(values) {
   const bad = new Set();
   for (const unit of [...lines, ...regions]) {
     for (const i of unit) if (values[i] && unit.some(j => i !== j && values[j] === values[i])) bad.add(i);
+  }
+  for (const [i, j] of neighbors) {
+    if (values[i] && values[i] === values[j]) { bad.add(i); bad.add(j); }
   }
   for (const unit of lines) {
     const filled = unit.filter(i => values[i]);
