@@ -1,0 +1,59 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import NumberPad from './NumberPad.astro';
+import '../styles/daily-sudoku.css';
+import { cells, borders } from '../lib/tessellation-sudoku.js';
+const puzzleId = '261007_01';
+---
+<PuzzleLayout title="261007 테셀레이션 스?도쿠" {puzzleId}
+  subtitle="각 행과 열에 서로 다른 연속된 숫자를 채우세요"
+  description="팔각형과 사각형에 숫자를 채우는 테셀레이션 스?도쿠">
+  <div slot="rules">
+    각 팔각형 및 사각형에 1~9의 숫자를 채워넣습니다.<br />
+    각 행/열은 순서에 상관 없이, 서로 다른 연속된 숫자들로 구성되어야 합니다.<br />
+    굵은 선으로 표시된 각 영역에는 같은 숫자가 들어갈 수 없습니다.
+  </div>
+  <div slot="controls">
+    칸을 선택하고 숫자 버튼으로 입력하세요.<br />
+    메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br />
+    다른 칸을 눌러 이동하고 지우기 버튼으로 입력을 지우세요.
+  </div>
+  <section id="tessellationGame" data-puzzle-id={puzzleId} data-preview="false" aria-label="테셀레이션 스?도쿠">
+    <div class="sudoku-board-tools"><button id="tessellationNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <svg id="tessellationBoard" viewBox="0 0 960 960" role="group" aria-label="팔각형 25칸과 사각형 16칸">
+      {cells.map((cell,i) => <g class:list={['tile', {given:!!cell.given}]} data-cell={i} role="button"
+        tabindex={i === 0 ? 0 : -1} aria-label={`${cell.row+1}행 ${cell.col+1}열, ${cell.given || '빈칸'}`}>
+        <polygon points={cell.points.map(point => point.join(',')).join(' ')} />
+        <g class="cell-content" aria-hidden="true" />
+      </g>)}
+      <g class="borders" aria-hidden="true">
+        {borders.filter(edge => !edge.heavy).map(edge => <line x1={edge.a[0]} y1={edge.a[1]} x2={edge.b[0]} y2={edge.b[1]} class="thin" />)}
+        {borders.filter(edge => edge.heavy).map(edge => <line x1={edge.a[0]} y1={edge.a[1]} x2={edge.b[0]} y2={edge.b[1]} class="heavy" />)}
+      </g>
+    </svg>
+    <NumberPad id="tessellationNumbers" max={9} />
+    <div class="bottom-buttons">
+      <button id="tessellationErase" type="button">지우기</button>
+      <button id="tessellationReset" type="button" class="danger">초기화</button>
+    </div>
+  </section>
+  <PuzzleCompletion slot="completion" id="tessellationComplete" />
+</PuzzleLayout>
+<script>import '../scripts/tessellation-sudoku.js';</script>
+<style>
+  #tessellationGame { width:100%; }
+  #tessellationBoard { display:block; width:100%; height:auto; overflow:visible; }
+  .tile { cursor:pointer; outline:none; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+  .tile polygon { fill:#fff; }
+  .tile.selected polygon { fill:#e1e9f3; }
+  .tile.conflict polygon { fill:#fbeaea; }
+  .tile:focus-visible polygon { stroke:#4a6fa5; stroke-width:5; }
+  .tile :global(text) { fill:#4a6fa5; font-family:inherit; font-weight:600; text-anchor:middle; dominant-baseline:central; pointer-events:none; }
+  .tile.given :global(text) { fill:#222; }
+  .tile.conflict :global(text) { fill:#c34242; }
+  .tile :global(.note-value) { fill:#777; font-weight:500; }
+  .borders { pointer-events:none; fill:none; stroke-linejoin:round; stroke-linecap:round; }
+  .thin { stroke:#888; stroke-width:1.5; }
+  .heavy { stroke:#222; stroke-width:6; }
+</style>
