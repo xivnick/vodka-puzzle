@@ -43,8 +43,8 @@ const markerLabel = i => oddCells.includes(i) ? ', 홀수 원' : evenCells.inclu
   #oddEvenBoard .sudoku-cell.even::before { content:""; position:absolute; inset:15%; background:#dcebea; pointer-events:none; }
   #oddEvenBoard .sudoku-cell.odd::before { border-radius:50%; }
   #oddEvenBoard .sudoku-cell.even::before { background:#dce5ed; }
-  #oddEvenBoard .sudoku-cell .cell-value { position:relative; z-index:1; }
-  #oddEvenBoard .sudoku-cell .notes { z-index:1; }
+  #oddEvenBoard .sudoku-cell :global(.cell-value) { position:relative; z-index:1; }
+  #oddEvenBoard .sudoku-cell :global(.notes) { z-index:1; }
   #oddEvenBoard .sudoku-cell.conflict { background:#fbeaea; }
   #oddEvenBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
   #oddEvenBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; z-index:2; }
