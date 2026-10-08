@@ -1,0 +1,51 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import NumberPad from './NumberPad.astro';
+import '../styles/daily-sudoku.css';
+import { givens, oddCells, evenCells } from '../lib/odd-even-sudoku.js';
+const { puzzleId = '261008_01', preview = false } = Astro.props;
+const markerLabel = i => oddCells.includes(i) ? ', 홀수 원' : evenCells.includes(i) ? ', 짝수 사각형' : '';
+---
+<PuzzleLayout title="261008 홀짝스도쿠" {puzzleId}
+  subtitle="원에는 홀수, 사각형에는 짝수가 들어갑니다"
+  description="일반적인 스도쿠 규칙에 따라 원에는 홀수, 사각형에는 짝수를 넣으세요"
+  preview={preview} showCloud={!preview} showLeaderboard={!preview}>
+  <div slot="rules">
+    일반적인 스도쿠의 규칙을 따릅니다. 각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9를 한 번씩 넣으세요.<br />
+    원에는 홀수, 사각형에는 짝수가 들어갑니다.
+  </div>
+  <div slot="controls">
+    칸을 선택하고 숫자 버튼으로 입력하세요.<br />
+    메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br />
+    다른 칸을 눌러 이동하고 지우기 버튼으로 입력을 지우세요.
+  </div>
+  <section id="oddEvenGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="홀짝스도쿠">
+    <div class="sudoku-board-tools"><button id="oddEvenNotes" class="sudoku-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>
+    <div id="oddEvenBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
+      {givens.flat().map((n, i) => <button type="button"
+        class:list={['sudoku-cell', { given: !!n, odd: oddCells.includes(i), even: evenCells.includes(i) }]}
+        data-cell={i} tabindex={i === 0 ? 0 : -1}
+        aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${n || '빈칸'}${n ? ', 고정 숫자' : ''}${markerLabel(i)}`}>{n || ''}</button>)}
+    </div>
+    <NumberPad id="oddEvenNumbers" max={9} />
+    <div class="bottom-buttons">
+      <button id="oddEvenErase" type="button">지우기</button>
+      <button id="oddEvenReset" type="button" class="danger">초기화</button>
+    </div>
+  </section>
+  <PuzzleCompletion slot="completion" id="oddEvenComplete" />
+</PuzzleLayout>
+<script>import '../scripts/odd-even-sudoku.js';</script>
+<style>
+  #oddEvenGame { width:100%; }
+  #oddEvenBoard .sudoku-cell.odd::before,
+  #oddEvenBoard .sudoku-cell.even::before { content:""; position:absolute; inset:15%; background:#dcebea; pointer-events:none; }
+  #oddEvenBoard .sudoku-cell.odd::before { border-radius:50%; }
+  #oddEvenBoard .sudoku-cell.even::before { background:#dce5ed; }
+  #oddEvenBoard .sudoku-cell .cell-value { position:relative; z-index:1; }
+  #oddEvenBoard .sudoku-cell .notes { z-index:1; }
+  #oddEvenBoard .sudoku-cell.conflict { background:#fbeaea; }
+  #oddEvenBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
+  #oddEvenBoard .sudoku-cell:focus-visible { outline:2px solid #4a6fa5; outline-offset:-3px; z-index:2; }
+</style>
