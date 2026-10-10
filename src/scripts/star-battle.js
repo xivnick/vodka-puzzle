@@ -6,7 +6,6 @@ const cells = [...$('starBattleBoard').querySelectorAll('[data-cell]')];
 let values = Array(size * size).fill(0), selected = 0, inputSwapped = false;
 let press = null;
 let ready = false, completionRecorded = false;
-const history = [];
 const state = () => ({version:1, puzzleId, values:[...values]});
 function persist() {
   if (!ready) return;
@@ -23,7 +22,6 @@ function render() {
     cell.tabIndex = i === selected ? 0 : -1;
     cell.setAttribute('aria-label', `${Math.floor(i / size) + 1}행 ${i % size + 1}열, 영역 ${regions.flat()[i] + 1}, ${['빈칸','별','× 메모'][values[i]]}${bad.has(i) ? ', 규칙 위반' : ''}`);
   });
-  $('starBattleUndo').disabled = !history.length;
   $('starBattleComplete').hidden = !complete;
   if (!complete) completionRecorded = false;
   else if (ready && window.puzzlePage?.published && !completionRecorded) {
@@ -33,8 +31,6 @@ function render() {
 }
 function change(value) {
   if (!ready || values[selected] === value) return;
-  history.push([...values]);
-  if (history.length > 100) history.shift();
   values[selected] = value;
   persist(); render();
 }
@@ -106,14 +102,10 @@ $('starBattleBoard').addEventListener('keydown', event => {
   else if (event.key.toLowerCase() === 'm') { event.preventDefault(); toggleInput(); }
 });
 $('starBattleErase').addEventListener('click', () => change(0));
-$('starBattleUndo').addEventListener('click', () => {
-  if (!ready || !history.length) return;
-  values = history.pop(); persist(); render();
-});
 $('starBattleReset').addEventListener('click', () => {
   if (!ready || !values.some(Boolean)) return;
   if (confirm('입력한 별과 메모를 모두 초기화할까요?')) {
-    history.push([...values]); values.fill(0); persist(); render();
+    values.fill(0); persist(); render();
   }
 });
 function init() {
@@ -121,7 +113,6 @@ function init() {
   let saved = null;
   try { saved = window.loadLocalState(puzzleId); } catch {}
   values = parseStarBattleState(saved, puzzleId)?.values || Array(size * size).fill(0);
-  history.length = 0;
   completionRecorded = false;
   ready = true;
   render();
@@ -133,7 +124,7 @@ window.handleCloudLoad = async () => {
   if (saved == null) return;
   const parsed = parseStarBattleState(saved, puzzleId);
   if (!parsed) { window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.'); return; }
-  values = parsed.values; history.length = 0; completionRecorded = false;
+  values = parsed.values; completionRecorded = false;
   persist(); render();
 };
 window.checkComplete = render;
