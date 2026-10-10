@@ -1,15 +1,16 @@
 ---
 import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
-import { size, regions } from '../lib/star-battle.js';
+import { size, puzzles } from '../lib/star-battle.js';
 const { puzzleId } = Astro.props;
+const {title, regions} = puzzles[puzzleId];
 const boundaries = [];
 for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
   if (r < size - 1 && regions[r][c] !== regions[r + 1][c]) boundaries.push([c, r + 1, c + 1, r + 1]);
   if (c < size - 1 && regions[r][c] !== regions[r][c + 1]) boundaries.push([c + 1, r, c + 1, r + 1]);
 }
 ---
-<PuzzleLayout title="261010 스타배틀 1" {puzzleId}
+<PuzzleLayout {title} {puzzleId}
   subtitle="규칙에 따라 일부 칸에 별을 채우세요"
   description="각 가로줄·세로줄·영역에 서로 닿지 않는 별을 2개씩 채우는 스타배틀">
   <div slot="rules">

@@ -13,15 +13,38 @@ export const regions = [
   [8,9,9,9,9,9,9,9,8,2],
   [8,8,8,8,8,8,8,8,8,2],
 ];
-const flatRegions = regions.flat();
-export const units = [
-  ...Array.from({length:size}, (_, r) => Array.from({length:size}, (_, c) => r * size + c)),
-  ...Array.from({length:size}, (_, c) => Array.from({length:size}, (_, r) => r * size + c)),
-  ...Array.from({length:size}, (_, region) => flatRegions.flatMap((id, i) => id === region ? [i] : [])),
-];
+export const puzzles = {
+  '261010_01': {title:'261010 스타배틀 1', regions},
+  '261010_02': {
+    title:'261010 스타배틀 2',
+    regions: [
+      [0,0,0,0,1,1,1,1,1,1],
+      [0,2,2,2,2,2,2,2,2,1],
+      [0,0,0,0,3,3,3,3,2,1],
+      [4,4,4,0,3,5,5,5,2,1],
+      [4,6,3,3,3,5,7,7,7,7],
+      [4,6,5,5,5,5,8,8,8,7],
+      [4,6,6,6,6,6,6,6,8,7],
+      [4,9,9,9,9,9,9,9,8,7],
+      [4,4,4,4,4,4,4,9,8,7],
+      [9,9,9,9,9,9,9,9,8,8],
+    ],
+  },
+};
+function makeUnits(regionGrid) {
+  const flat = regionGrid.flat();
+  return [
+    ...Array.from({length:size}, (_, r) => Array.from({length:size}, (_, c) => r * size + c)),
+    ...Array.from({length:size}, (_, c) => Array.from({length:size}, (_, r) => r * size + c)),
+    ...Array.from({length:size}, (_, region) => flat.flatMap((id, i) => id === region ? [i] : [])),
+  ];
+}
+const puzzleUnits = new Map(Object.values(puzzles).map(puzzle => [puzzle.regions, makeUnits(puzzle.regions)]));
+export const units = puzzleUnits.get(regions);
 
 // 0 = blank, 1 = star, 2 = cross note.
-export function analyze(values) {
+export function analyze(values, regionGrid = regions) {
+  const units = puzzleUnits.get(regionGrid);
   const bad = new Set();
   const counts = units.map(unit => unit.filter(i => values[i] === 1).length);
   units.forEach((unit, index) => {

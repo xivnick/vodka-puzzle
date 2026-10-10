@@ -1,6 +1,7 @@
-import { size, regions, analyze, parseStarBattleState } from '../lib/star-battle.js';
+import { size, puzzles, analyze, parseStarBattleState } from '../lib/star-battle.js';
 const $ = id => document.getElementById(id);
 const puzzleId = $('starBattleGame').dataset.puzzleId;
+const {regions} = puzzles[puzzleId];
 const board = $('starBattleBoard');
 const cells = [...$('starBattleBoard').querySelectorAll('[data-cell]')];
 let values = Array(size * size).fill(0), selected = 0, inputSwapped = false;
@@ -13,7 +14,7 @@ function persist() {
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
 function render() {
-  const {bad, complete} = analyze(values);
+  const {bad, complete} = analyze(values, regions);
   cells.forEach((cell, i) => {
     cell.textContent = ['', '★', '×'][values[i]];
     cell.classList.toggle('selected', !complete && i === selected);
