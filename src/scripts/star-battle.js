@@ -43,7 +43,7 @@ function activate(index, secondary = false) {
 }
 function toggleInput() {
   inputSwapped = !inputSwapped;
-  $('starBattleNotes').textContent = inputSwapped ? '길게 눌러 ☆ 표시' : '길게 눌러 x 표시';
+  $('starBattleNotes').textContent = inputSwapped ? '길게 눌러 ★ 표시' : '길게 눌러 x 표시';
   $('starBattleNotes').setAttribute('aria-pressed', String(inputSwapped));
 }
 function cancelPress() {
