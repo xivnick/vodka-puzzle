@@ -18,12 +18,12 @@ for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
     별끼리는 변으로도, 대각선으로도 닿지 않습니다.
   </div>
   <div slot="controls">
-    칸을 누르면 빈칸 → 별 → × 메모 → 빈칸 순서로 바뀝니다.<br />
-    메모하기 버튼이나 M 키를 켜면 × 메모만 넣고 지웁니다.<br />
-    지우기로 선택한 칸의 별이나 메모를 지우세요.
+    칸을 짧게 누르면 별, 길게 누르거나 우클릭하면 × 메모를 넣습니다.<br />
+    오른쪽 위 버튼이나 M 키로 두 입력을 바꾸세요.<br />
+    같은 표시를 다시 입력하거나 지우기 버튼으로 지우세요.
   </div>
   <section id="starBattleGame" data-puzzle-id={puzzleId} aria-label="스타배틀">
-    <div class="board-tools"><button id="starBattleNotes" type="button" aria-pressed="false">메모하기</button></div>
+    <div class="board-tools"><button id="starBattleNotes" type="button" aria-pressed="false">짧게 ★ / 길게 ×</button></div>
     <div class="board-wrap">
       <div id="starBattleBoard" class="star-board" role="group" aria-label="10행 10열, 각 줄과 영역에 별 2개">
         {regions.flat().map((region, i) => <button type="button" class="star-cell" data-cell={i}
@@ -50,7 +50,7 @@ for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
   .board-tools button[aria-pressed=true] { color:#4a6fa5; border-color:#4a6fa5; }
   .board-wrap { width:100%; position:relative; }
   .star-board { display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); width:100%; }
-  .star-cell { aspect-ratio:1; padding:0; margin:0; min-width:0; border:0; border-radius:0; border-right:1px solid #aaa; border-bottom:1px solid #aaa; background:#fff; color:#333; font-family:inherit; font-size:clamp(18px,5.5vw,30px); line-height:1; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+  .star-cell { aspect-ratio:1; padding:0; margin:0; min-width:0; border:0; border-radius:0; border-right:1px solid #aaa; border-bottom:1px solid #aaa; background:#fff; color:#333; font-family:inherit; font-size:clamp(18px,5.5vw,30px); line-height:1; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; }
   .star-cell:nth-child(10n) { border-right:0; }
   .star-cell:nth-child(n+91) { border-bottom:0; }
   .star-cell.selected { background:#e1e9f3; }

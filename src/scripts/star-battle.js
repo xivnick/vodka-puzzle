@@ -1,8 +1,10 @@
 import { size, regions, analyze, parseStarBattleState } from '../lib/star-battle.js';
 const $ = id => document.getElementById(id);
 const puzzleId = $('starBattleGame').dataset.puzzleId;
+const board = $('starBattleBoard');
 const cells = [...$('starBattleBoard').querySelectorAll('[data-cell]')];
-let values = Array(size * size).fill(0), selected = 0, notesMode = false;
+let values = Array(size * size).fill(0), selected = 0, inputSwapped = false;
+let press = null;
 let ready = false, completionRecorded = false;
 const history = [];
 const state = () => ({version:1, puzzleId, values:[...values]});
@@ -36,24 +38,61 @@ function change(value) {
   values[selected] = value;
   persist(); render();
 }
-function activate(index, memo = notesMode) {
+function activate(index, secondary = false) {
   selected = index;
-  change(memo ? (values[index] === 2 ? 0 : 2) : (values[index] + 1) % 3);
+  const mark = secondary !== inputSwapped ? 2 : 1;
+  change(values[index] === mark ? 0 : mark);
   render();
   cells[selected].focus({preventScroll:true});
 }
-function toggleNotes() {
-  notesMode = !notesMode;
-  $('starBattleNotes').setAttribute('aria-pressed', String(notesMode));
+function toggleInput() {
+  inputSwapped = !inputSwapped;
+  $('starBattleNotes').textContent = inputSwapped ? '짧게 × / 길게 ★' : '짧게 ★ / 길게 ×';
+  $('starBattleNotes').setAttribute('aria-pressed', String(inputSwapped));
 }
-$('starBattleNotes').addEventListener('click', toggleNotes);
-$('starBattleBoard').addEventListener('click', event => {
+function cancelPress() {
+  if (press) clearTimeout(press.timer);
+  press = null;
+}
+$('starBattleNotes').addEventListener('click', toggleInput);
+board.addEventListener('pointerdown', event => {
+  const cell = event.target.closest('[data-cell]');
+  if (!ready || !cell || event.button !== 0 || press) return;
+  const index = Number(cell.dataset.cell);
+  press = {id:event.pointerId, index, x:event.clientX, y:event.clientY, long:false, timer:null};
+  press.timer = setTimeout(() => {
+    if (!press || press.id !== event.pointerId) return;
+    press.long = true;
+    activate(index, true);
+  }, 550);
+});
+window.addEventListener('pointermove', event => {
+  if (!press || press.id !== event.pointerId || press.long) return;
+  if (Math.hypot(event.clientX - press.x, event.clientY - press.y) > 10) cancelPress();
+});
+window.addEventListener('pointerup', event => {
+  if (!press || press.id !== event.pointerId) return;
+  const {index, long, x, y} = press;
+  cancelPress();
+  if (!long && Math.hypot(event.clientX - x, event.clientY - y) <= 10) activate(index);
+});
+window.addEventListener('pointercancel', event => {
+  if (press?.id === event.pointerId) cancelPress();
+});
+window.addEventListener('blur', cancelPress);
+board.addEventListener('click', event => {
+  // Pointer input is handled on release; only keyboard/assistive clicks remain.
+  if (event.detail > 0 || event.pointerType) return;
   const cell = event.target.closest('[data-cell]');
   if (cell) activate(Number(cell.dataset.cell));
 });
-$('starBattleBoard').addEventListener('contextmenu', event => {
+board.addEventListener('contextmenu', event => {
   const cell = event.target.closest('[data-cell]');
-  if (cell) { event.preventDefault(); activate(Number(cell.dataset.cell), true); }
+  if (!cell) return;
+  event.preventDefault();
+  const alreadyMarked = press?.long;
+  cancelPress();
+  if (!alreadyMarked) activate(Number(cell.dataset.cell), true);
 });
 $('starBattleBoard').addEventListener('keydown', event => {
   const r = Math.floor(selected / size), c = selected % size;
@@ -64,7 +103,7 @@ $('starBattleBoard').addEventListener('keydown', event => {
   if (next !== undefined) {
     event.preventDefault(); selected = next; render(); cells[selected].focus({preventScroll:true});
   } else if (['Backspace','Delete','0'].includes(event.key)) { event.preventDefault(); change(0); }
-  else if (event.key.toLowerCase() === 'm') { event.preventDefault(); toggleNotes(); }
+  else if (event.key.toLowerCase() === 'm') { event.preventDefault(); toggleInput(); }
 });
 $('starBattleErase').addEventListener('click', () => change(0));
 $('starBattleUndo').addEventListener('click', () => {
@@ -78,6 +117,7 @@ $('starBattleReset').addEventListener('click', () => {
   }
 });
 function init() {
+  cancelPress();
   let saved = null;
   try { saved = window.loadLocalState(puzzleId); } catch {}
   values = parseStarBattleState(saved, puzzleId)?.values || Array(size * size).fill(0);
