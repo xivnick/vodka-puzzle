@@ -1,5 +1,7 @@
 # 다시 도전권 UI 예시
 
+현재 검토용 예시는 [기존 사이트의 테스트 페이지](https://puzzle.xivnick.me/test/daily-sudoku/tickets/)다. 실제 `PuzzleLayout`, `NumberPad`, `PuzzleCompletion`, 데일리 스타일을 재사용하고 스트릭 옆에 도전권 링크만 추가한다. 구현은 `src/pages/test/daily-sudoku/tickets/index.astro`, `src/scripts/daily-retry-ticket-preview.js`, `src/styles/daily-retry-ticket-preview.css`에 있다. 아래 독립 정적 파일은 초기 시안으로, 현재 테스트 링크로 사용하지 않는다.
+
 기존 데일리 스도쿠의 색상·너비·입력 구성을 따른 독립 정적 미리보기다. 로그인, DB, 클라우드 저장, 실제 완료 기록과 연결하지 않는다. 외부 스크립트와 폰트 없이 로컬 파일로도 열린다.
 
 ## 확인 흐름

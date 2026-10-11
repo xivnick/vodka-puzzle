@@ -1,0 +1,24 @@
+/* Only the ticket additions are styled here. The page uses the live daily components. */
+.ticket-streak-heading{align-items:center;gap:12px}
+.retry-ticket-link{border:0;border-bottom:1px solid #ccc;background:none;color:#888;font-size:.78rem;line-height:1.5;padding:0 0 1px}
+.retry-ticket-link:hover{color:#555}
+.retry-text-button{border:0;border-bottom:1px solid #ccc;background:none;color:#888;font-size:.78rem;line-height:1.5;padding:0 0 1px}
+.retry-past-navigation{display:flex;justify-content:space-between;gap:10px;margin-bottom:12px;font-size:.78rem;color:#888}
+.retry-completion-detail{font-size:.78rem;line-height:1.7;color:#888;margin:8px 0}
+.retry-preview-tools{margin-top:28px;text-align:center;font-size:.7rem;color:#aaa}
+.retry-preview-tools p{margin-bottom:8px}
+.retry-preview-tools button{background:none;border:0;border-bottom:1px solid #ddd;color:#999;font-size:.7rem;margin:0 8px;padding:0 0 1px}
+.retry-ticket-dialog h2{margin:0}
+.retry-ticket-dialog .dialog-actions button{border:1px solid #d6d4cd;border-radius:3px;background:#faf8f4;color:#555;font-size:.85rem}
+.retry-ticket-dialog{margin:auto;width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow-y:auto;border:1px solid #e8e5df;border-radius:8px;padding:22px 24px 24px;color:#333;background:#fff}
+.retry-ticket-dialog::backdrop{background:rgb(32 30 27 / 28%)}.dialog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:17px}.eyebrow{font-size:.73rem;color:#9b896b}.close-button{border:0;background:none;color:#999;font-size:23px;line-height:1;padding:0 3px}
+.retry-ticket-dialog h2{font-size:1.12rem;font-weight:700;line-height:1.5;letter-spacing:-.03em}.dialog-description{font-size:.79rem;color:#888;line-height:1.8;margin-top:9px}
+.wallet-summary{display:flex;justify-content:space-between;align-items:center;padding:16px;background:#faf8f4;margin-top:20px;border-radius:4px;font-size:.8rem;color:#827358}.wallet-summary span:last-child{font-size:1.1rem;font-weight:700}
+.reward-progress{margin:17px 0 24px}.reward-progress div{display:flex;justify-content:space-between;font-size:.74rem;color:#888}.reward-progress progress{appearance:none;width:100%;height:4px;border:0;border-radius:4px;margin:9px 0 7px;background:#eeece8;display:block}.reward-progress progress::-webkit-progress-bar{background:#eeece8;border-radius:4px}.reward-progress progress::-webkit-progress-value{background:#b9a480;border-radius:4px}.reward-progress progress::-moz-progress-bar{background:#b9a480}.reward-progress p{font-size:.68rem;color:#aaa}
+.date-heading{display:flex;justify-content:space-between;align-items:center;font-size:.77rem;color:#777;margin-bottom:5px}.date-heading span:last-child{font-size:.68rem;color:#aaa}
+.date-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:13px 0;text-align:left;background:none;border:0;border-bottom:1px solid #eeece8}.date-row span{display:block}.date-title{font-size:.84rem;color:#555}.date-description{font-size:.71rem;color:#999;margin-top:5px;line-height:1.5}.date-action{color:#8a7452;font-size:.75rem;white-space:nowrap}.date-row:hover .date-title{color:#8a7452}
+.dialog-footnote{font-size:.69rem;color:#aaa;line-height:1.8;margin-top:16px}
+.confirmation-summary{display:flex;flex-direction:column;gap:7px;background:#faf8f4;padding:16px;margin:21px 0;color:#827358;font-size:.82rem}.confirmation-summary span+span{font-size:.74rem;color:#999}
+.dialog-actions{display:flex;gap:8px;margin-top:24px}.dialog-actions button{flex:1;padding:10px 6px}.dialog-actions button.primary-button{color:#fff;background:#8a7758;border-color:#8a7758}
+
+@media(max-width:540px){.retry-ticket-dialog{padding:20px}.ticket-streak-heading{gap:10px}}
