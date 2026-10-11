@@ -29,9 +29,6 @@ function render() {
   const board = boards.get(currentDay), past = currentDay !== today, run = streak();
   const todayComplete = boards.get(today).complete;
   $('pageTitle').textContent = titleForDay(currentDay);
-  document.querySelector('.page-subtitle').textContent = past
-    ? '타임머신으로 지나간 스도쿠를 풀어보세요'
-    : '매일 밤 12시에 새로운 스도쿠를 풀어보세요';
   $('streakLabel').textContent = past ? '시간을 되돌리는 중..' : run.connected
     ? `${run.count + (todayComplete ? 0 : 1)}일 연속 ${todayComplete ? '완성' : '도전 중..'}`
     : todayComplete ? '1일 연속 완성' : '1일 연속 도전 중..';
