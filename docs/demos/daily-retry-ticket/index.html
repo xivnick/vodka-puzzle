@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>다시 도전권 · Daily Sudoku 미리보기</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="demo.js" defer></script>
+</head>
+<body>
+  <header class="site-header"><a href="https://puzzle.xivnick.me/">vodka puzzle</a><span>퍼즐러</span></header>
+  <main>
+    <div class="page-heading">
+      <div class="streak" aria-live="polite"><span id="streakLabel">불꽃이 잠시 쉬고 있어요</span><svg id="flame" width="16" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3c1 5 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 3 2 4 3 4 2-3 1-6 0-10Z"/></svg></div>
+      <h1 id="pageTitle">261011 Daily Sudoku</h1>
+      <p class="page-subtitle">매일 밤 12시에 새로운 스도쿠를 풀어보세요</p>
+      <button id="walletButton" class="ticket-button" type="button" aria-haspopup="dialog"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4Z"/><path d="M15 6v2m0 3v2m0 3v2"/></svg>다시 도전권 <span id="ticketCount">2장</span><span class="chevron" aria-hidden="true">›</span></button>
+    </div>
+
+    <section id="recoveryBanner" class="recovery-banner" aria-label="스트릭 다시 잇기">
+      <div><p id="recoveryTitle">12일의 불꽃을 다시 이어보세요</p><p id="recoveryDescription">놓친 문제를 완성하면 기록이 이어져요.</p></div>
+      <button id="recoverButton" class="text-button" type="button">놓친 문제 풀기 <span aria-hidden="true">›</span></button>
+    </section>
+    <div id="pastNavigation" class="past-navigation" hidden><span id="pastBadge">다시 도전 · 10월 9일</span><button id="todayButton" class="text-button" type="button">오늘 문제로 돌아가기</button></div>
+    <div class="help-toggles"><button type="button" aria-expanded="false" aria-controls="rulesBox">규칙 보기</button><button type="button" aria-expanded="false" aria-controls="controlsBox">조작 방법</button></div>
+    <div id="rulesBox" class="help-box" hidden>각 행, 열, 3×3 구역에 1부터 9까지 한 번씩 넣으세요.</div>
+    <div id="controlsBox" class="help-box" hidden>칸을 선택하고 숫자를 누르세요. 메모하기 버튼이나 M 키로 후보 숫자를 적을 수 있습니다. 지우기로 선택한 칸을 비우세요.</div>
+    <section class="game" aria-label="스도쿠">
+      <div class="board-tools"><button id="notesButton" class="text-button" type="button" aria-pressed="false">메모하기</button></div>
+      <div id="board" class="sudoku-board" role="group" aria-label="스도쿠 9행 9열"></div>
+      <div id="numberPad" class="number-pad" aria-label="숫자 입력"></div>
+      <div class="bottom-buttons"><button id="eraseButton" type="button">지우기</button><button id="resetBoardButton" type="button">초기화</button></div>
+      <p id="gameMessage" class="game-message" role="status"></p>
+    </section>
+    <section id="successPanel" class="success-panel" hidden aria-live="polite"><span class="success-icon" aria-hidden="true">✓</span><p id="successTitle"></p><p id="successDescription"></p><button id="successTodayButton" type="button">오늘의 스도쿠 풀기</button></section>
+    <section class="leaderboard"><p class="section-label">푼 사람</p><p id="rankDescription">오늘의 완료 기록이 여기에 표시됩니다.</p></section>
+    <aside class="preview-tools" aria-label="미리보기 조작"><p>도전권 UI 미리보기 · 실제 계정과 기록에 영향이 없습니다.</p><div><button id="demoCompleteButton" type="button">완료 상태 보기</button><button id="restartDemoButton" type="button">예시 처음부터</button></div></aside>
+  </main>
+
+  <dialog id="ticketDialog" aria-labelledby="dialogTitle">
+    <div class="dialog-top"><span class="eyebrow">다시 도전권</span><button id="closeDialogButton" class="close-button" type="button" aria-label="닫기">×</button></div>
+    <div id="walletView">
+      <h2 id="dialogTitle">놓친 하루에 다시 도전하세요</h2>
+      <p class="dialog-description">도전권 1장으로 놓친 날짜의 문제를 열 수 있어요.<br>직접 완성하면 그 날짜가 스트릭에 반영돼요.</p>
+      <div class="wallet-summary"><span>보유 도전권</span><span id="walletCount">2장</span></div>
+      <div class="reward-progress"><div><span>다음 도전권까지</span><span id="rewardText">12문제</span></div><progress id="rewardProgress" max="30" value="18" aria-label="다음 도전권까지 완료 진행"></progress><p>데일리 30문제 완성마다 1장 · 최대 2장 보유</p></div>
+      <div class="date-heading"><span>놓친 문제</span><span>최근 7일</span></div>
+      <div id="dateList" class="date-list"></div>
+      <p class="dialog-footnote">한 번 연 문제는 언제든 이어서 풀 수 있어요.<br>과거 문제의 완료는 해당 날짜의 순위에 반영되지 않아요.</p>
+    </div>
+    <div id="confirmView" hidden>
+      <h2 id="confirmTitle">10월 9일 문제를 열까요?</h2>
+      <p class="dialog-description">다시 도전권 1장을 사용합니다.<br>문제를 완성하면 12일의 불꽃이 이어져요.</p>
+      <div class="confirmation-summary"><span id="confirmDate">261009 Daily Sudoku</span><span id="confirmBalance">보유 2장 → 1장</span></div>
+      <div class="dialog-actions"><button id="backButton" type="button">돌아가기</button><button id="useTicketButton" class="primary-button" type="button">1장 사용하고 시작</button></div>
+    </div>
+  </dialog>
+</body>
+</html>
