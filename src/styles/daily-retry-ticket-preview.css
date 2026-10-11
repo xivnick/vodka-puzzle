@@ -19,3 +19,18 @@
 .time-machine-page h2{font-size:1rem;font-weight:500;margin:28px 0 0;letter-spacing:0}
 .time-machine-back{display:block;width:fit-content;margin:20px auto 0;font-size:.78rem}
 .time-machine-test-note{margin-top:32px;font-size:.7rem;color:#aaa;text-align:center}
+.time-machine-calendars{width:100%}
+.time-machine-month+.time-machine-month{margin-top:30px}
+.time-machine-page .time-machine-month h2{margin:0 0 16px;font-size:.9rem;font-weight:500;color:#666}
+.time-machine-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:1px solid #e8e5df}
+.calendar-weekday{font-size:.73rem;text-align:center;color:#aaa;padding:11px 0;border-bottom:1px solid #e8e5df}
+.calendar-day,.calendar-blank{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:64px;border-bottom:1px solid #eee;text-decoration:none;color:#555;font-size:.88rem}
+.calendar-day.unavailable{color:#ccc}
+.calendar-day.complete{color:#888}
+.calendar-day.today{background:#faf8f4}
+.calendar-day:not(.unavailable):hover{background:#faf8f4}
+.calendar-status{min-height:12px;font-size:.62rem;color:#999;line-height:1.2}
+.calendar-day.complete .calendar-status{color:#7e927b}
+.time-machine-calendar-key{margin-top:18px;font-size:.7rem;color:#aaa;line-height:1.7}
+.retry-time-machine-position{display:flex;justify-content:flex-end;margin-top:10px}
+@media(max-width:420px){.calendar-day,.calendar-blank{min-height:56px}}

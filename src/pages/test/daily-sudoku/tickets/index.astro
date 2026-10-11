@@ -10,10 +10,10 @@ import '../../../../styles/daily-retry-ticket-preview.css';
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <div slot="above-title" id="dailyStreakHeading" class="daily-streak-heading ticket-streak-heading">
     <span id="dailyStreak" class="daily-streak"><span id="streakLabel">1일 연속 도전 중..</span><img id="flame" src="/icons/daily-streak/flame.svg" width="14" height="14" alt="" /></span>
-    <a id="walletButton" class="retry-ticket-link" href="/test/daily-sudoku/time-machine/">타임머신 <span id="ticketCount">2회</span></a>
   </div>
   <p slot="rules">각 행, 열, 3×3 구역에 1부터 9까지 한 번씩 넣으세요.</p>
   <p slot="controls">칸을 선택하고 숫자를 누르세요. 메모하기 버튼이나 M 키로 후보 숫자 입력을 켜고 끌 수 있습니다.</p>
+  <div slot="after-cloud" class="retry-time-machine-position"><a id="walletButton" class="retry-ticket-link" href="/test/daily-sudoku/time-machine/">타임머신 <span id="ticketCount">2회</span></a></div>
   <div id="pastNavigation" class="retry-past-navigation" hidden><a class="retry-text-button" href="/test/daily-sudoku/time-machine/">타임머신</a><a id="todayButton" class="retry-text-button" href="/test/daily-sudoku/tickets/">오늘 문제</a></div>
   <section id="dailyGame" aria-label="데일리 스도쿠">
     <div class="sudoku-board-tools"><button id="sudokuNotes" tabindex="-1" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>

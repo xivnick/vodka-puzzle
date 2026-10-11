@@ -9,51 +9,16 @@ import '../../../../styles/nickname.css';
     <div class="time-machine-nav"><a href="/test/daily-sudoku/tickets/">데일리 스도쿠</a><span id="remainingUses">남은 횟수 2회</span></div>
     <section id="dateSelection">
       <p id="rewardStatus" class="time-machine-note">30문제 완성마다 1회 · 최대 2회</p>
-      <div class="time-machine-list-heading"><span>지난 문제</span><span>최근 7일</span></div>
-      <div id="pastDates" class="list"></div>
+      <div id="pastDates" class="time-machine-calendars"></div>
+      <p class="time-machine-calendar-key">✓ 완료 · 진행 중인 문제는 ‘진행’으로 표시됩니다.</p>
     </section>
     <section id="departure" hidden>
       <h2 id="departureTitle">261009 Daily Sudoku</h2>
       <p id="departureDescription" class="time-machine-note">타임머신 1회를 사용합니다.</p>
       <button id="departButton" class="use-btn" type="button">이 날짜로 이동</button>
-      <a class="time-machine-back" href="/test/daily-sudoku/time-machine/">날짜 목록</a>
+      <a class="time-machine-back" href="/test/daily-sudoku/time-machine/">달력으로</a>
     </section>
     <p class="time-machine-test-note">테스트 화면 · 실제 기록에는 반영되지 않습니다.</p>
   </div>
 </PageLayout>
-<script>
-  import { readPreview, savePreview, createBoard } from '../../../../lib/time-machine-preview.js';
-  const state = readPreview();
-  const base = '/test/daily-sudoku/';
-  const selected = Number(new URLSearchParams(location.search).get('day'));
-  document.getElementById('remainingUses').textContent = `남은 횟수 ${state.tickets}회`;
-  const completed = [...state.boards.values()].filter(board => board.complete).length;
-  document.getElementById('rewardStatus').textContent = state.tickets === 2 ? '30문제 완성마다 1회 · 최대 2회' : `다음 타임머신까지 ${12 - completed}문제 · 30문제마다 1회`;
-  const list = document.getElementById('pastDates');
-  for (let day = 10; day >= 4; day--) {
-    const board = state.boards.get(day);
-    const complete = day <= 8 || board?.complete;
-    const row = document.createElement(complete && !board ? 'div' : 'a');
-    row.className = 'time-machine-date';
-    if (row instanceof HTMLAnchorElement) row.href = board ? `${base}tickets/?day=${day}` : `${base}time-machine/?day=${day}`;
-    const title = document.createElement('span'); title.textContent = `2610${String(day).padStart(2, '0')} Daily Sudoku`;
-    const status = document.createElement('span'); status.className = 'time-machine-date-status'; status.textContent = complete ? '완료' : board ? '진행 중' : '미완료';
-    row.append(title, status); list.append(row);
-  }
-  if ([9,10].includes(selected)) {
-    document.getElementById('dateSelection').hidden = true;
-    document.getElementById('departure').hidden = false;
-    document.getElementById('departureTitle').textContent = `2610${String(selected).padStart(2, '0')} Daily Sudoku`;
-    const opened = state.boards.has(selected);
-    document.getElementById('departureDescription').textContent = opened ? '이미 열린 문제입니다. 추가 횟수 없이 이동합니다.' : state.tickets ? `타임머신 1회를 사용합니다. 사용 후 ${state.tickets - 1}회가 남습니다.` : '남은 타임머신이 없습니다.';
-    const button = document.getElementById('departButton');
-    button.disabled = !opened && !state.tickets;
-    button.addEventListener('click', () => {
-      if (!state.boards.has(selected)) {
-        if (!state.tickets) return;
-        state.tickets--; state.boards.set(selected, createBoard(selected)); savePreview(state);
-      }
-      location.assign(`${base}tickets/?day=${selected}`);
-    });
-  }
-</script>
+<script>import '../../../../scripts/time-machine-calendar-preview.js';</script>

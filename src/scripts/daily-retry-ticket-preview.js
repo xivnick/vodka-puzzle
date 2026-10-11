@@ -1,24 +1,26 @@
 // Test-only session state; never connected to account completion or cloud saving.
-import { readPreview, savePreview, resetPreview, createBoard, solution } from '../lib/time-machine-preview.js';
+import { readPreview, savePreview, resetPreview, createBoard, solution, today, isPreviewDay, wasCompleted, titleForDay } from '../lib/time-machine-preview.js';
 const ids = {board:'sudokuBoard', numberPad:'sudokuNumbers', notesButton:'sudokuNotes', eraseButton:'sudokuErase', resetBoardButton:'sudokuReset', gameMessage:'sudokuMessage', pageTitle:'pageTitle', successTitle:'sudokuComplete'};
 const $ = id => id === 'pageTitle' ? document.querySelector('.page-heading h1') : document.getElementById(ids[id] || id);
-const today = 11;
 let tickets, currentDay, selected, notesMode, boards;
 function initialize() {
   ({tickets, boards} = readPreview());
-  const requested = Number(new URLSearchParams(location.search).get('day'));
-  currentDay = [9, 10].includes(requested) && boards.has(requested) ? requested : today;
+  const parameter = new URLSearchParams(location.search).get('day');
+  const requested = parameter === null ? today : Number(parameter);
+  if (isPreviewDay(requested) && wasCompleted(requested) && !boards.has(requested)) boards.set(requested, {...createBoard(requested), values:[...solution], complete:true});
+  currentDay = isPreviewDay(requested) && boards.has(requested) ? requested : today;
   selected = -1; notesMode = false;
   $('gameMessage').textContent = '';
   render();
 }
 function streak() {
-  const days = [8, ...[...boards].filter(([, board]) => board.complete).map(([day]) => day)].sort((a, b) => b - a);
+  const days = [...new Set([...Array.from({length:12}, (_, i) => i - 3), ...[...boards].filter(([, board]) => board.complete).map(([day]) => day)])].sort((a, b) => b - a);
   let count = 0, previous = days[0], connected = false;
   if (today - previous > 2) return { count: 0, connected: false };
   for (const day of days) {
     if (previous - day > 2) break;
-    if (day === 8) { count += 12; connected = true; } else count++;
+    count++;
+    if (day === 8) connected = true;
     previous = day;
   }
   return { count, connected };
@@ -27,10 +29,11 @@ function render() {
   const board = boards.get(currentDay), past = currentDay !== today, run = streak();
   const todayComplete = boards.get(today).complete;
   $('ticketCount').textContent = `${tickets}회`;
-  $('pageTitle').textContent = `2610${String(currentDay).padStart(2, '0')} Daily Sudoku`;
+  $('pageTitle').textContent = titleForDay(currentDay);
   $('pastNavigation').hidden = !past;
 
   $('dailyStreak').hidden = past;
+  $('dailyStreakHeading').hidden = past;
   $('streakLabel').textContent = run.connected
     ? `${run.count + (todayComplete ? 0 : 1)}일 연속 ${todayComplete ? '완성' : '도전 중..'}`
     : todayComplete ? '1일 연속 완성' : '1일 연속 도전 중..';
