@@ -8,7 +8,7 @@
 .retry-preview-tools p{margin-bottom:8px}
 .retry-preview-tools button{background:none;border:0;border-bottom:1px solid #ddd;color:#999;font-size:.7rem;margin:0 8px;padding:0 0 1px}
 .time-machine-page{width:100%}
-.time-machine-nav{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:.78rem;color:#888}
+.time-machine-nav{display:flex;justify-content:flex-end;align-items:center;gap:12px;font-size:.78rem;color:#888}
 .time-machine-nav a,.time-machine-back{color:#999;text-decoration:none;border-bottom:1px solid #ccc;padding-bottom:1px}
 .time-machine-note{font-size:.78rem;color:#999;line-height:1.7;margin:12px 0 24px}
 .time-machine-list-heading{display:flex;justify-content:space-between;color:#888;font-size:.78rem;border-bottom:1px solid #e8e5df;padding-bottom:10px}
@@ -36,3 +36,9 @@
 .retry-bottom-nav .retry-ticket-link{display:inline-flex;align-items:center;gap:4px}
 .retry-bottom-nav img{display:block;flex-shrink:0}
 @media(max-width:420px){.calendar-day,.calendar-blank{min-height:56px}}
+
+.time-machine-tickets{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.time-machine-month-nav{display:flex;align-items:center;justify-content:center;gap:18px;margin:16px 0 20px}
+.time-machine-month-nav select{font:inherit;font-size:.9rem;color:#666;background:none;border:0;padding:4px;cursor:pointer}
+.time-machine-month-nav button{border:0;background:none;color:#888;font-size:1.35rem;padding:4px 10px;cursor:pointer}
+.time-machine-month-nav button:disabled{color:#ddd;cursor:default}
