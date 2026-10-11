@@ -10,11 +10,11 @@ import '../../../../styles/daily-retry-ticket-preview.css';
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <div slot="above-title" id="dailyStreakHeading" class="daily-streak-heading ticket-streak-heading">
     <span id="dailyStreak" class="daily-streak"><span id="streakLabel">1일 연속 도전 중..</span><img id="flame" src="/icons/daily-streak/flame.svg" width="14" height="14" alt="" /></span>
-    <button id="walletButton" class="retry-ticket-link" type="button" aria-haspopup="dialog">다시 도전권 <span id="ticketCount">2장</span></button>
+    <a id="walletButton" class="retry-ticket-link" href="/test/daily-sudoku/time-machine/">타임머신 <span id="ticketCount">2회</span></a>
   </div>
   <p slot="rules">각 행, 열, 3×3 구역에 1부터 9까지 한 번씩 넣으세요.</p>
   <p slot="controls">칸을 선택하고 숫자를 누르세요. 메모하기 버튼이나 M 키로 후보 숫자 입력을 켜고 끌 수 있습니다.</p>
-  <div id="pastNavigation" class="retry-past-navigation" hidden><span id="pastBadge">다시 도전 · 10월 9일</span><button id="todayButton" class="retry-text-button" type="button">오늘 문제로 돌아가기</button></div>
+  <div id="pastNavigation" class="retry-past-navigation" hidden><a class="retry-text-button" href="/test/daily-sudoku/time-machine/">타임머신</a><a id="todayButton" class="retry-text-button" href="/test/daily-sudoku/tickets/">오늘 문제</a></div>
   <section id="dailyGame" aria-label="데일리 스도쿠">
     <div class="sudoku-board-tools"><button id="sudokuNotes" tabindex="-1" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
     <div id="sudokuBoard" class="sudoku-board" role="group" aria-label="스도쿠 9행 9열"></div>
@@ -25,26 +25,8 @@ import '../../../../styles/daily-retry-ticket-preview.css';
   <section slot="completion" id="successPanel" hidden aria-live="polite">
     <PuzzleCompletion id="sudokuComplete" />
     <p id="successDescription" class="retry-completion-detail"></p>
-    <button id="successTodayButton" class="retry-text-button" type="button">오늘의 스도쿠 풀기</button>
+    <a id="successTodayButton" class="retry-text-button" href="/test/daily-sudoku/tickets/">오늘의 스도쿠 풀기</a>
   </section>
-  <Fragment slot="leaderboard"><div id="sudokuRank"><div id="rankDescription" class="lb-empty">시연에서는 완료 기록이 표시되지 않습니다.</div></div><aside class="retry-preview-tools" aria-label="미리보기 조작"><p>도전권 테스트 · 실제 기록에는 반영되지 않습니다.</p><button id="demoCompleteButton" type="button">완료 상태 보기</button><button id="restartDemoButton" type="button">처음부터</button></aside></Fragment>
-  <dialog id="ticketDialog" class="retry-ticket-dialog" aria-labelledby="dialogTitle">
-    <div class="dialog-top"><span class="eyebrow">다시 도전권</span><button id="closeDialogButton" class="close-button" type="button" aria-label="닫기">×</button></div>
-    <div id="walletView">
-      <h2 id="dialogTitle">놓친 하루에 다시 도전하세요</h2>
-      <p class="dialog-description">도전권 1장으로 놓친 날짜의 문제를 열 수 있어요.<br />직접 완성하면 그 날짜가 스트릭에 반영돼요.</p>
-      <div class="wallet-summary"><span>보유 도전권</span><span id="walletCount">2장</span></div>
-      <div class="reward-progress"><div><span>다음 도전권까지</span><span id="rewardText">12문제</span></div><progress id="rewardProgress" max="30" value="18" aria-label="다음 도전권까지 완료 진행"></progress><p>데일리 30문제 완성마다 1장 · 최대 2장 보유</p></div>
-      <div class="date-heading"><span>놓친 문제</span><span>최근 7일</span></div>
-      <div id="dateList" class="date-list"></div>
-      <p class="dialog-footnote">한 번 연 문제는 언제든 이어서 풀 수 있어요.<br />과거 문제의 완료는 해당 날짜의 순위에 반영되지 않아요.</p>
-    </div>
-    <div id="confirmView" hidden>
-      <h2 id="confirmTitle">10월 9일 문제를 열까요?</h2>
-      <p class="dialog-description">다시 도전권 1장을 사용합니다.<br />문제를 완성하면 12일의 불꽃이 이어져요.</p>
-      <div class="confirmation-summary"><span id="confirmDate">261009 Daily Sudoku</span><span id="confirmBalance">보유 2장 → 1장</span></div>
-      <div class="dialog-actions"><button id="backButton" type="button">돌아가기</button><button id="useTicketButton" class="primary-button" type="button">1장 사용하고 시작</button></div>
-    </div>
-  </dialog>
+  <Fragment slot="leaderboard"><div id="sudokuRank"><div id="rankDescription" class="lb-empty">시연에서는 완료 기록이 표시되지 않습니다.</div></div><aside class="retry-preview-tools" aria-label="미리보기 조작"><p>타임머신 테스트 · 실제 기록에는 반영되지 않습니다.</p><button id="demoCompleteButton" type="button">완료 상태 보기</button><button id="restartDemoButton" type="button">처음부터</button></aside></Fragment>
 </PuzzleLayout>
 <script>import '../../../../scripts/daily-retry-ticket-preview.js';</script>

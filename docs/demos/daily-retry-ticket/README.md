@@ -1,6 +1,6 @@
 # 다시 도전권 UI 예시
 
-현재 검토용 예시는 [기존 사이트의 테스트 페이지](https://puzzle.xivnick.me/test/daily-sudoku/tickets/)다. 실제 `PuzzleLayout`, `NumberPad`, `PuzzleCompletion`, 데일리 스타일을 재사용하고 스트릭 옆에 도전권 링크만 추가한다. 구현은 `src/pages/test/daily-sudoku/tickets/index.astro`, `src/scripts/daily-retry-ticket-preview.js`, `src/styles/daily-retry-ticket-preview.css`에 있다. 아래 독립 정적 파일은 초기 시안으로, 현재 테스트 링크로 사용하지 않는다.
+현재 검토용 예시는 [기존 사이트의 데일리 테스트 페이지](https://puzzle.xivnick.me/test/daily-sudoku/tickets/)와 [타임머신 페이지](https://puzzle.xivnick.me/test/daily-sudoku/time-machine/)다. 실제 `PuzzleLayout`, `NumberPad`, `PuzzleCompletion`, 데일리 스타일을 재사용한다. 스트릭 옆의 ‘타임머신 2회’ 링크로 별도 날짜 목록에 이동하며, 날짜 선택과 사용도 팝업 없이 페이지에서 처리한다. 기존 사이트의 목록과 버튼 스타일을 사용하고 카드·진행 막대·장식 문구는 제거한다. 남은 횟수와 입력은 전용 테스트 sessionStorage에만 저장하며 실제 기록과 연결하지 않는다. 아래 독립 정적 파일은 초기 시안으로, 현재 테스트 링크로 사용하지 않는다.
 
 기존 데일리 스도쿠의 색상·너비·입력 구성을 따른 독립 정적 미리보기다. 로그인, DB, 클라우드 저장, 실제 완료 기록과 연결하지 않는다. 외부 스크립트와 폰트 없이 로컬 파일로도 열린다.
 
