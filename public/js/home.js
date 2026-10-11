@@ -79,6 +79,13 @@ const PAGE_SIZE = 10;
     }
   }
 
+  function changePage(page) {
+    const { scrollX, scrollY } = window;
+    setCurrentPage(page);
+    renderPagination();
+    window.scrollTo({ left: scrollX, top: scrollY, behavior: 'instant' });
+  }
+
   function renderPagination() {
     const links = [...document.querySelectorAll('.list a[data-puzzle-id]')];
     const visibleLinks = links;
@@ -107,9 +114,7 @@ const PAGE_SIZE = 10;
     prev.disabled = currentPage === 1;
     prev.addEventListener('click', () => {
       if (currentPage === 1) return;
-      setCurrentPage(currentPage - 1);
-      renderPagination();
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      changePage(currentPage - 1);
     });
     pager.appendChild(prev);
 
@@ -118,9 +123,7 @@ const PAGE_SIZE = 10;
       btn.textContent = page;
       btn.className = page === currentPage ? 'active' : '';
       btn.addEventListener('click', () => {
-        setCurrentPage(page);
-        renderPagination();
-        window.scrollTo({ top: 0, behavior: 'instant' });
+        changePage(page);
       });
       pager.appendChild(btn);
     }
@@ -130,9 +133,7 @@ const PAGE_SIZE = 10;
     next.disabled = currentPage === totalPages;
     next.addEventListener('click', () => {
       if (currentPage === totalPages) return;
-      setCurrentPage(currentPage + 1);
-      renderPagination();
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      changePage(currentPage + 1);
     });
     pager.appendChild(next);
   }
