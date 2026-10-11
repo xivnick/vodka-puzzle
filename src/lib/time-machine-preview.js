@@ -21,12 +21,12 @@ export function readPreview() {
       const boards = new Map();
       for (const [day, board] of stored.boards) {
         if (!isPreviewDay(day) || !Array.isArray(board.values) || board.values.length !== 81 || !board.values.every(n => Number.isInteger(n) && n >= 0 && n <= 9) || !Array.isArray(board.notes) || board.notes.length !== 81) throw new Error('Invalid preview state');
-        boards.set(day, {...createBoard(day), values:board.values, notes:board.notes.map(notes => new Set(Array.isArray(notes) ? notes.filter(n => Number.isInteger(n) && n >= 1 && n <= 9) : [])), complete:board.complete === true});
+        boards.set(day, {...createBoard(day), values:board.values, notes:board.notes.map(notes => new Set(Array.isArray(notes) ? notes.filter(n => Number.isInteger(n) && n >= 1 && n <= 9) : [])), complete:board.complete === true, ticketUsed:board.ticketUsed === true || (day !== today && !wasCompleted(day))});
       }
       if (boards.has(11)) return {tickets:stored.tickets, boards};
     }
   } catch {}
-  return {tickets:2, boards:new Map([[11, createBoard(11)]])};
+  return {tickets:1, boards:new Map([[today, createBoard(today)], [10, {...createBoard(10), ticketUsed:true}]])};
 }
 export function savePreview({tickets, boards}) {
   try { sessionStorage.setItem(storageKey, JSON.stringify({tickets, boards:[...boards].map(([day, board]) => [day, {...board, notes:board.notes.map(notes => [...notes])}])})); } catch {}

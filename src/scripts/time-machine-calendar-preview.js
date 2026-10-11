@@ -39,10 +39,15 @@ function renderMonth() {
       cell.type = 'button';
       cell.setAttribute('aria-pressed', String(day === selected));
       cell.addEventListener('click', () => { selected = day; renderMonth(); renderSelection(); });
-      cell.setAttribute('aria-label', `${month + 1}월 ${date}일, ${day === today ? '오늘, ' : ''}${complete ? '완료' : opened && day !== today ? '진행 중' : '미완료'}`);
+      cell.setAttribute('aria-label', `${month + 1}월 ${date}일, ${day === today ? '오늘, ' : ''}${complete ? '완료' : opened && day !== today ? '진행 중' : '미완료'}${board?.ticketUsed ? ', 티켓 사용' : ''}`);
     }
     const number = document.createElement('span'); number.className = 'calendar-number'; number.textContent = date;
     const status = document.createElement('span'); status.className = 'calendar-status'; status.textContent = complete ? '✓' : day === today ? '오늘' : opened ? '진행' : '';
+    if (board?.ticketUsed) {
+      status.textContent = '';
+      const icon = document.createElement('img'); icon.src = '/icons/time-machine/history.svg'; icon.width = 12; icon.height = 12; icon.alt = '';
+      status.append(icon);
+    }
     status.setAttribute('aria-hidden','true'); cell.append(number, status); grid.append(cell);
   }
   section.append(grid); calendars.append(section);
@@ -65,7 +70,7 @@ document.getElementById('departButton').addEventListener('click', () => {
   if (selected === today) { location.assign('/daily-sudoku/'); return; }
   if (!wasCompleted(selected) && !state.boards.has(selected)) {
     if (!state.tickets) return;
-    state.tickets--; state.boards.set(selected, createBoard(selected)); savePreview(state);
+    state.tickets--; state.boards.set(selected, {...createBoard(selected), ticketUsed:true}); savePreview(state);
   }
   location.assign(`${base}tickets/?day=${selected}`);
 });
