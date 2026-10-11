@@ -13,9 +13,9 @@ import '../../../../styles/daily-retry-ticket-preview.css';
   </div>
   <p slot="rules">각 행, 열, 3×3 구역에 1부터 9까지 한 번씩 넣으세요.</p>
   <p slot="controls">칸을 선택하고 숫자를 누르세요. 메모하기 버튼이나 M 키로 후보 숫자 입력을 켜고 끌 수 있습니다.</p>
-  <div id="pastNavigation" class="retry-past-navigation" hidden><a class="retry-text-button" href="/test/daily-sudoku/time-machine/">타임머신</a><a id="todayButton" class="retry-text-button" href="/test/daily-sudoku/tickets/">오늘 문제</a></div>
+  <div id="pastNavigation" class="retry-past-navigation" hidden><span>지난 문제</span><a id="todayButton" class="retry-text-button" href="/test/daily-sudoku/tickets/">오늘 문제</a></div>
   <section id="dailyGame" aria-label="데일리 스도쿠">
-    <div class="sudoku-board-tools"><a id="walletButton" class="retry-ticket-link" href="/test/daily-sudoku/time-machine/">타임머신 <span id="ticketCount">2회</span></a><button id="sudokuNotes" tabindex="-1" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <div class="sudoku-board-tools"><button id="sudokuNotes" tabindex="-1" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
     <div id="sudokuBoard" class="sudoku-board" role="group" aria-label="스도쿠 9행 9열"></div>
     <NumberPad id="sudokuNumbers" max={9} />
     <div class="bottom-buttons"><button id="sudokuErase" type="button">지우기</button><button id="sudokuReset" class="danger" type="button">초기화</button></div>
@@ -26,6 +26,6 @@ import '../../../../styles/daily-retry-ticket-preview.css';
     <p id="successDescription" class="retry-completion-detail"></p>
     <a id="successTodayButton" class="retry-text-button" href="/test/daily-sudoku/tickets/">오늘의 스도쿠 풀기</a>
   </section>
-  <Fragment slot="leaderboard"><div id="sudokuRank"><div id="rankDescription" class="lb-empty">시연에서는 완료 기록이 표시되지 않습니다.</div></div><aside class="retry-preview-tools" aria-label="미리보기 조작"><p>타임머신 테스트 · 실제 기록에는 반영되지 않습니다.</p><button id="demoCompleteButton" type="button">완료 상태 보기</button><button id="restartDemoButton" type="button">처음부터</button></aside></Fragment>
+  <Fragment slot="leaderboard"><div id="sudokuRank"><div id="rankDescription" class="lb-empty">시연에서는 완료 기록이 표시되지 않습니다.</div></div><aside class="retry-preview-tools" aria-label="미리보기 조작"><p>타임머신 테스트 · 실제 기록에는 반영되지 않습니다.</p><button id="demoCompleteButton" type="button">완료 상태 보기</button><button id="restartDemoButton" type="button">처음부터</button></aside><nav class="retry-bottom-nav" aria-label="지난 문제"><a id="walletButton" class="retry-ticket-link" href="/test/daily-sudoku/time-machine/"><img src="/icons/time-machine/history.svg" width="14" height="14" alt="" />타임머신 <span id="ticketCount">2회</span></a></nav></Fragment>
 </PuzzleLayout>
 <script>import '../../../../scripts/daily-retry-ticket-preview.js';</script>

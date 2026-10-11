@@ -32,5 +32,7 @@
 .calendar-status{min-height:12px;font-size:.62rem;color:#999;line-height:1.2}
 .calendar-day.complete .calendar-status{color:#7e927b}
 .time-machine-calendar-key{margin-top:18px;font-size:.7rem;color:#aaa;line-height:1.7}
-.sudoku-board-tools .retry-ticket-link{margin-right:auto;align-self:center;font-size:.82rem}
+.retry-bottom-nav{display:flex;justify-content:center;margin-top:32px}
+.retry-bottom-nav .retry-ticket-link{display:inline-flex;align-items:center;gap:4px}
+.retry-bottom-nav img{display:block;flex-shrink:0}
 @media(max-width:420px){.calendar-day,.calendar-blank{min-height:56px}}
