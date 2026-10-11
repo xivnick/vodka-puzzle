@@ -3,7 +3,8 @@ import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
 import { size, puzzles } from '../lib/star-battle.js';
 const { puzzleId } = Astro.props;
-const {title, regions} = puzzles[puzzleId];
+const {title, regions, emptyRegions = 0} = puzzles[puzzleId];
+const subtitle = emptyRegions ? '한 영역은 비우고, 나머지 영역에는 별을 2개씩 채우세요' : '규칙에 따라 일부 칸에 별을 채우세요';
 const boundaries = [];
 for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
   if (r < size - 1 && regions[r][c] !== regions[r + 1][c]) boundaries.push([c, r + 1, c + 1, r + 1]);
@@ -11,11 +12,11 @@ for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
 }
 ---
 <PuzzleLayout {title} {puzzleId}
-  subtitle="규칙에 따라 일부 칸에 별을 채우세요"
-  description="각 가로줄·세로줄·영역에 서로 닿지 않는 별을 2개씩 채우는 스타배틀">
+  {subtitle}
+  description={emptyRegions ? '한 영역은 별 없이 비우고, 각 가로줄·세로줄과 나머지 영역에 서로 닿지 않는 별을 2개씩 채우는 스타 배틀(침입자)' : '각 가로줄·세로줄·영역에 서로 닿지 않는 별을 2개씩 채우는 스타배틀'}>
   <div slot="rules">
     규칙에 따라 일부 칸에 별을 채우세요.<br />
-    각 가로줄/세로줄/영역에 별이 2개씩 있습니다.<br />
+    {emptyRegions ? <Fragment>각 가로줄과 세로줄에 별이 정확히 2개씩 있습니다.<br />한 영역에는 별이 없어야 하며, 나머지 모든 영역에는 별이 정확히 2개씩 있어야 합니다.<br /></Fragment> : <Fragment>각 가로줄/세로줄/영역에 별이 2개씩 있습니다.<br /></Fragment>}
     별끼리는 변으로도, 대각선으로도 닿지 않습니다.
   </div>
   <div slot="controls">
@@ -23,10 +24,10 @@ for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
     오른쪽 위 버튼이나 M 키로 두 입력을 바꾸세요.<br />
     같은 표시를 다시 입력하거나 지우기 버튼으로 지우세요.
   </div>
-  <section id="starBattleGame" data-puzzle-id={puzzleId} aria-label="스타배틀">
+  <section id="starBattleGame" data-puzzle-id={puzzleId} aria-label={emptyRegions ? '스타 배틀(침입자)' : '스타배틀'}>
     <div class="board-tools"><button id="starBattleNotes" type="button" aria-pressed="false">길게 눌러 x 표시</button></div>
     <div class="board-wrap">
-      <div id="starBattleBoard" class="star-board" role="group" aria-label="10행 10열, 각 줄과 영역에 별 2개">
+      <div id="starBattleBoard" class="star-board" role="group" aria-label={emptyRegions ? '10행 10열, 각 줄에 별 2개, 한 영역은 별 없이 나머지 영역에 별 2개' : '10행 10열, 각 줄과 영역에 별 2개'}>
         {regions.flat().map((region, i) => <button type="button" class="star-cell" data-cell={i}
           tabindex={i === 0 ? 0 : -1} aria-label={`${Math.floor(i / size) + 1}행 ${i % size + 1}열, 영역 ${region + 1}, 빈칸`} />)}
       </div>

@@ -14,6 +14,23 @@ export const regions = [
   [8,8,8,8,8,8,8,8,8,2],
 ];
 export const puzzles = {
+  '261011_01': {
+    title: '261011 스타 배틀(침입자)',
+    emptyRegions: 1,
+    // Region transcription of the supplied photo. No solution is stored.
+    regions: [
+      [0,0,0,0,0,0,0,1,1,1],
+      [0,0,2,0,2,0,0,1,1,1],
+      [0,2,2,2,2,2,3,3,1,1],
+      [0,0,2,2,2,4,3,3,3,3],
+      [0,2,2,4,4,4,5,5,3,3],
+      [6,6,2,4,4,4,5,5,5,5],
+      [6,6,6,6,7,7,8,8,5,5],
+      [9,9,6,6,7,7,8,8,10,10],
+      [9,9,9,7,7,8,8,10,10,10],
+      [9,9,9,7,7,8,8,10,10,10],
+    ],
+  },
   '261010_01': {title:'261010 스타배틀 1', regions},
   '261010_02': {
     title:'261010 스타배틀 2',
@@ -36,14 +53,14 @@ function makeUnits(regionGrid) {
   return [
     ...Array.from({length:size}, (_, r) => Array.from({length:size}, (_, c) => r * size + c)),
     ...Array.from({length:size}, (_, c) => Array.from({length:size}, (_, r) => r * size + c)),
-    ...Array.from({length:size}, (_, region) => flat.flatMap((id, i) => id === region ? [i] : [])),
+    ...[...new Set(flat)].map(region => flat.flatMap((id, i) => id === region ? [i] : [])),
   ];
 }
 const puzzleUnits = new Map(Object.values(puzzles).map(puzzle => [puzzle.regions, makeUnits(puzzle.regions)]));
 export const units = puzzleUnits.get(regions);
 
 // 0 = blank, 1 = star, 2 = cross note.
-export function analyze(values, regionGrid = regions) {
+export function analyze(values, regionGrid = regions, emptyRegions = 0) {
   const units = puzzleUnits.get(regionGrid);
   const bad = new Set();
   const counts = units.map(unit => unit.filter(i => values[i] === 1).length);
@@ -65,7 +82,10 @@ export function analyze(values, regionGrid = regions) {
   return {
     bad, counts,
     complete: values.length === size * size && values.every(n => [0,1,2].includes(n))
-      && counts.every(count => count === starsPerUnit) && bad.size === 0,
+      && counts.slice(0, size * 2).every(count => count === starsPerUnit)
+      && counts.slice(size * 2).filter(count => count === 0).length === emptyRegions
+      && counts.slice(size * 2).every(count => count === 0 || count === starsPerUnit)
+      && bad.size === 0,
   };
 }
 
