@@ -28,7 +28,6 @@ function streak() {
 function render() {
   const board = boards.get(currentDay), past = currentDay !== today, run = streak();
   const todayComplete = boards.get(today).complete;
-  $('ticketCount').textContent = `${tickets}회`;
   $('pageTitle').textContent = titleForDay(currentDay);
   $('pastNavigation').hidden = !past;
 
