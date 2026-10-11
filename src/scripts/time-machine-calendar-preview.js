@@ -57,7 +57,6 @@ function renderSelection() {
   const opened = Boolean(board);
   document.getElementById('departureTitle').textContent = `${date.getUTCFullYear()}년 ${date.getUTCMonth() + 1}월 ${date.getUTCDate()}일`;
   document.getElementById('departureStatus').textContent = complete ? '완료' : selected === today ? '오늘의 문제' : opened ? '진행 중' : '미완료';
-  document.getElementById('departureDescription').textContent = selected === today ? '티켓 없이 풀 수 있습니다.' : complete ? '완성한 문제를 다시 확인할 수 있습니다.' : opened ? '사용한 티켓으로 이어서 풀 수 있습니다.' : state.tickets ? '티켓 1장을 사용하여 이 문제를 엽니다.' : '사용할 티켓이 없습니다.';
   const button = document.getElementById('departButton');
   button.textContent = selected === today ? '데일리 스도쿠 풀기' : complete ? '완료한 문제 보기' : opened ? '이어서 풀기' : '티켓 사용하기';
   button.disabled = selected !== today && !complete && !opened && !state.tickets;

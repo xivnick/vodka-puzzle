@@ -38,7 +38,7 @@
 @media(max-width:420px){.calendar-day,.calendar-blank{min-height:56px}}
 
 .time-machine-toolbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:6px 0 18px;min-height:32px}
-.time-machine-tickets{display:inline-flex;justify-self:start;align-items:center;gap:6px;color:#888;font-size:.8rem;line-height:18px;font-variant-numeric:tabular-nums}
+.time-machine-tickets{display:inline-flex;justify-self:end;align-items:center;gap:6px;color:#888;font-size:.8rem;line-height:18px;font-variant-numeric:tabular-nums}
 .time-machine-tickets img{display:block;flex-shrink:0}
 .time-machine-tickets span{display:flex;align-items:center;height:18px}
 .time-machine-month-nav{display:flex;align-items:center;gap:8px}
@@ -46,7 +46,7 @@
 .time-machine-month-nav button{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:0;background:none;color:#888;padding:0;cursor:pointer}
 .time-machine-month-nav button:hover:not(:disabled){color:#444;background:#faf8f4}
 .time-machine-month-nav button:disabled{color:#ddd;cursor:default}
-.time-machine-today-button{justify-self:end;border:1px solid #e8e5df;border-radius:3px;background:none;color:#888;font:inherit;font-size:.73rem;line-height:24px;padding:0 9px;cursor:pointer}
+.time-machine-today-button{justify-self:start;border:1px solid #e8e5df;border-radius:3px;background:none;color:#888;font:inherit;font-size:.73rem;line-height:24px;padding:0 9px;cursor:pointer}
 .time-machine-today-button:hover{color:#555;background:#faf8f4}
 
 .calendar-weekday.sunday{color:#b96b6b}
@@ -57,5 +57,4 @@ button.calendar-day.selected-date{background:#f4f1eb}
 .time-machine-selection-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .time-machine-page .time-machine-selection h2{margin:0;font-size:.9rem;color:#555}
 .time-machine-selection-heading>span{font-size:.73rem;color:#999}
-.time-machine-selection .time-machine-note{margin:8px 0 0}
 .time-machine-selection .use-btn{margin-top:16px;font-size:.85rem;padding:11px}
