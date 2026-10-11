@@ -4,11 +4,18 @@ import {units,dailyDate} from '../lib/sudoku.js';
 import {readPuzzleCache,writePuzzleCache,clearPuzzleCache} from '../lib/daily-sudoku-cache.js';
 const $=id=>document.getElementById(id),message=text=>{$('sudokuMessage').textContent=text;};
 let data,state,selected=0,notesMode=false,key,submitting=false,loading=false,closed=false,rollover,completedAnswer=null,rejectedAnswer=null,ready=false,reinitPending=false;
-const requested=new URLSearchParams(location.search).get('day');
+const params=new URLSearchParams(location.search);
+const requested=params.get('day');
+const timeMachine=params.get('time-machine')==='1';
 const day=/^\d{4}-\d{2}-\d{2}$/.test(requested||'')?requested:null;
 function updateStreak(result){
  const element=$('dailyStreak');
- renderStreak(element,result?.day===result?.current_day?result?.streak:null,{label:true});
+ if(result?.day!==result?.current_day && result?.day && (timeMachine || result.ticket_opened)) {
+  element.hidden=false;
+  const label=document.createElement('span');label.textContent='시간을 되돌리는 중..';
+  const icon=document.createElement('img');icon.src='/icons/time-machine/history.svg';icon.width=14;icon.height=14;icon.alt='';
+  element.replaceChildren(label,icon);element.setAttribute('aria-label','시간을 되돌리는 중..');
+ } else renderStreak(element,result?.day===result?.current_day?result?.streak:null,{label:true});
  $('dailyStreakHeading').hidden=element.hidden;
 }
 function clean(saved){return {values:Array.from({length:81},(_,i)=>Number(data.givens[i])||((Number.isInteger(saved?.values?.[i])&&saved.values[i]>=0&&saved.values[i]<=9)?saved.values[i]:0)),notes:Array.from({length:81},(_,i)=>[...new Set((Array.isArray(saved?.notes?.[i])?saved.notes[i]:[]).filter(n=>Number.isInteger(n)&&n>=1&&n<=9))])};}
@@ -64,17 +71,22 @@ async function submit(){
   message(e.message?.includes('CLOSED')?'순위 집계가 마감되었습니다.':e.message?.includes('PROFILE_REQUIRED')?'닉네임을 설정해 주세요.':'제출하지 못했습니다. 잠시 후 자동으로 다시 시도합니다.');
  }finally{submitting=false;if(state?.values.every(Boolean)&&state.values.join('')!==answer)submit();}
 }
-async function refreshRanks(){const requestedDay=data?.day;if(!requestedDay)return;const [result,moonSolvers,flowerSolvers,bombSolvers]=await Promise.all([context(requestedDay),getMoonBadgeSolvers(),getFlowerBadgeSolvers(),getBombBadgeSolvers()]);if(data?.day!==requestedDay)return;updateStreak(result);if(!day&&result.current_day!==data.day){await init();return;}rankings($('sudokuRank'),result.rankings,{moonSolvers,flowerSolvers,bombSolvers});const mine=result.rankings.find(r=>r.is_me);if(mine){completedAnswer=state?.values.every(Boolean)?state.values.join(''):null;if(isSolved())complete();}closed=data.day!==result.current_day;$('dailyStatus').textContent=closed?'마감':'';}
+async function refreshRanks(){const requestedDay=data?.day;if(!requestedDay)return;const [result,moonSolvers,flowerSolvers,bombSolvers]=await Promise.all([context(requestedDay),getMoonBadgeSolvers(),getFlowerBadgeSolvers(),getBombBadgeSolvers()]);if(data?.day!==requestedDay)return;updateStreak(result);if(!day&&result.current_day!==data.day){await init();return;}rankings($('sudokuRank'),result.rankings,{moonSolvers,flowerSolvers,bombSolvers});const mine=result.rankings.find(r=>r.is_me);if(mine){completedAnswer=state?.values.every(Boolean)?state.values.join(''):null;if(isSolved())complete();}const previouslyClosed=closed;Object.assign(data,result);closed=data.can_submit===false || data.day!==data.current_day && data.can_submit!==true;
+ if(previouslyClosed&&!closed&&!data.my_completed)completedAnswer=null;
+ $('dailyStatus').textContent=closed&&!data.my_completed?'마감':'';}
 function showPuzzle(puzzle, preserve=false){
  data=puzzle;updateStreak(puzzle);document.querySelector('h1').textContent=title(data.day);document.title=`${title(data.day)} · vodka puzzle`;
  $('dailyGame').hidden=false;$('dailyUnavailable').hidden=true;
  for(const selector of ['#cloudBtns','.help-toggles','.lb-section'])document.querySelector(selector).hidden=false;
- closed=data.day!==data.current_day;
+ const previouslyClosed=closed;
+ closed=data.can_submit===false || data.day!==data.current_day && data.can_submit!==true;
+ if(previouslyClosed&&!closed&&!data.my_completed)completedAnswer=null;
  if(!preserve){
   key=`daily-sudoku:local:${data.day}`;
   let saved=null;try{saved=loadLocalDay(data.day);}catch{}
-  state=clean(saved);completedAnswer=null;rejectedAnswer=null;
+  state=clean(data.my_completed && data.completion_state ? data.completion_state : saved || (data.ticket_opened ? data.saved_progress : null));completedAnswer=null;rejectedAnswer=null;
  }
+ if(data.my_completed && data.completion_state){state=clean(data.completion_state);completedAnswer=isSolved()?state.values.join(''):null;}
  render();
 }
 function showLoading(){
@@ -109,7 +121,7 @@ async function init(){
   const preserve=ready&&data?.day===result.day&&data?.givens===result.givens;
   showPuzzle(result,preserve);setReady(true);window.initCloudBtns();writePuzzleCache(localStorage,result);
   if(!day)historyReplace(result.day);
-  rankings($('sudokuRank'),result.rankings,{moonSolvers,flowerSolvers,bombSolvers});$('dailyStatus').textContent=closed?'마감':'';
+  rankings($('sudokuRank'),result.rankings,{moonSolvers,flowerSolvers,bombSolvers});$('dailyStatus').textContent=closed&&!data.my_completed?'마감':'';
   submit();
  }catch{
   if(ready&&data?.available&&data.day===(day||dailyDate())){rankMessage($('sudokuRank'),'기록을 불러오지 못했습니다.');$('dailyStatus').textContent='';}

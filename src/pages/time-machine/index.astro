@@ -1,0 +1,29 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import '../../styles/time-machine.css';
+import '../../styles/nickname.css';
+---
+<PageLayout title="타임머신" subtitle="티켓을 사용하여 지나간 문제를 풀 수 있습니다">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <div class="time-machine-page">
+    <p id="timeMachineMessage" class="time-machine-message" role="status">달력을 불러오는 중...</p>
+    <section id="dateSelection">
+      <div class="time-machine-toolbar">
+        <button id="todayMonth" class="time-machine-today-button" type="button" disabled>오늘</button>
+        <div class="time-machine-month-nav">
+          <button id="previousMonth" type="button" aria-label="이전 달" disabled><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg></button>
+          <select id="calendarMonth" aria-label="달력 월 선택" disabled></select>
+          <button id="nextMonth" type="button" aria-label="다음 달" disabled><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg></button>
+        </div>
+        <span class="time-machine-tickets" aria-label="보유 티켓"><span id="remainingUses">—</span><img src="/icons/time-machine/ticket.svg" width="18" height="18" alt="" /></span>
+      </div>
+      <div id="pastDates" class="time-machine-calendars" aria-busy="true"></div>
+    </section>
+    <section id="departure" class="time-machine-selection" aria-live="polite" hidden>
+      <div class="time-machine-selection-heading"><h2 id="departureTitle"></h2><span id="departureStatus"></span></div>
+      <button id="departButton" class="use-btn" type="button" disabled>데일리 스도쿠 풀기</button>
+    </section>
+    <button id="timeMachineRetry" class="time-machine-today-button" type="button" hidden>다시 확인</button>
+  </div>
+</PageLayout>
+<script>import '../../scripts/time-machine.js';</script>

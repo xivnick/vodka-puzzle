@@ -45,8 +45,19 @@ DB 권한 검증 도구는 관련 DB 작업 때만 적용 범위를 확인하고
 | `scripts/verify-puzzle-management.py` | 관리자 권한, 공개·예약 상태, 완료·클라우드 차단, 수정 충돌과 변경 이력 |
 | `scripts/verify-daily-streak.py` | 스트릭 집계와 계정 분리 |
 | `scripts/verify-daily-streak-rankings.py` | 스트릭 순위와 동률 처리 |
+| `scripts/verify-time-machine.py` | 초기 티켓 지급, 중복 차감·계정 접근 차단, 과거 완료 저장과 스트릭 복원 |
 
 관리 API 토큰은 `~/.supabase/access-token`에서 읽고 출력하거나 배포하지 않는다. 로컬 비공개 백업은 `~/Documents/Backups/vodka-puzzle/`에 둔다. 이전 운영·전환 기록은 [보관된 README](history/README-2026-09-29.md)에 남아 있다.
+
+## 타임머신
+
+`/time-machine/`은 목록과 데일리 화면에 진입 버튼을 노출하지 않은 별도 페이지다. 달력에서 오늘을 선택하면 기본 데일리 화면으로 이동하고, 지난 미완료 문제는 티켓 사용 버튼으로 연다. 완료한 문제나 이미 티켓으로 연 문제는 추가 차감 없이 다시 볼 수 있다.
+
+티켓은 Supabase의 계정별 `private.time_machine_wallets`에 저장한다. 날짜별 사용 권한은 `private.time_machine_openings`, 지급·차감 이력은 `private.time_machine_ticket_events`에 보관한다. 브라우저가 테이블을 직접 수정할 수 없고, `time_machine_context`는 본인 수량·달력 상태만 반환한다. `open_time_machine`은 티켓 차감과 날짜 권한 생성을 같은 트랜잭션에서 처리한다.
+
+`20261011_time_machine.sql`은 2026-10-11에 한 번 적용했다. 적용 당시 기존 39개 계정에 1장씩 지급했고 신규 구글 계정은 첫 인증된 타임머신 조회 때 한 번 지급한다. 이미 적용한 마이그레이션을 재실행하지 않는다. 자동 추가 지급 규칙은 아직 연결하지 않았다.
+
+티켓으로 연 날짜는 마감 후에도 기존 완료 API로 기록과 완료 보드를 저장할 수 있다. 완료 날짜를 기준으로 스트릭을 다시 집계하므로 비어 있던 날짜를 완료하면 이어진 연속 도전 기록에 반영된다. 사용 권한은 계정별로 확인하며 URL 매개변수만으로 과거 완료 권한을 얻을 수 없다. DB 검증은 임시 계정과 날짜를 만들고 전부 롤백한다.
 
 ## 문제 목록과 공개 관리
 
