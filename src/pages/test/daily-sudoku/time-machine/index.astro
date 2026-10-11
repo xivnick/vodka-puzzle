@@ -8,21 +8,20 @@ import '../../../../styles/nickname.css';
   <div class="time-machine-page">
     <section id="dateSelection">
       <div class="time-machine-toolbar">
-        <button id="todayMonth" class="time-machine-today-button" type="button">오늘</button>
+        <span class="time-machine-tickets" aria-label="보유 티켓"><img src="/icons/time-machine/ticket.svg" width="18" height="18" alt="" /><span id="remainingUses">2</span></span>
         <div class="time-machine-month-nav">
           <button id="previousMonth" type="button" aria-label="이전 달"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg></button>
           <select id="calendarMonth" aria-label="달력 월 선택"></select>
           <button id="nextMonth" type="button" aria-label="다음 달"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg></button>
         </div>
-        <span class="time-machine-tickets" aria-label="보유 티켓"><img src="/icons/time-machine/ticket.svg" width="18" height="18" alt="" /><span id="remainingUses">2</span></span>
+        <button id="todayMonth" class="time-machine-today-button" type="button">오늘</button>
       </div>
       <div id="pastDates" class="time-machine-calendars"></div>
     </section>
-    <section id="departure" hidden>
-      <h2 id="departureTitle">261009 Daily Sudoku</h2>
-      <p id="departureDescription" class="time-machine-note">타임머신 1회를 사용합니다.</p>
-      <button id="departButton" class="use-btn" type="button">이 날짜로 이동</button>
-      <a class="time-machine-back" href="/test/daily-sudoku/time-machine/">달력으로</a>
+    <section id="departure" class="time-machine-selection" aria-live="polite">
+      <div class="time-machine-selection-heading"><h2 id="departureTitle">2026년 10월 11일</h2><span id="departureStatus">오늘의 문제</span></div>
+      <p id="departureDescription" class="time-machine-note">티켓 없이 풀 수 있습니다.</p>
+      <button id="departButton" class="use-btn" type="button">데일리 스도쿠 풀기</button>
     </section>
     <p class="time-machine-test-note">테스트 화면 · 실제 기록에는 반영되지 않습니다.</p>
   </div>
