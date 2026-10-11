@@ -32,5 +32,5 @@
 .calendar-status{min-height:12px;font-size:.62rem;color:#999;line-height:1.2}
 .calendar-day.complete .calendar-status{color:#7e927b}
 .time-machine-calendar-key{margin-top:18px;font-size:.7rem;color:#aaa;line-height:1.7}
-.retry-time-machine-position{display:flex;justify-content:flex-end;margin-top:10px}
+.sudoku-board-tools .retry-ticket-link{margin-right:auto;align-self:center;font-size:.82rem}
 @media(max-width:420px){.calendar-day,.calendar-blank{min-height:56px}}
