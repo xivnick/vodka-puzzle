@@ -45,6 +45,7 @@ function renderMonth() {
   }
   section.append(grid); calendars.append(section);
 }
+document.getElementById('todayMonth').addEventListener('click', () => { monthSelect.value = '0'; renderMonth(); });
 monthSelect.addEventListener('change', renderMonth);
 previousMonth.addEventListener('click', () => { monthSelect.value = Number(monthSelect.value) + 1; renderMonth(); });
 nextMonth.addEventListener('click', () => { monthSelect.value = Number(monthSelect.value) - 1; renderMonth(); });
