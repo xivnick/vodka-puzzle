@@ -30,7 +30,9 @@ const managed = !preview && /^\d{6}_\d{2}$/.test(puzzleId || '');
   : !preview && showCloud && <div class="cloud-btns" id="cloudBtns" style="display:none"><button class="cloud-btn" onclick="handleCloudSave()">저장하기</button><button class="cloud-btn" onclick="handleCloudLoad()">불러오기</button></div>}
 {hasCompletion && <div class="completion"><slot name="completion" /></div>}
 <slot name="after-cloud" />
-{(showLeaderboard || preview && showPreviewLeaderboard) && <div class="lb-section"><div class="lb-title">푼 사람</div><div id="leaderboard"><slot name="leaderboard">{preview && <div class="lb-empty">시연에서는 완료 기록이 표시되지 않습니다.</div>}</slot></div></div>}</div>
+{(showLeaderboard || preview && showPreviewLeaderboard) && <div class="lb-section"><div class="lb-title">푼 사람</div><div id="leaderboard"><slot name="leaderboard">{preview && <div class="lb-empty">시연에서는 완료 기록이 표시되지 않습니다.</div>}</slot></div></div>}
+<slot name="after-leaderboard" />
+</div>
 <script is:inline define:vars={{puzzleId, showLeaderboard, hasCustomLeaderboard, preview, managed}}>window.addEventListener('DOMContentLoaded',async()=>{
   const panels=[['rulesToggle','rulesBox'],['controlsToggle','controlsBox']]
     .map(([buttonId,panelId])=>[document.getElementById(buttonId),document.getElementById(panelId)])
