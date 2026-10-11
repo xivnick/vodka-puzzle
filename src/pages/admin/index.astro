@@ -27,8 +27,8 @@ import '../../styles/admin.css';
         <label for="adminTitle">제목</label><input id="adminTitle" maxlength="120" required />
         <label for="adminSummary">요약설명</label><textarea id="adminSummary" maxlength="500" rows="3" required></textarea>
         <label for="adminType">문제 종류</label><input id="adminType" maxlength="80" required />
-        <label for="adminDifficulty">난이도</label><input id="adminDifficulty" maxlength="40" placeholder="예: 쉬움, 보통, 어려움" />
-        <p class="admin-help">비워두면 미설정으로 저장됩니다. 난이도는 아직 공개 화면에 표시하지 않습니다.</p>
+        <label for="adminDifficulty">난이도</label><input id="adminDifficulty" maxlength="40" placeholder="쉬움, 중간, 어려움" />
+        <p class="admin-help">목록에 마름모 1·2·3개로 표시합니다. 비워두면 표시하지 않습니다.</p>
         <label for="adminState">공개 상태</label><select id="adminState"><option value="draft">초안</option><option value="test">테스트</option><option value="published">공개 / 예약 공개</option></select>
         <p class="admin-help">초안과 테스트는 목록에 표시되지 않으며, 완료 기록과 클라우드 저장을 사용하지 않습니다.</p>
         <label for="adminDate">공개 일시 (한국 시간)</label><input id="adminDate" type="datetime-local" step="1" />

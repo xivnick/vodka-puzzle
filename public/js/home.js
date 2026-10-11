@@ -12,6 +12,26 @@
 }
 
 const PAGE_SIZE = 10;
+  function createDifficultyMark(value) {
+    const labels = {
+      '쉬움': 1, '하': 1, easy: 1,
+      '중간': 2, '보통': 2, '중': 2, medium: 2,
+      '어려움': 3, '상': 3, hard: 3,
+    };
+    const level = labels[typeof value === 'string' ? value.trim().toLowerCase() : ''];
+    if (![1, 2, 3].includes(level)) return null;
+    const mark = document.createElement('span');
+    mark.className = 'puzzle-difficulty';
+    mark.setAttribute('role', 'img');
+    mark.setAttribute('aria-label', `난이도 ${['쉬움', '중간', '어려움'][level - 1]}`);
+    for (let index = 0; index < level; index += 1) {
+      const diamond = document.createElement('span');
+      diamond.className = 'difficulty-diamond';
+      diamond.setAttribute('aria-hidden', 'true');
+      mark.append(diamond);
+    }
+    return mark;
+  }
   async function loadPuzzleList() {
     const status = document.getElementById('puzzleListStatus');
     const list = document.getElementById('puzzleList');
@@ -26,6 +46,8 @@ const PAGE_SIZE = 10;
         title.className = 'title';
         title.textContent = puzzle.title;
         link.append(title);
+        const difficulty = createDifficultyMark(puzzle.difficulty);
+        if (difficulty) link.append(difficulty);
         list.append(link);
       }
       status.hidden = puzzles.length > 0;
