@@ -1,0 +1,44 @@
+---
+import PuzzleLayout from '../../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from '../../components/PuzzleCompletion.astro';
+import NumberPad from '../../components/NumberPad.astro';
+import '../../styles/daily-sudoku.css';
+import { givens } from '../../lib/visual-sudoku.js';
+const fixed = [...givens].map(Number);
+const puzzleId = '261011_02';
+---
+<PuzzleLayout title="261011 스도쿠 시안" {puzzleId}
+  subtitle="숫자가 들어갈 위치를 찾아 스도쿠를 완성하세요"
+  showCloud={false} showLeaderboard={false}>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <div slot="rules">
+    빈칸에 1부터 9까지의 숫자를 채우세요.<br />
+    각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9가 한 번씩 들어가야 합니다.<br />
+  </div>
+  <div slot="controls">
+    칸을 누른 뒤 숫자 버튼으로 입력하고, 지우기 버튼으로 지우세요.<br />
+    메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.
+  </div>
+  <section id="visualGame" data-puzzle-id={puzzleId} aria-label="스도쿠">
+    <div class="sudoku-board-tools"><button id="visualNotes" class="sudoku-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>
+    <div id="visualBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
+      {fixed.map((n, i) => <button type="button"
+        class:list={['sudoku-cell', { given: !!n }]}
+        data-cell={i} tabindex={i === 0 ? 0 : -1}
+        aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${n || '빈칸'}${n ? ', 고정 숫자' : ''}`}>{n || ''}</button>)}
+    </div>
+    <NumberPad id="visualNumbers" max={9} />
+    <div class="bottom-buttons">
+      <button id="visualErase" type="button">지우기</button>
+      <button id="visualReset" type="button" class="danger">초기화</button>
+    </div>
+  </section>
+  <PuzzleCompletion slot="completion" id="visualComplete" />
+</PuzzleLayout>
+<script>import '../../scripts/visual-sudoku.js';</script>
+<style>
+  #visualGame { width:100%; }
+  #visualBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
+  #visualBoard .sudoku-cell.conflict { background:#fbeaea; }
+
+</style>

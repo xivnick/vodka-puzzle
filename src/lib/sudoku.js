@@ -15,7 +15,7 @@ function combinations(items, size) {
  }
  choose(0,[]);return result;
 }
-export function grade(input) {
+export function grade(input, {singleMaxEmpty=9, pointingOnly=false, allowSubsets=true}={}) {
  const techniques={single:0,hiddenSingle:0,locked:0,pointing:0,claiming:0,pair:0,hiddenPair:0,triple:0,hiddenTriple:0};
  const unfinished=()=>({solved:false,techniques,difficulty:'ungraded'});
  if(typeof input!=='string'||!/^[0-9]{81}$/.test(input))return unfinished();
@@ -44,9 +44,10 @@ export function grade(input) {
   if(board.every(Boolean))return {solved:true,techniques,solution:board.join(''),difficulty:techniques.locked+techniques.pair+techniques.hiddenPair+techniques.triple+techniques.hiddenTriple?'medium':'easy'};
   if(candidates.some((c,i)=>!board[i]&&!c.size))break;
   let changed=false;
-  for(let i=0;i<81;i++)if(!board[i]&&candidates[i].size===1){place(i,[...candidates[i]][0],'single');changed=true;break;}if(changed)continue;
+  for(let i=0;i<81;i++)if(!board[i]&&candidates[i].size===1&&units.some(u=>u.includes(i)&&u.filter(j=>!board[j]).length<=singleMaxEmpty)){place(i,[...candidates[i]][0],'single');changed=true;break;}if(changed)continue;
   outer:for(const u of units)for(let n=1;n<=9;n++){const cells=u.filter(i=>candidates[i].has(n));if(cells.length===1){place(cells[0],n,'hiddenSingle');changed=true;break outer;}}if(changed)continue;
   locked:for(let a=0;a<units.length;a++)for(let n=1;n<=9;n++){
+   if(pointingOnly&&a<18)continue;
    const u=units[a],cells=u.filter(i=>candidates[i].has(n));if(cells.length<2)continue;
    for(let b=0;b<units.length;b++){
     if((a<18)===(b<18))continue;
@@ -55,7 +56,7 @@ export function grade(input) {
     if(targets.length){targets.forEach(i=>candidates[i].delete(n));techniques.locked++;techniques[a>=18?'pointing':'claiming']++;changed=true;break locked;}
    }
   }if(changed)continue;
-  if(subset(2,false)||subset(2,true)||subset(3,false)||subset(3,true))continue;
+  if(allowSubsets&&(subset(2,false)||subset(2,true)||subset(3,false)||subset(3,true)))continue;
   break;
  }
  return unfinished();
@@ -79,11 +80,11 @@ export function generateComplete(random=Math.random) {
  if(!fill())throw new Error('Could not generate complete board');
  return board.join('');
 }
-export function generateDaily(random=Math.random) {
+export function generateDaily(random=Math.random, options={}) {
  const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
  const board=[...generateComplete(random)];
- for(const i of shuffle(Array.from({length:81},(_,i)=>i))){const old=board[i];board[i]='0';if(!grade(board.join('')).solved)board[i]=old;}
- const result=grade(board.join(''));return {givens:board.join(''),...result};
+ for(const i of shuffle(Array.from({length:81},(_,i)=>i))){const old=board[i];board[i]='0';if(!grade(board.join(''),options).solved)board[i]=old;}
+ const result=grade(board.join(''),options);return {givens:board.join(''),...result};
 }
 export function generateMedium(random=Math.random) {
  for(let attempt=0;attempt<3000;attempt++){const puzzle=generateDaily(random);if(puzzle.difficulty==='medium')return puzzle;}
