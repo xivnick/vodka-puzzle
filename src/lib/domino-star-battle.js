@@ -46,6 +46,7 @@ for (let r=0;r<size;r++) for (let c=0;c<size;c++) {
   if (c<size-1) edges.push({cells:[cell,cell+1], x:c+1, y:r+.5, direction:'vertical'});
   if (r<size-1) edges.push({cells:[cell,cell+size], x:c+.5, y:r+1, direction:'horizontal'});
 }
+for (const edge of edges) edge.regionBoundary = regions[edge.cells[0]] !== regions[edge.cells[1]];
 export function analyze(values) {
   const counts=Array(size*2+region).fill(0), bad=new Set(), owners=Array.from({length:size*size},()=>[]);
   const edgeUnits=edges.map(edge => [...new Set(edge.cells.map(i=>Math.floor(i/size))),
@@ -57,7 +58,7 @@ export function analyze(values) {
   });
   values.forEach((value,i)=> {
     if (value!==1 || !edges[i]) return;
-    if (edgeUnits[i].some(unit=>counts[unit]>2)) bad.add(i);
+    if (edges[i].regionBoundary || edgeUnits[i].some(unit=>counts[unit]>2)) bad.add(i);
     for (const cell of edges[i].cells) {
       const r=Math.floor(cell/size),c=cell%size;
       for (let dr=-1;dr<=1;dr++) for (let dc=-1;dc<=1;dc++) {

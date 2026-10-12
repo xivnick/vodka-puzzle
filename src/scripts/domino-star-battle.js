@@ -30,7 +30,7 @@ function render() {
     cell.classList.toggle('note', values[i] === 2);
     cell.classList.toggle('conflict', bad.has(i));
     cell.tabIndex = i === selected ? 0 : -1;
-    cell.setAttribute('aria-label', `${edges[i].cells.map(cell => `${Math.floor(cell / size) + 1}행 ${cell % size + 1}열`).join('과 ')} 사이, ${['빈 변','별','× 메모'][values[i]]}${bad.has(i) ? ', 규칙 위반' : ''}`);
+    cell.setAttribute('aria-label', `${edges[i].cells.map(cell => `${Math.floor(cell / size) + 1}행 ${cell % size + 1}열`).join('과 ')} 사이${edges[i].regionBoundary ? ', 영역 경계, 별 입력 불가' : ''}, ${['빈 변','별','× 메모'][values[i]]}${bad.has(i) ? ', 규칙 위반' : ''}`);
   });
   $('dominoComplete').hidden = !complete;
   if (!complete) completionRecorded = false;
@@ -41,6 +41,7 @@ function render() {
 }
 function change(value) {
   if (!ready || values[selected] === value) return;
+  if (value === 1 && edges[selected].regionBoundary) return;
   values[selected] = value;
   persist(); render();
 }

@@ -10,7 +10,8 @@ const {puzzleId} = Astro.props;
   <div slot="rules">
     다음 규칙에 따라 격자칸의 일부의 변 위에 별을 채우세요.<br />
     각 가로줄/세로줄/영역에 별이 2개씩 있습니다. (두 행에 걸쳐있는 별은 그 두 행에 한개씩 있다고 보며, 두 열에 걸쳐있는 별은 그 두 열에 한개씩 있다고 봅니다.)<br />
-    서로 다른 별에 의해 사용된 두 칸은 변이나 대각선으로 맞닿아있을 수 없습니다.
+    서로 다른 별에 의해 사용된 두 칸은 변이나 대각선으로 맞닿아있을 수 없습니다.<br />
+    영역 경계에는 별을 놓을 수 없습니다.
   </div>
   <div slot="controls">
     두 칸 사이의 변을 짧게 누르면 별, 길게 누르거나 우클릭하면 × 메모를 넣습니다.<br />
@@ -27,7 +28,7 @@ const {puzzleId} = Astro.props;
       </svg>
       {edges.map((edge,i)=><button type="button" class={`domino-edge ${edge.direction}`} data-edge={i}
         style={`left:${edge.x/size*100}%;top:${edge.y/size*100}%`}
-        tabindex={i===0?0:-1} aria-label={`${edge.cells.map(cell=>`${Math.floor(cell/size)+1}행 ${cell%size+1}열`).join('과 ')} 사이, 빈 변`} />)}
+        tabindex={i===0?0:-1} aria-label={`${edge.cells.map(cell=>`${Math.floor(cell/size)+1}행 ${cell%size+1}열`).join('과 ')} 사이${edge.regionBoundary ? ', 영역 경계, 별 입력 불가' : ''}, 빈 변`} />)}
     </div>
     <div class="bottom-buttons"><button id="dominoErase" type="button">지우기</button><button id="dominoReset" type="button" class="danger">초기화</button></div>
   </section>
