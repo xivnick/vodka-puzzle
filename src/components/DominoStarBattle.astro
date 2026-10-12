@@ -1,0 +1,58 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import {size,regions,edges,boundaries} from '../lib/domino-star-battle.js';
+const {puzzleId} = Astro.props;
+---
+<PuzzleLayout title="261003 스타 배틀(도미노)" {puzzleId}
+  subtitle="규칙에 따라 격자칸의 일부의 변 위에 별을 채우세요"
+  description="각 가로줄·세로줄·영역에 별을 2개씩 채우는 스타 배틀(도미노)">
+  <div slot="rules">
+    다음 규칙에 따라 격자칸의 일부의 변 위에 별을 채우세요.<br />
+    각 가로줄/세로줄/영역에 별이 2개씩 있습니다. (두 행에 걸쳐있는 별은 그 두 행에 한개씩 있다고 보며, 두 열에 걸쳐있는 별은 그 두 열에 한개씩 있다고 봅니다.)<br />
+    서로 다른 별에 의해 사용된 두 칸은 변이나 대각선으로 맞닿아있을 수 없습니다.
+  </div>
+  <div slot="controls">
+    두 칸 사이의 변을 짧게 누르면 별, 길게 누르거나 우클릭하면 × 메모를 넣습니다.<br />
+    오른쪽 위 버튼이나 M 키로 두 입력을 바꾸세요.<br />
+    같은 표시를 다시 입력하거나 지우기 버튼으로 지우세요.
+  </div>
+  <section id="dominoGame" data-puzzle-id={puzzleId} aria-label="스타 배틀(도미노)">
+    <div class="board-tools"><button id="dominoNotes" type="button" aria-pressed="false">길게 눌러 x 표시</button></div>
+    <div id="dominoBoard" class="board-wrap" role="group" aria-label="12행 12열, 각 줄과 영역에 별 2개">
+      <div class="domino-grid">{regions.map((region,i)=><div class="domino-cell" data-cell={i} />)}</div>
+      <svg class="region-lines" viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+        {boundaries.map(([x1,y1,x2,y2])=><line {x1} {y1} {x2} {y2} />)}
+        <rect x="0" y="0" width={size} height={size} />
+      </svg>
+      {edges.map((edge,i)=><button type="button" class={`domino-edge ${edge.direction}`} data-edge={i}
+        style={`left:${edge.x/size*100}%;top:${edge.y/size*100}%`}
+        tabindex={i===0?0:-1} aria-label={`${edge.cells.map(cell=>`${Math.floor(cell/size)+1}행 ${cell%size+1}열`).join('과 ')} 사이, 빈 변`} />)}
+    </div>
+    <div class="bottom-buttons"><button id="dominoErase" type="button">지우기</button><button id="dominoReset" type="button" class="danger">초기화</button></div>
+  </section>
+  <PuzzleCompletion slot="completion" id="dominoComplete" />
+  <script>import '../scripts/domino-star-battle.js';</script>
+</PuzzleLayout>
+<style>
+  #dominoGame {width:100%;}
+  .board-tools {display:flex;justify-content:flex-end;margin-bottom:8px;}
+  .board-tools button {background:none;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:0 0 1px;color:#888;font-size:.82rem;line-height:1.5;}
+  .board-tools button[aria-pressed=true] {color:#4a6fa5;border-color:#4a6fa5;}
+  .board-wrap {position:relative;width:100%;aspect-ratio:1;}
+  .domino-grid {display:grid;grid-template-columns:repeat(12,minmax(0,1fr));width:100%;height:100%;}
+  .domino-cell {border-right:1px solid #aaa;border-bottom:1px solid #aaa;background:#fff;}
+  .domino-cell:nth-child(12n) {border-right:0;}
+  .domino-cell:nth-child(n+133) {border-bottom:0;}
+  .domino-cell.used {background:#e1e9f3;}
+  .domino-cell.conflict {background:#fbeaea;}
+  .region-lines {position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;}
+  .region-lines line,.region-lines rect {fill:none;stroke:#222;stroke-width:3;vector-effect:non-scaling-stroke;stroke-linecap:square;stroke-linejoin:miter;}
+  .domino-edge {position:absolute;transform:translate(-50%,-50%);padding:0;margin:0;min-width:0;border:0;border-radius:0;background:transparent;color:#333;font-family:inherit;font-size:clamp(17px,4.8vw,27px);line-height:1;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;}
+  .domino-edge.vertical {width:3.8%;height:5%;}
+  .domino-edge.horizontal {width:5%;height:3.8%;}
+  .domino-edge.marked {z-index:1;}
+  .domino-edge.note {color:#888;font-size:clamp(14px,4vw,22px);}
+  .domino-edge.conflict {color:#c34242;}
+  .domino-edge:focus {outline:none;}
+</style>
