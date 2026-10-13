@@ -20,19 +20,24 @@
     document.getElementById('finishDescription').textContent = `${finish.label} · ${finish.type}`;
     document.querySelectorAll('[data-finish-choice]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.finishChoice === id)));
   }
-  document.querySelectorAll('.badge-button').forEach(button => button.addEventListener('click',()=>{
+  function openBadge(button) {
     selectedButton = button;
     document.getElementById('badgeTitle').textContent = button.dataset.achievement;
     document.getElementById('badgeCondition').textContent = button.dataset.condition;
     setFinish(button.dataset.finish);
     dialog.showModal();
+  }
+  document.querySelectorAll('.badge-button').forEach(button => button.addEventListener('click',()=>openBadge(button)));
+  document.querySelectorAll('[data-preview-finish]').forEach(button => button.addEventListener('click',()=>{
+    openBadge(document.querySelector(`.badge-button[data-finish="${button.dataset.previewFinish}"]`) || document.querySelector('.badge-button'));
+    setFinish(button.dataset.previewFinish);
   }));
   document.querySelectorAll('[data-finish-choice]').forEach(button => button.addEventListener('click',()=>setFinish(button.dataset.finishChoice)));
   dialog.addEventListener('click',event=>{ if(event.target === dialog) { const r=dialog.getBoundingClientRect(); if(event.clientX<r.left || event.clientX>r.right || event.clientY<r.top || event.clientY>r.bottom) dialog.close(); } });
   document.getElementById('pauseEffects').addEventListener('click',event=>{
     const paused = document.body.classList.toggle('effects-paused');
     event.currentTarget.setAttribute('aria-pressed',String(paused));
-    event.currentTarget.textContent = paused ? '반짝임 재생하기' : '반짝임 멈추기';
+    event.currentTarget.textContent = paused ? '효과 재생하기' : '효과 멈추기';
   });
 
 })();

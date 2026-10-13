@@ -28,10 +28,15 @@ const finishes = [
   { id:'shine', label:'샴페인 골드', type:'레어 · 금빛 반짝임', colors:['#b27819','#e9c661'], effect:'shine' },
   { id:'holo', label:'오로라', type:'레어 · 홀로그램', colors:['#9658ba','#2b9b99'], effect:'holo' },
   { id:'sparkle', label:'별빛', type:'레어 · 별빛 반짝임', colors:['#5269b2','#bb78b6'], effect:'sparkle' },
+  { id:'crystal', label:'아이스 크리스탈', type:'레어 · 크리스탈', colors:['#3d78b0','#98b8da'], effect:'crystal' },
+  { id:'neon', label:'네온 민트', type:'레어 · 네온', colors:['#188a84','#64cfbd'], effect:'neon' },
+  { id:'breath', label:'라벤더 숨결', type:'레어 · 숨쉬는 빛', colors:['#7d57ae','#b088cf'], effect:'breath' },
+  { id:'comet', label:'밤하늘 유성', type:'레어 · 유성', colors:['#4f6aa1','#af9cd5'], effect:'comet' },
+  { id:'pearl', label:'로즈 진주', type:'레어 · 진주광', colors:['#a5709b','#6e9c9c'], effect:'pearl' },
   { id:'mintSplit', label:'민트 초코', type:'레어 · 좌우 2분할', colors:['#388c79','#89624d'], effect:'split' },
 ];
 // Deliberately mix finishes throughout the ranking; rarity does not determine rank.
-const assignments = [[0,10],[11,2],[2,0],[4,8],[3,1],[9,11],[5,3],[1,9],[7,4],[6,12],[8,6],[10,0],[0,1],[11,13],[2,2],[4,10],[3,4],[9,7],[5,5],[1,8],[7,6],[6,0],[8,11],[10,3],[0,12],[11,4],[2,9],[4,5],[3,13],[9,1]];
+const assignments = [[0,13],[11,14],[2,15],[4,16],[3,17],[9,11],[5,3],[1,9],[7,4],[6,12],[8,13],[10,14],[0,1],[11,18],[2,2],[4,10],[3,4],[9,7],[5,5],[1,8],[7,16],[6,0],[8,11],[10,3],[0,12],[11,17],[2,9],[4,5],[3,18],[9,15]];
 const names = ['네모왕','소금빵','퍼즐러','모눈종이','연필한자루','숫자산책','초록','빈칸수집가','달빛산책','번뜩','유리구슬','꾸준한오후','조각모음','민트초코','불씨','별헤는밤','라일락','종이비행기','귤한조각','베리소다','새벽달','한칸더','오로라','봄바람','잔별','꽃갈피','해질녘','복숭아','숲속산책','파란수첩'];
 const rows = assignments.map(([icon,finish],index)=>({ name:names[index], achievement:achievements[icon], finish:finishes[finish], count:Math.max(3,92-index*3) }));
 const badgeStyle = (icon,finish) => `--icon:url('/icons/achievement-preview/${icon}.svg');--tone-a:${finish.colors[0]};--tone-b:${finish.colors[1]}`;
@@ -40,6 +45,15 @@ const badgeStyle = (icon,finish) => `--icon:url('/icons/achievement-preview/${ic
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="badge-preview" aria-label="업적 뱃지 랭킹 예시">
     <p class="intro">아이콘은 달성한 업적, 색상과 효과는 뽑기 보상입니다.<br />이름 뒤 뱃지를 누르면 자세히 보고 색상을 바꿔볼 수 있습니다.</p>
+    <div class="new-effects-heading">새 효과 5종 <span>눌러서 크게 보기</span></div>
+    <div class="new-effects" aria-label="새 뱃지 효과 비교">
+      {finishes.slice(13,18).map(finish=><button type="button" class="effect-card" data-preview-finish={finish.id} aria-label={`${finish.type.split(' · ')[1]} 효과 자세히 보기`} aria-haspopup="dialog">
+        <span class={`preview-badge effect-${finish.effect}`} style={badgeStyle('star',finish)} aria-hidden="true"><span class="badge-ink"/><span class="twinkle"/></span>
+        <span class="effect-card-title">{finish.type.split(' · ')[1]}</span>
+        <span class="effect-card-nickname">퍼즐러 <span class={`preview-badge effect-${finish.effect}`} style={badgeStyle('star',finish)} aria-hidden="true"><span class="badge-ink"/><span class="twinkle"/></span></span>
+      </button>)}
+    </div>
+    <div class="previous-effects-heading">기존 효과</div>
     <div class="finish-examples" aria-label="색상 효과 예시">
       {[finishes[1],finishes[8],finishes[9],finishes[10],finishes[11],finishes[12]].map(finish=><div class="finish-example">
         <span class={`preview-badge effect-${finish.effect}`} style={badgeStyle('star',finish)} aria-hidden="true"><span class="badge-ink"/><span class="twinkle"/></span>
@@ -48,7 +62,7 @@ const badgeStyle = (icon,finish) => `--icon:url('/icons/achievement-preview/${ic
     </div>
     <div class="rank-head">
       <div class="lb-title">랭킹 (30)</div>
-      <button type="button" class="motion-button" aria-pressed="false" id="pauseEffects">반짝임 멈추기</button>
+      <button type="button" class="motion-button" aria-pressed="false" id="pauseEffects">효과 멈추기</button>
     </div>
     <div class="lb-list">
       {rows.map((row,index)=><div class:list={['lb-row',{'lb-me':index===2}]}>
@@ -84,6 +98,16 @@ const badgeStyle = (icon,finish) => `--icon:url('/icons/achievement-preview/${ic
 <style is:global>
   .badge-preview { width:100%; }
   .badge-preview .intro { margin:0 0 18px; color:#888; font-size:.78rem; line-height:1.8; }
+  .new-effects-heading,.previous-effects-heading { color:#777; font-size:.75rem; margin-bottom:10px; }
+  .new-effects-heading { display:flex; align-items:center; justify-content:space-between; }
+  .new-effects-heading span { font-size:.66rem; color:#aaa; }
+  .new-effects { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; margin-bottom:20px; }
+  .effect-card { display:flex; flex-direction:column; align-items:center; gap:13px; padding:17px 2px 12px; border:1px solid #e8e5df; border-radius:4px; background:#faf8f4; color:#777; min-width:0; }
+  .effect-card:hover { background:#f2efe9; }
+  .effect-card > .preview-badge { width:34px; height:34px; }
+  .effect-card-title { font-size:.7rem; white-space:nowrap; }
+  .effect-card-nickname { display:flex; align-items:center; gap:2px; color:#555; font-size:.65rem; }
+  .effect-card-nickname .preview-badge { width:18px; height:18px; }
   .finish-examples { display:grid; grid-template-columns:repeat(6,1fr); gap:4px; padding:14px 4px; margin-bottom:24px; border:1px solid #e8e5df; border-radius:4px; background:#faf8f4; }
   .finish-example { display:flex; flex-direction:column; align-items:center; gap:9px; font-size:.62rem; color:#888; white-space:nowrap; }
   .finish-example .preview-badge { width:24px; height:24px; }
@@ -101,14 +125,25 @@ const badgeStyle = (icon,finish) => `--icon:url('/icons/achievement-preview/${ic
   .effect-shine .badge-ink { background:linear-gradient(110deg,var(--tone-a) 25%,var(--tone-b) 43%,#fff3bc 48%,var(--tone-b) 53%,var(--tone-a) 72%); background-size:300% 100%; animation:badge-shine 3.6s ease-in-out infinite; }
   .effect-holo .badge-ink { background:linear-gradient(115deg,#9855ad,#437cbb,#2a9d8f,#af8938,#c86498,#9855ad); background-size:250% 100%; animation:badge-holo 6s ease-in-out infinite alternate; }
   .effect-sparkle .badge-ink { background:linear-gradient(135deg,var(--tone-a),var(--tone-b)); }
+  .effect-crystal .badge-ink { background:conic-gradient(from 20deg at 42% 38%,var(--tone-a) 0deg 75deg,var(--tone-b) 75deg 140deg,#507aa6 140deg 220deg,#b2cce2 220deg 285deg,var(--tone-a) 285deg); }
+  .effect-neon { filter:drop-shadow(0 0 2px #64cfbd90) drop-shadow(0 0 4px #64cfbd55); }
+  .effect-neon .badge-ink { background:linear-gradient(145deg,var(--tone-a),#258e85 65%,var(--tone-b)); }
+  .effect-breath .badge-ink { background:var(--tone-a); animation:badge-breath 4.8s ease-in-out infinite; }
+  .effect-comet .badge-ink { background:linear-gradient(145deg,var(--tone-a),var(--tone-b)); }
+  .effect-pearl .badge-ink { background:linear-gradient(120deg,var(--tone-a) 10%,#bb8eaa 27%,#d4c3c8 39%,#91b1b4 52%,var(--tone-b) 65%,var(--tone-a) 86%); background-size:180% 100%; animation:badge-pearl 8s ease-in-out infinite alternate; }
   .twinkle { display:none; position:absolute; right:-3px; top:-3px; width:7px; height:7px; background:var(--tone-b); clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%); }
+  .effect-comet .twinkle { display:block; width:20%; height:20%; left:50%; top:0; right:auto; border-radius:50%; clip-path:none; background:#d3c4ec; box-shadow:0 0 3px #a291cb; opacity:0; animation:badge-comet 6.5s linear infinite; }
   .effect-sparkle .twinkle { display:block; animation:badge-twinkle 2.8s ease-in-out infinite; }
   .lb-row:nth-child(3n) .badge-ink,.lb-row:nth-child(3n) .twinkle { animation-delay:-1.2s; }
   .lb-row:nth-child(3n+1) .badge-ink,.lb-row:nth-child(3n+1) .twinkle { animation-delay:-2.4s; }
+  @keyframes badge-breath { 0%,100% { opacity:.7; filter:brightness(.9); } 50% { opacity:1; filter:brightness(1.35); } }
+  @keyframes badge-pearl { from { background-position:0% 50%; } to { background-position:100% 50%; } }
+  @keyframes badge-comet { 0%,8% { opacity:0; left:50%; top:0; transform:translate(-50%,-50%) scale(.5); } 12% { opacity:1; transform:translate(-50%,-50%) scale(1); } 20% { left:100%; top:50%; } 28% { left:50%; top:100%; } 36% { left:0; top:50%; } 44% { opacity:1; left:50%; top:0; transform:translate(-50%,-50%) scale(1); } 50%,100% { opacity:0; left:50%; top:0; transform:translate(-50%,-50%) scale(.5); } }
   @keyframes badge-shine { 0%,15% { background-position:100% 50%; } 65%,100% { background-position:0% 50%; } }
   @keyframes badge-holo { from { background-position:0% 50%; } to { background-position:100% 50%; } }
   @keyframes badge-twinkle { 0%,100% { opacity:.3; transform:scale(.6) rotate(0deg); } 50% { opacity:1; transform:scale(1) rotate(90deg); } }
   .effects-paused .badge-ink,.effects-paused .twinkle { animation-play-state:paused; }
+  .effects-paused .effect-comet .twinkle { animation:none; opacity:.9; left:80%; top:14%; }
   .caption { margin-top:14px; color:#999; font-size:.72rem; line-height:1.8; }
   .credit { margin-top:8px; font-size:.65rem; color:#aaa; }
   .credit a { color:inherit; text-underline-offset:2px; }
@@ -126,6 +161,6 @@ const badgeStyle = (icon,finish) => `--icon:url('/icons/achievement-preview/${ic
   .swatch[aria-pressed="true"] { border-color:#b8b1a6; background:#eee9e1; }
   #badgeDetails .dialog-hint { font-size:.68rem; color:#999; }
   .close-button { margin-top:20px; border:1px solid #ddd8cf; background:#faf8f4; border-radius:3px; color:#666; padding:7px 22px; font-size:.8rem; }
-  @media(max-width:380px) { .finish-example { font-size:.57rem; } .finish-examples { gap:2px; } }
-  @media(prefers-reduced-motion:reduce) { .badge-ink,.twinkle { animation:none !important; } }
+  @media(max-width:380px) { .new-effects { gap:4px; } .effect-card-title { font-size:.62rem; } .effect-card-nickname { font-size:.58rem; } .finish-example { font-size:.57rem; } .finish-examples { gap:2px; } }
+  @media(prefers-reduced-motion:reduce) { .badge-ink,.twinkle { animation:none !important; } .effect-comet .twinkle { opacity:.9; left:80%; top:14%; } }
 </style>
