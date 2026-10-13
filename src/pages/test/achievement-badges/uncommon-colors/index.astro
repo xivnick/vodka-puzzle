@@ -1,0 +1,100 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+const combinations = [
+  {id:'berry',name:'베리 소다',a:'#BB6B98',b:'#527BC0',label:'분홍 · 파랑'},
+  {id:'sunset',name:'선셋',a:'#C57543',b:'#8B69B1',label:'주황 · 보라'},
+  {id:'mint-chocolate',name:'민트 초코',a:'#42977D',b:'#8F6A50',label:'민트 · 갈색'},
+  {id:'sea',name:'바다',a:'#79A9C8',b:'#28676F',label:'하늘 · 깊은 청록'},
+  {id:'petal',name:'꽃잎',a:'#CF91B2',b:'#674B8D',label:'분홍 · 보라'},
+  {id:'autumn',name:'가을',a:'#A99231',b:'#953E4B',label:'노랑 · 와인'},
+];
+const modes=[['split','2분할'],['gradient','그라데이션']];
+const icons=[['star','별'],['flower','꽃'],['flame','불꽃'],['trophy','트로피'],['medal','메달'],['puzzle','퍼즐'],['plant','새싹'],['bolt','번개'],['moon','달'],['diamond','다이아몬드'],['crown','왕관'],['rosette','로제트']];
+const finishes=combinations.flatMap(pair=>modes.map(([mode,label])=>({...pair,mode,modeLabel:label})));
+const names=['네모왕','소금빵','퍼즐러','모눈종이','연필한자루','숫자산책','초록','빈칸수집가','달빛산책','번뜩','유리구슬','꾸준한오후','조각모음','민트초코','불씨','별헤는밤','라일락','종이비행기','귤한조각','베리소다','새벽달','한칸더','오로라','봄바람','잔별','꽃갈피','해질녘','복숭아','숲속산책','파란수첩'];
+const badgeStyle=(icon,pair)=>`--badge-icon:url('/icons/achievement-preview/${icon}.svg');--tone-a:${pair.a};--tone-b:${pair.b}`;
+---
+<PageLayout title="언커먼 2색 뱃지" subtitle="6개 색 조합 × 2분할·그라데이션 · 12개 시안 비교">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="uncommon-preview" data-selected-mode="split" style={`--selected-a:${combinations[0].a};--selected-b:${combinations[0].b}`} aria-label="언커먼 2색 뱃지 비교">
+    <p class="intro">같은 두 색을 왼쪽은 2분할, 오른쪽은 그라데이션으로 적용했습니다.<br />아이콘과 방향을 바꾸거나 조합을 눌러 이름 뒤 크기로 비교할 수 있습니다.</p>
+    <div class="section-heading">비교할 아이콘 <span>비교표 28px · 이름 뒤 18px</span></div>
+    <div class="icon-picker" aria-label="비교할 아이콘 선택">
+      {icons.map(([id,name],index)=><button type="button" class="icon-choice" data-icon-choice={id} aria-label={name} title={name} aria-pressed={index===0?'true':'false'}><span class="color-badge neutral-badge" style={`--badge-icon:url('/icons/achievement-preview/${id}.svg')`} aria-hidden="true" /></button>)}
+    </div>
+    <div class="direction-picker"><span>색 방향</span><div>{[['90deg','좌우'],['135deg','대각선']].map(([angle,label],index)=><button type="button" data-angle={angle} aria-pressed={index===0?'true':'false'}>{label}</button>)}</div></div>
+    <div class="selected-preview" aria-live="polite">
+      <div class="selected-top"><span class="selected-name">퍼즐러 <span class="color-badge selected-badge active-icon" style="--badge-icon:url('/icons/achievement-preview/star.svg')" aria-hidden="true" /></span><span id="selectedFinishName">베리 소다 · 2분할</span></div>
+      <div class="selected-icons" aria-label="선택한 조합을 적용한 아이콘 12종">
+        {icons.map(([id,name])=><span class="color-badge selected-badge" style={`--badge-icon:url('/icons/achievement-preview/${id}.svg')`} role="img" aria-label={name} />)}
+      </div>
+    </div>
+    <div class="comparison-labels"><span>2분할</span><span>그라데이션</span></div>
+    <div class="pair-list">
+      {combinations.map(pair=><div class="pair-group"><div class="pair-heading"><span>{pair.name}</span><span>{pair.label}</span></div><div class="pair-cards">
+        {modes.map(([mode,label])=><button type="button" class="finish-choice" data-finish={`${pair.id}-${mode}`} data-mode={mode} data-tone-a={pair.a} data-tone-b={pair.b} data-finish-name={`${pair.name} · ${label}`} aria-label={`${pair.name} ${label}`} aria-pressed={pair.id==='berry'&&mode==='split'?'true':'false'}>
+          <span class={`color-badge comparison-badge active-icon mode-${mode}`} style={badgeStyle('star',pair)} aria-hidden="true" />
+          <span class="nickname-sample">퍼즐러 <span class={`color-badge active-icon mode-${mode}`} style={badgeStyle('star',pair)} aria-hidden="true" /></span>
+          <span class="mini-icons" aria-hidden="true">{['flower','flame','trophy'].map(icon=><span class={`color-badge mode-${mode}`} style={badgeStyle(icon,pair)} />)}</span>
+          <span class="color-codes"><i style={`background:${pair.a}`} />{pair.a}<i style={`background:${pair.b}`} />{pair.b}</span>
+        </button>)}
+      </div></div>)}
+    </div>
+    <div class="section-heading ranking-heading">가상 랭킹 (30) <span>12개 조합을 섞어 적용</span></div>
+    <div class="lb-list">
+      {names.map((name,index)=>{const finish=finishes[index%finishes.length];const icon=icons[(index*5)%icons.length];return <div class:list={['lb-row',{'lb-me':index===2}]}>
+        <span class="lb-rank">{index+1}</span><span class="lb-name uncommon-rank-name"><span>{name}</span><span class={`color-badge mode-${finish.mode}`} style={badgeStyle(icon[0],finish)} role="img" aria-label={`${finish.name} · ${finish.modeLabel} · ${icon[1]}`} title={`${finish.name} · ${finish.modeLabel}`} /></span><span class="rank-finish-name">{finish.name}<small>{finish.modeLabel}</small></span><span class="lb-time">{90-index*3}개</span>
+      </div>})}
+    </div>
+    <p class="caption">닉네임과 기록은 예시입니다.</p>
+    <p class="credit"><a href="/test/achievement-badges/common-colors/">커먼 단색 비교</a> · 아이콘: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
+  </section>
+</PageLayout>
+<script>import '../../../../scripts/achievement-uncommon-colors.js';</script>
+<style is:global>
+  .uncommon-preview { width:100%; --color-angle:90deg; }
+  .uncommon-preview .intro { margin:0 0 22px; color:#888; font-size:.78rem; line-height:1.8; }
+  .uncommon-preview .section-heading { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; font-size:.78rem; color:#555; font-weight:500; }
+  .uncommon-preview .section-heading > span { font-size:.64rem; color:#999; font-weight:400; }
+  .uncommon-preview .color-badge { display:inline-block; flex:0 0 auto; width:18px; height:18px; vertical-align:middle; -webkit-mask:var(--badge-icon) center / contain no-repeat; mask:var(--badge-icon) center / contain no-repeat; }
+  .uncommon-preview .neutral-badge { background:#727C8B; }
+  .uncommon-preview .mode-split { background:linear-gradient(var(--color-angle),var(--tone-a) 50%,var(--tone-b) 50%); }
+  .uncommon-preview .mode-gradient { background:linear-gradient(var(--color-angle),var(--tone-a) 15%,var(--tone-b) 85%); }
+  .uncommon-preview[data-selected-mode="split"] .selected-badge { background:linear-gradient(var(--color-angle),var(--selected-a) 50%,var(--selected-b) 50%); }
+  .uncommon-preview[data-selected-mode="gradient"] .selected-badge { background:linear-gradient(var(--color-angle),var(--selected-a) 15%,var(--selected-b) 85%); }
+  .uncommon-preview .icon-picker { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:4px; margin-bottom:12px; }
+  .uncommon-preview .icon-choice { display:flex; justify-content:center; align-items:center; height:34px; border:1px solid #e8e5df; border-radius:4px; background:white; padding:0; }
+  .uncommon-preview .icon-choice[aria-pressed="true"] { background:#eee9e1; border-color:#b8b1a6; }
+  .direction-picker { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; font-size:.7rem; color:#999; }
+  .direction-picker > div { display:flex; gap:4px; }
+  .direction-picker button { border:1px solid #e8e5df; border-radius:3px; padding:4px 10px; background:white; color:#888; font-size:.68rem; }
+  .direction-picker button[aria-pressed="true"] { background:#faf8f4; border-color:#b8b1a6; color:#555; }
+  .uncommon-preview .selected-preview { padding:14px 16px; margin-bottom:24px; border:1px solid #e8e5df; border-radius:4px; background:#faf8f4; }
+  .uncommon-preview .selected-top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .uncommon-preview .selected-name { display:flex; align-items:center; gap:4px; font-size:.88rem; color:#333; }
+  #selectedFinishName { color:#888; font-size:.7rem; }
+  .uncommon-preview .selected-icons { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:18px; }
+  .uncommon-preview .selected-icons .color-badge { width:24px; height:24px; }
+  .comparison-labels { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-bottom:14px; color:#888; text-align:center; font-size:.73rem; }
+  .pair-list { display:flex; flex-direction:column; gap:18px; }
+  .pair-heading { display:flex; justify-content:space-between; margin-bottom:8px; color:#555; font-size:.76rem; }
+  .pair-heading > span:last-child { color:#aaa; font-size:.66rem; }
+  .pair-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .finish-choice { display:flex; flex-direction:column; align-items:center; gap:12px; padding:16px 8px 12px; border:1px solid #e8e5df; border-radius:4px; background:white; min-width:0; }
+  .finish-choice:hover { background:#faf8f4; }
+  .finish-choice[aria-pressed="true"] { background:#faf8f4; border-color:#b8b1a6; }
+  .uncommon-preview .comparison-badge { width:28px; height:28px; }
+  .nickname-sample { display:flex; align-items:center; gap:4px; font-size:.84rem; color:#333; }
+  .mini-icons { display:flex; gap:12px; }
+  .color-codes { display:flex; align-items:center; justify-content:center; gap:4px; color:#aaa; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:.6rem; }
+  .color-codes i { display:inline-block; width:6px; height:6px; border-radius:50%; }
+  .uncommon-preview .ranking-heading { margin-top:30px; }
+  .uncommon-rank-name { display:flex; align-items:center; gap:4px; min-width:0; }
+  .uncommon-rank-name > span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rank-finish-name { color:#aaa; font-size:.63rem; text-align:right; flex-shrink:0; }
+  .rank-finish-name small { display:block; font-size:.58rem; color:#bbb; }
+  .uncommon-preview .caption { margin-top:14px; color:#999; font-size:.72rem; line-height:1.8; }
+  .uncommon-preview .credit { margin-top:8px; color:#aaa; font-size:.65rem; }
+  .uncommon-preview .credit a { color:inherit; }
+  @media(max-width:400px) { .uncommon-preview .icon-picker { grid-template-columns:repeat(6,minmax(0,1fr)); } .uncommon-preview .selected-icons { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; justify-items:center; } .color-codes { font-size:.52rem; gap:3px; } }
+</style>
