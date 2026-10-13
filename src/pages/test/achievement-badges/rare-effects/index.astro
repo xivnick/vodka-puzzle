@@ -1,0 +1,103 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+const effects = [
+  ['ribbon','빛의 띠','한 줄의 광택이 빠르게 통과'],
+  ['exchange','색 교대','전체가 첫 번째 색과 두 번째 색을 오감'],
+  ['ember','잔광','한 번 밝아진 뒤 천천히 가라앉음'],
+  ['ink','물들기','중심에서 다른 색이 퍼졌다가 돌아옴'],
+  ['pearl','진주광','전체에 분홍빛과 푸른빛이 번갈아 비침'],
+  ['heartbeat','두근빛','짧게 두 번 밝아지고 잠시 쉼'],
+  ['facets','색 조각','고정된 색 조각들이 차례로 바뀜'],
+  ['stardust','별가루','고정된 작은 점들이 번갈아 반짝임'],
+  ['ripple','색 파문','동심원의 색이 바깥으로 퍼짐'],
+  ['chroma','채도 파동','차분한 색에서 선명한 색으로 변화'],
+];
+const palettes=[['berry','베리 소다','#BB6B98','#527BC0'],['gold','금빛','#A99231','#C57543'],['sea','바다','#368B91','#79A9C8'],['petal','꽃잎','#CF91B2','#674B8D'],['mint','민트','#42977D','#578761'],['ink','먹색','#485360','#727C8B']];
+const icons=[['star','별'],['flower','꽃'],['flame','불꽃'],['trophy','트로피'],['medal','메달'],['puzzle','퍼즐'],['plant','새싹'],['bolt','번개'],['moon','달'],['diamond','다이아몬드'],['crown','왕관'],['rosette','로제트']];
+const names=['네모왕','소금빵','퍼즐러','모눈종이','연필한자루','숫자산책','초록','빈칸수집가','달빛산책','번뜩','유리구슬','꾸준한오후','조각모음','민트초코','불씨','별헤는밤','라일락','종이비행기','귤한조각','베리소다','새벽달','한칸더','오로라','봄바람','잔별','꽃갈피','해질녘','복숭아','숲속산책','파란수첩'];
+const mask=(icon)=>`--badge-icon:url('/icons/achievement-preview/${icon}.svg')`;
+---
+<PageLayout title="레어 효과 10종" subtitle="형태는 고정 · 색과 빛만 움직이는 10개 시안">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="rare-preview" style="--tone-a:#BB6B98;--tone-b:#527BC0" aria-label="레어 색 효과 비교">
+    <p class="intro">같은 두 색에 서로 다른 10가지 효과를 적용했습니다.<br />아이콘과 색을 바꿔 비교하고, 이름 옆 18px 크기로도 확인해보세요.</p>
+    <div class="section-heading">비교할 아이콘 <span>큰 예시 32px · 이름 뒤 18px</span></div>
+    <div class="icon-picker">{icons.map(([id,label],i)=><button type="button" data-icon={id} aria-label={label} title={label} aria-pressed={i===0?'true':'false'}><span class="badge neutral" style={mask(id)} aria-hidden="true" /></button>)}</div>
+    <div class="palette-picker" aria-label="비교 색 선택">{palettes.map(([id,label,a,b],i)=><button type="button" data-palette={id} data-a={a} data-b={b} aria-pressed={i===0?'true':'false'}><i style={`background:linear-gradient(135deg,${a},${b})`} />{label}</button>)}</div>
+    <div class="playback"><span id="motionStatus">빛 효과 재생 중</span><button type="button" id="pauseEffects" aria-pressed="false">일시정지</button></div>
+    <div class="effect-grid">{effects.map(([id,label,description])=><article class="effect-card">
+      <span class={`badge large active-icon fx-${id}`} style={mask('star')} aria-hidden="true" />
+      <span class="sample-name">퍼즐러 <span class={`badge active-icon fx-${id}`} style={mask('star')} aria-hidden="true" /></span>
+      <div class="mini-icons" aria-hidden="true">{['flower','flame','crown'].map(icon=><span class={`badge fx-${id}`} style={mask(icon)} />)}</div>
+      <h2>{label}</h2><p>{description}</p>
+    </article>)}</div>
+    <div class="section-heading ranking-heading">가상 랭킹 (30) <span>10개 효과 × 다양한 색</span></div>
+    <div class="lb-list">{names.map((name,i)=>{const effect=effects[i%effects.length];const palette=palettes[Math.floor(i/effects.length)%palettes.length];const icon=icons[i*5%icons.length];return <div class:list={['lb-row',{'lb-me':i===2}]}>
+      <span class="lb-rank">{i+1}</span><span class="lb-name rank-name"><span>{name}</span><span class={`badge fx-${effect[0]}`} style={`${mask(icon[0])};--tone-a:${palette[2]};--tone-b:${palette[3]}`} role="img" aria-label={`${effect[1]} · ${palette[1]} · ${icon[1]}`} /></span><span class="effect-label">{effect[1]}</span><span class="lb-time">{90-i*3}개</span>
+    </div>})}</div>
+    <p class="caption">닉네임과 기록은 예시입니다. 랭킹의 색은 고정되어 있습니다.</p>
+    <p class="credit"><a href="/test/achievement-badges/rare-colors/">이전 광택 시안</a> · <a href="/test/achievement-badges/uncommon-colors/">언커먼 비교</a> · <a href="/test/achievement-badges/common-colors/">커먼 비교</a> · <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
+  </section>
+</PageLayout>
+<script>import '../../../../scripts/achievement-rare-colors.js';</script>
+<style is:global>
+  .rare-preview { width:100%; }
+  .rare-preview .intro { margin:0 0 22px; color:#888; font-size:.78rem; line-height:1.8; }
+  .rare-preview .section-heading { display:flex; justify-content:space-between; gap:8px; margin-bottom:10px; font-size:.78rem; color:#555; }
+  .rare-preview .section-heading > span { color:#999; font-size:.64rem; }
+  .rare-preview .badge { display:inline-block; position:relative; flex:0 0 auto; width:18px; height:18px; vertical-align:middle; background:linear-gradient(135deg,var(--tone-a),var(--tone-b)); -webkit-mask:var(--badge-icon) center/contain no-repeat; mask:var(--badge-icon) center/contain no-repeat; }
+  .rare-preview .badge::after { content:''; position:absolute; inset:0; pointer-events:none; }
+  .rare-preview .neutral { background:#727C8B; }
+  .rare-preview .icon-picker { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:4px; margin-bottom:12px; }
+  .rare-preview button { border:1px solid #e8e5df; border-radius:4px; background:white; color:#888; cursor:pointer; }
+  .rare-preview .icon-picker button { display:flex; align-items:center; justify-content:center; height:34px; padding:0; }
+  .rare-preview button[aria-pressed="true"] { background:#eee9e1; border-color:#b8b1a6; color:#555; }
+  .rare-preview .palette-picker { display:flex; flex-wrap:wrap; gap:5px; }
+  .rare-preview .palette-picker button { display:flex; align-items:center; gap:5px; padding:6px 8px; font-size:.68rem; }
+  .rare-preview .palette-picker i { width:12px; height:12px; border-radius:50%; }
+  .rare-preview .playback { display:flex; align-items:center; justify-content:space-between; margin:14px 0 18px; color:#999; font-size:.68rem; }
+  .rare-preview .playback button { padding:5px 10px; font-size:.68rem; }
+  .rare-preview .effect-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .rare-preview .effect-card { display:flex; flex-direction:column; align-items:center; gap:14px; min-width:0; padding:20px 8px 14px; border:1px solid #e8e5df; border-radius:4px; }
+  .rare-preview .large { width:32px; height:32px; }
+  .rare-preview .sample-name { display:flex; align-items:center; gap:4px; font-size:.84rem; color:#333; }
+  .rare-preview .mini-icons { display:flex; gap:14px; }
+  .rare-preview h2 { margin:2px 0 -8px; font-size:.79rem; font-weight:500; color:#555; }
+  .rare-preview .effect-card p { margin:0; color:#999; font-size:.65rem; line-height:1.6; text-align:center; word-break:keep-all; }
+  .rare-preview .ranking-heading { margin-top:30px; }
+  .rare-preview .rank-name { display:flex; align-items:center; gap:4px; min-width:0; }
+  .rare-preview .rank-name > span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rare-preview .effect-label { color:#aaa; font-size:.63rem; flex-shrink:0; }
+  .rare-preview .caption { margin-top:14px; color:#999; font-size:.7rem; line-height:1.8; }
+  .rare-preview .credit { color:#aaa; font-size:.65rem; line-height:1.8; }
+  .rare-preview .credit a { color:inherit; }
+  /* The icon mask and its geometry remain fixed in every effect. */
+  .rare-preview .fx-ribbon::after { background:linear-gradient(110deg,transparent 40%,#fff9 48%,#fff 50%,#fff9 52%,transparent 60%); background-size:350% 100%; animation:effect-sweep 1.9s linear infinite; }
+  .rare-preview .fx-exchange { background:var(--tone-a); }
+  .rare-preview .fx-exchange::after { background:var(--tone-b); animation:effect-exchange 2.4s ease-in-out infinite; }
+  .rare-preview .fx-ember { animation:effect-ember 2.8s linear infinite; }
+  .rare-preview .fx-ink { background:var(--tone-a); }
+  .rare-preview .fx-ink::after { background:radial-gradient(circle,var(--tone-b) 0 38%,transparent 40%) center/0% 0% no-repeat; animation:effect-fill 3s ease-in-out infinite; }
+  .rare-preview .fx-pearl::after { background:#ffc1e3; mix-blend-mode:screen; animation:effect-pearl 3.4s ease-in-out infinite; }
+  .rare-preview .fx-heartbeat { animation:effect-heartbeat 2.6s ease-in-out infinite; }
+  .rare-preview .fx-facets { background:var(--tone-a); }
+  .rare-preview .fx-facets::after { background:conic-gradient(var(--tone-b) 0 90deg,transparent 90deg); animation:effect-facets 3.2s steps(1,end) infinite; }
+  .rare-preview .fx-stardust::before,.rare-preview .fx-stardust::after { content:''; position:absolute; inset:0; background:radial-gradient(circle,#fff 0 .8px,transparent 1.3px) 0 0/5px 5px; animation:effect-dust 2.4s ease-in-out infinite; }
+  .rare-preview .fx-stardust::before { background:radial-gradient(circle,#fff 0 .8px,transparent 1.3px) 2px 2px/7px 7px; animation-delay:-1.2s; }
+  .rare-preview .fx-ripple { background:var(--tone-a); }
+  .rare-preview .fx-ripple::after { background:repeating-radial-gradient(circle,var(--tone-b) 0 8%,transparent 10% 20%) center/25% 25% no-repeat; animation:effect-ripple 2.8s ease-out infinite; }
+  .rare-preview .fx-chroma { animation:effect-chroma 2.8s ease-in-out infinite; }
+  @keyframes effect-sweep { from { background-position:100% 50%; } to { background-position:0% 50%; } }
+  @keyframes effect-exchange { 0%,15%,100% { opacity:0; } 45%,65% { opacity:1; } }
+  @keyframes effect-ember { 0%,8%,100% { filter:brightness(1); } 12% { filter:brightness(1.85) saturate(.7); } 30% { filter:brightness(1.45); } 65% { filter:brightness(1.07); } }
+  @keyframes effect-fill { 0%,10%,100% { background-size:0% 0%; } 45%,60% { background-size:300% 300%; } }
+  @keyframes effect-pearl { 0%,100% { background-color:#ffc1e3; opacity:.48; } 50% { background-color:#91e9fa; opacity:.62; } }
+  @keyframes effect-heartbeat { 0%,10%,38%,100% { filter:brightness(.9); } 18% { filter:brightness(1.7); } 26% { filter:brightness(1); } 31% { filter:brightness(1.5); } }
+  @keyframes effect-facets { 0%,100% { background:conic-gradient(var(--tone-b) 0 90deg,transparent 90deg); } 20% { background:conic-gradient(var(--tone-b) 0 180deg,transparent 180deg); } 40% { background:conic-gradient(var(--tone-b) 0 270deg,transparent 270deg); } 60% { background:var(--tone-b); } 80% { background:conic-gradient(transparent 0 180deg,var(--tone-b) 180deg); } }
+  @keyframes effect-dust { 0%,100% { opacity:.05; } 35% { opacity:1; } 65% { opacity:.2; } }
+  @keyframes effect-ripple { 0% { background-size:25% 25%; opacity:0; } 15% { opacity:1; } 75% { opacity:1; } 100% { background-size:240% 240%; opacity:0; } }
+  @keyframes effect-chroma { 0%,100% { filter:saturate(.15); } 50% { filter:saturate(2.5); } }
+  .rare-preview.paused .badge,.rare-preview.paused .badge::after,.rare-preview.paused .badge::before { animation-play-state:paused; }
+  @media(prefers-reduced-motion:reduce) { .rare-preview .badge,.rare-preview .badge::after,.rare-preview .badge::before { animation-play-state:paused; } .rare-preview.play-motion .badge,.rare-preview.play-motion .badge::after,.rare-preview.play-motion .badge::before { animation-play-state:running; } .rare-preview.paused .badge,.rare-preview.paused .badge::after,.rare-preview.paused .badge::before { animation-play-state:paused; } }
+  @media(max-width:400px) { .rare-preview .icon-picker { grid-template-columns:repeat(6,minmax(0,1fr)); } }
+</style>
