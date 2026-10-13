@@ -1,0 +1,87 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+const effects = [
+  ['ribbon','빛의 띠','밝은 띠가 빠르게 지나가는 광택'],
+  ['metal','금속광','좁고 선명한 명암이 교차하는 반짝임'],
+  ['pearl','진주광','분홍과 푸른 광택이 부드럽게 흐름'],
+  ['gloss','유리광','얇은 빛 두 줄이 연달아 통과'],
+  ['tide','색의 물결','두 색의 비중이 빠르게 바뀌는 흐름'],
+  ['pulse','빛의 맥박','크기는 그대로, 밝기만 또렷하게 호흡'],
+  ['prism','프리즘','짧은 순간에만 여러 색이 비치는 광택'],
+  ['glint','섬광','작은 빛이 아이콘 안에서 순간적으로 반짝임'],
+];
+const palettes=[['berry','베리 소다','#BB6B98','#527BC0'],['gold','금빛','#A99231','#C57543'],['sea','바다','#368B91','#79A9C8'],['petal','꽃잎','#CF91B2','#674B8D'],['mint','민트','#42977D','#578761'],['ink','먹색','#485360','#727C8B']];
+const icons=[['star','별'],['flower','꽃'],['flame','불꽃'],['trophy','트로피'],['medal','메달'],['puzzle','퍼즐'],['plant','새싹'],['bolt','번개'],['moon','달'],['diamond','다이아몬드'],['crown','왕관'],['rosette','로제트']];
+const names=['네모왕','소금빵','퍼즐러','모눈종이','연필한자루','숫자산책','초록','빈칸수집가','달빛산책','번뜩','유리구슬','꾸준한오후','조각모음','민트초코','불씨','별헤는밤','라일락','종이비행기','귤한조각','베리소다','새벽달','한칸더','오로라','봄바람','잔별','꽃갈피','해질녘','복숭아','숲속산책','파란수첩'];
+const mask=(icon)=>`--badge-icon:url('/icons/achievement-preview/${icon}.svg')`;
+---
+<PageLayout title="레어 컬러 뱃지" subtitle="형태는 고정 · 색과 빛만 움직이는 8개 시안">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="rare-preview" style="--tone-a:#BB6B98;--tone-b:#527BC0" aria-label="레어 색 효과 비교">
+    <p class="intro">빛의 띠·금속광·진주광과 추가 아이디어 5개입니다.<br />같은 색과 아이콘으로 비교한 뒤, 아래 랭킹에서 다양한 조합을 볼 수 있습니다.</p>
+    <div class="section-heading">비교할 아이콘 <span>큰 예시 32px · 이름 뒤 18px</span></div>
+    <div class="icon-picker">{icons.map(([id,label],i)=><button type="button" data-icon={id} aria-label={label} title={label} aria-pressed={i===0?'true':'false'}><span class="badge neutral" style={mask(id)} aria-hidden="true" /></button>)}</div>
+    <div class="palette-picker" aria-label="비교 색 선택">{palettes.map(([id,label,a,b],i)=><button type="button" data-palette={id} data-a={a} data-b={b} aria-pressed={i===0?'true':'false'}><i style={`background:linear-gradient(135deg,${a},${b})`} />{label}</button>)}</div>
+    <div class="playback"><span id="motionStatus">빛 효과 재생 중</span><button type="button" id="pauseEffects" aria-pressed="false">일시정지</button></div>
+    <div class="effect-grid">{effects.map(([id,label,description])=><article class="effect-card">
+      <span class={`badge large active-icon fx-${id}`} style={mask('star')} aria-hidden="true" />
+      <span class="sample-name">퍼즐러 <span class={`badge active-icon fx-${id}`} style={mask('star')} aria-hidden="true" /></span>
+      <div class="mini-icons" aria-hidden="true">{['flower','flame','crown'].map(icon=><span class={`badge fx-${id}`} style={mask(icon)} />)}</div>
+      <h2>{label}</h2><p>{description}</p>
+    </article>)}</div>
+    <div class="section-heading ranking-heading">가상 랭킹 (30) <span>8개 효과 × 다양한 색</span></div>
+    <div class="lb-list">{names.map((name,i)=>{const effect=effects[i%effects.length];const palette=palettes[Math.floor(i/effects.length)%palettes.length];const icon=icons[i*5%icons.length];return <div class:list={['lb-row',{'lb-me':i===2}]}>
+      <span class="lb-rank">{i+1}</span><span class="lb-name rank-name"><span>{name}</span><span class={`badge fx-${effect[0]}`} style={`${mask(icon[0])};--tone-a:${palette[2]};--tone-b:${palette[3]}`} role="img" aria-label={`${effect[1]} · ${palette[1]} · ${icon[1]}`} /></span><span class="effect-label">{effect[1]}</span><span class="lb-time">{90-i*3}개</span>
+    </div>})}</div>
+    <p class="caption">닉네임과 기록은 예시입니다. 랭킹의 색은 고정되어 있습니다.</p>
+    <p class="credit"><a href="/test/achievement-badges/uncommon-colors/">언커먼 비교</a> · <a href="/test/achievement-badges/common-colors/">커먼 비교</a> · <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
+  </section>
+</PageLayout>
+<script>import '../../../../scripts/achievement-rare-colors.js';</script>
+<style is:global>
+  .rare-preview { width:100%; }
+  .rare-preview .intro { margin:0 0 22px; color:#888; font-size:.78rem; line-height:1.8; }
+  .rare-preview .section-heading { display:flex; justify-content:space-between; gap:8px; margin-bottom:10px; font-size:.78rem; color:#555; }
+  .rare-preview .section-heading > span { color:#999; font-size:.64rem; }
+  .rare-preview .badge { display:inline-block; position:relative; flex:0 0 auto; width:18px; height:18px; vertical-align:middle; background:linear-gradient(135deg,var(--tone-a),var(--tone-b)); -webkit-mask:var(--badge-icon) center/contain no-repeat; mask:var(--badge-icon) center/contain no-repeat; }
+  .rare-preview .badge::after { content:''; position:absolute; inset:0; pointer-events:none; }
+  .rare-preview .neutral { background:#727C8B; }
+  .rare-preview .icon-picker { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:4px; margin-bottom:12px; }
+  .rare-preview button { border:1px solid #e8e5df; border-radius:4px; background:white; color:#888; cursor:pointer; }
+  .rare-preview .icon-picker button { display:flex; align-items:center; justify-content:center; height:34px; padding:0; }
+  .rare-preview button[aria-pressed="true"] { background:#eee9e1; border-color:#b8b1a6; color:#555; }
+  .rare-preview .palette-picker { display:flex; flex-wrap:wrap; gap:5px; }
+  .rare-preview .palette-picker button { display:flex; align-items:center; gap:5px; padding:6px 8px; font-size:.68rem; }
+  .rare-preview .palette-picker i { width:12px; height:12px; border-radius:50%; }
+  .rare-preview .playback { display:flex; align-items:center; justify-content:space-between; margin:14px 0 18px; color:#999; font-size:.68rem; }
+  .rare-preview .playback button { padding:5px 10px; font-size:.68rem; }
+  .rare-preview .effect-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .rare-preview .effect-card { display:flex; flex-direction:column; align-items:center; gap:14px; min-width:0; padding:20px 8px 14px; border:1px solid #e8e5df; border-radius:4px; }
+  .rare-preview .large { width:32px; height:32px; }
+  .rare-preview .sample-name { display:flex; align-items:center; gap:4px; font-size:.84rem; color:#333; }
+  .rare-preview .mini-icons { display:flex; gap:14px; }
+  .rare-preview h2 { margin:2px 0 -8px; font-size:.79rem; font-weight:500; color:#555; }
+  .rare-preview .effect-card p { margin:0; color:#999; font-size:.65rem; line-height:1.6; text-align:center; word-break:keep-all; }
+  .rare-preview .ranking-heading { margin-top:30px; }
+  .rare-preview .rank-name { display:flex; align-items:center; gap:4px; min-width:0; }
+  .rare-preview .rank-name > span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rare-preview .effect-label { color:#aaa; font-size:.63rem; flex-shrink:0; }
+  .rare-preview .caption { margin-top:14px; color:#999; font-size:.7rem; line-height:1.8; }
+  .rare-preview .credit { color:#aaa; font-size:.65rem; line-height:1.8; }
+  .rare-preview .credit a { color:inherit; }
+  /* All movement is within the fixed icon mask: only color, light and brightness change. */
+  .rare-preview .fx-ribbon::after { background:linear-gradient(110deg,transparent 40%,#fff9 48%,#fff 50%,#fff9 52%,transparent 60%); background-size:350% 100%; animation:rare-sweep 1.9s linear infinite; }
+  .rare-preview .fx-metal { background:linear-gradient(120deg,var(--tone-a) 20%,#263344 37%,var(--tone-b) 44%,#fff 49%,var(--tone-a) 54%,#263344 65%,var(--tone-b) 80%); background-size:300% 100%; animation:rare-sweep 2.3s linear infinite; }
+  .rare-preview .fx-pearl::after { background:linear-gradient(115deg,transparent 10%,#ffcde8b3 30%,#ffffffdb 45%,#c2f2ffb3 60%,transparent 80%); background-size:250% 100%; animation:rare-sweep 3.2s ease-in-out infinite alternate; }
+  .rare-preview .fx-gloss::after { background:linear-gradient(115deg,transparent 39%,#fff 42%,transparent 45%,transparent 49%,#fffb 51%,transparent 54%); background-size:400% 100%; animation:rare-sweep 2.2s linear infinite; }
+  .rare-preview .fx-tide { background:linear-gradient(115deg,var(--tone-a) 20%,var(--tone-b) 50%,var(--tone-a) 80%); background-size:250% 100%; animation:rare-sweep 1.8s ease-in-out infinite alternate; }
+  .rare-preview .fx-pulse { animation:rare-pulse 1.9s ease-in-out infinite; }
+  .rare-preview .fx-prism::after { background:linear-gradient(110deg,transparent 25%,#ff989ca6 38%,#ffe59ec4 44%,#fff 50%,#b1efeac4 56%,#c6b1ffa6 62%,transparent 75%); background-size:500% 100%; animation:rare-sweep 2.5s linear infinite; }
+  .rare-preview .fx-glint::after { background:radial-gradient(ellipse at 30% 25%,#fff 0%,#fffc 8%,transparent 40%),radial-gradient(ellipse at 75% 80%,#fff 0%,#fff9 5%,transparent 32%); animation:rare-glint 2s ease-in-out infinite; }
+  @keyframes rare-sweep { from { background-position:100% 50%; } to { background-position:0% 50%; } }
+  @keyframes rare-pulse { 0%,100% { filter:brightness(.75) saturate(1.15); } 50% { filter:brightness(1.55) saturate(.8); } }
+  @keyframes rare-glint { 0%,30%,100% { opacity:0; } 42% { opacity:1; } 54% { opacity:.15; } 65% { opacity:.85; } 80% { opacity:0; } }
+  .rare-preview.paused .badge,.rare-preview.paused .badge::after { animation-play-state:paused; }
+  @media(prefers-reduced-motion:reduce) { .rare-preview .badge,.rare-preview .badge::after { animation-play-state:paused; } .rare-preview.play-motion .badge,.rare-preview.play-motion .badge::after { animation-play-state:running; } .rare-preview.paused .badge,.rare-preview.paused .badge::after { animation-play-state:paused; } }
+  @media(max-width:400px) { .rare-preview .icon-picker { grid-template-columns:repeat(6,minmax(0,1fr)); } }
+</style>
