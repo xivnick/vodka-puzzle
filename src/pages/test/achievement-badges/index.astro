@@ -1,0 +1,131 @@
+---
+import PageLayout from '../../../layouts/PageLayout.astro';
+const achievements = [
+  ['trophy', '차곡차곡', '일반 퍼즐 30문제 완료'],
+  ['medal', '오늘의 한 문제', '데일리 스도쿠 누적 30회 완료'],
+  ['flame', '꺼지지 않는 불씨', '데일리 스트릭 7일 달성'],
+  ['puzzle', '두 가지 맛', '서로 다른 퍼즐 유형 2종 완료'],
+  ['star', '첫 해결', '첫 퍼즐 완료'],
+  ['plant', '다시 한 칸', '스트릭 종료 후 다른 날 데일리 완료'],
+  ['bolt', '오늘은 두 접시', '같은 날 일반 퍼즐과 데일리 완료'],
+  ['moon', '저녁의 발견', '저녁에 퍼즐 완료'],
+  ['diamond', '꾸준한 발견', '일반 퍼즐 50문제 완료'],
+  ['crown', '퍼즐 수집가', '서로 다른 퍼즐 유형 10종 완료'],
+  ['rosette', '한 달의 약속', '데일리 스트릭 30일 달성'],
+  ['flower', '피어나는 기록', '일반 퍼즐 10문제 완료'],
+];
+const finishes = [
+  { id:'amber', label:'호박빛', type:'일반 · 단색', colors:['#ad7922','#ad7922'], effect:'solid' },
+  { id:'blue', label:'코발트', type:'일반 · 단색', colors:['#4579c0','#4579c0'], effect:'solid' },
+  { id:'rose', label:'로즈', type:'일반 · 단색', colors:['#c55a80','#c55a80'], effect:'solid' },
+  { id:'green', label:'숲', type:'일반 · 단색', colors:['#51855b','#51855b'], effect:'solid' },
+  { id:'violet', label:'라일락', type:'일반 · 단색', colors:['#8d68ba','#8d68ba'], effect:'solid' },
+  { id:'coral', label:'코랄', type:'일반 · 단색', colors:['#cc7152','#cc7152'], effect:'solid' },
+  { id:'teal', label:'청록', type:'일반 · 단색', colors:['#368b91','#368b91'], effect:'solid' },
+  { id:'slate', label:'슬레이트', type:'일반 · 단색', colors:['#64748b','#64748b'], effect:'solid' },
+  { id:'split', label:'베리 소다', type:'레어 · 좌우 2분할', colors:['#b24f99','#368cba'], effect:'split' },
+  { id:'diagonal', label:'선셋', type:'레어 · 대각선 2분할', colors:['#cb7532','#8b5fba'], effect:'diagonal' },
+  { id:'shine', label:'샴페인 골드', type:'레어 · 금빛 반짝임', colors:['#b27819','#e9c661'], effect:'shine' },
+  { id:'holo', label:'오로라', type:'레어 · 홀로그램', colors:['#9658ba','#2b9b99'], effect:'holo' },
+  { id:'sparkle', label:'별빛', type:'레어 · 별빛 반짝임', colors:['#5269b2','#bb78b6'], effect:'sparkle' },
+  { id:'mintSplit', label:'민트 초코', type:'레어 · 좌우 2분할', colors:['#388c79','#89624d'], effect:'split' },
+];
+// Deliberately mix finishes throughout the ranking; rarity does not determine rank.
+const assignments = [[0,10],[11,2],[2,0],[4,8],[3,1],[9,11],[5,3],[1,9],[7,4],[6,12],[8,6],[10,0],[0,1],[11,13],[2,2],[4,10],[3,4],[9,7],[5,5],[1,8],[7,6],[6,0],[8,11],[10,3],[0,12],[11,4],[2,9],[4,5],[3,13],[9,1]];
+const names = ['네모왕','소금빵','퍼즐러','모눈종이','연필한자루','숫자산책','초록','빈칸수집가','달빛산책','번뜩','유리구슬','꾸준한오후','조각모음','민트초코','불씨','별헤는밤','라일락','종이비행기','귤한조각','베리소다','새벽달','한칸더','오로라','봄바람','잔별','꽃갈피','해질녘','복숭아','숲속산책','파란수첩'];
+const rows = assignments.map(([icon,finish],index)=>({ name:names[index], achievement:achievements[icon], finish:finishes[finish], count:Math.max(3,92-index*3) }));
+const badgeStyle = (icon,finish) => `--icon:url('/icons/achievement-preview/${icon}.svg');--tone-a:${finish.colors[0]};--tone-b:${finish.colors[1]}`;
+---
+<PageLayout title="업적 뱃지 미리보기" subtitle="업적으로 얻은 아이콘에 뽑기 색상을 입힌 30명의 가상 랭킹">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="badge-preview" aria-label="업적 뱃지 랭킹 예시">
+    <p class="intro">아이콘은 달성한 업적, 색상과 효과는 뽑기 보상입니다.<br />이름 뒤 뱃지를 누르면 자세히 보고 색상을 바꿔볼 수 있습니다.</p>
+    <div class="finish-examples" aria-label="색상 효과 예시">
+      {[finishes[1],finishes[8],finishes[9],finishes[10],finishes[11],finishes[12]].map(finish=><div class="finish-example">
+        <span class={`preview-badge effect-${finish.effect}`} style={badgeStyle('star',finish)} aria-hidden="true"><span class="badge-ink"/><span class="twinkle"/></span>
+        <span>{finish.type.split(' · ')[1]}</span>
+      </div>)}
+    </div>
+    <div class="rank-head">
+      <div class="lb-title">랭킹 (30)</div>
+      <button type="button" class="motion-button" aria-pressed="false" id="pauseEffects">반짝임 멈추기</button>
+    </div>
+    <div class="lb-list">
+      {rows.map((row,index)=><div class:list={['lb-row',{'lb-me':index===2}]}>
+        <span class="lb-rank">{index+1}</span>
+        <span class="lb-name preview-name"><span class="nickname">{row.name}</span>
+          <button type="button" class="badge-button" data-icon={row.achievement[0]} data-achievement={row.achievement[1]} data-condition={row.achievement[2]} data-finish={row.finish.id} data-name={row.name} aria-label={`${row.name}의 뱃지: ${row.achievement[1]}, ${row.finish.label}, ${row.finish.type}`} aria-haspopup="dialog" title={`${row.achievement[1]} · ${row.finish.label} (${row.finish.type})`}>
+            <span class={`preview-badge effect-${row.finish.effect}`} style={badgeStyle(row.achievement[0],row.finish)} aria-hidden="true"><span class="badge-ink"/><span class="twinkle"/></span>
+          </button>
+        </span>
+        <span class="lb-time">{row.count}개</span>
+      </div>)}
+    </div>
+    <p class="caption">닉네임·기록·업적 조건은 모두 예시입니다. 레어 효과도 순위와 관계없이 섞었습니다.</p>
+    <p class="credit">아이콘: <a href="https://tabler.io/icons" target="_blank" rel="noreferrer">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
+  </section>
+  <dialog id="badgeDetails" aria-labelledby="badgeTitle" aria-describedby="badgeCondition finishDescription">
+    <div class="large-badge"><span class="preview-badge" id="largeBadge" aria-hidden="true"><span class="badge-ink"/><span class="twinkle"/></span></div>
+    <p class="eyebrow">업적 달성 보상 · 아이콘</p>
+    <h2 id="badgeTitle"></h2>
+    <p id="badgeCondition"></p>
+    <div class="finish-detail"><p class="eyebrow">뽑기 보상 · 색상과 효과</p><p id="finishDescription"></p></div>
+    <div class="swatches" aria-label="뱃지 색상 미리보기">
+      {finishes.map(finish=><button type="button" class="swatch" data-finish-choice={finish.id} aria-label={`${finish.label} (${finish.type})`} aria-pressed="false" title={`${finish.label} · ${finish.type}`}>
+        <span class={`preview-badge effect-${finish.effect}`} style={badgeStyle('star',finish)} aria-hidden="true"><span class="badge-ink"/><span class="twinkle"/></span>
+      </button>)}
+    </div>
+    <p class="dialog-hint">색상을 누르면 선택한 사람의 뱃지에도 적용됩니다.</p>
+    <form method="dialog"><button class="close-button">닫기</button></form>
+  </dialog>
+<script id="badgeFinishes" type="application/json" set:html={JSON.stringify(finishes)} />
+<script>import '../../../scripts/achievement-badge-preview.js';</script>
+</PageLayout>
+<style is:global>
+  .badge-preview { width:100%; }
+  .badge-preview .intro { margin:0 0 18px; color:#888; font-size:.78rem; line-height:1.8; }
+  .finish-examples { display:grid; grid-template-columns:repeat(6,1fr); gap:4px; padding:14px 4px; margin-bottom:24px; border:1px solid #e8e5df; border-radius:4px; background:#faf8f4; }
+  .finish-example { display:flex; flex-direction:column; align-items:center; gap:9px; font-size:.62rem; color:#888; white-space:nowrap; }
+  .finish-example .preview-badge { width:24px; height:24px; }
+  .badge-preview .rank-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+  .badge-preview .rank-head .lb-title { margin-bottom:0; }
+  .motion-button { padding:4px 8px; font-size:.7rem; border:1px solid #ddd8cf; border-radius:3px; color:#888; background:white; }
+  .preview-name { display:flex; align-items:center; gap:3px; min-width:0; }
+  .preview-name .nickname { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .badge-button { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; flex:0 0 28px; border:0; padding:5px; margin:-5px 0; border-radius:4px; background:transparent; }
+  .badge-button:hover { background:#f0ede8; }
+  .preview-badge { position:relative; display:inline-block; flex-shrink:0; width:18px; height:18px; vertical-align:middle; overflow:visible; }
+  .badge-ink { display:block; width:100%; height:100%; background:var(--tone-a); -webkit-mask:var(--icon) center / contain no-repeat; mask:var(--icon) center / contain no-repeat; }
+  .effect-split .badge-ink { background:linear-gradient(90deg,var(--tone-a) 50%,var(--tone-b) 50%); }
+  .effect-diagonal .badge-ink { background:linear-gradient(135deg,var(--tone-a) 50%,var(--tone-b) 50%); }
+  .effect-shine .badge-ink { background:linear-gradient(110deg,var(--tone-a) 25%,var(--tone-b) 43%,#fff3bc 48%,var(--tone-b) 53%,var(--tone-a) 72%); background-size:300% 100%; animation:badge-shine 3.6s ease-in-out infinite; }
+  .effect-holo .badge-ink { background:linear-gradient(115deg,#9855ad,#437cbb,#2a9d8f,#af8938,#c86498,#9855ad); background-size:250% 100%; animation:badge-holo 6s ease-in-out infinite alternate; }
+  .effect-sparkle .badge-ink { background:linear-gradient(135deg,var(--tone-a),var(--tone-b)); }
+  .twinkle { display:none; position:absolute; right:-3px; top:-3px; width:7px; height:7px; background:var(--tone-b); clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%); }
+  .effect-sparkle .twinkle { display:block; animation:badge-twinkle 2.8s ease-in-out infinite; }
+  .lb-row:nth-child(3n) .badge-ink,.lb-row:nth-child(3n) .twinkle { animation-delay:-1.2s; }
+  .lb-row:nth-child(3n+1) .badge-ink,.lb-row:nth-child(3n+1) .twinkle { animation-delay:-2.4s; }
+  @keyframes badge-shine { 0%,15% { background-position:100% 50%; } 65%,100% { background-position:0% 50%; } }
+  @keyframes badge-holo { from { background-position:0% 50%; } to { background-position:100% 50%; } }
+  @keyframes badge-twinkle { 0%,100% { opacity:.3; transform:scale(.6) rotate(0deg); } 50% { opacity:1; transform:scale(1) rotate(90deg); } }
+  .effects-paused .badge-ink,.effects-paused .twinkle { animation-play-state:paused; }
+  .caption { margin-top:14px; color:#999; font-size:.72rem; line-height:1.8; }
+  .credit { margin-top:8px; font-size:.65rem; color:#aaa; }
+  .credit a { color:inherit; text-underline-offset:2px; }
+  #badgeDetails { margin:auto; border:1px solid #e8e5df; border-radius:8px; width:min(360px,calc(100vw - 32px)); max-height:calc(100dvh - 40px); overflow:auto; padding:28px 22px 22px; color:#333; text-align:center; font-family:inherit; }
+  #badgeDetails::backdrop { background:#25252535; }
+  #badgeDetails .large-badge { display:flex; align-items:center; justify-content:center; width:80px; height:80px; margin:0 auto 20px; background:#faf8f4; border-radius:50%; }
+  #badgeDetails .large-badge .preview-badge { width:44px; height:44px; }
+  #badgeDetails .large-badge .twinkle { width:12px; height:12px; }
+  #badgeDetails h2 { font-size:1rem; margin:4px 0 8px; }
+  #badgeDetails p { margin:0; font-size:.8rem; color:#777; line-height:1.8; }
+  #badgeDetails .eyebrow { font-size:.68rem; color:#aaa; }
+  .finish-detail { padding-top:18px; margin-top:18px; border-top:1px solid #eeeae4; }
+  .swatches { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin:14px 0; }
+  .swatch { display:flex; align-items:center; justify-content:center; height:34px; padding:6px; border:1px solid transparent; border-radius:4px; background:#faf8f4; }
+  .swatch[aria-pressed="true"] { border-color:#b8b1a6; background:#eee9e1; }
+  #badgeDetails .dialog-hint { font-size:.68rem; color:#999; }
+  .close-button { margin-top:20px; border:1px solid #ddd8cf; background:#faf8f4; border-radius:3px; color:#666; padding:7px 22px; font-size:.8rem; }
+  @media(max-width:380px) { .finish-example { font-size:.57rem; } .finish-examples { gap:2px; } }
+  @media(prefers-reduced-motion:reduce) { .badge-ink,.twinkle { animation:none !important; } }
+</style>
