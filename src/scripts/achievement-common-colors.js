@@ -1,6 +1,6 @@
 const preview = document.querySelector('.common-preview');
 let selectedIcon = 'star';
-let selectedColorName = '수박';
+let selectedColorName = preview.querySelector('[data-color][aria-pressed="true"]').dataset.colorName;
 const iconNames = Object.fromEntries([...preview.querySelectorAll('[data-icon-choice]')].map(button=>[button.dataset.iconChoice,button.getAttribute('aria-label')]));
 preview.querySelectorAll('[data-icon-choice]').forEach(button=>button.addEventListener('click',()=>{
   selectedIcon = button.dataset.iconChoice;

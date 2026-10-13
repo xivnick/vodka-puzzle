@@ -14,12 +14,14 @@ const families = [
   {name:'분홍',colors:[['벚꽃','#CF91B2'],['분홍','#BB6B98'],['자두','#914B76']]},
   {name:'무채색',colors:[['은회색','#9898A1'],['회색','#727C8B'],['먹색','#485360']]},
 ];
+const baseColors = [['차콜','#444444'],['진회색','#555555'],['순수 검정','#000000'],['기존 먹색','#485360']];
+const defaultColor = { name:'차콜',hex:'#444444' };
 const icons = [['star','별'],['flower','꽃'],['flame','불꽃'],['trophy','트로피'],['medal','메달'],['puzzle','퍼즐'],['plant','새싹'],['bolt','번개'],['moon','달'],['diamond','다이아몬드'],['crown','왕관'],['rosette','로제트']];
 const colors=families.flatMap(f=>f.colors.map(([name,hex])=>({family:f.name,name,hex})));
 const names=['네모왕','소금빵','퍼즐러','모눈종이','연필한자루','숫자산책','초록','빈칸수집가','달빛산책','번뜩','유리구슬','꾸준한오후','조각모음','민트초코','불씨','별헤는밤','라일락','종이비행기','귤한조각','베리소다','새벽달','한칸더','오로라','봄바람','잔별','꽃갈피','해질녘','복숭아','숲속산책','파란수첩','차곡차곡','차한잔','모서리','작은발견','구름산책','마지막한칸'];
 const style=(icon,hex)=>`--badge-icon:url('/icons/achievement-preview/${icon}.svg');--badge-color:${hex}`;
 ---
-<PageLayout title="커먼 단색 뱃지" subtitle="12개 색상 계열 × 3가지 톤 · 단색 36종 비교">
+<PageLayout title="커먼 단색 뱃지" subtitle="기본색 후보 4종 · 커먼 단색 36종 비교">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="common-preview" aria-label="커먼 단색 색상 비교">
     <p class="intro">아이콘을 바꾸면 36색을 같은 모양으로 비교할 수 있습니다.<br />색상을 누르면 이름 뒤 뱃지와 다른 아이콘에도 적용됩니다.</p>
@@ -28,15 +30,24 @@ const style=(icon,hex)=>`--badge-icon:url('/icons/achievement-preview/${icon}.sv
       {icons.map(([id,name],index)=><button type="button" class="icon-choice" data-icon-choice={id} aria-label={name} title={name} aria-pressed={index===0?'true':'false'}><span class="color-badge" style={style(id,'#727C8B')} aria-hidden="true" /></button>)}
     </div>
     <div class="selected-preview" aria-live="polite">
-      <div class="selected-top"><span class="selected-name"><span>퍼즐러</span><span class="color-badge selected-badge" style={style('star',colors[0].hex)} role="img" aria-label="수박색 별 뱃지" /></span><span id="selectedColorName">수박 <span class="hex">{colors[0].hex}</span></span></div>
+      <div class="selected-top"><span class="selected-name"><span>퍼즐러</span><span class="color-badge selected-badge" style={style('star',defaultColor.hex)} role="img" aria-label="차콜 · 별 뱃지" /></span><span id="selectedColorName">차콜 <span class="hex">{defaultColor.hex}</span></span></div>
       <div class="selected-icons" aria-label="선택 색상을 적용한 아이콘 12종">
-        {icons.map(([id,name])=><span class="color-badge selected-badge" style={style(id,colors[0].hex)} role="img" aria-label={`수박색 ${name} 뱃지`} data-icon-label={name} />)}
+        {icons.map(([id,name])=><span class="color-badge selected-badge" style={style(id,defaultColor.hex)} role="img" aria-label={`차콜 · ${name} 뱃지`} data-icon-label={name} />)}
       </div>
+    </div>
+    <div class="section-heading">기본색 후보 <span>같은 이름 뒤에서 비교</span></div>
+    <div class="base-colors" aria-label="기본색 후보 비교">
+      {baseColors.map(([name,hex])=><button type="button" class="color-choice base-color-choice" data-color={hex} data-color-name={name} aria-label={`${name} ${hex}`} aria-pressed={name===defaultColor.name?'true':'false'}>
+        <span class="color-badge palette-badge" style={style('star',hex)} aria-hidden="true" />
+        <span class="base-sample">퍼즐러 <span class="color-badge" style={style('star',hex)} aria-hidden="true" /></span>
+        <span class="base-icons" aria-hidden="true">{['flower','flame','trophy'].map(icon=><span class="color-badge" style={style(icon,hex)} />)}</span>
+        <span class="color-name">{name}</span><span class="hex">{hex}</span>
+      </button>)}
     </div>
     <div class="section-heading">커먼 색상 (36) <span>밝은 톤 → 기본 톤 → 깊은 톤</span></div>
     <div class="palette">
       {families.map(family=><div class="color-family"><div class="family-label">{family.name}</div><div class="family-colors">
-        {family.colors.map(([name,hex])=><button type="button" class="color-choice" data-color={hex} data-color-name={name} aria-label={`${name} ${hex}`} aria-pressed={name===colors[0].name?'true':'false'}>
+        {family.colors.map(([name,hex])=><button type="button" class="color-choice" data-color={hex} data-color-name={name} aria-label={`${name} ${hex}`} aria-pressed="false">
           <span class="color-badge palette-badge" style={style('star',hex)} aria-hidden="true" />
           <span class="color-name">{name}</span><span class="hex">{hex}</span>
         </button>)}
@@ -71,6 +82,9 @@ const style=(icon,hex)=>`--badge-icon:url('/icons/achievement-preview/${icon}.sv
   #selectedColorName .hex { margin-left:6px; }
   .selected-icons { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:18px; }
   .common-preview .selected-icons .color-badge { width:24px; height:24px; }
+  .base-colors { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; margin-bottom:26px; }
+  .base-sample { display:flex; align-items:center; gap:3px; color:#333; font-size:.78rem; margin:4px 0; }
+  .base-icons { display:flex; gap:7px; margin-bottom:4px; }
   .palette { display:flex; flex-direction:column; gap:9px; }
   .color-family { display:flex; align-items:center; gap:10px; }
   .family-label { flex:0 0 38px; color:#999; font-size:.72rem; }
@@ -88,5 +102,5 @@ const style=(icon,hex)=>`--badge-icon:url('/icons/achievement-preview/${icon}.sv
   .common-preview .caption { font-size:.72rem; color:#999; line-height:1.8; margin-top:14px; }
   .common-preview .credit { font-size:.65rem; color:#aaa; margin-top:8px; }
   .common-preview .credit a { color:inherit; }
-  @media(max-width:400px) { .icon-picker { grid-template-columns:repeat(6,minmax(0,1fr)); } .selected-icons { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; justify-items:center; } .family-label { flex-basis:32px; font-size:.66rem; } .color-family { gap:6px; } .family-colors { gap:5px; } .common-preview .section-heading > span { font-size:.59rem; } }
+  @media(max-width:400px) { .base-colors { grid-template-columns:repeat(2,minmax(0,1fr)); } .icon-picker { grid-template-columns:repeat(6,minmax(0,1fr)); } .selected-icons { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; justify-items:center; } .family-label { flex-basis:32px; font-size:.66rem; } .color-family { gap:6px; } .family-colors { gap:5px; } .common-preview .section-heading > span { font-size:.59rem; } }
 </style>
