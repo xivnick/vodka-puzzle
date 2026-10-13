@@ -17,7 +17,7 @@
       badge.style.setProperty('--tone-a',finish.colors[0]);
       badge.style.setProperty('--tone-b',finish.colors[1]);
     }
-    document.getElementById('finishDescription').textContent = `${finish.label} · ${finish.type}`;
+    document.getElementById('finishDescription').textContent = `${finish.label} · ${finish.type}${finish.note ? ' · '+finish.note : ''}`;
     document.querySelectorAll('[data-finish-choice]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.finishChoice === id)));
   }
   function openBadge(button) {
