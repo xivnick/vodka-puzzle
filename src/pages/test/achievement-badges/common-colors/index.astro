@@ -1,0 +1,92 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+const families = [
+  {name:'빨강',colors:[['수박','#D9747C'],['빨강','#C4515D'],['와인','#953E4B']]},
+  {name:'주황',colors:[['살구','#D98A62'],['주황','#C57543'],['구리','#965329']]},
+  {name:'노랑',colors:[['모래','#C3AA4E'],['노랑','#A99231'],['머스터드','#827222']]},
+  {name:'갈색',colors:[['밀크티','#AF8A6D'],['갈색','#8F6A50'],['초콜릿','#694D3D']]},
+  {name:'초록',colors:[['풀잎','#7DA06A'],['초록','#578761'],['숲','#38664B']]},
+  {name:'민트',colors:[['민트','#6FAE95'],['비취','#42977D'],['깊은 민트','#2E7364']]},
+  {name:'청록',colors:[['물빛','#6BA7AA'],['청록','#368B91'],['깊은 청록','#28676F']]},
+  {name:'하늘',colors:[['하늘','#79A9C8'],['바다','#488FAF'],['잉크블루','#366B8C']]},
+  {name:'파랑',colors:[['수국','#809ACC'],['파랑','#527BC0'],['남색','#3D5994']]},
+  {name:'보라',colors:[['라벤더','#A78AC9'],['보라','#8B69B1'],['포도','#674B8D']]},
+  {name:'분홍',colors:[['벚꽃','#CF91B2'],['분홍','#BB6B98'],['자두','#914B76']]},
+  {name:'무채색',colors:[['은회색','#9898A1'],['회색','#727C8B'],['먹색','#485360']]},
+];
+const icons = [['star','별'],['flower','꽃'],['flame','불꽃'],['trophy','트로피'],['medal','메달'],['puzzle','퍼즐'],['plant','새싹'],['bolt','번개'],['moon','달'],['diamond','다이아몬드'],['crown','왕관'],['rosette','로제트']];
+const colors=families.flatMap(f=>f.colors.map(([name,hex])=>({family:f.name,name,hex})));
+const names=['네모왕','소금빵','퍼즐러','모눈종이','연필한자루','숫자산책','초록','빈칸수집가','달빛산책','번뜩','유리구슬','꾸준한오후','조각모음','민트초코','불씨','별헤는밤','라일락','종이비행기','귤한조각','베리소다','새벽달','한칸더','오로라','봄바람','잔별','꽃갈피','해질녘','복숭아','숲속산책','파란수첩','차곡차곡','차한잔','모서리','작은발견','구름산책','마지막한칸'];
+const style=(icon,hex)=>`--badge-icon:url('/icons/achievement-preview/${icon}.svg');--badge-color:${hex}`;
+---
+<PageLayout title="커먼 단색 뱃지" subtitle="12개 색상 계열 × 3가지 톤 · 단색 36종 비교">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="common-preview" aria-label="커먼 단색 색상 비교">
+    <p class="intro">아이콘을 바꾸면 36색을 같은 모양으로 비교할 수 있습니다.<br />색상을 누르면 이름 뒤 뱃지와 다른 아이콘에도 적용됩니다.</p>
+    <div class="section-heading">비교할 아이콘 <span>색상표 28px · 이름 뒤 18px</span></div>
+    <div class="icon-picker" aria-label="비교할 아이콘 선택">
+      {icons.map(([id,name],index)=><button type="button" class="icon-choice" data-icon-choice={id} aria-label={name} title={name} aria-pressed={index===0?'true':'false'}><span class="color-badge" style={style(id,'#727C8B')} aria-hidden="true" /></button>)}
+    </div>
+    <div class="selected-preview" aria-live="polite">
+      <div class="selected-top"><span class="selected-name"><span>퍼즐러</span><span class="color-badge selected-badge" style={style('star',colors[0].hex)} role="img" aria-label="수박색 별 뱃지" /></span><span id="selectedColorName">수박 <span class="hex">{colors[0].hex}</span></span></div>
+      <div class="selected-icons" aria-label="선택 색상을 적용한 아이콘 12종">
+        {icons.map(([id,name])=><span class="color-badge selected-badge" style={style(id,colors[0].hex)} role="img" aria-label={`수박색 ${name} 뱃지`} data-icon-label={name} />)}
+      </div>
+    </div>
+    <div class="section-heading">커먼 색상 (36) <span>밝은 톤 → 기본 톤 → 깊은 톤</span></div>
+    <div class="palette">
+      {families.map(family=><div class="color-family"><div class="family-label">{family.name}</div><div class="family-colors">
+        {family.colors.map(([name,hex])=><button type="button" class="color-choice" data-color={hex} data-color-name={name} aria-label={`${name} ${hex}`} aria-pressed={name===colors[0].name?'true':'false'}>
+          <span class="color-badge palette-badge" style={style('star',hex)} aria-hidden="true" />
+          <span class="color-name">{name}</span><span class="hex">{hex}</span>
+        </button>)}
+      </div></div>)}
+    </div>
+    <div class="section-heading ranking-heading">가상 랭킹 (36) <span>모든 색을 하나씩 적용</span></div>
+    <div class="lb-list">
+      {colors.map((color,index)=><div class:list={['lb-row',{'lb-me':index===2}]}>
+        <span class="lb-rank">{index+1}</span>
+        <span class="lb-name common-rank-name"><span>{names[index]}</span><span class="color-badge" style={style(icons[index%icons.length][0],color.hex)} role="img" aria-label={`${color.name}색 ${icons[index%icons.length][1]} 뱃지`} title={`${color.name} · ${color.hex}`} /></span>
+        <span class="rank-color-name">{color.name}</span><span class="lb-time">{108-index*3}개</span>
+      </div>)}
+    </div>
+    <p class="caption">닉네임과 기록은 예시입니다. 밝은 색부터 깊은 색까지 실제 크기에서 비교하기 위한 시안입니다.</p>
+    <p class="credit">아이콘: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
+  </section>
+</PageLayout>
+<script>import '../../../../scripts/achievement-common-colors.js';</script>
+<style is:global>
+  .common-preview { width:100%; }
+  .common-preview .intro { margin:0 0 22px; font-size:.78rem; line-height:1.8; color:#888; }
+  .common-preview .section-heading { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; font-size:.78rem; color:#555; font-weight:500; }
+  .common-preview .section-heading > span { font-size:.64rem; color:#999; font-weight:400; }
+  .common-preview .color-badge { display:inline-block; flex:0 0 auto; width:18px; height:18px; background:var(--badge-color); -webkit-mask:var(--badge-icon) center / contain no-repeat; mask:var(--badge-icon) center / contain no-repeat; vertical-align:middle; }
+  .icon-picker { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:4px; margin-bottom:14px; }
+  .icon-choice { display:flex; align-items:center; justify-content:center; height:34px; border:1px solid #e8e5df; border-radius:4px; background:white; padding:0; }
+  .icon-choice[aria-pressed="true"] { background:#eee9e1; border-color:#b8b1a6; }
+  .selected-preview { padding:14px 16px; margin-bottom:24px; border:1px solid #e8e5df; border-radius:4px; background:#faf8f4; }
+  .selected-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .selected-name { display:flex; align-items:center; gap:4px; font-size:.88rem; color:#333; }
+  #selectedColorName { font-size:.75rem; color:#666; }
+  #selectedColorName .hex { margin-left:6px; }
+  .selected-icons { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:18px; }
+  .common-preview .selected-icons .color-badge { width:24px; height:24px; }
+  .palette { display:flex; flex-direction:column; gap:9px; }
+  .color-family { display:flex; align-items:center; gap:10px; }
+  .family-label { flex:0 0 38px; color:#999; font-size:.72rem; }
+  .family-colors { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; flex:1; min-width:0; }
+  .color-choice { display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 4px 10px; border:1px solid #e8e5df; border-radius:4px; background:white; min-width:0; }
+  .color-choice:hover { background:#faf8f4; }
+  .color-choice[aria-pressed="true"] { background:#faf8f4; border-color:#b8b1a6; }
+  .common-preview .palette-badge { width:28px; height:28px; margin-bottom:1px; }
+  .color-name { font-size:.72rem; color:#666; white-space:nowrap; }
+  .common-preview .hex { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:.61rem; color:#aaa; }
+  .common-preview .ranking-heading { margin-top:30px; }
+  .common-rank-name { display:flex; align-items:center; gap:4px; min-width:0; }
+  .common-rank-name > span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rank-color-name { color:#aaa; font-size:.65rem; white-space:nowrap; }
+  .common-preview .caption { font-size:.72rem; color:#999; line-height:1.8; margin-top:14px; }
+  .common-preview .credit { font-size:.65rem; color:#aaa; margin-top:8px; }
+  .common-preview .credit a { color:inherit; }
+  @media(max-width:400px) { .icon-picker { grid-template-columns:repeat(6,minmax(0,1fr)); } .selected-icons { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; justify-items:center; } .family-label { flex-basis:32px; font-size:.66rem; } .color-family { gap:6px; } .family-colors { gap:5px; } .common-preview .section-heading > span { font-size:.59rem; } }
+</style>
