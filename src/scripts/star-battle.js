@@ -1,10 +1,12 @@
 import { size, puzzles, analyze, parseStarBattleState } from '../lib/star-battle.js';
 const $ = id => document.getElementById(id);
 const puzzleId = $('starBattleGame').dataset.puzzleId;
-const {regions, emptyRegions = 0} = puzzles[puzzleId];
+const {regions, emptyRegions = 0, blocked = []} = puzzles[puzzleId];
+const blockedCells = new Set(blocked);
+const regionIds = regions?.flat();
 const board = $('starBattleBoard');
 const cells = [...$('starBattleBoard').querySelectorAll('[data-cell]')];
-let values = Array(size * size).fill(0), selected = 0, inputSwapped = false;
+let values = Array(size * size).fill(0), selected = cells.findIndex((_, i) => !blockedCells.has(i)), inputSwapped = false;
 let press = null;
 let ready = false, completionRecorded = false;
 const state = () => ({version:1, puzzleId, values:[...values]});
@@ -14,14 +16,14 @@ function persist() {
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
 function render() {
-  const {bad, complete} = analyze(values, regions, emptyRegions);
+  const {bad, complete} = analyze(values, regions, emptyRegions, blocked);
   cells.forEach((cell, i) => {
     cell.textContent = ['', '★', '×'][values[i]];
     cell.classList.toggle('selected', !complete && i === selected);
     cell.classList.toggle('note', values[i] === 2);
     cell.classList.toggle('conflict', bad.has(i));
     cell.tabIndex = i === selected ? 0 : -1;
-    cell.setAttribute('aria-label', `${Math.floor(i / size) + 1}행 ${i % size + 1}열, 영역 ${regions.flat()[i] + 1}, ${['빈칸','별','× 메모'][values[i]]}${bad.has(i) ? ', 규칙 위반' : ''}`);
+    cell.setAttribute('aria-label', `${Math.floor(i / size) + 1}행 ${i % size + 1}열${regionIds ? `, 영역 ${regionIds[i] + 1}` : ''}, ${blockedCells.has(i) ? '검은 칸, 입력 불가' : ['빈칸','별','× 메모'][values[i]]}${bad.has(i) ? ', 규칙 위반' : ''}`);
   });
   $('starBattleComplete').hidden = !complete;
   if (!complete) completionRecorded = false;
@@ -31,11 +33,12 @@ function render() {
   }
 }
 function change(value) {
-  if (!ready || values[selected] === value) return;
+  if (!ready || blockedCells.has(selected) || values[selected] === value) return;
   values[selected] = value;
   persist(); render();
 }
 function activate(index, secondary = false) {
+  if (blockedCells.has(index)) return;
   selected = index;
   const mark = secondary !== inputSwapped ? 2 : 1;
   change(values[index] === mark ? 0 : mark);
@@ -54,7 +57,7 @@ function cancelPress() {
 $('starBattleNotes').addEventListener('click', toggleInput);
 board.addEventListener('pointerdown', event => {
   const cell = event.target.closest('[data-cell]');
-  if (!ready || !cell || event.button !== 0 || press) return;
+  if (!ready || !cell || cell.disabled || event.button !== 0 || press) return;
   const index = Number(cell.dataset.cell);
   press = {id:event.pointerId, index, x:event.clientX, y:event.clientY, long:false, timer:null};
   press.timer = setTimeout(() => {
@@ -93,12 +96,16 @@ board.addEventListener('contextmenu', event => {
 });
 $('starBattleBoard').addEventListener('keydown', event => {
   const r = Math.floor(selected / size), c = selected % size;
-  const next = {
-    ArrowLeft:r * size + Math.max(0,c - 1), ArrowRight:r * size + Math.min(size - 1,c + 1),
-    ArrowUp:Math.max(0,r - 1) * size + c, ArrowDown:Math.min(size - 1,r + 1) * size + c,
-  }[event.key];
-  if (next !== undefined) {
-    event.preventDefault(); selected = next; render(); cells[selected].focus({preventScroll:true});
+  const direction = {ArrowLeft:[0,-1], ArrowRight:[0,1], ArrowUp:[-1,0], ArrowDown:[1,0]}[event.key];
+  if (direction) {
+    event.preventDefault();
+    let rr = r + direction[0], cc = c + direction[1];
+    while (rr >= 0 && rr < size && cc >= 0 && cc < size) {
+      const next = rr * size + cc;
+      if (!blockedCells.has(next)) { selected = next; break; }
+      rr += direction[0]; cc += direction[1];
+    }
+    render(); cells[selected].focus({preventScroll:true});
   } else if (['Backspace','Delete','0'].includes(event.key)) { event.preventDefault(); change(0); }
   else if (event.key.toLowerCase() === 'm') { event.preventDefault(); toggleInput(); }
 });

@@ -14,6 +14,23 @@ export const regions = [
   [8,8,8,8,8,8,8,8,8,2],
 ];
 export const puzzles = {
+  '261014_01': {
+    title: '261014 배틀 스타',
+    regions: null,
+    // Black cells transcribed from the supplied photo; no solution is stored.
+    blocked: [
+      '1110000111',
+      '0000001111',
+      '0000000001',
+      '0000000000',
+      '0000001100',
+      '0000000000',
+      '0000000000',
+      '0100000001',
+      '1100000001',
+      '1111011100',
+    ].flatMap((row, r) => [...row].flatMap((cell, c) => cell === '1' ? [r * size + c] : [])),
+  },
   '261011_01': {
     title: '261011 스타 배틀(침입자)',
     emptyRegions: 1,
@@ -49,7 +66,7 @@ export const puzzles = {
   },
 };
 function makeUnits(regionGrid) {
-  const flat = regionGrid.flat();
+  const flat = regionGrid?.flat() || [];
   return [
     ...Array.from({length:size}, (_, r) => Array.from({length:size}, (_, c) => r * size + c)),
     ...Array.from({length:size}, (_, c) => Array.from({length:size}, (_, r) => r * size + c)),
@@ -60,9 +77,10 @@ const puzzleUnits = new Map(Object.values(puzzles).map(puzzle => [puzzle.regions
 export const units = puzzleUnits.get(regions);
 
 // 0 = blank, 1 = star, 2 = cross note.
-export function analyze(values, regionGrid = regions, emptyRegions = 0) {
+export function analyze(values, regionGrid = regions, emptyRegions = 0, blocked = []) {
   const units = puzzleUnits.get(regionGrid);
   const bad = new Set();
+  blocked.forEach(i => { if (values[i] === 1) bad.add(i); });
   const counts = units.map(unit => unit.filter(i => values[i] === 1).length);
   units.forEach((unit, index) => {
     if (counts[index] > starsPerUnit) unit.filter(i => values[i] === 1).forEach(i => bad.add(i));
@@ -85,6 +103,7 @@ export function analyze(values, regionGrid = regions, emptyRegions = 0) {
       && counts.slice(0, size * 2).every(count => count === starsPerUnit)
       && counts.slice(size * 2).filter(count => count === 0).length === emptyRegions
       && counts.slice(size * 2).every(count => count === 0 || count === starsPerUnit)
+      && blocked.every(i => values[i] === 0)
       && bad.size === 0,
   };
 }
@@ -92,6 +111,7 @@ export function analyze(values, regionGrid = regions, emptyRegions = 0) {
 export function parseStarBattleState(saved, puzzleId) {
   if (!saved || saved.version !== 1 || saved.puzzleId !== puzzleId
     || !Array.isArray(saved.values) || saved.values.length !== size * size
-    || !saved.values.every(n => Number.isInteger(n) && n >= 0 && n <= 2)) return null;
+    || !saved.values.every(n => Number.isInteger(n) && n >= 0 && n <= 2)
+    || (puzzles[puzzleId]?.blocked || []).some(i => saved.values[i] !== 0)) return null;
   return {values: [...saved.values]};
 }
