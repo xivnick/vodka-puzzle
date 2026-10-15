@@ -50,16 +50,18 @@ function cancelPress() {
 }
 function setMode(next) {
   cancelPress(); mode = next; anchor = null;
-  game.querySelectorAll('[data-mode]').forEach(button => {
-    button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  game.querySelectorAll('[data-mode]').forEach(label => {
+    label.classList.toggle('active', label.dataset.mode === mode);
   });
+  $('starLoopMode').setAttribute('aria-pressed', String(mode === 'star'));
+  $('starLoopMode').setAttribute('aria-label', mode === 'star' ? '현재 별 채우기, 루프 그리기로 전환' : '현재 루프 그리기, 별 채우기로 전환');
 }
 function toggleInput() {
   cancelPress(); inputSwapped = !inputSwapped;
   $('starLoopNotes').textContent = inputSwapped ? '길게 눌러 ★ 표시' : '길게 눌러 x 표시';
   $('starLoopNotes').setAttribute('aria-pressed', String(inputSwapped));
 }
-game.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
+$('starLoopMode').addEventListener('click', () => setMode(mode === 'loop' ? 'star' : 'loop'));
 $('starLoopNotes').addEventListener('click', toggleInput);
 function cell(event) {
   const rect = board.getBoundingClientRect();
