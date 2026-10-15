@@ -3,7 +3,7 @@ const $ = id => document.getElementById(id);
 const game = $('starLoopGame'), board = $('starLoopBoard'), puzzleId = game.dataset.puzzleId;
 const regionIds = regions.flat();
 let values = Array(size * size).fill(0), edges = new Set(), selected = null, anchor = null;
-let mode = 'loop', previousMode = 'loop', gesture = null, ready = false, completionRecorded = false;
+let mode = 'loop', inputSwapped = false, gesture = null, ready = false, completionRecorded = false;
 const state = () => ({version:1, puzzleId, values:[...values], edges:[...edges]});
 const xy = i => [(i % size + .5) * 40, (Math.floor(i / size) + .5) * 40];
 function persist() {
@@ -44,18 +44,24 @@ function render() {
     completionRecorded = true; window.recordCompletion(puzzleId, state());
   }
 }
+function cancelPress() {
+  if (gesture) clearTimeout(gesture.timer);
+  gesture = null;
+}
 function setMode(next) {
-  if (next !== 'note') previousMode = next;
-  mode = next; anchor = null;
-  const starMode = previousMode === 'star';
+  cancelPress(); mode = next; anchor = null;
+  const starMode = mode === 'star';
   $('starLoopMode').textContent = starMode ? '별 채우기' : '루프 그리기';
   $('starLoopMode').setAttribute('aria-pressed', String(starMode));
   $('starLoopMode').setAttribute('aria-label', starMode ? '현재 별 채우기, 루프 그리기로 전환' : '현재 루프 그리기, 별 채우기로 전환');
-  $('starLoopNotes').setAttribute('aria-pressed', String(mode === 'note'));
 }
-const toggleNotes = () => setMode(mode === 'note' ? previousMode : 'note');
-$('starLoopMode').addEventListener('click', () => setMode(previousMode === 'loop' ? 'star' : 'loop'));
-$('starLoopNotes').addEventListener('click', toggleNotes);
+function toggleInput() {
+  cancelPress(); inputSwapped = !inputSwapped;
+  $('starLoopNotes').textContent = inputSwapped ? '길게 눌러 ★ 표시' : '길게 눌러 x 표시';
+  $('starLoopNotes').setAttribute('aria-pressed', String(inputSwapped));
+}
+$('starLoopMode').addEventListener('click', () => setMode(mode === 'loop' ? 'star' : 'loop'));
+$('starLoopNotes').addEventListener('click', toggleInput);
 function cell(event) {
   const rect = board.getBoundingClientRect();
   const c = Math.floor((event.clientX-rect.left) / rect.width * size), r = Math.floor((event.clientY-rect.top) / rect.height * size);
@@ -78,29 +84,32 @@ function mark(i, value) {
   if (values[i] === 1) for (const key of edges) if (key.split(':').map(Number).includes(i)) edges.delete(key);
   persist(); render();
 }
+function activateMark(i, secondary = false) {
+  mark(i, secondary !== inputSwapped ? 2 : 1);
+}
 board.addEventListener('pointerdown', event => {
   if (!ready || event.button !== 0 || gesture) return;
   const i = cell(event); if (i === null) return;
   event.preventDefault(); board.focus({preventScroll:true}); board.setPointerCapture(event.pointerId);
-  gesture = {id:event.pointerId, start:i, last:i, moved:false, action:null, visited:new Set(), hit:event.target.closest('[data-edge]')?.dataset.edge};
+  gesture = {id:event.pointerId, start:i, x:event.clientX, y:event.clientY, moved:false, long:false, timer:null, hit:event.target.closest('[data-edge]')?.dataset.edge};
+  if (mode === 'star') gesture.timer = setTimeout(() => {
+    if (!gesture || gesture.id !== event.pointerId || gesture.moved) return;
+    gesture.long = true; activateMark(i, true);
+  }, 550);
   selected = i; render();
 });
 board.addEventListener('pointermove', event => {
-  if (!gesture || event.pointerId !== gesture.id || mode !== 'loop') return;
-  const i = cell(event), keys = straight(gesture.last,i);
-  if (!keys.length) return;
-  if (!gesture.moved) { gesture.action = edges.has(keys[0]) ? 'erase' : 'draw'; gesture.moved = true; }
-  for (const key of keys) if (!gesture.visited.has(key)) {
-    if (gesture.action === 'erase') edges.delete(key); else edges.add(key);
-    gesture.visited.add(key);
+  if (!gesture || event.pointerId !== gesture.id) return;
+  if (Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > 10) {
+    clearTimeout(gesture.timer); gesture.moved = true; anchor = null;
   }
-  gesture.last = i; selected = i; render();
 });
 function end(event) {
   if (!gesture || event.pointerId !== gesture.id) return;
-  const current = gesture; gesture = null;
-  if (event.type === 'pointerup' && !current.moved) {
-    if (mode !== 'loop') { mark(current.start, mode === 'star' ? 1 : 2); return; }
+  const current = gesture; cancelPress();
+  if (event.type === 'pointerup' && !current.moved && !current.long
+    && Math.hypot(event.clientX - current.x, event.clientY - current.y) <= 10) {
+    if (mode === 'star') { activateMark(current.start); return; }
     if (current.hit && edges.has(current.hit)) { edges.delete(current.hit); anchor = null; }
     else {
       const keys = straight(anchor,current.start);
@@ -109,17 +118,21 @@ function end(event) {
         keys.forEach(key => erase ? edges.delete(key) : edges.add(key)); anchor = null;
       } else anchor = anchor === current.start ? null : current.start;
     }
-  }
-  if (current.moved) anchor = null;
+  } else if (!current.long) anchor = null;
   persist(); render();
 }
 board.addEventListener('pointerup', end);
 board.addEventListener('pointercancel', end);
 board.addEventListener('lostpointercapture', end);
+window.addEventListener('blur', cancelPress);
 board.addEventListener('contextmenu', event => {
   event.preventDefault(); if (!ready) return;
   const i = cell(event); if (i === null) return;
-  gesture = null; mark(i,2);
+  const alreadyMarked = gesture?.long;
+  cancelPress();
+  if (!alreadyMarked) {
+    if (mode === 'star') activateMark(i, true); else mark(i, 2);
+  }
 });
 function erase() {
   if (!ready || selected === null) return;
@@ -131,7 +144,7 @@ $('starLoopErase').addEventListener('click', erase);
 $('starLoopReset').addEventListener('click', () => {
   if (!ready || !values.some(Boolean) && !edges.size) return;
   if (!confirm('입력한 별, 메모와 선을 모두 초기화할까요?')) return;
-  values.fill(0); edges.clear(); selected = null; anchor = null; gesture = null; persist(); render();
+  values.fill(0); edges.clear(); selected = null; anchor = null; cancelPress(); persist(); render();
 });
 board.addEventListener('keydown', event => {
   if (!ready) return;
@@ -144,12 +157,12 @@ board.addEventListener('keydown', event => {
       if (next >= 0 && next < size * size && (Math.abs(direction) === size || Math.floor(next / size) === Math.floor(selected / size))) selected = next;
     }
     anchor = null; render();
-  } else if (event.key.toLowerCase() === 'm') {event.preventDefault(); toggleNotes();}
+  } else if (event.key.toLowerCase() === 'm') {event.preventDefault(); toggleInput();}
   else if (['Delete','Backspace'].includes(event.key)) {event.preventDefault(); erase();}
-  else if (['Enter',' '].includes(event.key) && selected !== null && mode !== 'loop') {event.preventDefault(); mark(selected,mode === 'star' ? 1 : 2);}
+  else if (['Enter',' '].includes(event.key) && selected !== null && mode === 'star') {event.preventDefault(); activateMark(selected);}
 });
 function init() {
-  gesture = null; anchor = null;
+  cancelPress(); anchor = null;
   let saved = null;
   try { saved = window.loadLocalState(puzzleId); } catch {}
   const restored = parseStarLoopState(saved,puzzleId);
@@ -163,7 +176,7 @@ window.handleCloudLoad = async () => {
   if (saved == null || owner !== window.puzzleAccount?.user?.id || before !== JSON.stringify(state())) return;
   const restored = parseStarLoopState(saved,puzzleId);
   if (!restored) {window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.'); return;}
-  gesture = null; anchor = null; values = restored.values; edges = restored.edges; completionRecorded = false;
+  cancelPress(); anchor = null; values = restored.values; edges = restored.edges; completionRecorded = false;
   persist(); render();
 };
 window.checkComplete = render;

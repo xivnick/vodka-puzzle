@@ -15,12 +15,12 @@ const {puzzleId} = Astro.props;
   </div>
   <div slot="controls">
     아래 버튼으로 ‘루프 그리기’와 ‘별 채우기’를 전환하세요.<br />
-    루프는 칸 중심을 따라 드래그하거나 같은 행·열의 두 칸을 차례로 눌러 그립니다. 선을 다시 그리거나 누르면 지웁니다. 별은 칸을 눌러 넣으세요.<br />
-    ‘메모하기’ 버튼이나 M 키로 × 메모를 켜고 끄세요. 우클릭으로도 메모할 수 있습니다.<br />
+    루프는 같은 행·열의 두 칸을 차례로 눌러 그립니다. 같은 구간을 다시 연결하거나 선을 누르면 지웁니다.<br />
+    별 채우기에서는 칸을 짧게 누르면 별, 길게 누르거나 우클릭하면 × 메모를 넣습니다. 오른쪽 위 버튼이나 M 키로 두 입력을 바꾸세요.<br />
     같은 표시를 다시 누르거나 지우기 버튼으로 선택한 칸의 표시와 선을 지우세요.
   </div>
   <section id="starLoopGame" data-puzzle-id={puzzleId} aria-label="스타 루프">
-    <div class="board-tools"><button id="starLoopNotes" type="button" aria-pressed="false">메모하기</button></div>
+    <div class="board-tools"><button id="starLoopNotes" type="button" aria-pressed="false">길게 눌러 x 표시</button></div>
     <svg id="starLoopBoard" viewBox="0 0 480 480" role="application" tabindex="0" aria-label="12행 12열 스타 루프 격자"></svg>
     <div class="bottom-buttons"><button id="starLoopMode" type="button" aria-pressed="false" aria-label="현재 루프 그리기, 별 채우기로 전환">루프 그리기</button><button id="starLoopErase" type="button">지우기</button><button id="starLoopReset" type="button" class="danger">초기화</button></div>
     <p id="starLoopStatus" class="sr-only" role="status" aria-live="polite"></p>
