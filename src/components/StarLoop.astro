@@ -20,7 +20,7 @@ const {puzzleId} = Astro.props;
     같은 표시를 다시 누르거나 지우기 버튼으로 선택한 칸의 표시와 선을 지우세요.
   </div>
   <section id="starLoopGame" data-puzzle-id={puzzleId} aria-label="스타 루프">
-    <div class="board-tools"><button id="starLoopNotes" type="button" aria-pressed="false">짧게 ★ · 길게 ×</button></div>
+    <div class="board-tools"><button id="starLoopNotes" type="button" aria-pressed="false">길게 눌러 x 표시</button></div>
     <svg id="starLoopBoard" viewBox="0 0 480 480" role="application" tabindex="0" aria-label="12행 12열 스타 루프 격자"></svg>
     <div class="bottom-buttons mode-buttons" role="group" aria-label="입력 모드"><button type="button" data-mode="loop" aria-pressed="true">루프 그리기</button><button type="button" data-mode="star" aria-pressed="false">별 채우기</button></div>
     <div class="bottom-buttons"><button id="starLoopErase" type="button">지우기</button><button id="starLoopReset" type="button" class="danger">초기화</button></div>

@@ -56,7 +56,7 @@ function setMode(next) {
 }
 function toggleInput() {
   cancelPress(); inputSwapped = !inputSwapped;
-  $('starLoopNotes').textContent = inputSwapped ? '짧게 × · 길게 ★' : '짧게 ★ · 길게 ×';
+  $('starLoopNotes').textContent = inputSwapped ? '길게 눌러 ★ 표시' : '길게 눌러 x 표시';
   $('starLoopNotes').setAttribute('aria-pressed', String(inputSwapped));
 }
 game.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
