@@ -50,17 +50,16 @@ function cancelPress() {
 }
 function setMode(next) {
   cancelPress(); mode = next; anchor = null;
-  const starMode = mode === 'star';
-  $('starLoopMode').textContent = starMode ? '별 채우기' : '루프 그리기';
-  $('starLoopMode').setAttribute('aria-pressed', String(starMode));
-  $('starLoopMode').setAttribute('aria-label', starMode ? '현재 별 채우기, 루프 그리기로 전환' : '현재 루프 그리기, 별 채우기로 전환');
+  game.querySelectorAll('[data-mode]').forEach(button => {
+    button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  });
 }
 function toggleInput() {
   cancelPress(); inputSwapped = !inputSwapped;
-  $('starLoopNotes').textContent = inputSwapped ? '길게 눌러 ★ 표시' : '길게 눌러 x 표시';
+  $('starLoopNotes').textContent = inputSwapped ? '짧게 × · 길게 ★' : '짧게 ★ · 길게 ×';
   $('starLoopNotes').setAttribute('aria-pressed', String(inputSwapped));
 }
-$('starLoopMode').addEventListener('click', () => setMode(mode === 'loop' ? 'star' : 'loop'));
+game.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
 $('starLoopNotes').addEventListener('click', toggleInput);
 function cell(event) {
   const rect = board.getBoundingClientRect();
@@ -90,15 +89,13 @@ function activateMark(i, secondary = false) {
 board.addEventListener('pointerdown', event => {
   if (!ready || event.button !== 0 || gesture) return;
   const i = cell(event); if (i === null) return;
-  event.preventDefault(); board.focus({preventScroll:true}); board.setPointerCapture(event.pointerId);
   gesture = {id:event.pointerId, start:i, x:event.clientX, y:event.clientY, moved:false, long:false, timer:null, hit:event.target.closest('[data-edge]')?.dataset.edge};
   if (mode === 'star') gesture.timer = setTimeout(() => {
     if (!gesture || gesture.id !== event.pointerId || gesture.moved) return;
     gesture.long = true; activateMark(i, true);
   }, 550);
-  selected = i; render();
 });
-board.addEventListener('pointermove', event => {
+window.addEventListener('pointermove', event => {
   if (!gesture || event.pointerId !== gesture.id) return;
   if (Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > 10) {
     clearTimeout(gesture.timer); gesture.moved = true; anchor = null;
@@ -109,6 +106,7 @@ function end(event) {
   const current = gesture; cancelPress();
   if (event.type === 'pointerup' && !current.moved && !current.long
     && Math.hypot(event.clientX - current.x, event.clientY - current.y) <= 10) {
+    selected = current.start; board.focus({preventScroll:true});
     if (mode === 'star') { activateMark(current.start); return; }
     if (current.hit && edges.has(current.hit)) { edges.delete(current.hit); anchor = null; }
     else {
@@ -121,9 +119,8 @@ function end(event) {
   } else if (!current.long) anchor = null;
   persist(); render();
 }
-board.addEventListener('pointerup', end);
-board.addEventListener('pointercancel', end);
-board.addEventListener('lostpointercapture', end);
+window.addEventListener('pointerup', end);
+window.addEventListener('pointercancel', end);
 window.addEventListener('blur', cancelPress);
 board.addEventListener('contextmenu', event => {
   event.preventDefault(); if (!ready) return;
