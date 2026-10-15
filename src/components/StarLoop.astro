@@ -1,0 +1,41 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+const {puzzleId} = Astro.props;
+---
+<PuzzleLayout title="261015 스타 루프" {puzzleId}
+  subtitle="서로 닿지 않게 별을 채우고, 별이 없는 모든 칸을 지나는 루프를 그리세요"
+  description="각 줄과 영역에 별을 하나씩 채우고 각 영역을 한 번만 방문하는 스타 루프">
+  <div slot="rules">
+    다음 규칙에 따라 일부 칸에 별을 채우고 루프를 그리세요.<br />
+    각 가로줄/세로줄/영역에 별이 1개씩 있습니다.<br />
+    별끼리는 변으로도, 대각선으로도 닿지 않습니다.<br />
+    별이 없는 모든 칸의 중심을 가로·세로로 연결하여 하나의 루프를 그려야 합니다. 루프는 갈라지거나 교차하지 않습니다.<br />
+    단, 루프는 한 영역에 두 번 이상 방문하지 않습니다. 즉, 한 영역에 들어간 루프는 해당 영역의 별이 없는 모든 칸을 지나고 나옵니다.
+  </div>
+  <div slot="controls">
+    ‘루프’에서 칸 중심을 따라 드래그하거나 같은 행·열의 두 칸을 차례로 누르세요. 선을 다시 그리거나 누르면 지웁니다.<br />
+    ‘별’에서 칸을 누르면 별을 넣습니다. ‘× 메모’ 또는 M 키로 메모 입력을 전환하세요. 우클릭으로도 메모할 수 있습니다.<br />
+    같은 표시를 다시 누르거나 지우기 버튼으로 선택한 칸의 표시와 선을 지우세요.
+  </div>
+  <section id="starLoopGame" data-puzzle-id={puzzleId} aria-label="스타 루프">
+    <div class="board-tools" role="group" aria-label="입력 모드">
+      <button type="button" data-mode="loop" aria-pressed="true">루프</button>
+      <button type="button" data-mode="star" aria-pressed="false">별</button>
+      <button type="button" data-mode="note" aria-pressed="false">× 메모</button>
+    </div>
+    <svg id="starLoopBoard" viewBox="0 0 480 480" role="application" tabindex="0" aria-label="12행 12열 스타 루프 격자"></svg>
+    <div class="bottom-buttons"><button id="starLoopErase" type="button">지우기</button><button id="starLoopReset" type="button" class="danger">초기화</button></div>
+    <p id="starLoopStatus" class="sr-only" role="status" aria-live="polite"></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="starLoopComplete" />
+  <script>import '../scripts/star-loop.js';</script>
+</PuzzleLayout>
+<style>
+  .board-tools {display:flex;justify-content:flex-end;gap:16px;margin-bottom:8px;}
+  .board-tools button {background:none;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:0 0 1px;color:#888;font-size:.82rem;line-height:1.5;}
+  .board-tools button[aria-pressed=true] {color:#4a6fa5;border-color:#4a6fa5;}
+  #starLoopBoard {display:block;width:100%;height:auto;background:white;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+  #starLoopBoard:focus {outline:none;}
+  .sr-only {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+</style>
