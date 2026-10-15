@@ -1,7 +1,7 @@
 import {size, regions, edgeKey, analyze, parseStarLoopState} from '../lib/star-loop.js';
 const $ = id => document.getElementById(id);
 const game = $('starLoopGame'), board = $('starLoopBoard'), puzzleId = game.dataset.puzzleId;
-const regionIds = regions.flat(), modes = [...game.querySelectorAll('[data-mode]')];
+const regionIds = regions.flat();
 let values = Array(size * size).fill(0), edges = new Set(), selected = null, anchor = null;
 let mode = 'loop', previousMode = 'loop', gesture = null, ready = false, completionRecorded = false;
 const state = () => ({version:1, puzzleId, values:[...values], edges:[...edges]});
@@ -47,9 +47,15 @@ function render() {
 function setMode(next) {
   if (next !== 'note') previousMode = next;
   mode = next; anchor = null;
-  modes.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mode === mode)));
+  const starMode = previousMode === 'star';
+  $('starLoopMode').textContent = starMode ? '별 채우기' : '루프 그리기';
+  $('starLoopMode').setAttribute('aria-pressed', String(starMode));
+  $('starLoopMode').setAttribute('aria-label', starMode ? '현재 별 채우기, 루프 그리기로 전환' : '현재 루프 그리기, 별 채우기로 전환');
+  $('starLoopNotes').setAttribute('aria-pressed', String(mode === 'note'));
 }
-modes.forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
+const toggleNotes = () => setMode(mode === 'note' ? previousMode : 'note');
+$('starLoopMode').addEventListener('click', () => setMode(previousMode === 'loop' ? 'star' : 'loop'));
+$('starLoopNotes').addEventListener('click', toggleNotes);
 function cell(event) {
   const rect = board.getBoundingClientRect();
   const c = Math.floor((event.clientX-rect.left) / rect.width * size), r = Math.floor((event.clientY-rect.top) / rect.height * size);
@@ -138,7 +144,7 @@ board.addEventListener('keydown', event => {
       if (next >= 0 && next < size * size && (Math.abs(direction) === size || Math.floor(next / size) === Math.floor(selected / size))) selected = next;
     }
     anchor = null; render();
-  } else if (event.key.toLowerCase() === 'm') {event.preventDefault(); setMode(mode === 'note' ? previousMode : 'note');}
+  } else if (event.key.toLowerCase() === 'm') {event.preventDefault(); toggleNotes();}
   else if (['Delete','Backspace'].includes(event.key)) {event.preventDefault(); erase();}
   else if (['Enter',' '].includes(event.key) && selected !== null && mode !== 'loop') {event.preventDefault(); mark(selected,mode === 'star' ? 1 : 2);}
 });
