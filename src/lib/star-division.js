@@ -20,18 +20,17 @@ export function edgeKey(a, b) {
 
 export function parseStarDivisionState(puzzle, state, puzzleId) {
   if (!state || state.version !== 1 || state.puzzleId !== puzzleId ||
-      !Array.isArray(state.lines) || !Array.isArray(state.crosses)) return null;
+      !Array.isArray(state.lines)) return null;
   const valid = new Set();
   for (let r = 0; r < puzzle.rows; r++) for (let c = 0; c < puzzle.cols; c++) {
     const i = r * puzzle.cols + c;
     if (c + 1 < puzzle.cols) valid.add(edgeKey(i, i + 1));
     if (r + 1 < puzzle.rows) valid.add(edgeKey(i, i + puzzle.cols));
   }
-  const lines = new Set(state.lines), crosses = new Set(state.crosses);
-  if (lines.size !== state.lines.length || crosses.size !== state.crosses.length ||
-      [...lines, ...crosses].some(key => !valid.has(key)) ||
-      [...crosses].some(key => lines.has(key))) return null;
-  return { lines, crosses };
+  const lines = new Set(state.lines);
+  if (lines.size !== state.lines.length || [...lines].some(key => !valid.has(key))) return null;
+  // Older saves may contain X notes; preserve their lines and discard the notes.
+  return { lines };
 }
 
 // Regions are the connected components left by the player's boundary lines.

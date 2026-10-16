@@ -7,7 +7,6 @@ if (game) {
   const preview = game.dataset.preview === 'true';
   const { rows, cols, clues } = puzzle;
   const board = document.getElementById('star-divisionBoard');
-  const modeButton = document.getElementById('star-divisionMode');
   const reset = document.getElementById('star-divisionReset');
   const complete = document.getElementById('star-divisionComplete');
   const status = document.getElementById('star-divisionStatus');
@@ -20,23 +19,22 @@ if (game) {
     if (c < cols - 1) validEdges.add(edgeKey(index, index + 1));
     if (r < rows - 1) validEdges.add(edgeKey(index, index + cols));
   }
-  let edges = new Set(), crosses = new Set();
+  let edges = new Set();
   if (preview) {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
       if (Array.isArray(saved)) edges = new Set(saved.filter(key => validEdges.has(key)));
-      else if ([1, 2].includes(saved?.version) && Array.isArray(saved.lines) && Array.isArray(saved.crosses)) {
+      else if ([1, 2].includes(saved?.version) && Array.isArray(saved.lines)) {
         edges = new Set(saved.lines.filter(key => validEdges.has(key)));
-        crosses = new Set(saved.crosses.filter(key => validEdges.has(key) && !edges.has(key)));
       }
     } catch { /* Storage may be unavailable. */ }
   }
-  let press = null, longPressMeans = 'cross';
+  let press = null;
   let ready = preview, owner = null, completionRecorded = false;
   const account = () => window.puzzleAccount?.user?.id || 'guest';
   board.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
-  const snapshot = () => ({ version: 1, puzzleId, lines: [...edges], crosses: [...crosses] });
+  const snapshot = () => ({ version: 1, puzzleId, lines: [...edges] });
   function persist() {
     if (!ready) return;
     try {
@@ -66,12 +64,10 @@ if (game) {
     return { x: (event.clientX - rect.left) / rect.width * width,
       y: (event.clientY - rect.top) / rect.height * height };
   }
-  function toggleMark(key, mark) {
+  function toggleLine(key) {
     if (!ready || !preview && owner !== account()) return;
-    const target = mark === 'line' ? edges : crosses;
-    const other = mark === 'line' ? crosses : edges;
-    if (target.has(key)) target.delete(key);
-    else { other.delete(key); target.add(key); }
+    if (edges.has(key)) edges.delete(key);
+    else edges.add(key);
     persist(); render();
   }
   function render() {
@@ -97,13 +93,6 @@ if (game) {
         html += `<path d="M${x} ${y}H${x + size}" stroke="#334f72" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linecap="round"/>`;
       }
     }
-    for (const key of crosses) {
-      const [a, b] = key.split(':').map(Number);
-      const x = b - a === 1 ? (b % cols) * size : (a % cols + .5) * size;
-      const y = b - a === 1 ? (Math.floor(a / cols) + .5) * size : Math.floor(b / cols) * size;
-      html += `<rect x="${x - 9}" y="${y - 9}" width="18" height="18" fill="white"/>`;
-      html += `<path d="M${x - 6} ${y - 6}L${x + 6} ${y + 6}M${x + 6} ${y - 6}L${x - 6} ${y + 6}" stroke="#58636f" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round"/>`;
-    }
     clues.forEach((row, r) => [...row].forEach((clue, c) => {
       if (clue === '.') return;
       if (clue === '*') {
@@ -118,7 +107,7 @@ if (game) {
     html += `<rect x="1.5" y="1.5" width="${width - 3}" height="${height - 3}" fill="none" stroke="#202a36" stroke-width="3" vector-effect="non-scaling-stroke" pointer-events="none"/>`;
     board.innerHTML = html;
     complete.hidden = !result.complete;
-    reset.disabled = !ready || !edges.size && !crosses.size;
+    reset.disabled = !ready || !edges.size;
     status.textContent = result.complete ? '퍼즐을 완성했습니다.' : '점선을 눌러 영역을 나누세요.';
     if (!result.complete) completionRecorded = false;
     if (!preview && ready && owner === account() && window.puzzlePage?.published && result.complete && !completionRecorded) {
@@ -126,61 +115,46 @@ if (game) {
       window.recordCompletion(puzzleId, snapshot());
     }
   }
-  modeButton.addEventListener('click', () => {
-    longPressMeans = longPressMeans === 'cross' ? 'line' : 'cross';
-    modeButton.textContent = longPressMeans === 'cross' ? '길게 눌러 x 표시' : '길게 눌러 선 긋기';
-    modeButton.setAttribute('aria-pressed', String(longPressMeans === 'line'));
-  });
   board.addEventListener('contextmenu', event => event.preventDefault());
   board.addEventListener('pointerdown', event => {
     if (!ready || !preview && owner !== account() || event.button !== 0 || press) return;
     const point = position(event), key = edgeAt(point.x, point.y);
     if (!key) return;
-    press = { id: event.pointerId, key, x: event.clientX, y: event.clientY, long: false, timer: null };
-    press.timer = setTimeout(() => {
-      if (!press || press.id !== event.pointerId) return;
-      press.long = true;
-      toggleMark(key, longPressMeans);
-    }, 550);
+    press = { id: event.pointerId, key, x: event.clientX, y: event.clientY };
   });
   window.addEventListener('pointermove', event => {
-    if (!press || press.id !== event.pointerId || press.long) return;
+    if (!press || press.id !== event.pointerId) return;
     if (Math.hypot(event.clientX - press.x, event.clientY - press.y) > 10) {
-      clearTimeout(press.timer);
       press = null;
     }
   });
   window.addEventListener('pointerup', event => {
     if (!press || press.id !== event.pointerId) return;
-    const { key, long, timer, x, y } = press;
-    clearTimeout(timer);
+    const { key, x, y } = press;
     press = null;
-    if (!long && Math.hypot(event.clientX - x, event.clientY - y) <= 10) {
-      toggleMark(key, longPressMeans === 'cross' ? 'line' : 'cross');
+    if (Math.hypot(event.clientX - x, event.clientY - y) <= 10) {
+      toggleLine(key);
     }
   });
   window.addEventListener('pointercancel', event => {
     if (!press || press.id !== event.pointerId) return;
-    clearTimeout(press.timer);
     press = null;
   });
   reset.addEventListener('click', () => {
-    if (!ready || !preview && owner !== account() || !edges.size && !crosses.size) return;
-    edges.clear(); crosses.clear(); persist(); render();
+    if (!ready || !preview && owner !== account() || !edges.size) return;
+    edges.clear(); persist(); render();
   });
   function init() {
     const nextOwner = account();
     if (ready && owner === nextOwner) return;
     owner = nextOwner;
     ready = false;
-    if (press) clearTimeout(press.timer);
     press = null;
     completionRecorded = false;
     let saved = null;
     try { saved = window.loadLocalState(puzzleId); } catch {}
     const parsed = parseStarDivisionState(puzzle, saved, puzzleId);
     edges = parsed?.lines || new Set();
-    crosses = parsed?.crosses || new Set();
     ready = true;
     render();
     window.initCloudBtns();
@@ -197,7 +171,6 @@ if (game) {
       const parsed = parseStarDivisionState(puzzle, saved, puzzleId);
       if (!parsed) { window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.'); return; }
       edges = parsed.lines;
-      crosses = parsed.crosses;
       persist();
       render();
     };
