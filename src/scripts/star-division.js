@@ -76,7 +76,15 @@ if (game) {
   }
   function render() {
     const result = validateStarDivision(puzzle, edges);
-    let html = result.complete ? `<rect width="${width}" height="${height}" fill="#e9f4e9"/>` : '';
+    let html = '';
+    for (const region of result.regions) {
+      if (region.feedback === 'pending') continue;
+      const fill = region.feedback === 'valid' ? '#e9f4e9' : '#fce8e7';
+      for (const index of region.cells) {
+        const r = Math.floor(index / cols), c = index % cols;
+        html += `<rect x="${c * size}" y="${r * size}" width="${size}" height="${size}" fill="${fill}" pointer-events="none"/>`;
+      }
+    }
     for (let r = 1; r < rows; r++) html += `<path d="M0 ${r * size}H${width}" stroke="#d2d8df" stroke-width="1" stroke-dasharray="3 4"/>`;
     for (let c = 1; c < cols; c++) html += `<path d="M${c * size} 0V${height}" stroke="#d2d8df" stroke-width="1" stroke-dasharray="3 4"/>`;
     for (const key of edges) {

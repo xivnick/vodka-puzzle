@@ -61,6 +61,15 @@ export function validateStarDivision(puzzle, lines) {
     const i = r * cols + c, id = regionOf[i];
     if ([i + 1, i + cols, i + cols + 1].every(j => regionOf[j] === id)) regions[id].square = true;
   }
-  return { regions, regionOf, complete: regions.every(region =>
-    region.stars > 0 && !region.square && region.numbers.every(n => n === region.stars)) };
+  for (const region of regions) {
+    region.valid = region.stars > 0 && !region.square && region.numbers.every(n => n === region.stars);
+  }
+  // Leave the largest unfinished area neutral while smaller regions are being cut out.
+  const largest = Math.max(...regions.map(region => region.cells.length));
+  const largestCount = regions.filter(region => region.cells.length === largest).length;
+  for (const region of regions) {
+    region.feedback = region.valid ? 'valid'
+      : region.square && region.cells.length === largest && largestCount === 1 ? 'pending' : 'invalid';
+  }
+  return { regions, regionOf, complete: regions.every(region => region.valid) };
 }
