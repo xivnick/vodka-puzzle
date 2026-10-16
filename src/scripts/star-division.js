@@ -108,11 +108,9 @@ if (game) {
       if (clue === '.') return;
       if (clue === '*') {
         const x = (c + .5) * size, y = (r + .5) * size;
-        const points = Array.from({ length: 10 }, (_, i) => {
-          const angle = -Math.PI / 2 + i * Math.PI / 5, radius = i % 2 ? 3.75 : 9;
-          return `${x + Math.cos(angle) * radius},${y + Math.sin(angle) * radius}`;
-        }).join(' ');
-        html += `<polygon points="${points}" fill="#202a36" pointer-events="none"/>`;
+        // Match the 30px star used by Star Battle at the shared 480px board width.
+        const fontSize = 30 * width / 480;
+        html += `<text x="${x}" y="${y}" dy=".35em" text-anchor="middle" font-family="sans-serif" font-size="${fontSize}" fill="#333" pointer-events="none">★</text>`;
         return;
       }
       html += `<text x="${(c + .5) * size}" y="${(r + .5) * size}" dy=".35em" text-anchor="middle" font-size="25" font-weight="600" fill="#202a36" pointer-events="none">${clue}</text>`;
