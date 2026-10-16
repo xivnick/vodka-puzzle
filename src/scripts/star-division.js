@@ -85,16 +85,16 @@ if (game) {
         html += `<rect x="${c * size}" y="${r * size}" width="${size}" height="${size}" fill="${fill}" pointer-events="none"/>`;
       }
     }
-    for (let r = 1; r < rows; r++) html += `<path d="M0 ${r * size}H${width}" stroke="#d2d8df" stroke-width="1" stroke-dasharray="3 4"/>`;
-    for (let c = 1; c < cols; c++) html += `<path d="M${c * size} 0V${height}" stroke="#d2d8df" stroke-width="1" stroke-dasharray="3 4"/>`;
+    for (let r = 1; r < rows; r++) html += `<path d="M0 ${r * size}H${width}" stroke="#d2d8df" stroke-width="1" vector-effect="non-scaling-stroke" stroke-dasharray="3 4"/>`;
+    for (let c = 1; c < cols; c++) html += `<path d="M${c * size} 0V${height}" stroke="#d2d8df" stroke-width="1" vector-effect="non-scaling-stroke" stroke-dasharray="3 4"/>`;
     for (const key of edges) {
       const [a, b] = key.split(':').map(Number);
       if (b - a === 1) {
         const x = (b % cols) * size, y = Math.floor(a / cols) * size;
-        html += `<path d="M${x} ${y}V${y + size}" stroke="#334f72" stroke-width="4" stroke-linecap="round"/>`;
+        html += `<path d="M${x} ${y}V${y + size}" stroke="#334f72" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linecap="round"/>`;
       } else {
         const x = (a % cols) * size, y = Math.floor(b / cols) * size;
-        html += `<path d="M${x} ${y}H${x + size}" stroke="#334f72" stroke-width="4" stroke-linecap="round"/>`;
+        html += `<path d="M${x} ${y}H${x + size}" stroke="#334f72" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linecap="round"/>`;
       }
     }
     for (const key of crosses) {
@@ -102,7 +102,7 @@ if (game) {
       const x = b - a === 1 ? (b % cols) * size : (a % cols + .5) * size;
       const y = b - a === 1 ? (Math.floor(a / cols) + .5) * size : Math.floor(b / cols) * size;
       html += `<rect x="${x - 9}" y="${y - 9}" width="18" height="18" fill="white"/>`;
-      html += `<path d="M${x - 6} ${y - 6}L${x + 6} ${y + 6}M${x + 6} ${y - 6}L${x - 6} ${y + 6}" stroke="#58636f" stroke-width="2.5" stroke-linecap="round"/>`;
+      html += `<path d="M${x - 6} ${y - 6}L${x + 6} ${y + 6}M${x + 6} ${y - 6}L${x - 6} ${y + 6}" stroke="#58636f" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round"/>`;
     }
     clues.forEach((row, r) => [...row].forEach((clue, c) => {
       if (clue === '.') return;
@@ -117,7 +117,7 @@ if (game) {
       }
       html += `<text x="${(c + .5) * size}" y="${(r + .5) * size}" dy=".35em" text-anchor="middle" font-size="25" font-weight="600" fill="#202a36" pointer-events="none">${clue}</text>`;
     }));
-    html += `<rect x="1.5" y="1.5" width="${width - 3}" height="${height - 3}" fill="none" stroke="#202a36" stroke-width="3" pointer-events="none"/>`;
+    html += `<rect x="1.5" y="1.5" width="${width - 3}" height="${height - 3}" fill="none" stroke="#202a36" stroke-width="3" vector-effect="non-scaling-stroke" pointer-events="none"/>`;
     board.innerHTML = html;
     complete.hidden = !result.complete;
     reset.disabled = !ready || !edges.size && !crosses.size;
