@@ -99,8 +99,8 @@ if (game) {
       if (clue === '.') return;
       if (clue === '*') {
         const x = (c + .5) * size, y = (r + .5) * size;
-        // Match the 30px star used by Star Battle at the shared 480px board width.
-        const fontSize = 30 * (width + framePadding * 2) / 480;
+        // Use a 25.5px star at the shared 480px board width.
+        const fontSize = 25.5 * (width + framePadding * 2) / 480;
         html += `<text x="${x}" y="${y}" text-anchor="middle" font-family="sans-serif" font-size="${fontSize}" fill="#333" pointer-events="none">★</text>`;
         return;
       }
