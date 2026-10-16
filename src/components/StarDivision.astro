@@ -1,0 +1,41 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import { starDivision261016 } from '../lib/star-division.js';
+const { puzzleId } = Astro.props;
+---
+<PuzzleLayout title="261016 스타 디비전" {puzzleId}
+  subtitle="숫자에 맞게 별을 나누고, 2×2 정사각형이 없는 영역을 만드세요"
+  description="별과 숫자 단서에 맞춰 격자를 여러 영역으로 나누는 스타 디비전">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <div slot="rules">
+    주어진 격자를 점선을 따라 여러 영역으로 분할하세요.
+    <ul>
+      <li>모든 칸은 정확히 하나의 영역에 속해야 합니다. 한 영역의 칸들은 변으로 이어져야 합니다.</li>
+      <li>어떠한 영역도 2×2 크기의 정사각형을 포함할 수 없습니다.</li>
+      <li>모든 영역은 최소 한 개의 별을 포함해야 합니다.</li>
+      <li>숫자가 적힌 칸이 포함된 영역은 정확히 그 숫자만큼의 별을 가져야 합니다.</li>
+      <li>한 영역에는 숫자가 없거나 여러 개 있을 수 있습니다. 한 영역 안에 서로 다른 숫자가 함께 존재할 수는 없습니다.</li>
+    </ul>
+  </div>
+  <div slot="controls">
+    칸 사이 점선을 짧게 누르면 경계선, 길게 누르면 X 메모를 넣습니다.<br />
+    같은 표시를 다시 누르면 지웁니다. 오른쪽 위 버튼으로 두 입력을 바꾸세요.
+  </div>
+  <section id="star-divisionGame" data-puzzle={JSON.stringify(starDivision261016)} data-puzzle-id={puzzleId} aria-label="스타 디비전">
+    <div class="board-tools"><button id="star-divisionMode" class="mode-toggle" type="button" aria-pressed="false">길게 눌러 x 표시</button></div>
+    <svg id="star-divisionBoard" role="group" aria-label="9행 9열 스타 디비전 격자. 칸 사이 점선을 눌러 영역을 나누세요"></svg>
+    <div class="bottom-buttons"><button id="star-divisionReset" class="danger" type="button">초기화</button></div>
+    <p id="star-divisionStatus" role="status" aria-live="polite" class="sr-only"></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="star-divisionComplete" />
+</PuzzleLayout>
+<script>import '../scripts/star-division.js';</script>
+<style>
+  ul { padding-left:20px; margin:8px 0 0; }
+  .board-tools { display:flex; justify-content:flex-end; margin-bottom:8px; }
+  .mode-toggle { background:none; border:0; border-bottom:1px solid #ccc; border-radius:0; padding:0 0 1px; color:#888; font-size:.82rem; line-height:1.5; }
+  .mode-toggle[aria-pressed="true"] { color:#4a6fa5; border-color:#4a6fa5; }
+  #star-divisionBoard { display:block; width:100%; height:auto; background:white; touch-action:auto; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+</style>
