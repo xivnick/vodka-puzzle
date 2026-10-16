@@ -99,12 +99,13 @@ if (game) {
       if (clue === '.') return;
       if (clue === '*') {
         const x = (c + .5) * size, y = (r + .5) * size;
-        // Use a 25.5px star at the shared 480px board width.
-        const fontSize = 25.5 * (width + framePadding * 2) / 480;
+        // Use a 22px star at the shared 480px board width.
+        const fontSize = 22 * (width + framePadding * 2) / 480;
         html += `<text x="${x}" y="${y}" text-anchor="middle" font-family="sans-serif" font-size="${fontSize}" fill="#333" pointer-events="none">★</text>`;
         return;
       }
-      html += `<text x="${(c + .5) * size}" y="${(r + .5) * size}" text-anchor="middle" font-size="25" font-weight="600" fill="#202a36" pointer-events="none">${clue}</text>`;
+      const numberSize = 27 * (width + framePadding * 2) / 480;
+      html += `<text x="${(c + .5) * size}" y="${(r + .5) * size}" text-anchor="middle" font-size="${numberSize}" font-weight="700" fill="#333" pointer-events="none">${clue}</text>`;
     }));
     html += `<rect x="0" y="0" width="${width}" height="${height}" fill="none" stroke="#202a36" stroke-width="3" vector-effect="non-scaling-stroke" pointer-events="none"/>`;
     board.innerHTML = html;
