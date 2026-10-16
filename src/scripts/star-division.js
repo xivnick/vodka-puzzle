@@ -109,7 +109,7 @@ if (game) {
       if (clue === '*') {
         const x = (c + .5) * size, y = (r + .5) * size;
         const points = Array.from({ length: 10 }, (_, i) => {
-          const angle = -Math.PI / 2 + i * Math.PI / 5, radius = i % 2 ? 5 : 12;
+          const angle = -Math.PI / 2 + i * Math.PI / 5, radius = i % 2 ? 3.75 : 9;
           return `${x + Math.cos(angle) * radius},${y + Math.sin(angle) * radius}`;
         }).join(' ');
         html += `<polygon points="${points}" fill="#202a36" pointer-events="none"/>`;
