@@ -62,13 +62,13 @@ export function validateStarDivision(puzzle, lines) {
   }
   for (const region of regions) {
     region.valid = region.stars > 0 && !region.square && region.numbers.every(n => n === region.stars);
-  }
-  // Leave the largest unfinished area neutral while smaller regions are being cut out.
-  const largest = Math.max(...regions.map(region => region.cells.length));
-  const largestCount = regions.filter(region => region.cells.length === largest).length;
-  for (const region of regions) {
-    region.feedback = region.valid ? 'valid'
-      : region.square && region.cells.length === largest && largestCount === 1 ? 'pending' : 'invalid';
+    // Different numbers must end up in different regions; repeated numbers may share one.
+    const requiredStars = [...new Set(region.numbers)].reduce((sum, n) => sum + n, 0);
+    // These failures cannot be repaired by adding boundaries within this region.
+    // A single-star region cannot be split further without making a starless region.
+    const impossibleBySplitting = region.stars === 0 || region.stars < requiredStars
+      || region.stars === 1 && region.square;
+    region.feedback = region.valid ? 'valid' : impossibleBySplitting ? 'invalid' : 'pending';
   }
   return { regions, regionOf, complete: regions.every(region => region.valid) };
 }
