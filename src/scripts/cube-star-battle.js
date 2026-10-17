@@ -1,10 +1,10 @@
-import { cells as cubeCells, bands, regionIds, puzzleId, analyze, parseState } from '../lib/cube-star-battle.js';
+import { cells as cubeCells, regionIds, puzzleId, analyze, parseState } from '../lib/cube-star-battle.js';
 const $ = id => document.getElementById(id);
 const blockedCells = new Set();
 const board = $('starBattleBoard');
 const cells = [...$('starBattleBoard').querySelectorAll('[data-cell]')];
 let values = Array(96).fill(0), selected = cells.findIndex((_, i) => !blockedCells.has(i)), inputSwapped = false;
-let press = null, showBands = false;
+let press = null;
 let ready = false, completionRecorded = false;
 const state = () => ({version:1, puzzleId, values:[...values]});
 function persist() {
@@ -14,9 +14,7 @@ function persist() {
 }
 function render() {
   const {bad, complete} = analyze(values);
-  const highlighted = new Set(showBands ? bands.filter(band => band.includes(selected)).flat() : []);
   cells.forEach((cell, i) => {
-    cell.classList.toggle('band', highlighted.has(i));
     cell.textContent = ['', '★', '×'][values[i]];
     cell.classList.toggle('selected', !complete && i === selected);
     cell.classList.toggle('note', values[i] === 2);
@@ -53,7 +51,6 @@ function cancelPress() {
   if (press) clearTimeout(press.timer);
   press = null;
 }
-$('cubeBands').addEventListener('click', () => { showBands = !showBands; $('cubeBands').setAttribute('aria-pressed', String(showBands)); render(); });
 $('starBattleNotes').addEventListener('click', toggleInput);
 board.addEventListener('pointerdown', event => {
   const cell = event.target.closest('[data-cell]');
