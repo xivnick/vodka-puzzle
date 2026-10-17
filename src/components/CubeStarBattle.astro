@@ -1,0 +1,56 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import {puzzleId, cells, faces, boundaries, regionIds} from '../lib/cube-star-battle.js';
+---
+<PuzzleLayout title="261017 스타 배틀(큐브)" {puzzleId}
+  subtitle="정육면체를 따라 이어지는 각 줄과 영역에 별을 2개씩 채우세요"
+  description="정육면체로 접은 전개도의 각 줄과 영역에 서로 닿지 않는 별을 2개씩 채우는 스타 배틀(큐브)">
+  <div slot="rules">
+    일부 칸에 별을 채우세요. 각 행·열·영역에 별이 정확히 2개씩 있어야 합니다.<br />
+    행과 열은 전개도를 접어 정육면체로 만들었을 때 네 면을 따라 일렬로 이어지는 칸들의 집합입니다. 각 줄은 16칸이며, 이런 줄은 총 12개입니다.<br />
+    영역은 정육면체로 접었을 때 굵은 실선으로 나뉘는 곳입니다. 전개도에서 떨어져 있는 칸도 접으면 같은 영역으로 이어질 수 있습니다.<br />
+    별끼리는 접힌 정육면체 위에서 변으로도, 꼭짓점으로도 닿지 않아야 합니다.
+  </div>
+  <div slot="controls">
+    칸을 짧게 누르면 별, 길게 누르거나 우클릭하면 × 메모를 넣습니다.<br />
+    오른쪽 위 버튼이나 M 키로 두 입력을 바꾸세요. 같은 표시를 다시 누르거나 지우기 버튼으로 지우세요.<br />
+    줄 보기를 켜면 선택한 칸을 지나는 두 줄이 표시됩니다.
+  </div>
+  <section id="starBattleGame" data-puzzle-id={puzzleId} aria-label="스타 배틀(큐브)">
+    <div class="board-tools">
+      <button id="cubeBands" type="button" aria-pressed="false">줄 보기</button>
+      <button id="starBattleNotes" type="button" aria-pressed="false">길게 눌러 x 표시</button>
+    </div>
+    <div class="board-wrap">
+      <div id="starBattleBoard" class="star-board" role="group" aria-label="4×4 면 6개의 정육면체 전개도, 각 줄과 영역에 별 2개">
+        {cells.map((cell,i) => <button type="button" class="star-cell" data-cell={i} style={`grid-column:${cell.x+1};grid-row:${cell.y+1}`} tabindex={i===0?0:-1} aria-label={`${faces[cell.face].name} 면 ${cell.r+1}행 ${cell.c+1}열, 영역 ${regionIds[i]+1}, 빈칸`} />)}
+      </div>
+      <svg class="region-lines" viewBox="-.06 -.06 16.12 12.12" aria-hidden="true">
+        {boundaries.map(([x1,y1,x2,y2]) => <line {x1} {y1} {x2} {y2} />)}
+      </svg>
+    </div>
+    <div class="bottom-buttons">
+      <button id="starBattleErase" type="button">지우기</button>
+      <button id="starBattleReset" type="button" class="danger">초기화</button>
+    </div>
+  </section>
+  <PuzzleCompletion slot="completion" id="starBattleComplete" />
+  <script>import '../scripts/cube-star-battle.js';</script>
+</PuzzleLayout>
+<style>
+  #starBattleGame { width:100%; }
+  .board-tools { display:flex; justify-content:space-between; margin-bottom:8px; }
+  .board-tools button { background:none; border:0; border-bottom:1px solid #ccc; border-radius:0; padding:0 0 1px; color:#888; font-size:.82rem; line-height:1.5; }
+  .board-tools button[aria-pressed=true] { color:#4a6fa5; border-color:#4a6fa5; }
+  .board-wrap { width:100%; position:relative; padding:0.375%; }
+  .star-board { display:grid; grid-template-columns:repeat(16,minmax(0,1fr)); grid-template-rows:repeat(12,minmax(0,1fr)); aspect-ratio:4/3; width:100%; }
+  .star-cell { padding:0; margin:0; min-width:0; min-height:0; border:.5px solid #aaa; border-radius:0; background:#fff; color:#333; font-family:inherit; font-size:clamp(12px,3.4vw,23px); line-height:1; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; }
+  .star-cell.band { background:#edf2f8; }
+  .star-cell.selected { background:#d6e3f3; }
+  .star-cell.note { color:#999; }
+  .star-cell.conflict { color:#c34242; background:#fbeaea; }
+  .star-cell:focus { outline:none; }
+  .region-lines { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
+  .region-lines line { fill:none; stroke:#222; stroke-width:3; vector-effect:non-scaling-stroke; stroke-linecap:round; }
+</style>
