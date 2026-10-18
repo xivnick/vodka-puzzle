@@ -1,0 +1,77 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import { acre261018 } from '../lib/acre.js';
+const { puzzleId } = Astro.props;
+const puzzle = acre261018;
+const { rows: size, regions, clues } = puzzle;
+const title = '261018 에이커';
+const subtitle = '영역의 숫자에 맞춰 칸을 칠하고 하나로 연결하세요';
+const boundaries = [];
+if (regions) for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
+  if (r < size - 1 && regions[r][c] !== regions[r + 1][c]) boundaries.push([c, r + 1, c + 1, r + 1]);
+  if (c < size - 1 && regions[r][c] !== regions[r][c + 1]) boundaries.push([c + 1, r, c + 1, r + 1]);
+}
+---
+<PuzzleLayout {title} {puzzleId}
+  {subtitle}
+  description="네 칸 연속 같은 색이 되지 않도록 칸을 칠하는 에이커">
+  <div slot="rules">
+    주어진 격자 중 일부 칸을 칠하세요.
+    <ul>
+      <li>모든 칠해진 칸은 하나의 연결된 영역을 이루어야 합니다. 가로세로로 맞닿은 칸만 연결된 것으로 보며, 대각선으로 맞닿아도 됩니다.</li>
+      <li>어떤 1×4 또는 4×1 영역도 네 칸을 모두 칠할 수 없습니다.</li>
+      <li>어떤 1×4 또는 4×1 영역도 네 칸을 모두 칠하지 않은 채 둘 수 없습니다.</li>
+      <li>진한 경계선으로 나뉜 각 영역의 숫자는 그 영역에서 칠해야 하는 칸의 총개수입니다. 숫자가 없는 영역에는 개수 제한이 없습니다.</li>
+    </ul>
+  </div>
+  <div slot="controls">
+    칸을 짧게 누르면 칠하고, 길게 누르거나 우클릭하면 × 메모를 넣습니다.<br />
+    오른쪽 위 버튼이나 M 키로 두 입력을 바꾸세요.<br />
+    같은 표시를 다시 입력하거나 지우기 버튼으로 지우세요.
+  </div>
+  <section id="acreGame" data-puzzle-id={puzzleId} data-puzzle={JSON.stringify(puzzle)} aria-label="에이커">
+    <div class="board-tools"><button id="acreNotes" type="button" aria-pressed="false">길게 눌러 × 표시</button></div>
+    <div class="board-wrap">
+      <div id="acreBoard" class="acre-board" role="group" aria-label="9행 9열 에이커 격자">
+        {Array.from({length:size * size}, (_, i) => <button type="button" class="acre-cell" data-cell={i}
+          tabindex={i === 0 ? 0 : -1} aria-label={`${Math.floor(i / size) + 1}행 ${i % size + 1}열, 빈칸`}>
+          <span class="mark" aria-hidden="true"></span>
+          {clues.some(clue => clue.cell === i) && <span class="clue" aria-hidden="true">{clues.find(clue => clue.cell === i).count}</span>}
+        </button>)}
+      </div>
+      <svg class="region-lines" viewBox="0 0 9 9" aria-hidden="true">
+        {boundaries.map(([x1,y1,x2,y2]) => <line {x1} {y1} {x2} {y2} />)}
+        <rect x="0" y="0" width="9" height="9" />
+      </svg>
+    </div>
+    <div class="bottom-buttons">
+      <button id="acreErase" type="button">지우기</button>
+      <button id="acreReset" type="button" class="danger">초기화</button>
+    </div>
+  </section>
+  <PuzzleCompletion slot="completion" id="acreComplete" />
+<script>import '../scripts/acre.js';</script>
+</PuzzleLayout>
+<style>
+  #acreGame { width:100%; }
+  .board-tools { display:flex; justify-content:flex-end; margin-bottom:8px; }
+  .board-tools button { background:none; border:0; border-bottom:1px solid #ccc; border-radius:0; padding:0 0 1px; color:#888; font-size:.82rem; line-height:1.5; }
+  .board-tools button[aria-pressed=true] { color:#4a6fa5; border-color:#4a6fa5; }
+  .board-wrap { width:100%; position:relative; }
+  .acre-board { display:grid; grid-template-columns:repeat(9,minmax(0,1fr)); width:100%; }
+  .acre-cell { aspect-ratio:1; padding:0; margin:0; min-width:0; border:0; border-radius:0; border-right:1px solid #aaa; border-bottom:1px solid #aaa; background:#fff; color:#333; font-family:inherit; font-size:clamp(18px,5.5vw,30px); line-height:1; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; }
+  .acre-cell:nth-child(9n) { border-right:0; }
+  .acre-cell:nth-child(n+73) { border-bottom:0; }
+  .acre-cell { position:relative; }
+  .acre-cell.shaded { background:#404956; color:#fff; }
+  .acre-cell .clue { position:absolute; top:9%; left:10%; font-size:clamp(15px,4vw,23px); line-height:1; }
+  .acre-cell .mark { color:#999; }
+  ul { padding-left:20px; margin:8px 0 0; }
+  .acre-cell.note { color:#999; font-size:clamp(16px,4.5vw,24px); }
+  .acre-cell.conflict { color:#c34242; background:#fbeaea; }
+  .acre-cell.shaded.conflict { background:#993e3e; color:white; }
+  .acre-cell:focus { outline:none; }
+  .region-lines { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
+  .region-lines line, .region-lines rect { fill:none; stroke:#222; stroke-width:3; vector-effect:non-scaling-stroke; stroke-linecap:square; stroke-linejoin:miter; }
+</style>
