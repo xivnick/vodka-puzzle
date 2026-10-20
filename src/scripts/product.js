@@ -37,7 +37,7 @@ function render() {
       clue.classList.toggle('satisfied',lines[index].satisfied);
     });
   }
-  pad.forEach(button => { button.classList.toggle('used', values.includes(Number(button.dataset.number))); button.disabled = !ready; });
+  pad.forEach(button => { button.disabled = !ready; });
   complete.hidden = !result.solved;
   if (!result.solved) completionRecorded = false;
   else if (ready && !completionRecorded) {
