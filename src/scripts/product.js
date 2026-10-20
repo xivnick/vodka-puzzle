@@ -9,14 +9,12 @@ const pad = [...game.querySelectorAll('[data-number]')];
 const complete = document.getElementById('productComplete');
 const status = document.getElementById('productStatus');
 let values = Array(size*size).fill(0);
-let notes = Array.from({length:size*size}, () => []);
 let selected = 0;
-let notesMode = false;
 let ready = false;
 let completionRecorded = false;
 let keyBuffer = '';
 let keyTimer;
-function state() { return { version:1, puzzleId, values:[...values], notes:notes.map(note => [...note]) }; }
+function state() { return { version:1, puzzleId, values:[...values] }; }
 function persist() {
   if (!ready) return;
   try { window.saveLocalState(puzzleId, state()); }
@@ -27,19 +25,12 @@ function render() {
   cells.forEach((cell,index) => {
     cell.replaceChildren();
     if (values[index]) cell.textContent = values[index] === -1 ? '×' : values[index];
-    else if (notes[index].length) {
-      const box = document.createElement('span');
-      box.className = 'notes';
-      box.setAttribute('aria-hidden','true');
-      notes[index].forEach(value => { const note = document.createElement('span'); note.textContent = value; box.append(note); });
-      cell.append(box);
-    }
     cell.classList.toggle('selected', index === selected);
     cell.classList.toggle('marked', values[index] === -1);
     cell.classList.toggle('conflict', result.conflicts.has(index));
     cell.tabIndex = index === selected ? 0 : -1;
     cell.setAttribute('aria-selected',String(index === selected));
-    cell.setAttribute('aria-label',`${Math.floor(index/size)+1}행 ${index%size+1}열, ${values[index] > 0 ? `숫자 ${values[index]}` : values[index] === -1 ? '빈칸 표시' : notes[index].length ? `메모 ${notes[index].join(', ')}` : '빈칸'}${result.conflicts.has(index) ? ', 규칙 오류' : ''}`);
+    cell.setAttribute('aria-label',`${Math.floor(index/size)+1}행 ${index%size+1}열, ${values[index] > 0 ? `숫자 ${values[index]}` : values[index] === -1 ? '빈칸 표시' : '빈칸'}${result.conflicts.has(index) ? ', 규칙 오류' : ''}`);
   });
   for (const [attribute,lines] of [['row',result.rowStates],['column',result.columnStates]]) {
     game.querySelectorAll(`.product-clue[data-${attribute}]`).forEach((clue,index) => {
@@ -63,28 +54,17 @@ function select(index,focus=false) {
 }
 function input(value) {
   if (!ready) return;
-  if (notesMode && value > 0) {
-    if (values[selected] > 0) return;
-    values[selected] = 0;
-    notes[selected] = notes[selected].includes(value) ? notes[selected].filter(note => note !== value) : [...notes[selected],value].sort((a,b) => a-b);
-  } else {
-    values[selected] = value === -1 && values[selected] === -1 ? 0 : value;
-    notes[selected] = [];
-  }
+  values[selected] = value === -1 && values[selected] === -1 ? 0 : value;
   persist(); render();
-  status.textContent = `${Math.floor(selected/size)+1}행 ${selected%size+1}열, ${value === 0 ? '지웠습니다.' : value === -1 ? '빈칸 표시를 변경했습니다.' : `${value}${notesMode ? ' 메모를 변경했습니다.' : '을 입력했습니다.'}`}`;
+  status.textContent = `${Math.floor(selected/size)+1}행 ${selected%size+1}열, ${value === 0 ? '지웠습니다.' : value === -1 ? '빈칸 표시를 변경했습니다.' : `${value}을 입력했습니다.`}`;
 }
 cells.forEach((cell,index) => cell.addEventListener('click',() => select(index)));
 pad.forEach(button => button.addEventListener('click',() => { clearBuffer(); input(Number(button.dataset.number)); }));
-document.getElementById('productNotes').addEventListener('click',() => {
-  clearBuffer(); notesMode=!notesMode;
-  document.getElementById('productNotes').setAttribute('aria-pressed',String(notesMode));
-});
 document.getElementById('productErase').addEventListener('click',() => { clearBuffer(); input(0); });
 document.getElementById('productMark').addEventListener('click',() => { clearBuffer(); input(-1); });
 document.getElementById('productReset').addEventListener('click',() => {
-  if (!ready || !confirm('입력한 숫자와 메모를 초기화할까요?')) return;
-  clearBuffer(); values.fill(0); notes=notes.map(() => []); persist(); render();
+  if (!ready || !confirm('입력한 숫자와 빈칸 표시를 초기화할까요?')) return;
+  clearBuffer(); values.fill(0); persist(); render();
 });
 document.getElementById('productBoard').addEventListener('keydown',event => {
   if (!ready || event.ctrlKey || event.metaKey || event.altKey) return;
@@ -101,14 +81,12 @@ document.getElementById('productBoard').addEventListener('keydown',event => {
       keyTimer=setTimeout(() => { const number=Number(keyBuffer); keyBuffer=''; input(number); },500);
     } else if (event.key !== '0') input(Number(event.key));
   } else if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); clearBuffer(); input(0); }
-  else if (event.key.toLowerCase() === 'm') { event.preventDefault(); document.getElementById('productNotes').click(); }
   else if (event.key.toLowerCase() === 'x') { event.preventDefault(); clearBuffer(); input(-1); }
 });
 function restore(saved) {
   clearBuffer();
   const parsed=parseProductState(saved,puzzleId,size);
   values=parsed?.values || Array(size*size).fill(0);
-  notes=parsed?.notes || Array.from({length:size*size},() => []);
   completionRecorded=false;
 }
 window.handleCloudSave=() => window.saveProgressCloud(puzzleId,state());

@@ -27,6 +27,5 @@ export function inspectProduct(values, rows, columns) {
 export function parseProductState(saved, puzzleId, size) {
   const valid = value => Number.isInteger(value) && value >= -1 && value <= size*2;
   if (!saved || saved.version !== 1 || saved.puzzleId !== puzzleId || !Array.isArray(saved.values) || saved.values.length !== size*size || !saved.values.every(valid)) return null;
-  const notes = Array.from({length:size*size}, (_, index) => Array.isArray(saved.notes?.[index]) ? [...new Set(saved.notes[index].filter(value => valid(value) && value > 0))].sort((a,b) => a-b) : []);
-  return { values:[...saved.values], notes };
+  return { values:[...saved.values] };
 }
