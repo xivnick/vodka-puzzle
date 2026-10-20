@@ -1,0 +1,40 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+const puzzleId = '261020_01';
+const rows = [60,80,24,75,198,63,221,224,38,12];
+const columns = [143,28,85,285,60,120,14,96,18,144];
+---
+<PuzzleLayout title="261020 곱" puzzleId={puzzleId} subtitle="각 행과 열에 숫자를 두 개씩 넣어 바깥의 곱을 만드세요" description="1부터 20까지 한 번씩 사용하여 행과 열의 곱을 맞추는 퍼즐">
+  <div slot="rules" class="product-rules">
+    <p>칸 일부에 1부터 x까지의 숫자를 채우세요. 여기서 x는 행의 개수 × 2입니다. 이 문제에서는 1부터 20까지 사용합니다.</p>
+    <p>한 칸에는 숫자가 최대 한 개까지만 들어가며, 한 숫자는 한 번만 사용됩니다.</p>
+    <p>각 행과 각 열은 정확히 두 개의 숫자를 포함해야 합니다.</p>
+    <p>격자 오른쪽과 아래의 숫자는 각각 그 행과 열에 있는 두 숫자의 곱입니다.</p>
+  </div>
+  <div slot="controls">칸을 선택하고 숫자 버튼으로 입력하세요. 지우기로 숫자와 메모를 지웁니다.<br />메모하기 버튼이나 M으로 메모 입력을 켜고 끄세요.<br />빈칸 표시는 숫자를 넣지 않을 칸에 ×를 표시합니다.</div>
+  <section id="productGame" class="product-game" data-puzzle-id={puzzleId} data-rows={JSON.stringify(rows)} data-columns={JSON.stringify(columns)} aria-label="곱 퍼즐">
+    <div class="board-tools"><button id="productNotes" type="button" aria-pressed="false">메모하기</button></div>
+    <div id="productBoard" class="product-board" role="grid" aria-label="10행 10열 곱 퍼즐">
+      {rows.map((clue, row) => <>
+        {columns.map((_, column) => <button type="button" role="gridcell" class:list={['product-cell', { 'last-column': column === 9, 'last-row': row === 9 }]} data-index={row * 10 + column} tabindex={row === 0 && column === 0 ? 0 : -1} aria-label={`${row+1}행 ${column+1}열, 빈칸`}></button>)}
+        <span class="product-clue" data-row={row} aria-label={`${row+1}행의 곱 ${clue}`}>{clue}</span>
+      </>)}
+      {columns.map((clue, column) => <span class="product-clue" data-column={column} aria-label={`${column+1}열의 곱 ${clue}`}>{clue}</span>)}
+    </div>
+    <div class="product-pad" aria-label="숫자 입력">{Array.from({length:20}, (_, index) => <button type="button" data-number={index+1}>{index+1}</button>)}</div>
+    <div class="bottom-buttons"><button id="productMark" type="button">빈칸 표시</button><button id="productErase" type="button">지우기</button><button id="productReset" type="button" class="danger">초기화</button></div>
+    <span id="productStatus" class="sr-only" role="status" aria-live="polite"></span>
+  </section>
+  <PuzzleCompletion slot="completion" id="productComplete" />
+</PuzzleLayout>
+<script>import '../scripts/product.js';</script>
+<style>
+.product-rules p{margin:0;line-height:1.7}.product-rules p+p{margin-top:8px}
+.product-game{width:100%;margin-inline:auto}.board-tools{display:flex;justify-content:flex-end;margin:0 calc(100% / 11) 8px 0}.board-tools button{background:none;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:0 0 1px;color:#888;font:inherit;font-size:.82rem}.board-tools button[aria-pressed=true]{color:#4a6fa5;border-color:#4a6fa5}
+.product-board{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));grid-template-rows:repeat(11,auto);width:100%}
+.product-cell{position:relative;aspect-ratio:1;min-width:0;appearance:none;padding:0;margin:0;border:0;border-top:1px solid #999;border-left:1px solid #999;border-radius:0;background:#fff;color:#4a6fa5;font:600 clamp(14px,3.8vw,21px) 'Noto Sans KR',sans-serif;touch-action:manipulation;cursor:pointer}
+.product-cell.last-column{border-right:1px solid #999}.product-cell.last-row{border-bottom:1px solid #999}.product-cell.selected{background:#e8edf5}.product-cell.conflict{background:#f5d0d0;color:#b05050}.product-cell.marked{color:#aaa;font-size:1rem;font-weight:400}.product-cell :global(.notes){position:absolute;inset:2px;display:flex;align-items:center;justify-content:center;align-content:center;flex-wrap:wrap;gap:0 3px;overflow:hidden;color:#606975;font:500 clamp(7px,1.8vw,10px)/1.2 'Noto Sans KR',sans-serif}
+.product-clue{display:flex;align-items:center;justify-content:center;min-width:0;aspect-ratio:1;color:#333;font-weight:700;font-size:clamp(12px,3.2vw,17px)}.product-clue.error{color:#b05050}.product-clue.satisfied{color:#66845b}
+.product-pad{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;width:calc(100% * 10 / 11);margin-top:14px}.product-pad button{padding:8px 0;min-width:0;border:1px solid #d6d4cd;border-radius:3px;background:#faf8f4;color:#555;font:inherit;touch-action:manipulation}.product-pad button.used{color:#aaa;background:#eeece7}.product-game .bottom-buttons{width:calc(100% * 10 / 11);gap:8px}.product-game .bottom-buttons button{padding:8px 12px;font-size:.82rem}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+</style>
