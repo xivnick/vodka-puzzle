@@ -24,13 +24,12 @@ function render() {
   const result = inspectProduct(values, rows, columns);
   cells.forEach((cell,index) => {
     cell.replaceChildren();
-    if (values[index]) cell.textContent = values[index] === -1 ? '×' : values[index];
+    if (values[index]) cell.textContent = values[index];
     cell.classList.toggle('selected', index === selected);
-    cell.classList.toggle('marked', values[index] === -1);
     cell.classList.toggle('conflict', result.conflicts.has(index));
     cell.tabIndex = index === selected ? 0 : -1;
     cell.setAttribute('aria-selected',String(index === selected));
-    cell.setAttribute('aria-label',`${Math.floor(index/size)+1}행 ${index%size+1}열, ${values[index] > 0 ? `숫자 ${values[index]}` : values[index] === -1 ? '빈칸 표시' : '빈칸'}${result.conflicts.has(index) ? ', 규칙 오류' : ''}`);
+    cell.setAttribute('aria-label',`${Math.floor(index/size)+1}행 ${index%size+1}열, ${values[index] > 0 ? `숫자 ${values[index]}` : '빈칸'}${result.conflicts.has(index) ? ', 규칙 오류' : ''}`);
   });
   for (const [attribute,lines] of [['row',result.rowStates],['column',result.columnStates]]) {
     game.querySelectorAll(`.product-clue[data-${attribute}]`).forEach((clue,index) => {
@@ -54,16 +53,15 @@ function select(index,focus=false) {
 }
 function input(value) {
   if (!ready) return;
-  values[selected] = value === -1 && values[selected] === -1 ? 0 : value;
+  values[selected] = value;
   persist(); render();
-  status.textContent = `${Math.floor(selected/size)+1}행 ${selected%size+1}열, ${value === 0 ? '지웠습니다.' : value === -1 ? '빈칸 표시를 변경했습니다.' : `${value}을 입력했습니다.`}`;
+  status.textContent = `${Math.floor(selected/size)+1}행 ${selected%size+1}열, ${value === 0 ? '지웠습니다.' : `${value}을 입력했습니다.`}`;
 }
 cells.forEach((cell,index) => cell.addEventListener('click',() => select(index)));
 pad.forEach(button => button.addEventListener('click',() => { clearBuffer(); input(Number(button.dataset.number)); }));
 document.getElementById('productErase').addEventListener('click',() => { clearBuffer(); input(0); });
-document.getElementById('productMark').addEventListener('click',() => { clearBuffer(); input(-1); });
 document.getElementById('productReset').addEventListener('click',() => {
-  if (!ready || !confirm('입력한 숫자와 빈칸 표시를 초기화할까요?')) return;
+  if (!ready || !confirm('입력한 숫자를 초기화할까요?')) return;
   clearBuffer(); values.fill(0); persist(); render();
 });
 document.getElementById('productBoard').addEventListener('keydown',event => {
@@ -81,7 +79,6 @@ document.getElementById('productBoard').addEventListener('keydown',event => {
       keyTimer=setTimeout(() => { const number=Number(keyBuffer); keyBuffer=''; input(number); },500);
     } else if (event.key !== '0') input(Number(event.key));
   } else if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); clearBuffer(); input(0); }
-  else if (event.key.toLowerCase() === 'x') { event.preventDefault(); clearBuffer(); input(-1); }
 });
 function restore(saved) {
   clearBuffer();
