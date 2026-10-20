@@ -27,5 +27,5 @@ export function inspectProduct(values, rows, columns) {
 export function parseProductState(saved, puzzleId, size) {
   const valid = value => Number.isInteger(value) && value >= -1 && value <= size*2;
   if (!saved || saved.version !== 1 || saved.puzzleId !== puzzleId || !Array.isArray(saved.values) || saved.values.length !== size*size || !saved.values.every(valid)) return null;
-  return { values:saved.values.map(value => value === -1 ? 0 : value) };
+  return { values:[...saved.values] };
 }

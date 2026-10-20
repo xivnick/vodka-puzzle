@@ -10,13 +10,17 @@ const complete = document.getElementById('productComplete');
 const status = document.getElementById('productStatus');
 let values = Array(size*size).fill(0);
 let selected = 0;
-let ready = false;
+const preview = game.dataset.preview === 'true';
+let ready = preview;
+let inputSwapped = false;
+let press = null;
+const board = document.getElementById('productBoard');
 let completionRecorded = false;
 let keyBuffer = '';
 let keyTimer;
 function state() { return { version:1, puzzleId, values:[...values] }; }
 function persist() {
-  if (!ready) return;
+  if (!ready || preview) return;
   try { window.saveLocalState(puzzleId, state()); }
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
@@ -24,12 +28,13 @@ function render() {
   const result = inspectProduct(values, rows, columns);
   cells.forEach((cell,index) => {
     cell.replaceChildren();
-    if (values[index]) cell.textContent = values[index];
+    if (values[index]) cell.textContent = values[index] === -1 ? '×' : values[index];
+    cell.classList.toggle('marked', values[index] === -1);
     cell.classList.toggle('selected', index === selected);
     cell.classList.toggle('conflict', result.conflicts.has(index));
     cell.tabIndex = index === selected ? 0 : -1;
     cell.setAttribute('aria-selected',String(index === selected));
-    cell.setAttribute('aria-label',`${Math.floor(index/size)+1}행 ${index%size+1}열, ${values[index] > 0 ? `숫자 ${values[index]}` : '빈칸'}${result.conflicts.has(index) ? ', 규칙 오류' : ''}`);
+    cell.setAttribute('aria-label',`${Math.floor(index/size)+1}행 ${index%size+1}열, ${values[index] > 0 ? `숫자 ${values[index]}` : values[index] === -1 ? '× 표시' : '빈칸'}${result.conflicts.has(index) ? ', 규칙 오류' : ''}`);
   });
   for (const [attribute,lines] of [['row',result.rowStates],['column',result.columnStates]]) {
     game.querySelectorAll(`.product-clue[data-${attribute}]`).forEach((clue,index) => {
@@ -43,7 +48,7 @@ function render() {
   else if (ready && !completionRecorded) {
     completionRecorded = true;
     // Test puzzles only show local success; public records are enabled after release.
-    if (window.puzzlePage?.published) window.recordCompletion(puzzleId,state());
+    if (!preview && window.puzzlePage?.published) window.recordCompletion(puzzleId,state());
   }
 }
 function clearBuffer() { clearTimeout(keyTimer); keyBuffer = ''; }
@@ -55,14 +60,59 @@ function input(value) {
   if (!ready) return;
   values[selected] = value;
   persist(); render();
-  status.textContent = `${Math.floor(selected/size)+1}행 ${selected%size+1}열, ${value === 0 ? '지웠습니다.' : `${value}을 입력했습니다.`}`;
+  status.textContent = `${Math.floor(selected/size)+1}행 ${selected%size+1}열, ${value === 0 ? '지웠습니다.' : value === -1 ? '×를 표시했습니다.' : `${value}을 입력했습니다.`}`;
 }
-cells.forEach((cell,index) => cell.addEventListener('click',() => select(index)));
+function activate(index, long = false) {
+  if (!ready) return;
+  select(index, true);
+  if (long !== inputSwapped) input(values[index] === -1 ? 0 : -1);
+}
+function cancelPress() {
+  if (press) clearTimeout(press.timer);
+  press = null;
+}
+document.getElementById('productInputToggle').addEventListener('click', () => {
+  cancelPress(); clearBuffer(); inputSwapped = !inputSwapped;
+  const toggle = document.getElementById('productInputToggle');
+  toggle.textContent = inputSwapped ? '길게 눌러 칸 선택' : '길게 눌러 x표시';
+  toggle.setAttribute('aria-pressed', String(inputSwapped));
+});
+board.addEventListener('pointerdown', event => {
+  const cell = event.target.closest('.product-cell');
+  if (!ready || !cell || event.button !== 0 || press) return;
+  clearBuffer();
+  const index = Number(cell.dataset.index);
+  press = { id:event.pointerId, index, x:event.clientX, y:event.clientY, long:false, timer:null };
+  press.timer = setTimeout(() => {
+    if (!press || press.id !== event.pointerId) return;
+    press.long = true; activate(index, true);
+  }, 550);
+});
+window.addEventListener('pointermove', event => {
+  if (press?.id === event.pointerId && !press.long && Math.hypot(event.clientX - press.x, event.clientY - press.y) > 10) cancelPress();
+});
+window.addEventListener('pointerup', event => {
+  if (press?.id !== event.pointerId) return;
+  const {index, long, x, y} = press;
+  cancelPress();
+  if (!long && Math.hypot(event.clientX - x, event.clientY - y) <= 10) activate(index);
+});
+window.addEventListener('pointercancel', event => { if (press?.id === event.pointerId) cancelPress(); });
+window.addEventListener('blur', cancelPress);
+document.addEventListener('visibilitychange', () => { if (document.hidden) cancelPress(); });
+board.addEventListener('click', event => {
+  if (event.detail > 0 || event.pointerType) return;
+  const cell = event.target.closest('.product-cell');
+  if (cell) activate(Number(cell.dataset.index));
+});
+board.addEventListener('contextmenu', event => {
+  if (event.target.closest('.product-cell')) event.preventDefault();
+});
 pad.forEach(button => button.addEventListener('click',() => { clearBuffer(); input(Number(button.dataset.number)); }));
 document.getElementById('productErase').addEventListener('click',() => { clearBuffer(); input(0); });
 document.getElementById('productReset').addEventListener('click',() => {
-  if (!ready || !confirm('입력한 숫자를 초기화할까요?')) return;
-  clearBuffer(); values.fill(0); persist(); render();
+  if (!ready || !confirm('입력한 숫자와 × 표시를 초기화할까요?')) return;
+  cancelPress(); clearBuffer(); values.fill(0); persist(); render();
 });
 document.getElementById('productBoard').addEventListener('keydown',event => {
   if (!ready || event.ctrlKey || event.metaKey || event.altKey) return;
@@ -81,7 +131,7 @@ document.getElementById('productBoard').addEventListener('keydown',event => {
   } else if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); clearBuffer(); input(0); }
 });
 function restore(saved) {
-  clearBuffer();
+  cancelPress(); clearBuffer();
   const parsed=parseProductState(saved,puzzleId,size);
   values=parsed?.values || Array(size*size).fill(0);
   completionRecorded=false;
@@ -100,4 +150,4 @@ function init() {
   restore(saved); ready=true; render(); window.initCloudBtns();
 }
 render();
-window.startLocalPuzzle(puzzleId,init,() => { ready=false; init(); });
+if (!preview) window.startLocalPuzzle(puzzleId,init,() => { ready=false; init(); });
