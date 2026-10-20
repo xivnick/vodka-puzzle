@@ -15,7 +15,7 @@ export function inspectProduct(values, rows, columns) {
   const inspectLine = (indices, clue) => {
     const filled = indices.filter(index => values[index] > 0);
     const product = filled.reduce((total, index) => total * values[index], 1);
-    const error = filled.length > 2 || (filled.length === 2 && product !== clue) || (filled.length === 1 && clue % product !== 0);
+    const error = filled.length > 2 || (filled.length === 2 && product !== clue);
     if (error) filled.forEach(index => conflicts.add(index));
     return { error, satisfied: filled.length === 2 && product === clue };
   };
