@@ -1,0 +1,22 @@
+---
+const {icon='star',effect='plain',id,large=false,active=false,label}=Astro.props;
+const files=import.meta.glob('../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
+const body=String(files[`../../public/icons/achievement-preview/${icon}.svg`]).match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/)?.[1]??'';
+---
+<span class:list={['material-badge',`edge-${effect}`,{large,'active-material':active}]} role={label?'img':undefined} aria-label={label} aria-hidden={label?undefined:'true'}>
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <defs>
+      <linearGradient id={`${id}-color`} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="24" y2="24"><stop stop-color="var(--tone-a)"/><stop offset="1" stop-color="var(--tone-b)"/></linearGradient>
+      {effect==='sheen'&&<>
+        <mask id={`${id}-edges`} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><g class="material-geometry" stroke="white"><Fragment set:html={body}/></g><g class="material-geometry" stroke="black" stroke-width="1.1"><Fragment set:html={body}/></g></mask>
+        <linearGradient id={`${id}-light`} gradientTransform="matrix(1 0 -.25 1 .125 0)"><stop stop-color="white" stop-opacity="0"/><stop offset=".38" stop-color="white" stop-opacity="0"/><stop offset=".5" stop-color="white" stop-opacity="1"/><stop offset=".62" stop-color="white" stop-opacity="0"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient>
+      </>}
+      {effect==='rim'&&[-1,1].map((direction,index)=><mask id={`${id}-rim-${index}`} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><g class="material-geometry" stroke="white"><Fragment set:html={body}/></g><g class="material-geometry" stroke="black" stroke-width="2" transform={`translate(${direction*.55} ${direction*.55})`}><Fragment set:html={body}/></g></mask>)}
+      {effect==='halo'&&<filter id={`${id}-halo`} filterUnits="userSpaceOnUse" x="-4" y="-4" width="32" height="32"><feGaussianBlur stdDeviation="1.05"/></filter>}
+    </defs>
+    {effect==='halo'&&<g class="edge-halo-light" filter={`url(#${id}-halo)`}><g class="material-geometry" stroke="white" stroke-width="2.5"><Fragment set:html={body}/></g></g>}
+    <g class="material-geometry" stroke={`url(#${id}-color)`}><Fragment set:html={body}/></g>
+    {effect==='sheen'&&<g mask={`url(#${id}-edges)`}><rect class="edge-sheen-light" x="-72" y="0" width="96" height="24" stroke="none" fill={`url(#${id}-light)`}/></g>}
+    {effect==='rim'&&[0,1].map(index=><rect class:list={['edge-rim-light',{'edge-rim-opposite':index===1}]} mask={`url(#${id}-rim-${index})`} width="24" height="24" fill="white" stroke="none"/>)}
+  </svg>
+</span>
