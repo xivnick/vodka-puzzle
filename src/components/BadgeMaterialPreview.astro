@@ -16,7 +16,7 @@ const body=raw.match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/)?.[1]?.replace(/<(path|circ
     </defs>
     <g class="material-geometry" stroke={`url(#${id}-color)`}><Fragment set:html={body}/></g>
     {effect==='ribbon'&&<g mask={`url(#${id}-mask)`}><rect class="ribbon-light" x="-72" y="0" width="96" height="24" fill={`url(#${id}-ribbon)`} stroke="none"/></g>}
-    {effect==='foil'&&<g mask={`url(#${id}-mask)`} stroke="none">{Array.from({length:18},(_,i)=>{const x=(Math.floor(i/2)%3)*8,y=Math.floor(i/6)*8;return <path class="foil-face" d={i%2?`M${x} ${y} L${x+8} ${y} L${x+8} ${y+8}Z`:`M${x} ${y} L${x} ${y+8} L${x+8} ${y+8}Z`} fill="white" style={`animation-delay:${-(i*7%18)*3.2/18}s`}/>})}</g>}
+    {effect==='foil'&&<g mask={`url(#${id}-mask)`} stroke="none">{Array.from({length:18},(_,i)=>{const x=(Math.floor(i/2)%3)*8,y=Math.floor(i/6)*8;return <path class="foil-face" d={i%2?`M${x} ${y} L${x+8} ${y} L${x+8} ${y+8}Z`:`M${x} ${y} L${x} ${y+8} L${x+8} ${y+8}Z`} fill="white" style={`animation-delay:${-(i*7%18)*5.2/18}s`}/>})}</g>}
     {effect==='lenticular'&&<g mask={`url(#${id}-mask)`} stroke="none">{Array.from({length:12},(_,i)=><rect class="lenticular-slice" x={i*2} y="0" width="2" height="24" fill={`url(#${id}-lens)`} style={`animation-delay:${-i*.12}s`}/>)}</g>}
     {effect==='interference'&&<g mask={`url(#${id}-mask)`}><rect width="24" height="24" stroke="none" fill={`url(#${id}-interference)`}/></g>}
   </svg>
