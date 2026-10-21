@@ -16,6 +16,7 @@ preview.querySelectorAll('[data-palette]').forEach(button=>button.addEventListen
 const pause=preview.querySelector('#pauseMaterials');
 function setPaused(paused){
   preview.classList.toggle('paused',paused);
+  preview.querySelectorAll('.material-badge svg').forEach(svg=>paused?svg.pauseAnimations():svg.unpauseAnimations());
   pause.setAttribute('aria-pressed',String(paused));
   pause.textContent=paused?'재생':'일시정지';
 }

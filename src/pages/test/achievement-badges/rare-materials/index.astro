@@ -1,7 +1,16 @@
 ---
 import PageLayout from '../../../../layouts/PageLayout.astro';
 import Badge from '../../../../components/BadgeMaterialPreview.astro';
-const effects=[['current','전류','짧은 빛과 부드러운 꼬리가 선을 따라 흐릅니다.'],['glitter','글리터','짧은 선 조각이 불규칙하게 반짝입니다.'],['opal','오팔','여러 위치의 색 얼룩이 따로 나타나고 사라집니다.'],['digital','디지털 노이즈','작은 픽셀의 색이 서로 다른 박자로 스며듭니다.']];
+const effects=[
+  ['current','전류 · 소프트','빛의 꼬리는 부드럽게, 가장자리는 깨끗하게.'],
+  ['current-single','전류 · 한 줄','꼬리 없이 짧은 빛 하나가 또렷하게 순환.'],
+  ['current-twin','전류 · 교차','두 빛이 반대 방향으로 돌며 교차.'],
+  ['current-charge','전류 · 충전','선을 따라 두 번째 색이 차올랐다가 복귀.'],
+  ['digital','디지털 노이즈','작은 픽셀의 색이 서로 다른 박자로 변화.'],
+  ['ribbon','빛의 띠','빠르게 한 번 지나가는 광택.'],
+  ['marble','마블','두 색의 불규칙한 결이 천천히 일렁임.'],
+  ['crackle','빛 균열','고정된 갈래 무늬가 짧게 빛났다 사라짐.'],
+];
 const palettes=[['berry','베리 소다','#BB6B98','#527BC0'],['gold','금빛','#A99231','#C57543'],['sea','바다','#368B91','#79A9C8'],['petal','꽃잎','#CF91B2','#674B8D'],['mint','민트','#42977D','#578761'],['ink','먹색','#485360','#727C8B']];
 const icons=[['star','별'],['flower','꽃'],['flame','불꽃'],['trophy','트로피'],['medal','메달'],['puzzle','퍼즐'],['plant','새싹'],['bolt','번개'],['moon','달'],['diamond','다이아몬드'],['crown','왕관'],['rosette','로제트']];
 const names=['네모왕','소금빵','퍼즐러','모눈종이','연필한자루','숫자산책','초록','빈칸수집가','달빛산책','번뜩','유리구슬','꾸준한오후','조각모음','민트초코','불씨','별헤는밤','라일락','종이비행기','귤한조각','베리소다','새벽달','한칸더','오로라','봄바람','잔별','꽃갈피','해질녘','복숭아','숲속산책','파란수첩'];
@@ -9,11 +18,11 @@ const names=['네모왕','소금빵','퍼즐러','모눈종이','연필한자루
 const files=import.meta.glob('../../../../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
 const geometry=(id)=>String(files[`../../../../../public/icons/achievement-preview/${id}.svg`]).match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/)?.[1]?.replace(/<(path|circle|rect|ellipse|line|polyline|polygon)\b/g,'<$1 pathLength="100"')??'';
 ---
-<PageLayout title="레어 재질 비교" subtitle="전류 · 글리터 · 오팔 · 디지털 노이즈">
+<PageLayout title="레어 재질 비교" subtitle="전류 4종 · 디지털 노이즈 · 빛의 띠 · 새 재질 2종">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="material-preview" style="--tone-a:#BB6B98;--tone-b:#527BC0" aria-label="레어 재질 비교">
     {icons.map(([id])=><template data-icon-template={id}><svg viewBox="0 0 24 24"><Fragment set:html={geometry(id)}/></svg></template>)}
-    <p class="intro">전류는 빛의 꼬리를 부드럽게, 디지털 노이즈는 입자를 작게 다듬었습니다.<br />확대 예시와 이름 옆 실제 크기(18px)를 함께 비교해보세요.</p>
+    <p class="intro">전류의 가장자리를 정리하고 4가지 흐름으로 나눴습니다.<br />확대 예시와 이름 옆 실제 크기(18px)를 함께 비교해보세요.</p>
     <div class="section-heading">비교할 아이콘 <span>확대 36px · 이름 뒤 18px</span></div>
     <div class="icon-picker">{icons.map(([id,label],i)=><button type="button" data-icon-choice={id} title={label} aria-label={label} aria-pressed={i===0?'true':'false'}><span class="picker-icon" style={`mask-image:url('/icons/achievement-preview/${id}.svg');-webkit-mask-image:url('/icons/achievement-preview/${id}.svg')`}/></button>)}</div>
     <div class="palette-picker" aria-label="비교 색 선택">{palettes.map(([id,label,a,b],i)=><button type="button" data-palette={id} data-a={a} data-b={b} aria-pressed={i===0?'true':'false'}><i style={`background:linear-gradient(135deg,${a},${b})`}/>{label}</button>)}</div>
@@ -24,8 +33,8 @@ const geometry=(id)=>String(files[`../../../../../public/icons/achievement-previ
       <div class="mini-icons">{['flower','flame','crown'].map((icon,j)=><Badge icon={icon} effect={effect} id={`card-${i}-mini-${j}`}/>)}</div>
       <h2>{label}</h2><p>{description}</p>
     </article>)}</div>
-    <div class="section-heading ranking-heading">가상 랭킹 (30) <span>4개 효과 · 6가지 색</span></div>
-    <div class="lb-list">{names.map((name,i)=>{const effect=effects[i%4];const palette=palettes[Math.floor(i/4)%6];return <div class:list={['lb-row',{'lb-me':i===2}]}>
+    <div class="section-heading ranking-heading">가상 랭킹 (30) <span>8개 시안 · 6가지 색</span></div>
+    <div class="lb-list">{names.map((name,i)=>{const effect=effects[i%effects.length];const palette=palettes[(i*5+Math.floor(i/effects.length))%6];return <div class:list={['lb-row',{'lb-me':i===2}]}>
       <span class="lb-rank">{i+1}</span><span class="lb-name rank-name"><span>{name}</span><span class="rank-badge" style={`--tone-a:${palette[2]};--tone-b:${palette[3]}`}><Badge icon={icons[i*5%12][0]} effect={effect[0]} id={`rank-${i}`} label={`${effect[1]} · ${palette[1]}`}/></span></span><span class="effect-label">{effect[1]}</span><span class="lb-time">{90-i*3}개</span>
     </div>})}</div>
     <p class="caption">닉네임과 기록은 예시입니다.</p>
@@ -66,17 +75,20 @@ const geometry=(id)=>String(files[`../../../../../public/icons/achievement-previ
   .material-preview .material-badge.large { width:36px;height:36px; }
   .material-badge svg { display:block;width:100%;height:100%;overflow:hidden; }
   .material-preview .current-trail { animation:material-current 1.85s linear infinite; }
-  .material-preview .current-head { animation:material-current 1.85s linear infinite;opacity:.85; }
-  .material-preview .glitter-dark { animation:material-glitter 2.9s steps(13,end) infinite; }
-  .material-preview .glitter-light { animation:material-glitter 1.7s steps(11,end) infinite,material-flash .71s steps(3,end) infinite; }
-  .material-preview .opal-cloud { filter:blur(2px);animation:material-opal 3.1s ease-in-out infinite; }
-  .material-preview .cloud-two { animation-delay:-1.55s; }
+  .material-preview .current-head { animation:material-current 1.85s linear infinite;opacity:1; }
+  .material-preview .single-head { animation-duration:1.6s; }
+  .material-preview .twin-forward { animation-duration:2.1s; }
+  .material-preview .twin-reverse { animation-duration:2.1s;animation-direction:reverse;animation-delay:-1.05s; }
+  .material-preview .charge-line { animation:material-charge 3.4s ease-in-out infinite; }
+  .material-preview .ribbon-light { animation:material-ribbon 1.9s linear infinite; }
+  .material-preview .crackle-line { opacity:0;animation:material-crackle 3.2s ease-in-out infinite; }
+  .material-preview .crackle-second { animation-delay:-1.6s; }
+  @keyframes material-charge { 0%,12%,100% { stroke-dasharray:0 100; } 47%,60% { stroke-dasharray:100 0; } }
+  @keyframes material-ribbon { from { x:-72px; } to { x:0px; } }
+  @keyframes material-crackle { 0%,30%,65%,100% { opacity:0; } 36% { opacity:.95; } 43% { opacity:.15; } 49% { opacity:.7; } }
   .material-preview .digital-cell { animation:material-pixel 2.8s ease-in-out infinite; }
   .material-preview .rank-badge { display:inline-flex; }
   @keyframes material-current { from { stroke-dashoffset:var(--trail-start,0px); } to { stroke-dashoffset:calc(var(--trail-start,0px) - 100px); } }
-  @keyframes material-glitter { from { stroke-dashoffset:0; } to { stroke-dashoffset:147; } }
-  @keyframes material-flash { 0%,100% { opacity:.1; } 33% { opacity:1; } 66% { opacity:.65; } }
-  @keyframes material-opal { 0%,100% { opacity:.05; } 50% { opacity:.95; } }
   @keyframes material-pixel { 0%,12%,100% { opacity:.04; } 36% { opacity:.76; } 57% { opacity:.22; } 74% { opacity:.58; } 90% { opacity:.08; } }
   .material-preview.paused .material-badge * { animation-play-state:paused; }
   @media(max-width:400px) { .material-preview .icon-picker { grid-template-columns:repeat(6,minmax(0,1fr)); } }
