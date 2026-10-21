@@ -1,0 +1,35 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import { compass261021 } from '../lib/compass.js';
+const { puzzleId } = Astro.props;
+---
+<PuzzleLayout title="261021 컴퍼스" {puzzleId}
+  subtitle="방향별 숫자에 맞춰 단서가 하나씩 들어 있는 영역을 만드세요"
+  description="단서의 동서남북 숫자에 맞게 격자를 여러 영역으로 나누는 컴퍼스">
+  <div slot="rules">
+    점선을 따라 격자를 여러 영역으로 나누세요. 영역은 변끼리 맞닿아 연결된 칸들의 집합입니다.
+    <ul>
+      <li>모든 칸은 정확히 하나의 영역에 속해야 합니다.</li>
+      <li>각 영역에는 X자 모양의 단서가 정확히 하나 있어야 합니다. 단서에는 최대 네 개의 숫자가 적혀 있습니다.</li>
+      <li>단서 위쪽의 숫자는 같은 영역에서 단서 칸보다 북쪽에 있는 모든 칸의 개수입니다. 어느 열에 있는지는 관계없습니다.</li>
+      <li>왼쪽·오른쪽·아래쪽 숫자도 각각 단서 칸보다 서쪽·동쪽·남쪽에 있는 같은 영역의 칸 개수입니다.</li>
+      <li>숫자가 없는 방향의 칸 개수에는 제한이 없습니다.</li>
+    </ul>
+  </div>
+  <div slot="controls">
+    칸 사이 점선을 누르면 경계선을 긋고, 같은 선을 다시 누르면 지웁니다.
+  </div>
+  <section id="compassGame" data-puzzle={JSON.stringify(compass261021)} data-puzzle-id={puzzleId} aria-label="컴퍼스">
+    <svg id="compassBoard" role="group" aria-label="8행 8열 컴퍼스 격자. 칸 사이 점선을 눌러 영역을 나누세요"></svg>
+    <div class="bottom-buttons"><button id="compassReset" class="danger" type="button">초기화</button></div>
+    <p id="compassStatus" role="status" aria-live="polite" class="sr-only"></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="compassComplete" />
+</PuzzleLayout>
+<script>import '../scripts/compass.js';</script>
+<style>
+  ul { padding-left:20px; margin:8px 0 0; }
+  #compassBoard { display:block; width:100%; height:auto; background:white; touch-action:auto; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+</style>
