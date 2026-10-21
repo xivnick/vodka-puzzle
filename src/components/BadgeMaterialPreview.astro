@@ -3,7 +3,7 @@ const { icon='star', effect='current', id, large=false, active=false, label } = 
 const files=import.meta.glob('../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
 const raw=String(files[`../../public/icons/achievement-preview/${icon}.svg`]);
 const body=raw.match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/)?.[1]?.replace(/<(path|circle|rect|ellipse|line|polyline|polygon)\b/g,'<$1 pathLength="100"') ?? '';
-const cells=Array.from({length:64},(_,i)=>({x:(i%8)*3,y:Math.floor(i/8)*3,delay:-((i*17)%31)/10, duration:1.1+((i*7)%9)/10}));
+const cells=effect==='digital'?Array.from({length:144},(_,i)=>({x:(i%12)*2,y:Math.floor(i/12)*2,delay:-((i*37)%113)/23, duration:1.8+((i*19)%47)/20})):[];
 ---
 <span class:list={['material-badge',`material-${effect}`,{large,'active-material':active}]} data-material-icon={active?icon:undefined} role={label?'img':undefined} aria-label={label} aria-hidden={label?undefined:'true'}>
   <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -13,8 +13,8 @@ const cells=Array.from({length:64},(_,i)=>({x:(i%8)*3,y:Math.floor(i/8)*3,delay:
     </defs>
     <g class="material-geometry" stroke={`url(#${id}-color)`}><Fragment set:html={body}/></g>
     {effect==='current'&&<>
-      <g class="material-geometry current-tail" stroke="var(--tone-b)" stroke-dasharray="21 79"><Fragment set:html={body}/></g>
-      <g class="material-geometry current-head" stroke="white" stroke-dasharray="7 93"><Fragment set:html={body}/></g>
+      {[0,1,2,3,4,5,6].map(segment=><g class="material-geometry current-trail" stroke="color-mix(in srgb, var(--tone-b) 35%, white)" stroke-dasharray="5 95" style={`--trail-start:${-segment*3}px;opacity:${.06+segment*.08}`}><Fragment set:html={body}/></g>)}
+      <g class="material-geometry current-head" stroke="color-mix(in srgb, var(--tone-b) 18%, white)" stroke-dasharray="2 98" style="--trail-start:-22px"><Fragment set:html={body}/></g>
     </>}
     {effect==='glitter'&&<>
       <g class="material-geometry glitter-dark" stroke="var(--tone-b)" stroke-dasharray="6 9 3 17"><Fragment set:html={body}/></g>
@@ -24,6 +24,6 @@ const cells=Array.from({length:64},(_,i)=>({x:(i%8)*3,y:Math.floor(i/8)*3,delay:
       <g class="opal-cloud"><ellipse cx="5" cy="7" rx="9" ry="6" fill="#ed91bd"/><ellipse cx="19" cy="17" rx="8" ry="7" fill="#76d7d3"/></g>
       <g class="opal-cloud cloud-two"><ellipse cx="19" cy="5" rx="8" ry="7" fill="#b499ed"/><ellipse cx="6" cy="19" rx="8" ry="6" fill="#f6cb7c"/></g>
     </g>}
-    {effect==='digital'&&<g mask={`url(#${id}-mask)`}>{cells.map((cell,i)=><rect class="digital-cell" x={cell.x} y={cell.y} width="3" height="3" fill={i%3===0?'var(--tone-a)':i%3===1?'var(--tone-b)':'#d4e8df'} style={`animation-delay:${cell.delay}s;animation-duration:${cell.duration}s`}/>)}</g>}
+    {effect==='digital'&&<g mask={`url(#${id}-mask)`}>{cells.map((cell,i)=><rect class="digital-cell" x={cell.x} y={cell.y} width="2" height="2" fill={i%3===0?'var(--tone-a)':i%3===1?'var(--tone-b)':'color-mix(in srgb, var(--tone-b) 65%, white)'} style={`animation-delay:${cell.delay}s;animation-duration:${cell.duration}s`}/>)}</g>}
   </svg>
 </span>
