@@ -21,3 +21,15 @@ function setPaused(paused){
 }
 setPaused(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 pause.addEventListener('click',()=>setPaused(!preview.classList.contains('paused')));
+
+// Pause clipped and offscreen previews instead of animating the entire comparison page.
+if ('IntersectionObserver' in window) {
+  const observer=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>entry.target.classList.toggle('is-visible',entry.isIntersecting));
+  },{threshold:0});
+  preview.classList.add('visibility-managed');
+  preview.querySelectorAll('.material-badge').forEach(badge=>observer.observe(badge));
+}
+const updateVisibility=()=>preview.classList.toggle('page-hidden',document.hidden);
+document.addEventListener('visibilitychange',updateVisibility);
+updateVisibility();

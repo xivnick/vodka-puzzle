@@ -43,6 +43,7 @@ const geometry=(id)=>String(files[`../../../../../public/icons/achievement-previ
 </PageLayout>
 <script>import '../../../../scripts/achievement-materials.js';</script>
 <style is:global>
+  @property --material-dot-radius { syntax:'<length>'; inherits:true; initial-value:.9px; }
   .material-preview { width:100%; }
   .material-preview .intro { margin:0 0 22px; color:#888; font-size:.78rem; line-height:1.8; }
   .material-preview .section-heading { display:flex; justify-content:space-between; gap:8px; margin-bottom:10px; font-size:.78rem; color:#555; }
@@ -81,17 +82,20 @@ const geometry=(id)=>String(files[`../../../../../public/icons/achievement-previ
   .material-preview .lenticular-slice { animation:material-lenticular 2.6s ease-in-out infinite; }
   .material-preview .weave-thread { animation:material-weave 2.8s ease-in-out infinite; }
   .material-preview .weave-cross { animation-delay:-1.4s; }
-  .material-preview .halftone-dot { animation:material-halftone 2.4s ease-in-out infinite; }
+  .material-preview .halftone-dot { r:var(--material-dot-radius); }
+  .material-preview .halftone-wave { animation:material-halftone 2.4s ease-in-out infinite; }
   .material-preview .interference-stop { animation:material-interference 3.2s ease-in-out infinite;animation-delay:var(--phase); }
   @keyframes material-foil { 0%,100% { opacity:.08; } 35% { opacity:.8; } 65% { opacity:.3; } }
   @keyframes material-lenticular { 0%,100% { opacity:.05; } 50% { opacity:1; } }
   @keyframes material-weave { 0%,100% { opacity:.12; } 50% { opacity:.8; } }
-  @keyframes material-halftone { 0%,100% { r:.25px;opacity:.15; } 50% { r:1.35px;opacity:.9; } }
+  @keyframes material-halftone { 0%,100% { --material-dot-radius:.25px;opacity:.15; } 50% { --material-dot-radius:1.35px;opacity:.9; } }
   @keyframes material-interference { 0%,100% { stop-color:var(--tone-a); } 50% { stop-color:var(--tone-b); } }
-  .material-preview .digital-cell { animation:material-pixel 2.8s ease-in-out infinite; }
+  .material-preview .digital-cell-group { animation:material-pixel 2.8s ease-in-out infinite; }
   .material-preview .rank-badge { display:inline-flex; }
   @keyframes material-current { from { stroke-dashoffset:var(--trail-start,0px); } to { stroke-dashoffset:calc(var(--trail-start,0px) - 100px); } }
   @keyframes material-pixel { 0%,12%,100% { opacity:.04; } 36% { opacity:.76; } 57% { opacity:.22; } 74% { opacity:.58; } 90% { opacity:.08; } }
-  .material-preview.paused .material-badge * { animation-play-state:paused; }
+  .material-preview.paused .material-badge *,
+  .material-preview.page-hidden .material-badge *,
+  .material-preview.visibility-managed .material-badge:not(.is-visible) * { animation-play-state:paused; }
   @media(max-width:400px) { .material-preview .icon-picker { grid-template-columns:repeat(6,minmax(0,1fr)); } }
 </style>
