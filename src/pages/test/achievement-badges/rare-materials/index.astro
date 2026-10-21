@@ -3,13 +3,13 @@ import PageLayout from '../../../../layouts/PageLayout.astro';
 import Badge from '../../../../components/BadgeMaterialPreview.astro';
 const effects=[
   ['current-single','전류 · 한 줄','순백색의 짧은 빛이 선을 따라 순환.'],
-  ['digital','디지털 노이즈','작은 픽셀의 색이 서로 다른 박자로 변화.'],
+  ['digital','디지털 노이즈','작은 흰색 픽셀의 투명도가 제각각 변화.'],
   ['ribbon','빛의 띠','빠르게 한 번 지나가는 광택.'],
   ['foil','포일','작은 삼각 면들이 다른 각도로 빛을 받는 질감.'],
-  ['lenticular','렌티큘러','촘촘한 세로 결의 색이 순차적으로 전환.'],
+  ['lenticular','렌티큘러','촘촘한 세로 결의 흰색 광택이 교대로 나타남.'],
   ['weave','직조광','교차하는 실의 광택이 번갈아 드러남.'],
-  ['halftone','망점','동그란 색 입자가 촘촘하게 피어나고 사라짐.'],
-  ['interference','간섭색','고정된 곡선 무늬의 두 색이 물결처럼 교대.'],
+  ['halftone','망점','고정된 흰색 입자가 촘촘하게 밝아졌다 사라짐.'],
+  ['interference','간섭광','곡선 무늬의 흰색 광택이 물결처럼 밝아짐.'],
 ];
 const palettes=[['berry','베리 소다','#BB6B98','#527BC0'],['gold','금빛','#A99231','#C57543'],['sea','바다','#368B91','#79A9C8'],['petal','꽃잎','#CF91B2','#674B8D'],['mint','민트','#42977D','#578761'],['ink','먹색','#485360','#727C8B']];
 const icons=[['star','별'],['flower','꽃'],['flame','불꽃'],['trophy','트로피'],['medal','메달'],['puzzle','퍼즐'],['plant','새싹'],['bolt','번개'],['moon','달'],['diamond','다이아몬드'],['crown','왕관'],['rosette','로제트']];
@@ -22,7 +22,7 @@ const geometry=(id)=>String(files[`../../../../../public/icons/achievement-previ
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="material-preview" style="--tone-a:#BB6B98;--tone-b:#527BC0" aria-label="레어 재질 비교">
     {icons.map(([id])=><template data-icon-template={id}><svg viewBox="0 0 24 24"><Fragment set:html={geometry(id)}/></svg></template>)}
-    <p class="intro">한 줄 전류를 순백색으로 바꾸고, 새 재질 5개를 추가했습니다.<br />확대 예시와 이름 옆 실제 크기(18px)를 함께 비교해보세요.</p>
+    <p class="intro">기본 두 색은 고정하고, 흰색 레이어의 투명도로만 효과를 냈습니다.<br />확대 예시와 이름 옆 실제 크기(18px)를 함께 비교해보세요.</p>
     <div class="section-heading">비교할 아이콘 <span>확대 36px · 이름 뒤 18px</span></div>
     <div class="icon-picker">{icons.map(([id,label],i)=><button type="button" data-icon-choice={id} title={label} aria-label={label} aria-pressed={i===0?'true':'false'}><span class="picker-icon" style={`mask-image:url('/icons/achievement-preview/${id}.svg');-webkit-mask-image:url('/icons/achievement-preview/${id}.svg')`}/></button>)}</div>
     <div class="palette-picker" aria-label="비교 색 선택">{palettes.map(([id,label,a,b],i)=><button type="button" data-palette={id} data-a={a} data-b={b} aria-pressed={i===0?'true':'false'}><i style={`background:linear-gradient(135deg,${a},${b})`}/>{label}</button>)}</div>
@@ -43,7 +43,6 @@ const geometry=(id)=>String(files[`../../../../../public/icons/achievement-previ
 </PageLayout>
 <script>import '../../../../scripts/achievement-materials.js';</script>
 <style is:global>
-  @property --material-dot-radius { syntax:'<length>'; inherits:true; initial-value:.9px; }
   .material-preview { width:100%; }
   .material-preview .intro { margin:0 0 22px; color:#888; font-size:.78rem; line-height:1.8; }
   .material-preview .section-heading { display:flex; justify-content:space-between; gap:8px; margin-bottom:10px; font-size:.78rem; color:#555; }
@@ -82,14 +81,13 @@ const geometry=(id)=>String(files[`../../../../../public/icons/achievement-previ
   .material-preview .lenticular-slice { animation:material-lenticular 2.6s ease-in-out infinite; }
   .material-preview .weave-thread { animation:material-weave 2.8s ease-in-out infinite; }
   .material-preview .weave-cross { animation-delay:-1.4s; }
-  .material-preview .halftone-dot { r:var(--material-dot-radius); }
   .material-preview .halftone-wave { animation:material-halftone 2.4s ease-in-out infinite; }
   .material-preview .interference-stop { animation:material-interference 3.2s ease-in-out infinite;animation-delay:var(--phase); }
   @keyframes material-foil { 0%,100% { opacity:.08; } 35% { opacity:.8; } 65% { opacity:.3; } }
   @keyframes material-lenticular { 0%,100% { opacity:.05; } 50% { opacity:1; } }
   @keyframes material-weave { 0%,100% { opacity:.12; } 50% { opacity:.8; } }
-  @keyframes material-halftone { 0%,100% { --material-dot-radius:.25px;opacity:.15; } 50% { --material-dot-radius:1.35px;opacity:.9; } }
-  @keyframes material-interference { 0%,100% { stop-color:var(--tone-a); } 50% { stop-color:var(--tone-b); } }
+  @keyframes material-halftone { 0%,100% { opacity:.05; } 50% { opacity:.9; } }
+  @keyframes material-interference { 0%,100% { stop-opacity:0; } 50% { stop-opacity:.8; } }
   .material-preview .digital-cell-group { animation:material-pixel 2.8s ease-in-out infinite; }
   .material-preview .rank-badge { display:inline-flex; }
   @keyframes material-current { from { stroke-dashoffset:var(--trail-start,0px); } to { stroke-dashoffset:calc(var(--trail-start,0px) - 100px); } }
