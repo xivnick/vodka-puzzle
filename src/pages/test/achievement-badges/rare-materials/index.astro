@@ -2,14 +2,10 @@
 import PageLayout from '../../../../layouts/PageLayout.astro';
 import Badge from '../../../../components/BadgeMaterialPreview.astro';
 const effects=[
-  ['current-single','전류 · 한 줄','순백색의 짧은 빛이 선을 따라 순환.'],
-  ['digital','디지털 노이즈','작은 흰색 픽셀의 투명도가 제각각 변화.'],
-  ['ribbon','빛의 띠','빠르게 한 번 지나가는 광택.'],
+  ['ribbon','빛의 띠','대각선으로 빠르게 스치는 흰색 광택.'],
   ['foil','포일','작은 삼각 면들이 다른 각도로 빛을 받는 질감.'],
-  ['lenticular','렌티큘러','촘촘한 세로 결의 흰색 광택이 교대로 나타남.'],
-  ['weave','직조광','교차하는 실의 광택이 번갈아 드러남.'],
-  ['halftone','망점','고정된 흰색 입자가 촘촘하게 밝아졌다 사라짐.'],
   ['interference','간섭광','곡선 무늬의 흰색 광택이 물결처럼 밝아짐.'],
+  ['lenticular','렌티큘러 · 후보','세로 결의 양 끝을 부드럽게, 광택은 짧고 선명하게.'],
 ];
 const palettes=[['berry','베리 소다','#BB6B98','#527BC0'],['gold','금빛','#A99231','#C57543'],['sea','바다','#368B91','#79A9C8'],['petal','꽃잎','#CF91B2','#674B8D'],['mint','민트','#42977D','#578761'],['ink','먹색','#485360','#727C8B']];
 const icons=[['star','별'],['flower','꽃'],['flame','불꽃'],['trophy','트로피'],['medal','메달'],['puzzle','퍼즐'],['plant','새싹'],['bolt','번개'],['moon','달'],['diamond','다이아몬드'],['crown','왕관'],['rosette','로제트']];
@@ -18,11 +14,11 @@ const names=['네모왕','소금빵','퍼즐러','모눈종이','연필한자루
 const files=import.meta.glob('../../../../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
 const geometry=(id)=>String(files[`../../../../../public/icons/achievement-preview/${id}.svg`]).match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/)?.[1]?.replace(/<(path|circle|rect|ellipse|line|polyline|polygon)\b/g,'<$1 pathLength="100"')??'';
 ---
-<PageLayout title="레어 재질 비교" subtitle="전류 · 디지털 노이즈 · 빛의 띠 + 새 시안 5종">
+<PageLayout title="레어 재질 비교" subtitle="빛의 띠 · 포일 · 간섭광 / 후보: 렌티큘러">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="material-preview" style="--tone-a:#BB6B98;--tone-b:#527BC0" aria-label="레어 재질 비교">
     {icons.map(([id])=><template data-icon-template={id}><svg viewBox="0 0 24 24"><Fragment set:html={geometry(id)}/></svg></template>)}
-    <p class="intro">기본 두 색은 고정하고, 흰색 레이어의 투명도로만 효과를 냈습니다.<br />확대 예시와 이름 옆 실제 크기(18px)를 함께 비교해보세요.</p>
+    <p class="intro">기본 색 위에 흰색 투명도로만 광택을 냈습니다. 렌티큘러는 다듬은 후보입니다.<br />확대 예시와 이름 옆 실제 크기(18px)를 함께 비교해보세요.</p>
     <div class="section-heading">비교할 아이콘 <span>확대 36px · 이름 뒤 18px</span></div>
     <div class="icon-picker">{icons.map(([id,label],i)=><button type="button" data-icon-choice={id} title={label} aria-label={label} aria-pressed={i===0?'true':'false'}><span class="picker-icon" style={`mask-image:url('/icons/achievement-preview/${id}.svg');-webkit-mask-image:url('/icons/achievement-preview/${id}.svg')`}/></button>)}</div>
     <div class="palette-picker" aria-label="비교 색 선택">{palettes.map(([id,label,a,b],i)=><button type="button" data-palette={id} data-a={a} data-b={b} aria-pressed={i===0?'true':'false'}><i style={`background:linear-gradient(135deg,${a},${b})`}/>{label}</button>)}</div>
@@ -33,8 +29,8 @@ const geometry=(id)=>String(files[`../../../../../public/icons/achievement-previ
       <div class="mini-icons">{['flower','flame','crown'].map((icon,j)=><Badge icon={icon} effect={effect} id={`card-${i}-mini-${j}`}/>)}</div>
       <h2>{label}</h2><p>{description}</p>
     </article>)}</div>
-    <div class="section-heading ranking-heading">가상 랭킹 (30) <span>8개 시안 · 6가지 색</span></div>
-    <div class="lb-list">{names.map((name,i)=>{const effect=effects[i%effects.length];const palette=palettes[(i*5+Math.floor(i/effects.length))%6];return <div class:list={['lb-row',{'lb-me':i===2}]}>
+    <div class="section-heading ranking-heading">가상 랭킹 (30) <span>3개 효과 + 후보 1개</span></div>
+    <div class="lb-list">{names.map((name,i)=>{const effect=effects[i%effects.length];const palette=palettes[(i%effects.length+Math.floor(i/effects.length))%palettes.length];return <div class:list={['lb-row',{'lb-me':i===2}]}>
       <span class="lb-rank">{i+1}</span><span class="lb-name rank-name"><span>{name}</span><span class="rank-badge" style={`--tone-a:${palette[2]};--tone-b:${palette[3]}`}><Badge icon={icons[i*5%12][0]} effect={effect[0]} id={`rank-${i}`} label={`${effect[1]} · ${palette[1]}`}/></span></span><span class="effect-label">{effect[1]}</span><span class="lb-time">{90-i*3}개</span>
     </div>})}</div>
     <p class="caption">닉네임과 기록은 예시입니다.</p>
@@ -74,24 +70,15 @@ const geometry=(id)=>String(files[`../../../../../public/icons/achievement-previ
   .material-preview .material-badge { display:inline-flex;flex:0 0 auto;width:18px;height:18px;vertical-align:middle;isolation:isolate; }
   .material-preview .material-badge.large { width:36px;height:36px; }
   .material-badge svg { display:block;width:100%;height:100%;overflow:hidden; }
-  .material-preview .current-head { animation:material-current 1.6s linear infinite;opacity:1; }
   .material-preview .ribbon-light { animation:material-ribbon 1.9s linear infinite; }
   @keyframes material-ribbon { from { x:-72px; } to { x:0px; } }
   .material-preview .foil-face { animation:material-foil 2.8s ease-in-out infinite; }
-  .material-preview .lenticular-slice { animation:material-lenticular 2.6s ease-in-out infinite; }
-  .material-preview .weave-thread { animation:material-weave 2.8s ease-in-out infinite; }
-  .material-preview .weave-cross { animation-delay:-1.4s; }
-  .material-preview .halftone-wave { animation:material-halftone 2.4s ease-in-out infinite; }
+  .material-preview .lenticular-slice { animation:material-lenticular 2.1s ease-in-out infinite; }
   .material-preview .interference-stop { animation:material-interference 3.2s ease-in-out infinite;animation-delay:var(--phase); }
   @keyframes material-foil { 0%,100% { opacity:.08; } 35% { opacity:.8; } 65% { opacity:.3; } }
-  @keyframes material-lenticular { 0%,100% { opacity:.05; } 50% { opacity:1; } }
-  @keyframes material-weave { 0%,100% { opacity:.12; } 50% { opacity:.8; } }
-  @keyframes material-halftone { 0%,100% { opacity:.05; } 50% { opacity:.9; } }
+  @keyframes material-lenticular { 0%,20%,100% { opacity:0; } 43% { opacity:.9; } 62% { opacity:.25; } 78% { opacity:0; } }
   @keyframes material-interference { 0%,100% { stop-opacity:0; } 50% { stop-opacity:.8; } }
-  .material-preview .digital-cell-group { animation:material-pixel 2.8s ease-in-out infinite; }
   .material-preview .rank-badge { display:inline-flex; }
-  @keyframes material-current { from { stroke-dashoffset:var(--trail-start,0px); } to { stroke-dashoffset:calc(var(--trail-start,0px) - 100px); } }
-  @keyframes material-pixel { 0%,12%,100% { opacity:.04; } 36% { opacity:.76; } 57% { opacity:.22; } 74% { opacity:.58; } 90% { opacity:.08; } }
   .material-preview.paused .material-badge *,
   .material-preview.page-hidden .material-badge *,
   .material-preview.visibility-managed .material-badge:not(.is-visible) * { animation-play-state:paused; }
