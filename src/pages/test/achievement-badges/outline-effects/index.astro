@@ -3,9 +3,9 @@ import PageLayout from '../../../../layouts/PageLayout.astro';
 import Badge from '../../../../components/BadgeEdgePreview.astro';
 const effects=[
   ['plain','효과 없음','기본 색과 선 모양을 비교하는 기준.'],
-  ['sheen','테두리 광택','선 가운데 색은 남기고 가장자리만 반짝임.'],
-  ['rim','림라이트','왼쪽 위와 오른쪽 아래의 얇은 빛이 교대.'],
-  ['halo','후광','아이콘 뒤에서 은은하게 번지는 흰색 빛.'],
+  ['sheen','테두리 광택','얇은 원래 색 테두리 안쪽으로 흰색 광택.'],
+  ['rim','림라이트','색 테두리를 유지하며 양쪽 가장자리의 빛이 교대.'],
+  ['halo','후광','아이콘의 원래 색으로 바깥쪽에 은은하게 번짐.'],
 ];
 const palettes=[['berry','베리 소다','#BB6B98','#527BC0'],['gold','금빛','#A99231','#C57543'],['sea','바다','#368B91','#79A9C8'],['petal','꽃잎','#CF91B2','#674B8D'],['mint','민트','#42977D','#578761'],['ink','먹색','#485360','#727C8B']];
 const icons=[['star','별'],['flower','꽃'],['flame','불꽃'],['trophy','트로피'],['medal','메달'],['puzzle','퍼즐'],['plant','새싹'],['bolt','번개'],['moon','달'],['diamond','다이아몬드'],['crown','왕관'],['rosette','로제트']];
@@ -18,7 +18,7 @@ const geometry=(id)=>String(files[`../../../../../public/icons/achievement-previ
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="material-preview" style="--tone-a:#BB6B98;--tone-b:#527BC0" aria-label="외곽선 효과 비교">
     {icons.map(([id])=><template data-icon-template={id}><svg viewBox="0 0 24 24"><Fragment set:html={geometry(id)}/></svg></template>)}
-    <p class="intro">기본 색을 유지하고 선의 가장자리와 바깥에 흰색 빛을 얹었습니다.<br />이름 옆 18px와 어두운 배경도 함께 비교해보세요.</p>
+    <p class="intro">흰 배경에서도 보이도록 바깥에는 원래 색, 안쪽에는 흰색 광택을 썼습니다.<br />이름 옆 18px와 어두운 배경도 함께 비교해보세요.</p>
     <div class="section-heading">비교할 아이콘 <span>확대 36px · 이름 뒤 18px</span></div>
     <div class="icon-picker">{icons.map(([id,label],i)=><button type="button" data-icon-choice={id} title={label} aria-label={label} aria-pressed={i===0?'true':'false'}><span class="picker-icon" style={`mask-image:url('/icons/achievement-preview/${id}.svg');-webkit-mask-image:url('/icons/achievement-preview/${id}.svg')`}/></button>)}</div>
     <div class="palette-picker" aria-label="비교 색 선택">{palettes.map(([id,label,a,b],i)=><button type="button" data-palette={id} data-a={a} data-b={b} aria-pressed={i===0?'true':'false'}><i style={`background:linear-gradient(135deg,${a},${b})`}/>{label}</button>)}</div>
@@ -79,7 +79,7 @@ const geometry=(id)=>String(files[`../../../../../public/icons/achievement-previ
   .material-preview .edge-halo-light { animation:edge-halo 2.8s ease-in-out infinite; }
   @keyframes edge-sweep { from { x:-72px; } to { x:0px; } }
   @keyframes edge-rim { 0%,100% { opacity:.04; } 50% { opacity:.95; } }
-  @keyframes edge-halo { 0%,100% { opacity:.1; } 50% { opacity:.9; } }
+  @keyframes edge-halo { 0%,100% { opacity:.15; } 50% { opacity:.8; } }
   .material-preview .rank-badge { display:inline-flex; }
   .material-preview.paused .material-badge *,
   .material-preview.page-hidden .material-badge *,

@@ -14,7 +14,8 @@ const body=String(files[`../../public/icons/achievement-preview/${icon}.svg`]).m
       {effect==='rim'&&[-1,1].map((direction,index)=><mask id={`${id}-rim-${index}`} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><g class="material-geometry" stroke="white"><Fragment set:html={body}/></g><g class="material-geometry" stroke="black" stroke-width="2" transform={`translate(${direction*.55} ${direction*.55})`}><Fragment set:html={body}/></g></mask>)}
       {effect==='halo'&&<filter id={`${id}-halo`} filterUnits="userSpaceOnUse" x="-4" y="-4" width="32" height="32"><feGaussianBlur stdDeviation="1.05"/></filter>}
     </defs>
-    {effect==='halo'&&<g class="edge-halo-light" filter={`url(#${id}-halo)`}><g class="material-geometry" stroke="white" stroke-width="2.5"><Fragment set:html={body}/></g></g>}
+    {effect==='halo'&&<g class="edge-halo-light" filter={`url(#${id}-halo)`}><g class="material-geometry" stroke={`url(#${id}-color)`} stroke-width="3.8"><Fragment set:html={body}/></g></g>}
+    {(effect==='sheen'||effect==='rim')&&<g class="material-geometry" stroke={`url(#${id}-color)`} stroke-width="2.8" opacity=".4"><Fragment set:html={body}/></g>}
     <g class="material-geometry" stroke={`url(#${id}-color)`}><Fragment set:html={body}/></g>
     {effect==='sheen'&&<g mask={`url(#${id}-edges)`}><rect class="edge-sheen-light" x="-72" y="0" width="96" height="24" stroke="none" fill={`url(#${id}-light)`}/></g>}
     {effect==='rim'&&[0,1].map(index=><rect class:list={['edge-rim-light',{'edge-rim-opposite':index===1}]} mask={`url(#${id}-rim-${index})`} width="24" height="24" fill="white" stroke="none"/>)}
