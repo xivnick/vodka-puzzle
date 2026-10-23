@@ -1,0 +1,94 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+import Badge from '../../../../components/BadgeWhiteMotionPreview.astro';
+const effects=[
+  ['clock','시곗빛','중심을 축으로 좁은 흰색 빛이 시계 방향 회전.'],
+  ['cross','교차광','두 방향의 흰색 빛이 서로 교차하며 통과.'],
+  ['water','물결광','수면처럼 굽은 빛의 무늬가 흘러감.'],
+  ['silver','은가루','작은 흰색 입자가 제자리에서 따로 반짝임.'],
+  ['afterglow','잔광','짧게 밝아지고 천천히 기본 색으로 돌아옴.'],
+  ['plain','효과 없음','기본 색과 형태를 비교하는 기준.'],
+];
+const palettes=[['berry','베리 소다','#BB6B98','#527BC0'],['gold','금빛','#A99231','#C57543'],['sea','바다','#368B91','#79A9C8'],['petal','꽃잎','#CF91B2','#674B8D'],['mint','민트','#42977D','#578761'],['ink','먹색','#485360','#727C8B']];
+const icons=[['star','별'],['flower','꽃'],['flame','불꽃'],['trophy','트로피'],['medal','메달'],['puzzle','퍼즐'],['plant','새싹'],['bolt','번개'],['moon','달'],['diamond','다이아몬드'],['crown','왕관'],['rosette','로제트']];
+const names=['네모왕','소금빵','퍼즐러','모눈종이','연필한자루','숫자산책','초록','빈칸수집가','달빛산책','번뜩','유리구슬','꾸준한오후','조각모음','민트초코','불씨','별헤는밤','라일락','종이비행기','귤한조각','베리소다','새벽달','한칸더','오로라','봄바람','잔별','꽃갈피','해질녘','복숭아','숲속산책','파란수첩'];
+
+const files=import.meta.glob('../../../../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
+const geometry=(id)=>String(files[`../../../../../public/icons/achievement-preview/${id}.svg`]).match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/)?.[1]?.replace(/<(path|circle|rect|ellipse|line|polyline|polygon)\b/g,'<$1 pathLength="100"')??'';
+---
+<PageLayout title="흰색 효과 새 시안" subtitle="시곗빛 + 흰색 효과 4종 · 기본형 비교">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="material-preview" style="--tone-a:#BB6B98;--tone-b:#527BC0" aria-label="흰색 효과 새 시안">
+    {icons.map(([id])=><template data-icon-template={id}><svg viewBox="0 0 24 24"><Fragment set:html={geometry(id)}/></svg></template>)}
+    <p class="intro">아이콘은 고정하고, 흰색 빛의 위치와 투명도만 바꿉니다.<br />확대 예시와 이름 옆 실제 크기(18px)를 함께 비교해보세요.</p>
+    <p class="comparison-link"><a href="/test/achievement-badges/rare-materials/">빛의 띠·포일·간섭광·렌티큘러 비교 페이지 ↗</a></p>
+    <div class="section-heading">비교할 아이콘 <span>확대 36px · 이름 뒤 18px</span></div>
+    <div class="icon-picker">{icons.map(([id,label],i)=><button type="button" data-icon-choice={id} title={label} aria-label={label} aria-pressed={i===0?'true':'false'}><span class="picker-icon" style={`mask-image:url('/icons/achievement-preview/${id}.svg');-webkit-mask-image:url('/icons/achievement-preview/${id}.svg')`}/></button>)}</div>
+    <div class="palette-picker" aria-label="비교 색 선택">{palettes.map(([id,label,a,b],i)=><button type="button" data-palette={id} data-a={a} data-b={b} aria-pressed={i===0?'true':'false'}><i style={`background:linear-gradient(135deg,${a},${b})`}/>{label}</button>)}</div>
+    <div class="playback"><span>색 선택은 위 비교표에 적용됩니다.</span><button id="pauseMaterials" type="button" aria-pressed="false">일시정지</button></div>
+    <div class="effect-grid">{effects.map(([effect,label,description],i)=><article class="effect-card">
+      <Badge effect={effect} id={`card-${i}-big`} large active/>
+      <span class="sample-name">퍼즐러 <Badge effect={effect} id={`card-${i}-name`} active/></span>
+      <div class="mini-icons">{['flower','flame','crown'].map((icon,j)=><Badge icon={icon} effect={effect} id={`card-${i}-mini-${j}`}/>)}</div>
+      <h2>{label}</h2><p>{description}</p>
+    </article>)}</div>
+    <div class="section-heading ranking-heading">가상 랭킹 (30) <span>새 효과 5종 + 기본형</span></div>
+    <div class="lb-list">{names.map((name,i)=>{const effect=effects[i%effects.length];const palette=palettes[(i%effects.length+Math.floor(i/effects.length))%palettes.length];return <div class:list={['lb-row',{'lb-me':i===2}]}>
+      <span class="lb-rank">{i+1}</span><span class="lb-name rank-name"><span>{name}</span><span class="rank-badge" style={`--tone-a:${palette[2]};--tone-b:${palette[3]}`}><Badge icon={icons[i*5%12][0]} effect={effect[0]} id={`rank-${i}`} label={`${effect[1]} · ${palette[1]}`}/></span></span><span class="effect-label">{effect[1]}</span><span class="lb-time">{90-i*3}개</span>
+    </div>})}</div>
+    <p class="caption">닉네임과 기록은 예시입니다.</p>
+    <p class="credit"><a href="/test/achievement-badges/rare-materials/">이전 4종 비교</a> · <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
+  </section>
+</PageLayout>
+<script>import '../../../../scripts/achievement-materials.js';</script>
+<style is:global>
+  .material-preview { width:100%; }
+  .material-preview .intro { margin:0 0 22px; color:#888; font-size:.78rem; line-height:1.8; }
+  .material-preview .section-heading { display:flex; justify-content:space-between; gap:8px; margin-bottom:10px; font-size:.78rem; color:#555; }
+  .material-preview .section-heading > span { color:#999; font-size:.64rem; }
+  .material-preview .icon-picker { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:4px; margin-bottom:12px; }
+  .material-preview button { border:1px solid #e8e5df; border-radius:4px; background:white; color:#888; cursor:pointer; }
+  .material-preview .icon-picker button { display:flex; align-items:center; justify-content:center; height:34px; padding:0; }
+  .material-preview button[aria-pressed="true"] { background:#eee9e1; border-color:#b8b1a6; color:#555; }
+  .material-preview .palette-picker { display:flex; flex-wrap:wrap; gap:5px; }
+  .material-preview .palette-picker button { display:flex; align-items:center; gap:5px; padding:6px 8px; font-size:.68rem; }
+  .material-preview .palette-picker i { width:12px; height:12px; border-radius:50%; }
+  .material-preview .playback { display:flex; align-items:center; justify-content:space-between; margin:14px 0 18px; color:#999; font-size:.68rem; }
+  .material-preview .playback button { padding:5px 10px; font-size:.68rem; }
+  .material-preview .effect-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .material-preview .effect-card { display:flex; flex-direction:column; align-items:center; gap:14px; min-width:0; padding:20px 8px 14px; border:1px solid #e8e5df; border-radius:4px; }
+  .material-preview .sample-name { display:flex; align-items:center; gap:4px; font-size:.84rem; color:#333; }
+  .material-preview .mini-icons { display:flex; gap:14px; }
+  .material-preview h2 { margin:2px 0 -8px; font-size:.79rem; font-weight:500; color:#555; }
+  .material-preview .effect-card p { margin:0; color:#999; font-size:.65rem; line-height:1.6; text-align:center; word-break:keep-all; }
+  .material-preview .ranking-heading { margin-top:30px; }
+  .material-preview .rank-name { display:flex; align-items:center; gap:4px; min-width:0; }
+  .material-preview .rank-name > span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .material-preview .effect-label { color:#aaa; font-size:.63rem; flex-shrink:0; }
+  .material-preview .caption { margin-top:14px; color:#999; font-size:.7rem; line-height:1.8; }
+  .material-preview .credit { color:#aaa; font-size:.65rem; line-height:1.8; }
+  .material-preview .credit a { color:inherit; }
+
+  .material-preview .picker-icon { width:18px;height:18px;background:#727c8b;mask-size:contain;mask-repeat:no-repeat;-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat; }
+  .material-preview .material-badge { display:inline-flex;flex:0 0 auto;width:18px;height:18px;vertical-align:middle;isolation:isolate; }
+  .material-preview .material-badge.large { width:36px;height:36px; }
+  .material-badge svg { display:block;width:100%;height:100%;overflow:hidden; }
+  .material-preview .comparison-link { margin:-10px 0 22px;font-size:.7rem;line-height:1.7; }
+  .material-preview .comparison-link a { color:#888;text-decoration:underline;text-underline-offset:3px; }
+  .material-preview .clock-beam { transform-origin:12px 12px;animation:white-clock 2.6s linear infinite; }
+  .material-preview .cross-beam { animation:white-cross 2.4s linear infinite; }
+  .material-preview .cross-second { animation-direction:reverse;animation-delay:-.7s; }
+  .material-preview .water-light { animation:white-water 3.8s linear infinite; }
+  .material-preview .silver-grains { animation:white-silver 3.2s ease-in-out infinite; }
+  .material-preview .afterglow-light { animation:white-afterglow 4.2s ease-out infinite; }
+  @keyframes white-clock { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+  @keyframes white-cross { from { x:-72px; } to { x:0px; } }
+  @keyframes white-water { from { transform:translateX(-24px); } to { transform:translateX(0px); } }
+  @keyframes white-silver { 0%,60%,100% { opacity:0; } 22% { opacity:.85; } 38% { opacity:.12; } }
+  @keyframes white-afterglow { 0%,10%,100% { opacity:0; } 15% { opacity:.78; } 35% { opacity:.3; } 70% { opacity:.03; } }
+  .material-preview .rank-badge { display:inline-flex; }
+  .material-preview.paused .material-badge *,
+  .material-preview.page-hidden .material-badge *,
+  .material-preview.visibility-managed .material-badge:not(.is-visible) * { animation-play-state:paused; }
+  @media(max-width:400px) { .material-preview .icon-picker { grid-template-columns:repeat(6,minmax(0,1fr)); } }
+</style>
