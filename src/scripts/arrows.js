@@ -7,7 +7,6 @@ if (game) {
   const board = document.getElementById('arrowsBoard');
   const reset = document.getElementById('arrowsReset'), erase = document.getElementById('arrowsErase');
   const complete = document.getElementById('arrowsComplete'), status = document.getElementById('arrowsStatus');
-  const buttons = [...game.querySelectorAll('[data-direction]')];
   let arrows = sources.map(() => null), selected = null, ready = false, owner = null, completionRecorded = false;
   const account = () => window.puzzleAccount?.user?.id || 'guest';
   const editable = () => ready && owner === account();
@@ -21,12 +20,19 @@ if (game) {
   function render() {
     const result = analyzeArrows(puzzle, arrows);
     const ray = new Set(selected === null ? [] : rayCells(puzzle, sources[selected], arrows[selected]).map(([r, c]) => `${r}:${c}`));
+    const candidates = new Map();
+    if (selected !== null) directions.forEach((direction, d) => {
+      const first = rayCells(puzzle, sources[selected], d)[0];
+      if (first) candidates.set(first.join(':'), d);
+    });
     let html = '';
     puzzle.cells.forEach((row, r) => row.forEach((value, c) => {
       const x = (c + 1) * size, y = (r + 1) * size, count = result.counts[r][c];
-      const fill = ray.has(`${r}:${c}`) ? '#edf3fb' : 'white';
+      const d = candidates.get(`${r}:${c}`);
+      const fill = d !== undefined ? '#dce8f7' : ray.has(`${r}:${c}`) ? '#edf3fb' : 'white';
       const color = count > value ? '#b33c35' : count === value ? '#3b783e' : '#222';
-      html += `<rect x="${x}" y="${y}" width="${size}" height="${size}" fill="${fill}" stroke="#888" stroke-width=".8"/><text x="${x + size / 2}" y="${y + size / 2}" text-anchor="middle" dominant-baseline="central" font-size="23" fill="${color}">${value}</text>`;
+      const target = d === undefined ? '' : ` data-direction="${d}" role="button" tabindex="0" aria-label="${r + 1}행 ${c + 1}열 숫자 ${value}, ${directions[d].label}쪽 화살표 선택" style="cursor:pointer"`;
+      html += `<g${target}><rect x="${x}" y="${y}" width="${size}" height="${size}" fill="${fill}" stroke="#888" stroke-width=".8"/><text x="${x + size / 2}" y="${y + size / 2}" text-anchor="middle" dominant-baseline="central" font-size="23" fill="${color}">${value}</text></g>`;
     }));
     sources.forEach((source, i) => {
       const x = (source.c + 1) * size, y = (source.r + 1) * size;
@@ -41,37 +47,37 @@ if (game) {
       html += '</g>';
     });
     html += `<rect x="${size}" y="${size}" width="${n * size}" height="${n * size}" fill="none" stroke="#202a36" stroke-width="3" pointer-events="none"/>`;
+    const focusedDirection = board.contains(document.activeElement) ? document.activeElement.closest('[data-direction]')?.dataset.direction : null;
     const focused = board.contains(document.activeElement) ? document.activeElement.closest('[data-source]')?.dataset.source : null;
     board.innerHTML = html;
     if (focused != null) board.querySelector(`[data-source="${focused}"]`)?.focus({ preventScroll: true });
-    buttons.forEach(button => {
-      const d = Number(button.dataset.direction);
-      button.disabled = !editable() || selected === null || !rayCells(puzzle, sources[selected], d).length;
-      button.setAttribute('aria-pressed', String(selected !== null && arrows[selected] === d));
-    });
+    if (focusedDirection != null) board.querySelector(`[data-direction="${focusedDirection}"]`)?.focus({ preventScroll: true });
     erase.disabled = !editable() || selected === null || arrows[selected] === null;
     reset.disabled = !editable() || arrows.every(d => d === null);
     complete.hidden = !result.complete;
-    status.textContent = result.complete ? '퍼즐을 완성했습니다.' : selected === null ? '바깥 칸을 선택하세요.' : '방향 버튼으로 화살표를 넣으세요.';
+    status.textContent = result.complete ? '퍼즐을 완성했습니다.' : selected === null ? '바깥 칸을 선택하세요.' : '색으로 표시된 근처 숫자 칸을 눌러 방향을 선택하세요.';
     if (!result.complete) completionRecorded = false;
     if (editable() && window.puzzlePage?.published && result.complete && !completionRecorded) {
       completionRecorded = true; window.recordCompletion(puzzleId, snapshot());
     }
   }
   function select(event) {
+    if (!editable()) return;
+    const target = event.target.closest('[data-direction]');
+    if (target && selected !== null) {
+      const d = Number(target.dataset.direction);
+      if (!rayCells(puzzle, sources[selected], d).length) return;
+      arrows[selected] = d; persist(); render();
+      return;
+    }
     const cell = event.target.closest('[data-source]');
-    if (!cell || !editable()) return;
+    if (!cell) return;
     selected = Number(cell.dataset.source); render();
   }
   board.addEventListener('click', select);
   board.addEventListener('keydown', event => {
     if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(event); }
   });
-  buttons.forEach(button => button.addEventListener('click', () => {
-    const d = Number(button.dataset.direction);
-    if (!editable() || selected === null || !rayCells(puzzle, sources[selected], d).length) return;
-    arrows[selected] = d; persist(); render();
-  }));
   erase.addEventListener('click', () => {
     if (!editable() || selected === null) return;
     arrows[selected] = null; persist(); render();
