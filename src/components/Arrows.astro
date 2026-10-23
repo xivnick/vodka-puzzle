@@ -28,10 +28,12 @@ const { puzzleId } = Astro.props;
 <style>
   p { margin:0; } p+p { margin-top:8px; }
   #arrowsBoard { display:block; width:100%; height:auto; background:white; user-select:none; -webkit-user-select:none; touch-action:manipulation; }
+  #arrowsBoard :global([data-source]:focus), #arrowsBoard :global([data-source]:focus-visible) { outline:none; box-shadow:none; }
   .direction-pad { display:grid; grid-template-columns:repeat(3,48px); grid-template-rows:repeat(3,44px); gap:5px; justify-content:center; margin:16px auto 0; }
   .direction-pad button { padding:5px; margin:0; border:1px solid #ccc; background:#fff; border-radius:4px; cursor:pointer; color:#334f72; }
   .direction-pad button:disabled { opacity:.25; cursor:default; }
-  .direction-pad button[aria-pressed="true"] { background:#e1ebf7; border-color:#8da9c9; }
+  .direction-pad button[aria-pressed="true"] { background:#e1ebf7; }
+  .direction-pad button:focus, .direction-pad button:focus-visible { outline:none; box-shadow:none; }
   .direction-pad svg { width:28px; height:28px; fill:none; stroke:currentColor; stroke-width:2.3; stroke-linecap:round; stroke-linejoin:round; }
   .erase { grid-row:2; grid-column:2; font:inherit; font-size:11px; }
   .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
