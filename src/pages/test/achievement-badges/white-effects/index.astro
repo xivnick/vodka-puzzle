@@ -2,10 +2,8 @@
 import PageLayout from '../../../../layouts/PageLayout.astro';
 import Badge from '../../../../components/BadgeWhiteMotionPreview.astro';
 const effects=[
-  ['clock','시곗빛','중심을 축으로 좁은 흰색 빛이 시계 방향 회전.'],
-  ['cross','교차광','두 방향의 흰색 빛이 서로 교차하며 통과.'],
-  ['water','물결광','수면처럼 굽은 빛의 무늬가 흘러감.'],
-  ['silver','은가루','작은 흰색 입자가 제자리에서 따로 반짝임.'],
+  ['clock-ribbon','시곗빛 · 띠','부드러운 빛의 띠가 중심을 축으로 회전.'],
+  ['clock-cross','시곗빛 · 교차','직교하는 두 빛의 띠가 함께 회전.'],
   ['afterglow','잔광','짧게 밝아지고 천천히 기본 색으로 돌아옴.'],
   ['plain','효과 없음','기본 색과 형태를 비교하는 기준.'],
 ];
@@ -16,11 +14,11 @@ const names=['네모왕','소금빵','퍼즐러','모눈종이','연필한자루
 const files=import.meta.glob('../../../../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
 const geometry=(id)=>String(files[`../../../../../public/icons/achievement-preview/${id}.svg`]).match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/)?.[1]?.replace(/<(path|circle|rect|ellipse|line|polyline|polygon)\b/g,'<$1 pathLength="100"')??'';
 ---
-<PageLayout title="흰색 효과 새 시안" subtitle="시곗빛 + 흰색 효과 4종 · 기본형 비교">
+<PageLayout title="흰색 효과 새 시안" subtitle="회전하는 빛의 띠 2종 · 잔광 · 기본형 비교">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="material-preview" style="--tone-a:#BB6B98;--tone-b:#527BC0" aria-label="흰색 효과 새 시안">
     {icons.map(([id])=><template data-icon-template={id}><svg viewBox="0 0 24 24"><Fragment set:html={geometry(id)}/></svg></template>)}
-    <p class="intro">아이콘은 고정하고, 흰색 빛의 위치와 투명도만 바꿉니다.<br />확대 예시와 이름 옆 실제 크기(18px)를 함께 비교해보세요.</p>
+    <p class="intro">빛의 띠와 교차광의 부드러운 광택을 중심 기준으로 회전시켰습니다.<br />확대 예시와 이름 옆 실제 크기(18px)를 함께 비교해보세요.</p>
     <p class="comparison-link"><a href="/test/achievement-badges/rare-materials/">빛의 띠·포일·간섭광·렌티큘러 비교 페이지 ↗</a></p>
     <div class="section-heading">비교할 아이콘 <span>확대 36px · 이름 뒤 18px</span></div>
     <div class="icon-picker">{icons.map(([id,label],i)=><button type="button" data-icon-choice={id} title={label} aria-label={label} aria-pressed={i===0?'true':'false'}><span class="picker-icon" style={`mask-image:url('/icons/achievement-preview/${id}.svg');-webkit-mask-image:url('/icons/achievement-preview/${id}.svg')`}/></button>)}</div>
@@ -32,7 +30,7 @@ const geometry=(id)=>String(files[`../../../../../public/icons/achievement-previ
       <div class="mini-icons">{['flower','flame','crown'].map((icon,j)=><Badge icon={icon} effect={effect} id={`card-${i}-mini-${j}`}/>)}</div>
       <h2>{label}</h2><p>{description}</p>
     </article>)}</div>
-    <div class="section-heading ranking-heading">가상 랭킹 (30) <span>새 효과 5종 + 기본형</span></div>
+    <div class="section-heading ranking-heading">가상 랭킹 (30) <span>시곗빛 2종 · 잔광 · 기본형</span></div>
     <div class="lb-list">{names.map((name,i)=>{const effect=effects[i%effects.length];const palette=palettes[(i%effects.length+Math.floor(i/effects.length))%palettes.length];return <div class:list={['lb-row',{'lb-me':i===2}]}>
       <span class="lb-rank">{i+1}</span><span class="lb-name rank-name"><span>{name}</span><span class="rank-badge" style={`--tone-a:${palette[2]};--tone-b:${palette[3]}`}><Badge icon={icons[i*5%12][0]} effect={effect[0]} id={`rank-${i}`} label={`${effect[1]} · ${palette[1]}`}/></span></span><span class="effect-label">{effect[1]}</span><span class="lb-time">{90-i*3}개</span>
     </div>})}</div>
@@ -75,16 +73,9 @@ const geometry=(id)=>String(files[`../../../../../public/icons/achievement-previ
   .material-badge svg { display:block;width:100%;height:100%;overflow:hidden; }
   .material-preview .comparison-link { margin:-10px 0 22px;font-size:.7rem;line-height:1.7; }
   .material-preview .comparison-link a { color:#888;text-decoration:underline;text-underline-offset:3px; }
-  .material-preview .clock-beam { transform-origin:12px 12px;animation:white-clock 2.6s linear infinite; }
-  .material-preview .cross-beam { animation:white-cross 2.4s linear infinite; }
-  .material-preview .cross-second { animation-direction:reverse;animation-delay:-.7s; }
-  .material-preview .water-light { animation:white-water 3.8s linear infinite; }
-  .material-preview .silver-grains { animation:white-silver 3.2s ease-in-out infinite; }
+  .material-preview .clock-band { transform-origin:12px 12px;animation:white-clock 2.6s linear infinite; }
   .material-preview .afterglow-light { animation:white-afterglow 4.2s ease-out infinite; }
   @keyframes white-clock { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
-  @keyframes white-cross { from { x:-72px; } to { x:0px; } }
-  @keyframes white-water { from { transform:translateX(-24px); } to { transform:translateX(0px); } }
-  @keyframes white-silver { 0%,60%,100% { opacity:0; } 22% { opacity:.85; } 38% { opacity:.12; } }
   @keyframes white-afterglow { 0%,10%,100% { opacity:0; } 15% { opacity:.78; } 35% { opacity:.3; } 70% { opacity:.03; } }
   .material-preview .rank-badge { display:inline-flex; }
   .material-preview.paused .material-badge *,
