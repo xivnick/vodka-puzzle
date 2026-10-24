@@ -1,0 +1,59 @@
+---
+import HomePage from '../../../components/HomePage.astro';
+---
+<HomePage />
+<script>
+await window.puzzleAuthReady;
+const name = document.getElementById('nicknameLink');
+name.textContent = '보드카';
+const ticket = document.createElement('a');
+ticket.className = 'header-ticket-preview';
+ticket.href = '/time-machine/';
+ticket.innerHTML = '<img src="/icons/time-machine/ticket.svg" width="16" height="16" alt="" /><span>1</span>';
+name.after(ticket);
+const nav = name.parentElement;
+nav.classList.add('header-ticket-preview-nav');
+const controls = document.createElement('aside');
+controls.className = 'header-ticket-preview-controls';
+controls.setAttribute('aria-label', '티켓 시안 조작');
+controls.innerHTML = '<span>헤더 시안</span><div role="group" aria-label="보유 티켓 수"><button type="button" data-count="0" aria-pressed="false">0개</button><button type="button" data-count="1" aria-pressed="true">1개</button><button type="button" data-count="2" aria-pressed="false">2개</button></div><small>티켓을 누르면 타임머신으로 이동합니다.</small>';
+document.querySelector('main').append(controls);
+function update(count) {
+  ticket.hidden = count < 1;
+  ticket.querySelector('span').textContent = String(count);
+  ticket.setAttribute('aria-label', `타임머신, 보유 티켓 ${count}개`);
+  ticket.title = `보유 티켓 ${count}개 · 타임머신`;
+  controls.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.count) === count)));
+}
+controls.addEventListener('click', event => {
+  const button = event.target.closest('button[data-count]');
+  if (button) update(Number(button.dataset.count));
+});
+update(1);
+</script>
+<style is:global>
+.header-ticket-preview-nav { gap:10px; }
+.header-ticket-preview {
+  display:inline-flex; align-items:center; gap:4px; flex-shrink:0;
+  color:#888; font-size:.75rem; line-height:1; text-decoration:none;
+  font-variant-numeric:tabular-nums; padding:6px 0;
+}
+.header-ticket-preview[hidden] { display:none; }
+.header-ticket-preview img { display:block; }
+.header-ticket-preview:hover { color:#555; }
+.header-ticket-preview-controls {
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  z-index:101; display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  justify-content:center; width:max-content; max-width:calc(100vw - 32px);
+  padding:10px 14px; border:1px solid #e8e5df; border-radius:10px;
+  background:#fff; color:#888; font-size:.75rem;
+}
+.header-ticket-preview-controls div { display:flex; gap:4px; }
+.header-ticket-preview-controls button {
+  margin:0; padding:5px 10px; border:1px solid #e8e5df;
+  border-radius:5px; background:white; color:#888; font:inherit;
+}
+.header-ticket-preview-controls button[aria-pressed="true"] { background:#f2f4f6; border-color:#b6bdc7; color:#555; }
+.header-ticket-preview-controls small { font:inherit; }
+@media(max-width:540px) { .header-ticket-preview-controls small { width:100%; text-align:center; } }
+</style>
