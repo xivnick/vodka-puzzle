@@ -166,7 +166,10 @@ unsolvedFilter.addEventListener('click', () => {
     const [completed, loaded] = await Promise.all([getMyCompletedPuzzles(), puzzleListReady]);
     if (!loaded) return;
     completedPuzzles = completed;
-    unsolvedFilter.disabled = false;
+    const signedIn = !!getUserId();
+    unsolvedFilter.hidden = !signedIn;
+    unsolvedFilter.disabled = !signedIn;
+    if (!signedIn) onlyUnsolved = false;
     document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
       const pid = a.dataset.puzzleId;
       a.querySelector('.check-mark')?.remove();
