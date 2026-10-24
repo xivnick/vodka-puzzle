@@ -65,7 +65,7 @@ async function submit(){
   const {data:result,error}=await window.puzzleAccount.client.rpc('submit_completion',{requested_puzzle:`daily-sudoku:${data.day}`,submitted_state:{version:1,values:state.values.slice()},state_version:1});
   if(error)throw error;
   if(owner!==window.puzzleAccount.user?.id)return;
-  completedAnswer=answer;complete();window.refreshRecentBanner?.(true);await refreshRanks();
+  completedAnswer=answer;complete();window.showToast('🎉 완료 기록을 저장했습니다!');window.refreshRecentBanner?.(true);await refreshRanks();
  }catch(e){
   if(owner!==window.puzzleAccount.user?.id)return;
   message(e.message?.includes('CLOSED')?'순위 집계가 마감되었습니다.':e.message?.includes('PROFILE_REQUIRED')?'닉네임을 설정해 주세요.':'제출하지 못했습니다. 잠시 후 자동으로 다시 시도합니다.');
@@ -133,6 +133,6 @@ $('dailyRetry').addEventListener('click',init);$('sudokuBoard').addEventListener
 $('sudokuBoard').addEventListener('keydown',e=>{if(!ready)return;if(/^[1-9]$/.test(e.key)){e.preventDefault();change(Number(e.key));focus();}else if(['Backspace','Delete','0'].includes(e.key)){e.preventDefault();change(0);focus();}else if(e.key.toLowerCase()==='m'){e.preventDefault();toggleNotes();}else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();selected=Math.max(0,Math.min(80,selected+({ArrowLeft:-1,ArrowRight:1,ArrowUp:-9,ArrowDown:9}[e.key])));render();focus();}});
 $('sudokuNumbers').addEventListener('click',e=>{const b=e.target.closest('[data-number]');if(b)change(Number(b.dataset.number));});
 $('sudokuNotes').addEventListener('click',toggleNotes);$('sudokuErase').addEventListener('click',()=>change(0));$('sudokuReset').addEventListener('click',()=>{if(confirm('입력한 숫자와 메모를 초기화할까요?')){state=clean(null);persist();render();}});
-window.handleCloudSave=async()=>{if(!ready||!data?.available||!state)return;try{const {error}=await window.puzzleAccount.client.rpc('save_daily_sudoku_progress',{requested_day:data.day,saved_state:state});if(error)throw error;window.showToast('저장했습니다.');}catch{message('저장하지 못했습니다. 로그인과 연결을 확인해 주세요.');}};
+window.handleCloudSave=async()=>{if(!ready||!data?.available||!state)return;try{const {error}=await window.puzzleAccount.client.rpc('save_daily_sudoku_progress',{requested_day:data.day,saved_state:state});if(error)throw error;window.showToast('저장했습니다.');}catch{window.showToast('저장하지 못했습니다. 로그인과 연결을 확인해 주세요.');}};
 window.handleCloudLoad=async()=>{if(!ready||!data?.available||!state)return;if(!window.puzzleAccount.user){message('로그인 후 불러올 수 있습니다.');return;}try{const {data:row,error}=await window.puzzleAccount.client.from('daily_sudoku_progress').select('state').eq('day',data.day).eq('user_id',window.puzzleAccount.user.id).maybeSingle();if(error)throw error;if(!row){message('저장된 기록이 없습니다.');return;}if(confirm('클라우드 기록으로 현재 진행 상황을 바꿀까요?')){state=clean(row.state);persist();render();window.showToast('불러왔습니다.');submit();}}catch{message('불러오지 못했습니다. 다시 시도해 주세요.');}};
 init();window.puzzleAuthReady.then(()=>{if(window.puzzleAccount.user)init();});setInterval(()=>{if(!document.hidden&&data?.available){refreshRanks().catch(()=>{});submit();}else if(!document.hidden&&!loading)init();},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&data?.available)refreshRanks().catch(()=>{});});

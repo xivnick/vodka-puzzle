@@ -18,7 +18,15 @@ function selectRow(row) {
   $('adminPuzzleId').textContent = row.puzzle_id;
   $('adminPreview').href = `/${row.puzzle_id}/`;
   $('adminTitle').value = row.title; $('adminSummary').value = row.summary;
-  $('adminDifficulty').value = row.difficulty || '';
+  const difficulty = $('adminDifficulty');
+  difficulty.querySelector('[data-custom]')?.remove();
+  const value = row.difficulty || '';
+  if (![...difficulty.options].some(option => option.value === value)) {
+    const option = new Option(value, value);
+    option.dataset.custom = 'true';
+    difficulty.add(option);
+  }
+  difficulty.value = value;
   $('adminType').value = row.puzzle_type; $('adminState').value = row.status;
   $('adminDate').value = koreanInput(row.published_at); $('adminOrder').value = row.sort_order;
   $('adminDate').required = row.status === 'published';
@@ -88,7 +96,8 @@ $('adminForm').addEventListener('submit',async event => {
     rows = rows.map(row => row.puzzle_id === updated.puzzle_id ? updated : row);
     rows.sort((a,b)=>b.sort_order-a.sort_order || (Date.parse(b.published_at)||Infinity)-(Date.parse(a.published_at)||Infinity) || a.puzzle_id.localeCompare(b.puzzle_id));
     saving = false; dirty = false; selectRow(updated);
-    message(`저장했습니다. 현재 상태: ${labels[displayState(updated)]}`);
+    message(`현재 상태: ${labels[displayState(updated)]}`);
+    window.showToast('저장했습니다.');
   } catch (error) {
     message(error.message?.includes('EDIT_CONFLICT') ? '다른 곳에서 수정된 문제입니다. 새로고침한 뒤 다시 수정해 주세요.' : '저장하지 못했습니다. 입력 내용과 관리자 권한을 확인해 주세요.');
   } finally { saving = false; $('adminSave').disabled = false; $('adminSelect').disabled = false; }

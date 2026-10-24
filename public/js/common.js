@@ -164,22 +164,6 @@ async function accountHeaders(requireLogin = false) {
   return { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token || SUPABASE_ANON_KEY}` };
 }
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
-let _toastTimer = null;
-function showToast(msg) {
-  let el = document.getElementById('_toast');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = '_toast';
-    el.className = 'toast';
-    document.body.appendChild(el);
-  }
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
-}
-
 // ── Header init ──────────────────────────────────────────────────────────────
 const GUEST_NAME = '게스트';
 

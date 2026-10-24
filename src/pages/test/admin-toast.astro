@@ -1,0 +1,35 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import AdminPanel from '../../components/AdminPanel.astro';
+import '../../styles/admin.css';
+---
+<PageLayout title="문제 관리" subtitle="문제 정보와 공개 일정을 관리합니다">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <p>UI 시연입니다. 저장은 실제 문제나 기록에 반영되지 않습니다.</p>
+  <p id="adminAccess" role="status">시연을 준비하는 중...</p>
+  <a id="adminLogin" hidden></a>
+  <AdminPanel />
+  <div class="cloud-btns">
+    <button id="previewDailySave" type="button">데일리 스도쿠 저장 토스트</button>
+    <button id="previewDailyComplete" type="button">데일리 완료 토스트</button>
+  </div>
+</PageLayout>
+<script>
+const row = {puzzle_id:'__ui_preview',title:'난이도 드롭다운 시연',summary:'난이도를 선택한 뒤 변경사항을 저장해 보세요.',puzzle_type:'스도쿠',difficulty:'중간',status:'test',published_at:null,sort_order:0,updated_at:'2026-10-25T00:00:00Z'};
+await window.puzzleAuthReady;
+window.puzzleAccount = {...window.puzzleAccount, user:{id:'ui-preview'}, client:{rpc:async(name,args)=>{
+  if(name==='is_puzzle_admin')return {data:true};
+  if(name==='admin_list_puzzles')return {data:[row]};
+  if(name==='admin_update_puzzle'){
+    for(const [key,value] of Object.entries(args))if(key.startsWith('new_'))row[key.slice(4)==='type'?'puzzle_type':key.slice(4)]=value;
+    row.updated_at=new Date().toISOString();
+    return {data:{...row}};
+  }
+  return {error:new Error('시연에서 지원하지 않는 작업입니다.')};
+}}};
+await import('../../scripts/admin.js');
+document.getElementById('adminSelect').value=row.puzzle_id;
+document.getElementById('adminSelect').dispatchEvent(new Event('change'));
+document.getElementById('previewDailySave').addEventListener('click',()=>window.showToast('저장했습니다.'));
+document.getElementById('previewDailyComplete').addEventListener('click',()=>window.showToast('🎉 완료 기록을 저장했습니다!'));
+</script>
