@@ -1,0 +1,42 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import ArchiveLink from '../components/ArchiveLink.astro';
+import '../styles/home.css';
+import '../styles/daily-streak.css';
+---
+<PageLayout title="vodka puzzle" heading="퍼즐" subtitle="puzzle.xivnick.me" home>
+
+<div class="list-head">
+  <div class="list-title">문제</div>
+  <button id="unsolvedFilter" class="rank-tab" type="button" aria-pressed="false" aria-controls="puzzleList" disabled>안 푼 문제만</button>
+</div>
+<div class="list">
+  <a id="dailyCard" class="daily-card" href="/daily-sudoku/"><span class="title"><span id="dailyTitle">Daily Sudoku</span></span><span id="dailyStreak" class="daily-streak" hidden></span></a>
+  <div id="puzzleListStatus" class="is-loading" role="status">문제를 불러오는 중...</div>
+  <div id="puzzleList" class="puzzle-list" aria-busy="true">
+    {Array.from({length:10},(_,index)=><div class="puzzle-skeleton-row" aria-hidden="true">
+      <span class="puzzle-skeleton-title" style={`width:${[64,52,58,48,62][index%5]}%`}></span>
+      <span class="puzzle-skeleton-count"></span>
+    </div>)}
+  </div>
+</div>
+<div class="pager" id="pager"></div>
+
+<div class="home-rank">
+  <div class="lb-section">
+    <div class="rank-head">
+      <div class="lb-title" id="rankTitle">랭킹</div>
+      <div class="rank-tabs" aria-label="랭킹 종류">
+        <button id="regularRankBtn" class="rank-tab active" type="button" aria-pressed="true" aria-controls="regularRankPanel" data-rank-mode="regular">랭킹</button>
+        <button id="dailyRankBtn" class="rank-tab" type="button" aria-pressed="false" aria-controls="dailyRankPanel" data-rank-mode="daily">데일리 스도쿠</button>
+      </div>
+    </div>
+    <div id="regularRankPanel"><div id="solverRank" aria-live="polite"><div class="lb-loading">불러오는 중...</div></div></div>
+    <div id="dailyRankPanel" hidden><div id="dailyRank" aria-live="polite"><div class="lb-loading">불러오는 중...</div></div></div>
+  </div>
+</div>
+<ArchiveLink slot="footer" />
+<script is:inline src="/js/home.js?v=17"></script>
+</PageLayout>
+
+<script>import '../scripts/daily-home.js';</script>

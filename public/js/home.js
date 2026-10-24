@@ -12,6 +12,20 @@
 }
 
 const PAGE_SIZE = 10;
+const unsolvedFilter = document.getElementById('unsolvedFilter');
+let onlyUnsolved = false;
+let completedPuzzles = new Set();
+let puzzleListLoaded = false;
+try { onlyUnsolved = localStorage.getItem('puzzle_unsolved_only') === 'true'; } catch {}
+unsolvedFilter.classList.toggle('active', onlyUnsolved);
+unsolvedFilter.setAttribute('aria-pressed', String(onlyUnsolved));
+unsolvedFilter.addEventListener('click', () => {
+  onlyUnsolved = !onlyUnsolved;
+  unsolvedFilter.classList.toggle('active', onlyUnsolved);
+  unsolvedFilter.setAttribute('aria-pressed', String(onlyUnsolved));
+  try { localStorage.setItem('puzzle_unsolved_only', String(onlyUnsolved)); } catch {}
+  changePage(1);
+});
   function createDifficultyMark(value) {
     const labels = {
       '쉬움': 1, '하': 1, easy: 1,
@@ -50,8 +64,7 @@ const PAGE_SIZE = 10;
         if (difficulty) link.append(difficulty);
         list.append(link);
       }
-      status.hidden = puzzles.length > 0;
-      status.textContent = puzzles.length ? '' : '공개된 문제가 없습니다.';
+      puzzleListLoaded = true;
       renderPagination();
       return true;
     } catch {
@@ -88,9 +101,17 @@ const PAGE_SIZE = 10;
 
   function renderPagination() {
     const links = [...document.querySelectorAll('.list a[data-puzzle-id]')];
-    const visibleLinks = links;
+    const visibleLinks = onlyUnsolved
+      ? links.filter(link => !completedPuzzles.has(link.dataset.puzzleId))
+      : links;
+    if (puzzleListLoaded) {
+      const status = document.getElementById('puzzleListStatus');
+      status.hidden = visibleLinks.length > 0;
+      status.textContent = links.length && onlyUnsolved ? '안 푼 문제가 없습니다.' : '공개된 문제가 없습니다.';
+    }
     const totalPages = Math.max(1, Math.ceil(visibleLinks.length / PAGE_SIZE));
     const currentPage = getCurrentPage(totalPages);
+    if (puzzleListLoaded) setCurrentPage(currentPage);
     const start = (currentPage - 1) * PAGE_SIZE;
     const end = start + PAGE_SIZE;
 
@@ -143,8 +164,11 @@ const PAGE_SIZE = 10;
   async function loadCompletions() {
     const [completed, loaded] = await Promise.all([getMyCompletedPuzzles(), puzzleListReady]);
     if (!loaded) return;
+    completedPuzzles = completed;
+    unsolvedFilter.disabled = false;
     document.querySelectorAll('.list a[data-puzzle-id]').forEach(a => {
       const pid = a.dataset.puzzleId;
+      a.querySelector('.check-mark')?.remove();
       if (completed.has(pid)) {
         if (!a.querySelector('.check-mark')) {
           const ck = document.createElement('span');
