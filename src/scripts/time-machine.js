@@ -1,3 +1,4 @@
+import {setHeaderTickets} from './header-tickets.js';
 const $ = id => document.getElementById(id);
 const dateFor = day => new Date(`${day}T00:00:00Z`);
 const dayFor = (year, month, date) => new Date(Date.UTC(year, month, date)).toISOString().slice(0,10);
@@ -72,6 +73,7 @@ async function load() {
     if (error) throw error;
     data=result; days=new Map(data.days.map(entry=>[entry.day,entry]));
     $('remainingUses').textContent = data.tickets ?? '—';
+    setHeaderTickets(data.tickets);
     months=[];
     const first=dateFor(data.days[0]?.day || data.current_day), last=dateFor(data.current_day);
     for (let cursor=new Date(Date.UTC(last.getUTCFullYear(),last.getUTCMonth(),1)); cursor>=new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth(),1)); cursor.setUTCMonth(cursor.getUTCMonth()-1)) months.push({year:cursor.getUTCFullYear(),month:cursor.getUTCMonth()});
@@ -107,9 +109,10 @@ $('departButton').addEventListener('click',async()=>{
   busy=true; message(); renderMonth(); renderSelection();
   const owner=window.puzzleAccount.user.id;
   try {
-    const {error}=await window.puzzleAccount.client.rpc('open_time_machine',{requested_day:target});
+    const {data:opened,error}=await window.puzzleAccount.client.rpc('open_time_machine',{requested_day:target});
     if (owner!==window.puzzleAccount.user?.id) return;
     if (error) throw error;
+    setHeaderTickets(opened?.tickets);
     location.assign(url);
   } catch(error) {
     if (owner!==window.puzzleAccount.user?.id) return;

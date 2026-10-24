@@ -1,5 +1,17 @@
 <header class="site-header">
   <a class="header-back" href="/">vodka puzzle</a>
-  <nav aria-label="주 메뉴"><a id="nicknameLink" class="header-nick-link" href="/nickname/">로그인</a></nav>
+  <nav aria-label="주 메뉴">
+    <a id="headerTickets" class="header-tickets" href="/time-machine/" hidden>
+      <span id="headerTicketCount"></span><img src="/icons/time-machine/ticket.svg" width="16" height="16" alt="" />
+    </a>
+    <a id="nicknameLink" class="header-nick-link" href="/nickname/">로그인</a></nav>
 </header>
-<style>nav{display:flex;gap:20px;align-items:center}nav a{text-decoration:none}.header-back{font-size:.85rem;color:#999}.site-header{height:44px}</style>
+<style>nav{display:flex;gap:10px;align-items:center}nav a{text-decoration:none}.header-back{font-size:.85rem;color:#999}.site-header{height:44px}</style>
+
+<script>import '../scripts/header-tickets.js';</script>
+<style>
+.header-tickets { display:inline-flex; align-items:center; gap:4px; flex-shrink:0; color:#888; font-size:.75rem; line-height:1; text-decoration:none; font-variant-numeric:tabular-nums; padding:6px 0; }
+.header-tickets[hidden] { display:none; }
+.header-tickets img { display:block; }
+.header-tickets:hover { color:#555; }
+</style>
