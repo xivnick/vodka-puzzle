@@ -7,7 +7,7 @@ import '../styles/daily-streak.css';
 <PageLayout title="vodka puzzle" heading="퍼즐" subtitle="puzzle.xivnick.me" home>
 
 <div class="list-head">
-  <div class="list-title">문제</div>
+  <div id="puzzleListTitle" class="list-title" aria-live="polite">문제</div>
   <button id="unsolvedFilter" class="rank-tab" type="button" aria-pressed="false" aria-controls="puzzleList" disabled>미해결</button>
 </div>
 <div class="list">
@@ -36,7 +36,7 @@ import '../styles/daily-streak.css';
   </div>
 </div>
 <ArchiveLink slot="footer" />
-<script is:inline src="/js/home.js?v=17"></script>
+<script is:inline src="/js/home.js?v=18"></script>
 </PageLayout>
 
 <script>import '../scripts/daily-home.js';</script>

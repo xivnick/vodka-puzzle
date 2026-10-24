@@ -105,6 +105,7 @@ unsolvedFilter.addEventListener('click', () => {
       ? links.filter(link => !completedPuzzles.has(link.dataset.puzzleId))
       : links;
     if (puzzleListLoaded) {
+      document.getElementById('puzzleListTitle').textContent = `문제 (${visibleLinks.length})`;
       const status = document.getElementById('puzzleListStatus');
       status.hidden = visibleLinks.length > 0;
       status.textContent = links.length && onlyUnsolved ? '안 푼 문제가 없습니다.' : '공개된 문제가 없습니다.';
