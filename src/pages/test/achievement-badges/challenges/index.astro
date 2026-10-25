@@ -1,0 +1,108 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+const groups=[
+  {name:'누적·꾸준함',items:[
+    ['first','첫걸음','첫 퍼즐 완료','plant','새싹'],
+    ['ten','감 잡았어요','퍼즐 10개 완료','puzzle','퍼즐 조각'],
+    ['thirty','차곡차곡','퍼즐 30개 완료','medal','메달'],
+    ['hundred','백전백승','퍼즐 100개 완료','trophy','트로피'],
+    ['three-hundred','퍼즐의 왕','퍼즐 300개 완료','crown','왕관'],
+    ['daily','오늘의 한 문제','데일리 스도쿠 첫 완료','calendar-check','달력'],
+    ['streak','꺼지지 않는 불','데일리 7일 연속 완료','flame','불꽃'],
+    ['past','시간을 거슬러','타임머신으로 과거 데일리 3개 완료','history','되감기 시계'],
+  ]},
+  {name:'퍼즐별 첫 완료',items:[
+    ['thermo','온도 체크','온도계 스도쿠 첫 완료','temperature','온도계'],
+    ['star','별을 놓는 사람','기본 스타배틀 첫 완료','star','별'],
+    ['bomb','폭발물 처리반','폭탄 스도쿠 첫 완료','bomb','폭탄'],
+    ['tomato','잘 익었습니다','토마토스 스도쿠 첫 완료','tomato','토마토'],
+    ['wind','바람의 방향','사풍 첫 완료','wind','바람'],
+    ['sky','스카이라인','스카이스크레이퍼 첫 완료','building-skyscraper','고층 건물'],
+    ['formula','계산 끝','수식완성 첫 완료','calculator','계산기'],
+    ['balance','균형 감각','밸런스 루프 첫 완료','scale','저울'],
+    ['ice','미끄러져도 괜찮아','빙판길 첫 완료','snowflake','눈송이'],
+    ['flood','물길을 따라서','침수된 길 첫 완료','ripple','물결'],
+    ['pentomino','다섯 칸의 미학','펜토미너스 첫 완료','pentagon','오각형'],
+    ['acre','내 땅입니다','에이커 첫 완료','fence','울타리'],
+    ['compass','방향 감각','컴퍼스 첫 완료','navigation','항해 화살표'],
+    ['arrows','화살표를 따라서','화살표 첫 완료','archery-arrow','활과 화살'],
+  ]},
+];
+const iconPath=(icon)=>icon==='tomato'?'/icons/tomato.svg':`/icons/achievement-preview/${icon}.svg`;
+const palettes=[['기본색','#444444','#444444'],['베리소다','#BB6B98','#527BC0'],['민트초코','#42977D','#8F6A50'],['홍차','#AF8A6D','#953E4B']];
+---
+<PageLayout title="도전과제 아이콘 시안" subtitle="누적·꾸준함 8개 · 퍼즐별 첫 완료 14개">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="challenge-preview" aria-label="도전과제 후보 22개">
+    <p class="intro">이름·달성 조건·보상 아이콘을 함께 비교하는 초안입니다.<br />‘퍼즐 종류 수’ 조건은 제외했습니다. 카드를 누르면 위에서 크게 볼 수 있습니다.</p>
+    <div class="palette-picker" aria-label="아이콘 비교 색상">
+      {palettes.map(([label,a,b],i)=><button type="button" data-palette data-a={a} data-b={b} aria-pressed={i===0?'true':'false'}><i style={`background:linear-gradient(135deg,${a},${b})`}/>{label}</button>)}
+    </div>
+    <div class="selected" aria-live="polite">
+      <span class="badge selected-icon" style={`--icon:url('${iconPath('plant')}')`} role="img" aria-label="새싹" />
+      <div><p class="selected-title">첫걸음</p><p class="selected-condition">첫 퍼즐 완료</p><span class="nickname">퍼즐러 <span class="badge selected-small" style={`--icon:url('${iconPath('plant')}')`} aria-hidden="true" /></span></div>
+      <span class="size-label">확대 40px<br />이름 옆 18px</span>
+    </div>
+    {groups.map(group=><section class="challenge-group" aria-label={group.name}>
+      <h2>{group.name}<span>{group.items.length}개</span></h2>
+      <div class="cards">{group.items.map(([id,name,condition,icon,label])=><button type="button" class="challenge-card" data-challenge={id} data-name={name} data-condition={condition} data-icon={iconPath(icon)} data-icon-label={label} aria-label={`${name}: ${condition}`} aria-pressed={id==='first'?'true':'false'}>
+        <span class="badge large" style={`--icon:url('${iconPath(icon)}')`} aria-hidden="true" />
+        <span class="card-name">{name}</span>
+        <span class="condition">{condition}</span>
+        <span class="nickname">퍼즐러 <span class="badge" style={`--icon:url('${iconPath(icon)}')`} aria-hidden="true" /></span>
+        <span class="icon-label">{label}</span>
+      </button>)}</div>
+    </section>)}
+    <p class="caption">도전과제 이름·조건·개수는 검토용입니다. 누적 수에 데일리를 포함할지와 스타배틀 변형별 보상은 아직 정하지 않았습니다. 실제 달성 기록이나 보상 지급은 연결하지 않았습니다.</p>
+    <p class="credit">아이콘: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a><br />토마토: IconPark Outline · <a href="/icons/tomato-LICENSE.md">Apache 2.0</a></p>
+  </section>
+</PageLayout>
+<script>
+  const preview=document.querySelector('.challenge-preview');
+  if(preview){
+    preview.querySelectorAll('[data-palette]').forEach(button=>button.addEventListener('click',()=>{
+      preview.style.setProperty('--a',button.dataset.a);
+      preview.style.setProperty('--b',button.dataset.b);
+      preview.querySelectorAll('[data-palette]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
+    }));
+    preview.querySelectorAll('[data-challenge]').forEach(button=>button.addEventListener('click',()=>{
+      preview.querySelector('.selected-title').textContent=button.dataset.name;
+      preview.querySelector('.selected-condition').textContent=button.dataset.condition;
+      preview.querySelectorAll('.selected .badge').forEach(icon=>icon.style.setProperty('--icon',`url('${button.dataset.icon}')`));
+      preview.querySelector('.selected-icon').setAttribute('aria-label',button.dataset.iconLabel);
+      preview.querySelectorAll('[data-challenge]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
+    }));
+  }
+</script>
+<style>
+  .challenge-preview{width:100%;--a:#444444;--b:#444444}
+  .intro,.caption{margin:0 0 18px;color:#888;font-size:.75rem;line-height:1.8}
+  .badge{display:inline-block;flex:0 0 auto;width:18px;height:18px;vertical-align:middle;background:linear-gradient(135deg,var(--a) 15%,var(--b) 85%);mask:var(--icon) center/contain no-repeat;-webkit-mask:var(--icon) center/contain no-repeat}
+  button{font:inherit;cursor:pointer}
+  .palette-picker{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .palette-picker button{display:flex;align-items:center;gap:5px;border:1px solid #e8e5df;border-radius:4px;background:white;color:#888;padding:6px 9px;font-size:.68rem}
+  .palette-picker button[aria-pressed=true]{background:#eee9e1;border-color:#b8b1a6;color:#444}
+  .palette-picker i{width:11px;height:11px;border-radius:50%}
+  .selected{display:flex;align-items:center;gap:16px;padding:18px 16px;margin-bottom:26px;border:1px solid #e8e5df;border-radius:4px;background:#faf8f4}
+  .selected-icon{width:40px;height:40px}
+  .selected-title{margin:0 0 5px;font-size:.92rem;color:#333}
+  .selected-condition{margin:0 0 10px;font-size:.7rem;color:#888;line-height:1.6}
+  .nickname{display:flex;align-items:center;justify-content:center;gap:4px;color:#444;font-size:.84rem;line-height:1.5}
+  .selected .nickname{justify-content:flex-start}
+  .size-label{margin-left:auto;font-size:.6rem;color:#aaa;text-align:right;line-height:1.8;flex-shrink:0}
+  h2{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;font-size:.82rem;font-weight:500;color:#555}
+  h2 span{color:#aaa;font-size:.68rem;font-weight:400}
+  .challenge-group{margin-bottom:28px}
+  .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .challenge-card{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:0;padding:20px 10px 14px;background:white;border:1px solid #e8e5df;border-radius:4px;text-align:center}
+  .challenge-card:hover{background:#faf8f4}
+  .challenge-card[aria-pressed=true]{background:#faf8f4;border-color:#b8b1a6}
+  .large{width:32px;height:32px;margin-bottom:3px}
+  .card-name{color:#444;font-size:.8rem;line-height:1.5;word-break:keep-all}
+  .condition{color:#999;font-size:.67rem;line-height:1.65;min-height:2.2em;word-break:keep-all}
+  .icon-label{color:#aaa;font-size:.6rem}
+  .caption{margin-top:4px;font-size:.68rem}
+  .credit{color:#aaa;font-size:.63rem;line-height:1.8}
+  .credit a{color:inherit}
+  @media(max-width:380px){.size-label{display:none}.challenge-card{padding:18px 8px 12px}}
+</style>
