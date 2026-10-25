@@ -25,9 +25,9 @@ const combinations = [
   {
     "id": "sea",
     "name": "바다",
-    "a": "#79A9C8",
+    "a": "#488FAF",
     "b": "#28676F",
-    "label": "하늘 · 깊은 청록"
+    "label": "바다 · 깊은 청록"
   },
   {
     "id": "petal",
@@ -40,15 +40,15 @@ const combinations = [
     "id": "autumn",
     "name": "가을",
     "a": "#A99231",
-    "b": "#953E4B",
-    "label": "노랑 · 와인"
+    "b": "#965329",
+    "label": "노랑 · 구리"
   },
   {
     "id": "peach",
     "name": "복숭아",
     "a": "#D98A62",
-    "b": "#CF91B2",
-    "label": "살구 · 벚꽃"
+    "b": "#D9747C",
+    "label": "살구 · 수박"
   },
   {
     "id": "lemon-soda",
@@ -67,9 +67,9 @@ const combinations = [
   {
     "id": "aurora",
     "name": "오로라",
-    "a": "#6FAE95",
+    "a": "#368B91",
     "b": "#8B69B1",
-    "label": "민트 · 보라"
+    "label": "청록 · 보라"
   },
   {
     "id": "glacier",
@@ -81,23 +81,23 @@ const combinations = [
   {
     "id": "deep-sea",
     "name": "심해",
-    "a": "#28676F",
+    "a": "#366B8C",
     "b": "#3D5994",
-    "label": "깊은 청록 · 남색"
+    "label": "잉크블루 · 남색"
   },
   {
     "id": "rose",
     "name": "장미",
     "a": "#C4515D",
-    "b": "#674B8D",
-    "label": "빨강 · 포도"
+    "b": "#914B76",
+    "label": "빨강 · 자두"
   },
   {
     "id": "camellia",
     "name": "동백",
     "a": "#D9747C",
-    "b": "#38664B",
-    "label": "수박 · 숲"
+    "b": "#578761",
+    "label": "수박 · 초록"
   },
   {
     "id": "black-tea",
@@ -110,8 +110,8 @@ const combinations = [
     "id": "caramel",
     "name": "카라멜",
     "a": "#C3AA4E",
-    "b": "#8F6A50",
-    "label": "모래 · 갈색"
+    "b": "#694D3D",
+    "label": "모래 · 초콜릿"
   },
   {
     "id": "matcha",
@@ -158,9 +158,9 @@ const combinations = [
   {
     "id": "black-pearl",
     "name": "흑진주",
-    "a": "#485360",
+    "a": "#727C8B",
     "b": "#2E7364",
-    "label": "먹색 · 깊은 민트"
+    "label": "회색 · 깊은 민트"
   },
   {
     "id": "black-rose",
@@ -208,7 +208,7 @@ const badgeStyle=(icon,pair)=>`--badge-icon:url('/icons/achievement-preview/${ic
         <span class="lb-rank">{index+1}</span><span class="lb-name uncommon-rank-name"><span>{name}</span><span class={`color-badge mode-${finish.mode}`} style={badgeStyle(icon[0],finish)} role="img" aria-label={`${finish.name} · ${finish.modeLabel} · ${icon[1]}`} title={`${finish.name} · ${finish.modeLabel}`} /></span><span class="rank-finish-name">{finish.name}<small>{finish.modeLabel}</small></span><span class="lb-time">{90-index*3}개</span>
       </div>})}
     </div>
-    <p class="caption">색 이름과 조합은 후보입니다. 효과 없이 두 색만 적용했습니다.<br />닉네임과 기록은 예시입니다.</p>
+    <p class="caption">커먼 36색을 모두 사용했습니다. 24색은 1회, 12색은 2회 등장합니다.<br />색 이름과 조합은 후보입니다. 효과 없이 두 색만 적용했습니다.<br />닉네임과 기록은 예시입니다.</p>
     <p class="credit"><a href="/test/achievement-badges/common-colors/">커먼 단색 비교</a> · 아이콘: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
   </section>
 </PageLayout>
