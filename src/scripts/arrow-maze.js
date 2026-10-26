@@ -4,6 +4,26 @@ const game = document.getElementById('arrowMazeGame');
 if (game) {
   const puzzle = JSON.parse(game.dataset.puzzle), puzzleId = game.dataset.puzzleId;
   const count = puzzle.size ** 2, board = document.getElementById('arrowMazeBoard');
+  const shapes = puzzle.directions.map(direction => {
+    if (!direction) return { markup: '<circle cx="50" cy="50" r="43"/>', x: 50, y: 50 };
+    const diagonal = direction[0] && direction[1];
+    const points = diagonal
+      ? [[8, 50], [50, 8], [80, 38], [92, 26], [92, 92], [26, 92], [38, 80]]
+      : [[8, 25], [48, 25], [48, 8], [92, 50], [48, 92], [48, 75], [8, 75]];
+    // Center labels on the filled polygon, including its arrowhead and tail.
+    let area = 0, cx = 0, cy = 0;
+    points.forEach(([x, y], index) => {
+      const [nx, ny] = points[(index + 1) % points.length], cross = x * ny - nx * y;
+      area += cross; cx += (x + nx) * cross; cy += (y + ny) * cross;
+    });
+    const angle = Math.atan2(direction[0], direction[1]) - (diagonal ? Math.PI / 4 : 0);
+    const dx = cx / (3 * area) - 50, dy = cy / (3 * area) - 50;
+    return {
+      markup: `<polygon points="${points.map(point => point.join(',')).join(' ')}" transform="rotate(${angle * 180 / Math.PI} 50 50)"/>`,
+      x: 50 + dx * Math.cos(angle) - dy * Math.sin(angle),
+      y: 50 + dx * Math.sin(angle) + dy * Math.cos(angle),
+    };
+  });
   const pad = [...game.querySelectorAll('[data-number]')];
   const memoButton = document.getElementById('arrowMazeMemo'), erase = document.getElementById('arrowMazeErase');
   const reset = document.getElementById('arrowMazeReset'), complete = document.getElementById('arrowMazeComplete');
@@ -20,24 +40,20 @@ if (game) {
     const result = inspectArrowMaze(puzzle, values);
     const focused = board.contains(document.activeElement);
     board.innerHTML = values.map((value, index) => {
-      const r = Math.floor(index / puzzle.size), c = index % puzzle.size, direction = puzzle.directions[index];
+      const r = Math.floor(index / puzzle.size), c = index % puzzle.size, shape = shapes[index];
       const fixed = Object.hasOwn(puzzle.givens, index), conflict = result.conflicts.has(index);
       const fill = conflict ? '#f5d0d0' : index === selected ? '#e8edf5' : '#fff';
       const color = conflict ? '#b05050' : fixed ? '#222' : '#4a6fa5';
-      const angle = direction ? Math.atan2(direction[0], direction[1]) * 180 / Math.PI : 0;
-      const diagonal = direction && direction[0] && direction[1];
-      const shape = direction
-        ? diagonal
-          ? `<path d="M8 50L50 8L80 38L92 26V92H26L38 80Z" transform="rotate(${angle - 45} 50 50)"/>`
-          : `<path d="M8 25H48V8L92 50L48 92V75H8Z" transform="rotate(${angle} 50 50)"/>`
-        : '<circle cx="50" cy="50" r="43"/>';
-      // Compact candidates stay inside the shared center of all arrow directions.
       const candidates = notes[index].slice().sort((a, b) => a - b);
-      const content = value ? `<text x="50" y="51" font-size="30" font-weight="${fixed ? 700 : 500}">${value}</text>`
-        : candidates.map((number, position) => `<text x="${35 + position % 4 * 10}" y="${35 + Math.floor(position / 4) * 10}" font-size="8">${number}</text>`).join('');
+      const content = value ? `<text x="0" y="0" font-size="30" font-weight="${fixed ? 700 : 500}">${value}</text>`
+        : candidates.map((number, position) => {
+          const row = Math.floor(position / 4), columns = Math.min(4, candidates.length - row * 4);
+          return `<text x="${(position % 4 - (columns - 1) / 2) * 10}" y="${(row - (Math.ceil(candidates.length / 4) - 1) / 2) * 10}" font-size="8">${number}</text>`;
+        }).join('');
       const label = `${r + 1}행 ${c + 1}열, ${fixed ? '고정 숫자 ' : ''}${value || (candidates.length ? '메모 ' + candidates.join(', ') : '빈칸')}${conflict ? ', 규칙 오류' : ''}`;
-      return `<g data-cell="${index}" transform="translate(${c * 100} ${r * 100})" role="button" tabindex="${selected === index ? 0 : -1}" aria-label="${label}" aria-pressed="${index === selected}" style="cursor:${fixed ? 'default' : 'pointer'}"><rect width="100" height="100" fill="transparent"/><g fill="${fill}" stroke="#333" stroke-width="2.3" stroke-linejoin="miter">${shape}</g><g fill="${color}" text-anchor="middle" dominant-baseline="central" pointer-events="none">${content}</g></g>`;
+      return `<g data-cell="${index}" transform="translate(${c * 100} ${r * 100})" role="button" tabindex="${selected === index ? 0 : -1}" aria-label="${label}" aria-pressed="${index === selected}" style="cursor:${fixed ? 'default' : 'pointer'}"><rect width="100" height="100" fill="transparent"/><g fill="${fill}" stroke="#333" stroke-width="2.3" stroke-linejoin="miter">${shape.markup}</g><g data-label-center="${shape.x},${shape.y}" fill="${color}" text-anchor="middle" dominant-baseline="central" pointer-events="none">${content}</g></g>`;
     }).join('');
+    centerLabels();
     if (focused) board.querySelector(`[data-cell="${selected}"]`)?.focus({ preventScroll: true });
     pad.forEach(button => {
       button.disabled = !ready || Object.hasOwn(puzzle.givens, selected);
@@ -51,6 +67,13 @@ if (game) {
     if (ready && result.complete && window.puzzlePage?.published && !completionRecorded) {
       completionRecorded = true; window.recordCompletion(puzzleId, state());
     }
+  }
+  function centerLabels() {
+    board.querySelectorAll('[data-label-center]').forEach(label => {
+      if (!label.children.length) return;
+      const [x, y] = label.dataset.labelCenter.split(',').map(Number), bounds = label.getBBox();
+      label.setAttribute('transform', `translate(${x - bounds.x - bounds.width / 2} ${y - bounds.y - bounds.height / 2})`);
+    });
   }
   function select(index, focus = false) {
     clearBuffer(); selected = index; render();
@@ -115,4 +138,5 @@ if (game) {
   };
   window.checkComplete = render;
   window.startLocalPuzzle(puzzleId, init, init);
+  document.fonts.ready.then(centerLabels);
 }
