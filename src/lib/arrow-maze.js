@@ -40,5 +40,7 @@ export function parseArrowMazeState(puzzle, saved, puzzleId) {
   const valid = value => Number.isInteger(value) && value >= 0 && value <= count;
   if (saved?.version !== 1 || saved.puzzleId !== puzzleId || !Array.isArray(saved.values) || saved.values.length !== count || !saved.values.every(valid)) return null;
   if (Object.entries(puzzle.givens).some(([index, value]) => saved.values[index] !== value)) return null;
-  return { values: [...saved.values] };
+  const notes = saved.notes ?? Array.from({ length: count }, () => []);
+  if (!Array.isArray(notes) || notes.length !== count || !notes.every(row => Array.isArray(row) && row.every(value => valid(value) && value > 0))) return null;
+  return { values: [...saved.values], notes: notes.map((row, index) => puzzle.givens[index] || saved.values[index] ? [] : [...new Set(row)]) };
 }

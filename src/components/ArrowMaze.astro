@@ -12,8 +12,9 @@ const { puzzleId } = Astro.props;
     <p>각 화살표는 그 칸의 숫자보다 정확히 1 큰 숫자가 있는 칸을 가리켜야 합니다.</p>
     <p>다음 숫자의 칸은 화살표 방향의 같은 직선 위에 있어야 하며, 바로 옆 칸일 필요는 없습니다. 16이 있는 원에서 끝납니다.</p>
   </div>
-  <div slot="controls">칸을 선택하고 숫자 버튼으로 입력하세요. 지우기로 선택한 칸을 비우세요.</div>
+  <div slot="controls">칸을 선택하고 숫자 버튼으로 입력하세요. 메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요. 지우기로 선택한 칸을 비우세요.</div>
   <section id="arrowMazeGame" data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} aria-label="화살표 미로">
+    <div class="maze-board-tools"><button id="arrowMazeMemo" class="maze-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
     <svg id="arrowMazeBoard" viewBox="0 0 400 400" role="group" aria-label="4행 4열 화살표 미로"></svg>
     <div class="maze-pad" aria-label="숫자 입력">{Array.from({ length: 16 }, (_, i) => <button type="button" data-number={i + 1}>{i + 1}</button>)}</div>
     <div class="bottom-buttons">
@@ -32,5 +33,8 @@ const { puzzleId } = Astro.props;
   .maze-pad { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:4px; margin-top:14px; }
   .maze-pad button { min-width:0; padding:8px 0; border:1px solid #d6d4cd; border-radius:3px; background:#faf8f4; color:#555; font:inherit; touch-action:manipulation; }
   .bottom-buttons { gap:8px; } .bottom-buttons button { flex:1; min-width:0; }
+  .maze-board-tools { display:flex; justify-content:flex-end; margin-bottom:8px; }
+  .maze-notes-toggle { background:none; border:0; border-bottom:1px solid #ccc; border-radius:0; padding:0 0 1px; color:#888; font:inherit; font-size:.82rem; line-height:1.5; }
+  .maze-notes-toggle[aria-pressed=true] { color:#4a6fa5; border-color:#4a6fa5; font-weight:700; }
   .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
 </style>
