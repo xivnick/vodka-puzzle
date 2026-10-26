@@ -26,12 +26,12 @@ if (game) {
     };
   });
   const pad = [...game.querySelectorAll('[data-number]')];
-  const memoButton = document.getElementById('arrowMazeMemo'), erase = document.getElementById('arrowMazeErase');
+  const erase = document.getElementById('arrowMazeErase');
   const reset = document.getElementById('arrowMazeReset'), complete = document.getElementById('arrowMazeComplete');
   const status = document.getElementById('arrowMazeStatus');
-  let values, notes, selected = 1, memo = false, ready = false, completionRecorded = false;
+  let values, selected = 1, ready = false, completionRecorded = false;
   let keyBuffer = '', keyTimer;
-  const state = () => ({ version: 1, puzzleId, values: [...values], notes: notes.map(row => [...row]) });
+  const state = () => ({ version: 1, puzzleId, values: [...values] });
   const clearBuffer = () => { clearTimeout(keyTimer); keyBuffer = ''; };
   function persist() {
     try { window.saveLocalState(puzzleId, state()); }
@@ -45,13 +45,9 @@ if (game) {
       const fixed = Object.hasOwn(puzzle.givens, index), conflict = result.conflicts.has(index);
       const fill = conflict ? '#f5d0d0' : index === selected ? '#e8edf5' : '#fff';
       const color = conflict ? '#b05050' : fixed ? '#222' : '#4a6fa5';
-      const candidates = notes[index].slice().sort((a, b) => a - b);
       const content = value ? `<text x="0" y="0" font-size="30" font-weight="${fixed ? 700 : 500}">${value}</text>`
-        : candidates.map((number, position) => {
-          const row = Math.floor(position / 4), columns = Math.min(4, candidates.length - row * 4);
-          return `<text x="${(position % 4 - (columns - 1) / 2) * 10}" y="${(row - (Math.ceil(candidates.length / 4) - 1) / 2) * 10}" font-size="8">${number}</text>`;
-        }).join('');
-      const label = `${r + 1}행 ${c + 1}열, ${fixed ? '고정 숫자 ' : ''}${value || (candidates.length ? '메모 ' + candidates.join(', ') : '빈칸')}${conflict ? ', 규칙 오류' : ''}`;
+        : '';
+      const label = `${r + 1}행 ${c + 1}열, ${fixed ? '고정 숫자 ' : ''}${value || '빈칸'}${conflict ? ', 규칙 오류' : ''}`;
       return `<g data-cell="${index}" transform="translate(${c * 100} ${r * 100})" role="button" tabindex="${selected === index ? 0 : -1}" aria-label="${label}" aria-pressed="${index === selected}" style="cursor:${fixed ? 'default' : 'pointer'}"><rect width="100" height="100" fill="transparent"/><g fill="${fill}" stroke="#333" stroke-width="2.3" stroke-linejoin="miter">${shape.markup}</g><g data-label-center="${shape.x},${shape.y}" fill="${color}" text-anchor="middle" pointer-events="none">${content}</g></g>`;
     }).join('');
     centerLabels();
@@ -59,9 +55,8 @@ if (game) {
     pad.forEach(button => {
       button.disabled = !ready || Object.hasOwn(puzzle.givens, selected);
     });
-    memoButton.setAttribute('aria-pressed', String(memo));
-    erase.disabled = !ready || Object.hasOwn(puzzle.givens, selected) || !values[selected] && !notes[selected].length;
-    reset.disabled = !ready || values.every((value, index) => value === (puzzle.givens[index] || 0) && !notes[index].length);
+    erase.disabled = !ready || Object.hasOwn(puzzle.givens, selected) || !values[selected];
+    reset.disabled = !ready || values.every((value, index) => value === (puzzle.givens[index] || 0));
     complete.hidden = !result.complete;
     if (!result.complete) completionRecorded = false;
     if (ready && result.complete && window.puzzlePage?.published && !completionRecorded) {
@@ -92,28 +87,23 @@ if (game) {
   }
   function input(value) {
     if (!ready || Object.hasOwn(puzzle.givens, selected)) return;
-    if (memo && value) {
-      values[selected] = 0;
-      notes[selected] = notes[selected].includes(value) ? notes[selected].filter(number => number !== value) : [...notes[selected], value];
-    } else { values[selected] = value; notes[selected] = []; }
+    values[selected] = value;
     persist(); render();
-    status.textContent = `${Math.floor(selected / puzzle.size) + 1}행 ${selected % puzzle.size + 1}열, ${value ? `${memo ? '메모 ' : ''}${value}` : '지웠습니다.'}`;
+    status.textContent = `${Math.floor(selected / puzzle.size) + 1}행 ${selected % puzzle.size + 1}열, ${value || '지웠습니다.'}`;
   }
   board.addEventListener('click', event => {
     const cell = event.target.closest('[data-cell]');
     if (cell && ready) select(Number(cell.dataset.cell), true);
   });
   pad.forEach(button => button.addEventListener('click', () => { clearBuffer(); input(Number(button.dataset.number)); }));
-  memoButton.addEventListener('click', () => { clearBuffer(); memo = !memo; render(); });
   erase.addEventListener('click', () => { clearBuffer(); input(0); });
   reset.addEventListener('click', () => {
-    if (!ready || !confirm('입력한 숫자와 메모를 초기화할까요?')) return;
+    if (!ready || !confirm('입력한 숫자를 초기화할까요?')) return;
     clearBuffer(); values = Array.from({ length: count }, (_, index) => puzzle.givens[index] || 0);
-    notes = Array.from({ length: count }, () => []); persist(); render();
+    persist(); render();
   });
   game.addEventListener('keydown', event => {
     if (!ready || event.ctrlKey || event.metaKey || event.altKey) return;
-    if (event.key.toLowerCase() === 'm') { event.preventDefault(); memoButton.click(); return; }
     if (!event.target.closest('#arrowMazeBoard')) return;
     const r = Math.floor(selected / puzzle.size), c = selected % puzzle.size, n = puzzle.size;
     const moves = { ArrowUp: Math.max(0, r - 1) * n + c, ArrowDown: Math.min(n - 1, r + 1) * n + c, ArrowLeft: r * n + Math.max(0, c - 1), ArrowRight: r * n + Math.min(n - 1, c + 1) };
@@ -130,7 +120,6 @@ if (game) {
     clearBuffer();
     const parsed = parseArrowMazeState(puzzle, saved, puzzleId);
     values = parsed?.values || Array.from({ length: count }, (_, index) => puzzle.givens[index] || 0);
-    notes = parsed?.notes || Array.from({ length: count }, () => []);
     completionRecorded = false;
   }
   function init() {
