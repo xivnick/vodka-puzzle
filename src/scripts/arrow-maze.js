@@ -58,7 +58,6 @@ if (game) {
     if (focused) board.querySelector(`[data-cell="${selected}"]`)?.focus({ preventScroll: true });
     pad.forEach(button => {
       button.disabled = !ready || Object.hasOwn(puzzle.givens, selected);
-      button.classList.toggle('used', values.includes(Number(button.dataset.number)));
     });
     memoButton.setAttribute('aria-pressed', String(memo));
     erase.disabled = !ready || Object.hasOwn(puzzle.givens, selected) || !values[selected] && !notes[selected].length;

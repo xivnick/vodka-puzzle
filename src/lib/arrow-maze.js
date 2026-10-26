@@ -28,7 +28,9 @@ export function inspectArrowMaze(puzzle, values) {
   values.forEach((value, index) => {
     if (!value || !puzzle.directions[index]) return;
     const targets = positions.get(value + 1);
-    if (value === count || targets && !targets.some(target => pointsTo(puzzle, index, target))) conflicts.add(index);
+    // Only compare an entered pair. Empty cells and future placements are not errors.
+    // Duplicate targets already have their own rule error; their position is ambiguous.
+    if (positions.get(value).length === 1 && targets?.length === 1 && !pointsTo(puzzle, index, targets[0])) conflicts.add(index);
   });
   return { conflicts, complete: values.length === count && positions.size === count && !conflicts.size && values.every(value => value > 0) };
 }

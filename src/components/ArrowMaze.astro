@@ -32,7 +32,6 @@ const { puzzleId } = Astro.props;
   #arrowMazeBoard :global([tabindex]:focus), #arrowMazeBoard :global([tabindex]:focus-visible), #arrowMazeGame button:focus { outline:none; box-shadow:none; }
   .maze-pad { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:4px; margin-top:14px; }
   .maze-pad button { min-width:0; padding:8px 0; border:1px solid #d6d4cd; border-radius:3px; background:#faf8f4; color:#555; font:inherit; touch-action:manipulation; }
-  .maze-pad button.used { color:#aaa; }
   .bottom-buttons { gap:8px; } .bottom-buttons button { flex:1; min-width:0; }
   #arrowMazeMemo[aria-pressed=true] { color:#4a6fa5; background:#e8edf5; }
   .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
