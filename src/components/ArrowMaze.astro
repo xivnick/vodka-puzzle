@@ -1,0 +1,39 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import { arrowMaze261026 as puzzle } from '../lib/arrow-maze.js';
+const { puzzleId } = Astro.props;
+---
+<PuzzleLayout title="261026 화살표 미로" {puzzleId}
+  subtitle="화살표를 따라 1부터 16까지 이어지도록 숫자를 채우세요"
+  description="각 화살표가 1 큰 숫자의 칸을 가리키도록 숫자를 채우는 퍼즐">
+  <div slot="rules">
+    <p>모든 칸에 1부터 16까지의 숫자를 한 번씩 채우세요. 원 안의 16은 고정된 숫자입니다.</p>
+    <p>각 화살표는 그 칸의 숫자보다 정확히 1 큰 숫자가 있는 칸을 가리켜야 합니다.</p>
+    <p>다음 숫자의 칸은 화살표 방향의 같은 직선 위에 있어야 하며, 바로 옆 칸일 필요는 없습니다. 16이 있는 원에서 끝납니다.</p>
+  </div>
+  <div slot="controls">칸을 선택하고 숫자 버튼으로 입력하세요. 메모 버튼(단축키 M)으로 후보 숫자를 적고, 지우기로 선택한 칸을 비우세요.</div>
+  <section id="arrowMazeGame" data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} aria-label="화살표 미로">
+    <svg id="arrowMazeBoard" viewBox="0 0 400 400" role="group" aria-label="4행 4열 화살표 미로"></svg>
+    <div class="maze-pad" aria-label="숫자 입력">{Array.from({ length: 16 }, (_, i) => <button type="button" data-number={i + 1}>{i + 1}</button>)}</div>
+    <div class="bottom-buttons">
+      <button id="arrowMazeMemo" type="button" aria-pressed="false">메모</button>
+      <button id="arrowMazeErase" type="button">지우기</button>
+      <button id="arrowMazeReset" type="button" class="danger">초기화</button>
+    </div>
+    <p id="arrowMazeStatus" class="sr-only" role="status" aria-live="polite"></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="arrowMazeComplete" />
+</PuzzleLayout>
+<script>import '../scripts/arrow-maze.js';</script>
+<style>
+  p { margin:0; } p+p { margin-top:8px; }
+  #arrowMazeBoard { display:block; width:100%; height:auto; user-select:none; -webkit-user-select:none; touch-action:manipulation; }
+  #arrowMazeBoard :global([tabindex]:focus), #arrowMazeBoard :global([tabindex]:focus-visible), #arrowMazeGame button:focus { outline:none; box-shadow:none; }
+  .maze-pad { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:4px; margin-top:14px; }
+  .maze-pad button { min-width:0; padding:8px 0; border:1px solid #d6d4cd; border-radius:3px; background:#faf8f4; color:#555; font:inherit; touch-action:manipulation; }
+  .maze-pad button.used { color:#aaa; }
+  .bottom-buttons { gap:8px; } .bottom-buttons button { flex:1; min-width:0; }
+  #arrowMazeMemo[aria-pressed=true] { color:#4a6fa5; background:#e8edf5; }
+  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+</style>
