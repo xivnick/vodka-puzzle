@@ -4,6 +4,7 @@ const game = document.getElementById('arrowMazeGame');
 if (game) {
   const puzzle = JSON.parse(game.dataset.puzzle), puzzleId = game.dataset.puzzleId;
   const count = puzzle.size ** 2, board = document.getElementById('arrowMazeBoard');
+  const textMeasure = document.createElement('canvas').getContext('2d');
   const shapes = puzzle.directions.map(direction => {
     if (!direction) return { markup: '<circle cx="50" cy="50" r="43"/>', x: 50, y: 50 };
     const diagonal = direction[0] && direction[1];
@@ -51,7 +52,7 @@ if (game) {
           return `<text x="${(position % 4 - (columns - 1) / 2) * 10}" y="${(row - (Math.ceil(candidates.length / 4) - 1) / 2) * 10}" font-size="8">${number}</text>`;
         }).join('');
       const label = `${r + 1}행 ${c + 1}열, ${fixed ? '고정 숫자 ' : ''}${value || (candidates.length ? '메모 ' + candidates.join(', ') : '빈칸')}${conflict ? ', 규칙 오류' : ''}`;
-      return `<g data-cell="${index}" transform="translate(${c * 100} ${r * 100})" role="button" tabindex="${selected === index ? 0 : -1}" aria-label="${label}" aria-pressed="${index === selected}" style="cursor:${fixed ? 'default' : 'pointer'}"><rect width="100" height="100" fill="transparent"/><g fill="${fill}" stroke="#333" stroke-width="2.3" stroke-linejoin="miter">${shape.markup}</g><g data-label-center="${shape.x},${shape.y}" fill="${color}" text-anchor="middle" dominant-baseline="central" pointer-events="none">${content}</g></g>`;
+      return `<g data-cell="${index}" transform="translate(${c * 100} ${r * 100})" role="button" tabindex="${selected === index ? 0 : -1}" aria-label="${label}" aria-pressed="${index === selected}" style="cursor:${fixed ? 'default' : 'pointer'}"><rect width="100" height="100" fill="transparent"/><g fill="${fill}" stroke="#333" stroke-width="2.3" stroke-linejoin="miter">${shape.markup}</g><g data-label-center="${shape.x},${shape.y}" fill="${color}" text-anchor="middle" pointer-events="none">${content}</g></g>`;
     }).join('');
     centerLabels();
     if (focused) board.querySelector(`[data-cell="${selected}"]`)?.focus({ preventScroll: true });
@@ -71,8 +72,19 @@ if (game) {
   function centerLabels() {
     board.querySelectorAll('[data-label-center]').forEach(label => {
       if (!label.children.length) return;
-      const [x, y] = label.dataset.labelCenter.split(',').map(Number), bounds = label.getBBox();
-      label.setAttribute('transform', `translate(${x - bounds.x - bounds.width / 2} ${y - bounds.y - bounds.height / 2})`);
+      const [x, y] = label.dataset.labelCenter.split(',').map(Number);
+      // SVG bounds include font padding. Measure the visible digits instead.
+      const bounds = [...label.children].map(text => {
+        const style = getComputedStyle(text);
+        textMeasure.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        const metrics = textMeasure.measureText(text.textContent);
+        const tx = Number(text.getAttribute('x')) - metrics.width / 2, ty = Number(text.getAttribute('y'));
+        return { left: tx - metrics.actualBoundingBoxLeft, right: tx + metrics.actualBoundingBoxRight,
+          top: ty - metrics.actualBoundingBoxAscent, bottom: ty + metrics.actualBoundingBoxDescent };
+      });
+      const cx = (Math.min(...bounds.map(b => b.left)) + Math.max(...bounds.map(b => b.right))) / 2;
+      const cy = (Math.min(...bounds.map(b => b.top)) + Math.max(...bounds.map(b => b.bottom))) / 2;
+      label.setAttribute('transform', `translate(${x - cx} ${y - cy})`);
     });
   }
   function select(index, focus = false) {
