@@ -1,0 +1,41 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import { mathPath261028 as puzzle } from '../lib/math-path.js';
+const { puzzleId } = Astro.props;
+---
+<PuzzleLayout title="261028 Math Path" {puzzleId}
+  subtitle="1부터 30까지 이어지는 길을 만들고 영역의 계산을 맞추세요"
+  description="연속한 숫자가 서로 닿도록 채우고 영역의 사칙연산 단서를 맞추는 퍼즐">
+  <div slot="rules">
+    <p>검은 칸을 제외한 모든 칸에 1부터 n까지의 자연수를 한 번씩 채우세요. n은 전체 칸의 수이며, 이 문제에서는 30입니다.</p>
+    <p>차이가 1인 두 숫자의 칸은 서로 변을 맞대거나 대각선으로 닿아야 합니다.</p>
+    <p>영역 왼쪽 위의 작은 숫자는 그 영역의 숫자를 큰 수부터 작은 수 순서로 놓고, 같은 사칙연산 기호 하나를 계속 적용한 결과입니다. 연산기호가 적혀 있으면 반드시 그 연산을 사용하세요. 단서가 없는 영역에는 계산 조건이 없습니다.</p>
+    <p>예를 들어 한 영역에 1, 2, 4가 있다면 4 − 2 − 1 = 1, 4 ÷ 2 ÷ 1 = 2, 4 + 2 + 1 = 7, 4 × 2 × 1 = 8이 가능합니다.</p>
+  </div>
+  <div slot="controls">칸을 선택하고 숫자 버튼으로 입력하세요. 메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요. 지우기로 선택한 칸을 비우세요.</div>
+  <section id="mathPathGame" data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} aria-label="Math Path">
+    <div class="maze-board-tools"><button id="mathPathMemo" class="maze-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <svg id="mathPathBoard" viewBox="-3 -3 606 606" role="group" aria-label="6행 6열 Math Path"></svg>
+    <div class="maze-pad" aria-label="숫자 입력">{Array.from({ length: 30 }, (_, i) => <button type="button" data-number={i + 1}>{i + 1}</button>)}</div>
+    <div class="bottom-buttons">
+      <button id="mathPathErase" type="button">지우기</button>
+      <button id="mathPathReset" type="button" class="danger">초기화</button>
+    </div>
+    <p id="mathPathStatus" class="sr-only" role="status" aria-live="polite"></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="mathPathComplete" />
+</PuzzleLayout>
+<script>import '../scripts/math-path.js';</script>
+<style>
+  p { margin:0; } p+p { margin-top:8px; }
+  #mathPathBoard { display:block; width:100%; height:auto; user-select:none; -webkit-user-select:none; touch-action:manipulation; }
+  #mathPathBoard :global([tabindex]:focus), #mathPathBoard :global([tabindex]:focus-visible), #mathPathGame button:focus { outline:none; box-shadow:none; }
+  .maze-pad { display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); gap:4px; margin-top:14px; }
+  .maze-pad button { min-width:0; padding:8px 0; border:1px solid #d6d4cd; border-radius:3px; background:#faf8f4; color:#555; font:inherit; touch-action:manipulation; }
+  .bottom-buttons { gap:8px; } .bottom-buttons button { flex:1; min-width:0; }
+  .maze-board-tools { display:flex; justify-content:flex-end; margin-bottom:8px; }
+  .maze-notes-toggle { background:none; border:0; border-bottom:1px solid #ccc; border-radius:0; padding:0 0 1px; color:#888; font:inherit; font-size:.82rem; line-height:1.5; }
+  .maze-notes-toggle[aria-pressed=true] { color:#4a6fa5; border-color:#4a6fa5; font-weight:700; }
+  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+</style>
