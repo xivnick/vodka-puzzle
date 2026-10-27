@@ -6,6 +6,26 @@ if (game) {
   const count = puzzle.size ** 2, board = document.getElementById('mathPathBoard');
   const playable = playableCells(puzzle), playableSet = new Set(playable), max = playable.length;
   const regionAt = new Map(puzzle.regions.flatMap((region, index) => region.cells.map(cell => [cell, index])));
+  // Draw shared edges once, above all cell fills, so no later cell clips a border.
+  const thinEdges = [], thickEdges = [];
+  for (let row = 0; row <= puzzle.size; row++) {
+    for (let column = 0; column < puzzle.size; column++) {
+      const above = row ? regionAt.get((row - 1) * puzzle.size + column) : undefined;
+      const below = row < puzzle.size ? regionAt.get(row * puzzle.size + column) : undefined;
+      if (above === undefined && below === undefined) continue;
+      (above === below ? thinEdges : thickEdges).push(`M${column * 100} ${row * 100}h100`);
+    }
+  }
+  for (let column = 0; column <= puzzle.size; column++) {
+    for (let row = 0; row < puzzle.size; row++) {
+      const left = column ? regionAt.get(row * puzzle.size + column - 1) : undefined;
+      const right = column < puzzle.size ? regionAt.get(row * puzzle.size + column) : undefined;
+      if (left === undefined && right === undefined) continue;
+      (left === right ? thinEdges : thickEdges).push(`M${column * 100} ${row * 100}v100`);
+    }
+  }
+  const borders = `<g fill="none" stroke="#292929" stroke-linecap="square" stroke-linejoin="miter" pointer-events="none"><path d="${thinEdges.join('')}" stroke-width="1.2"/><path d="${thickEdges.join('')}" stroke-width="4"/><rect width="600" height="600" stroke-width="4"/></g>`;
+  const textMeasure = document.createElement('canvas').getContext('2d');
   const pad = [...game.querySelectorAll('[data-number]')];
   const memoButton = document.getElementById('mathPathMemo'), erase = document.getElementById('mathPathErase');
   const reset = document.getElementById('mathPathReset'), complete = document.getElementById('mathPathComplete');
@@ -28,18 +48,18 @@ if (game) {
       const color = conflict ? '#b05050' : '#4a6fa5';
       const candidates = notes[index].slice().sort((a, b) => a - b);
       const clue = region.cells[0] === index && region.target !== undefined
-        ? `<text x="9" y="23" font-size="23" fill="#222">${region.target}${region.operation || ''}</text>` : '';
-      const content = value ? `<text x="50" y="66" font-size="32" text-anchor="middle">${value}</text>`
-        : candidates.map((number, position) => `<text x="${12 + position % 5 * 19}" y="${37 + Math.floor(position / 5) * 11}" font-size="10" text-anchor="middle">${number}</text>`).join('');
-      const edges = [[-6, 'M0 0H100'], [6, 'M0 100H100'], [-1, 'M0 0V100'], [1, 'M100 0V100']].map(([offset, path]) => {
-        const neighbor = index + offset;
-        const sameRow = Math.abs(offset) !== 1 || Math.floor(index / 6) === Math.floor(neighbor / 6);
-        const same = sameRow && regionAt.get(neighbor) === regionAt.get(index);
-        return `<path d="${path}" stroke="#222" stroke-width="${same ? 1 : 6}"/>`;
-      }).join('');
+        ? `<text x="9" y="23" font-size="20" fill="#222">${region.target}${region.operation || ''}</text>` : '';
+      const content = value ? `<text data-center="50,50" font-size="34" font-weight="500">${value}</text>`
+        : candidates.map((number, position) => {
+          const row = Math.floor(position / 5), columns = Math.min(5, candidates.length - row * 5);
+          const x = 50 + (position % 5 - (columns - 1) / 2) * 17;
+          const y = 55 + (row - (Math.ceil(candidates.length / 5) - 1) / 2) * 11;
+          return `<text data-center="${x},${y}" font-size="10">${number}</text>`;
+        }).join('');
       const label = `${r + 1}행 ${c + 1}열, ${value || (candidates.length ? '메모 ' + candidates.join(', ') : '빈칸')}${clue ? ', 영역 단서 ' + region.target + (region.operation || '') : ''}${conflict ? ', 규칙 오류' : ''}`;
-      return `<g data-cell="${index}" transform="translate(${c * 100} ${r * 100})" role="button" tabindex="${selected === index ? 0 : -1}" aria-label="${label}" aria-pressed="${index === selected}" style="cursor:pointer"><rect width="100" height="100" fill="${fill}"/>${edges}<g pointer-events="none">${clue}<g fill="${color}">${content}</g></g></g>`;
-    }).join('');
+      return `<g data-cell="${index}" transform="translate(${c * 100} ${r * 100})" role="button" tabindex="${selected === index ? 0 : -1}" aria-label="${label}" aria-pressed="${index === selected}" style="cursor:pointer"><rect width="100" height="100" fill="${fill}"/><g pointer-events="none">${clue}<g fill="${color}">${content}</g></g></g>`;
+    }).join('') + borders;
+    centerNumbers();
     if (focused) board.querySelector(`[data-cell="${selected}"]`)?.focus({ preventScroll: true });
     pad.forEach(button => {
       button.disabled = !ready || !playableSet.has(selected);
@@ -52,6 +72,17 @@ if (game) {
     if (ready && result.complete && window.puzzlePage?.published && !completionRecorded) {
       completionRecorded = true; window.recordCompletion(puzzleId, state());
     }
+  }
+  function centerNumbers() {
+    board.querySelectorAll('[data-center]').forEach(text => {
+      const [x, y] = text.dataset.center.split(',').map(Number);
+      const style = getComputedStyle(text);
+      textMeasure.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      const metrics = textMeasure.measureText(text.textContent);
+      // Center the visible glyphs, independently of baseline and font side bearings.
+      text.setAttribute('x', x - (metrics.actualBoundingBoxRight - metrics.actualBoundingBoxLeft) / 2);
+      text.setAttribute('y', y + (metrics.actualBoundingBoxAscent - metrics.actualBoundingBoxDescent) / 2);
+    });
   }
   function select(index, focus = false) {
     clearBuffer(); selected = index; render();
@@ -125,4 +156,5 @@ if (game) {
   };
   window.checkComplete = render;
   window.startLocalPuzzle(puzzleId, init, init);
+  document.fonts.ready.then(centerNumbers);
 }
