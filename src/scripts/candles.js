@@ -17,16 +17,15 @@ function persist() {
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
 function render() {
-  const {bad, weights, complete} = validateCandles(puzzle, values);
+  const {bad, complete} = validateCandles(puzzle, values);
   cells.forEach((cell, i) => {
     cell.querySelector('.mark').textContent = values[i] === 2 ? '×' : '';
-    cell.querySelector('.weight').textContent = values[i] === 1 ? weights[i] : '';
     cell.classList.toggle('shaded', values[i] === 1);
     cell.classList.toggle('note', values[i] === 2);
     cell.classList.toggle('conflict', bad.has(i));
     cell.tabIndex = i === selected ? 0 : -1;
     const clue = clues.find(clue => clue.cell === i);
-    cell.setAttribute('aria-label', `${Math.floor(i / size) + 1}행 ${i % size + 1}열, ${clue ? `단서 ${clue.count}` : values[i] === 1 ? `양초, 값 ${weights[i]}` : values[i] === 2 ? '× 메모' : '빈칸'}${bad.has(i) ? ', 규칙 위반' : ''}`);
+    cell.setAttribute('aria-label', `${Math.floor(i / size) + 1}행 ${i % size + 1}열, ${clue ? `단서 ${clue.count}` : values[i] === 1 ? '양초' : values[i] === 2 ? '× 메모' : '빈칸'}${bad.has(i) ? ', 규칙 위반' : ''}`);
   });
   $('candlesComplete').hidden = !complete;
   if (!complete) completionRecorded = false;

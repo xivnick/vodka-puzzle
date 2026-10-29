@@ -29,8 +29,12 @@ const subtitle = '양초를 놓고 주변 숫자에 맞춰 양초의 값의 합�
         return <button type="button" class:list={['candles-cell', {given: !!clue}]} data-cell={i}
           tabindex={i === 0 ? 0 : -1} aria-label={`${Math.floor(i / 8) + 1}행 ${i % 8 + 1}열, ${clue ? `단서 ${clue.count}` : '빈칸'}`}>
           {clue && <span class="clue" aria-hidden="true">{clue.count}</span>}
-          <svg class="candle" viewBox="0 0 40 48" aria-hidden="true"><path class="flame" d="M20 2C21 8 27 10 25 16C23 22 15 21 14 16C13 11 18 8 20 2Z"/><path class="wax" d="M11 24H29V44H11Z"/><path class="wick" d="M20 20V25"/></svg>
-          <span class="weight" aria-hidden="true"></span><span class="mark" aria-hidden="true"></span>
+          <!-- Tabler Icons candle-filled, MIT license: public/licenses/tabler-icons.txt -->
+          <svg class="candle" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M14 9a2 2 0 0 1 2 2v10a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-10a2 2 0 0 1 2 -2z" />
+            <path d="M11.254 1.334a1 1 0 0 1 1.491 0l1.452 1.623a3 3 0 0 1 -4.196 4.28c-1.195 -1.07 -1.339 -2.889 -.297 -4.166z" />
+          </svg>
+          <span class="mark" aria-hidden="true"></span>
         </button>;
       })}
     </div>
@@ -49,15 +53,10 @@ const subtitle = '양초를 놓고 주변 숫자에 맞춰 양초의 값의 합�
   .candles-cell:nth-child(8n) { border-right:0; }
   .candles-cell:nth-child(n+57) { border-bottom:0; }
   .given { cursor:default; font-weight:600; }
-  .candle { display:none; width:60%; height:80%; overflow:visible; }
+  .candle { display:none; width:70%; height:70%; color:#444; }
   .shaded .candle { display:block; }
-  .flame { fill:#d99a35; }
-  .wax { fill:#e9ded0; stroke:#73695e; stroke-width:1.5; }
-  .wick { stroke:#73695e; stroke-width:1.5; }
-  .weight { position:absolute; bottom:13%; font-size:clamp(12px,3.5vw,19px); color:#433c35; }
   .mark { color:#999; font-weight:400; }
   .conflict { background:#fbeaea; color:#c34242; }
-  .conflict .weight { color:#c34242; }
   .candles-cell:focus { outline:none; }
   ul { padding-left:20px; margin:8px 0 0; }
 </style>
