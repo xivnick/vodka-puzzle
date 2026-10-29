@@ -17,15 +17,20 @@ function persist() {
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
 function render() {
-  const {bad, complete} = validateCandles(puzzle, values);
+  const {bad, sums, complete} = validateCandles(puzzle, values);
   cells.forEach((cell, i) => {
     cell.querySelector('.mark').textContent = values[i] === 2 ? '×' : '';
     cell.classList.toggle('shaded', values[i] === 1);
     cell.classList.toggle('note', values[i] === 2);
     cell.classList.toggle('conflict', bad.has(i));
     cell.tabIndex = i === selected ? 0 : -1;
-    const clue = clues.find(clue => clue.cell === i);
-    cell.setAttribute('aria-label', `${Math.floor(i / size) + 1}행 ${i % size + 1}열, ${clue ? `단서 ${clue.count}` : values[i] === 1 ? '양초' : values[i] === 2 ? '× 메모' : '빈칸'}${bad.has(i) ? ', 규칙 위반' : ''}`);
+    const clueIndex = clues.findIndex(clue => clue.cell === i);
+    const clue = clues[clueIndex];
+    const matched = !!clue && sums[clueIndex] === clue.count;
+    const over = !!clue && sums[clueIndex] > clue.count;
+    cell.classList.toggle('matched', matched);
+    cell.classList.toggle('over', over);
+    cell.setAttribute('aria-label', `${Math.floor(i / size) + 1}행 ${i % size + 1}열, ${clue ? `단서 ${clue.count}, 현재 합 ${sums[clueIndex]}${matched ? ", 일치" : over ? ", 초과" : ""}` : values[i] === 1 ? '양초' : values[i] === 2 ? '× 메모' : '빈칸'}${bad.has(i) ? ', 규칙 위반' : ''}`);
   });
   $('candlesComplete').hidden = !complete;
   if (!complete) completionRecorded = false;
