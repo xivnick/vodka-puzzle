@@ -15,7 +15,7 @@ function render() {
   let html = '';
   for (let i = 0; i < values.length; i++) {
     const [x,y] = xy(i);
-    html += `<rect x="${x-20}" y="${y-20}" width="40" height="40" fill="${clueCells.has(i) ? '#e5e9ed' : values[i] === 1 ? (bad.has(i) ? '#a33' : '#303940') : bad.has(i) ? '#fbeaea' : selected === i ? '#e6eef7' : '#fff'}"/>`;
+    html += `<rect x="${x-20}" y="${y-20}" width="40" height="40" fill="${clueCells.has(i) ? '#fff' : values[i] === 1 ? (bad.has(i) ? '#a33' : '#303940') : bad.has(i) ? '#fbeaea' : selected === i ? '#e6eef7' : '#fff'}"/>`;
   }
   for (let n = 1; n < size; n++) html += `<path d="M${n*40} 0V520M0 ${n*40}H520" fill="none" stroke="#c8cfd5" stroke-width="1"/>`;
   for (const key of edges) {
@@ -35,7 +35,7 @@ function render() {
     const [x,y] = xy(clue.cell);
     const color = bad.has(clue.cell) ? '#a22' : '#28343e';
     const rotation = {up:0,right:90,down:180,left:270}[clue.direction];
-    html += `<g role="img" aria-label="${Math.floor(clue.cell / size)+1}행 ${clue.cell % size+1}열, ${clue.count} ${ {up:'위',down:'아래',left:'왼쪽',right:'오른쪽'}[clue.direction]}" pointer-events="none"><path d="M-4 16H4V-4H12L0-17-12-4H-4Z" transform="translate(${x} ${y}) rotate(${rotation})" fill="#a5b2be"/><text x="${x}" y="${y+8}" text-anchor="middle" font-family="inherit" font-size="22" font-weight="500" fill="${color}" stroke="#e5e9ed" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke" style="font-variant-numeric:tabular-nums">${clue.count}</text></g>`;
+    html += `<g role="img" aria-label="${Math.floor(clue.cell / size)+1}행 ${clue.cell % size+1}열, ${clue.count} ${ {up:'위',down:'아래',left:'왼쪽',right:'오른쪽'}[clue.direction]}" pointer-events="none"><path d="M-4 16H4V-4H12L0-17-12-4H-4Z" transform="translate(${x} ${y}) rotate(${rotation})" fill="#a5b2be"/><text x="${x}" y="${y+8}" text-anchor="middle" font-family="inherit" font-size="22" font-weight="500" fill="${color}" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke" style="font-variant-numeric:tabular-nums">${clue.count}</text></g>`;
   }
   html += '<rect x="1.5" y="1.5" width="517" height="517" fill="none" stroke="#505c66" stroke-width="3" pointer-events="none"/>';
   board.innerHTML = html;
