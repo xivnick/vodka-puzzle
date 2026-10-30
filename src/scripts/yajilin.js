@@ -28,12 +28,19 @@ function render() {
     const i = r * size + c;
     if (values[i] === 2) {
       const [x,y] = xy(i);
-      html += `<text x="${x}" y="${y}" dy=".35em" text-anchor="middle" font-family="sans-serif" font-size="24" fill="${bad.has(i) ? '#c34242' : '#999'}" pointer-events="none">×</text>`;
+      html += `<text x="${x}" y="${y}" dy=".35em" text-anchor="middle" font-family="inherit" font-size="24" fill="${bad.has(i) ? '#c34242' : '#999'}" pointer-events="none">×</text>`;
     }
   }
   for (const clue of clues) {
-    const [x,y] = xy(clue.cell), arrow = {up:'↑',down:'↓',left:'←',right:'→'}[clue.direction];
-    html += `<text x="${x}" y="${y}" dy=".35em" text-anchor="middle" font-family="sans-serif" font-size="22" fill="${bad.has(clue.cell) ? '#a22' : '#222'}" pointer-events="none">${clue.count}${arrow}</text>`;
+    const [x,y] = xy(clue.cell), vertical = ['up','down'].includes(clue.direction);
+    const color = bad.has(clue.cell) ? '#a22' : '#292929';
+    const arrow = {
+      up:`M${x+11} ${y+11}V${y-11}m-4 4 4-4 4 4`,
+      down:`M${x+11} ${y-11}V${y+11}m-4-4 4 4 4-4`,
+      left:`M${x+12} ${y+11}H${x-12}m4-4-4 4 4 4`,
+      right:`M${x-12} ${y+11}H${x+12}m-4-4 4 4-4 4`,
+    }[clue.direction];
+    html += `<g role="img" aria-label="${Math.floor(clue.cell / size)+1}행 ${clue.cell % size+1}열, ${clue.count} ${ {up:'위',down:'아래',left:'왼쪽',right:'오른쪽'}[clue.direction]}" fill="${color}" pointer-events="none"><text x="${vertical ? x-5 : x}" y="${vertical ? y+8 : y+1}" text-anchor="middle" font-family="inherit" font-size="22" font-weight="400" style="font-variant-numeric:tabular-nums">${clue.count}</text><path d="${arrow}" fill="none" stroke="${color}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></g>`;
   }
   html += '<rect x="1.5" y="1.5" width="517" height="517" fill="none" stroke="#222" stroke-width="3" pointer-events="none"/>';
   board.innerHTML = html;
