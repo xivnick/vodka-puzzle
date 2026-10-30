@@ -1,0 +1,43 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+const {puzzleId} = Astro.props;
+---
+<PuzzleLayout title="261030 야지린" {puzzleId}
+  subtitle="검은 칸을 칠하고, 남은 흰 칸을 모두 지나는 루프를 그리세요"
+  description="화살표 숫자에 맞게 검은 칸을 칠하고 하나의 루프를 그리는 야지린">
+  <div slot="rules">
+    몇 개의 칸을 검은색으로 칠하고, 남은 흰 칸들을 모두 지나는 루프를 그리세요.
+    <ul>
+      <li>검은색으로 칠해진 칸은 상하좌우로 인접할 수 없습니다.</li>
+      <li>회색으로 칠해진 칸은 루프에 포함되지 않으며, 적혀 있는 숫자는 같은 줄, 표시된 방향에 존재하는 검은 칸 개수를 나타냅니다.</li>
+      <li>루프는 상하좌우로 연결되며, 서로 만나거나 교차할 수 없습니다.</li>
+    </ul>
+  </div>
+  <div slot="controls">
+    아래 버튼으로 입력을 전환하세요. 굵게 표시된 항목이 현재 입력입니다.<br />
+    루프는 같은 행·열의 두 칸을 차례로 눌러 그립니다. 같은 구간을 다시 연결하거나 선을 누르면 지웁니다.<br />
+    검은 칸 칠하기에서는 칸을 짧게 누르면 검은 칸, 길게 누르거나 우클릭하면 × 메모를 넣습니다. 오른쪽 위 버튼이나 M 키로 두 입력을 바꾸세요.<br />
+    같은 표시를 다시 누르거나 지우기 버튼으로 선택한 칸의 표시와 선을 지우세요.
+  </div>
+  <section id="yajilinGame" data-puzzle-id={puzzleId} aria-label="야지린">
+    <div class="board-tools"><button id="yajilinNotes" type="button" aria-pressed="false">길게 눌러 × 표시</button></div>
+    <svg id="yajilinBoard" viewBox="0 0 520 520" role="application" tabindex="0" aria-label="13행 13열 야지린 격자"></svg>
+    <div class="bottom-buttons mode-buttons"><button id="yajilinMode" type="button" aria-pressed="false" aria-label="현재 루프 그리기, 검은 칸 칠하기로 전환"><span data-mode="shade">검은 칸 칠하기</span><span aria-hidden="true"> / </span><span data-mode="loop" class="active">루프 그리기</span></button></div>
+    <div class="bottom-buttons"><button id="yajilinErase" type="button">지우기</button><button id="yajilinReset" type="button" class="danger">초기화</button></div>
+    <p id="yajilinStatus" class="sr-only" role="status" aria-live="polite"></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="yajilinComplete" />
+  <script>import '../scripts/yajilin.js';</script>
+</PuzzleLayout>
+<style>
+  ul {padding-left:20px;margin:8px 0 0;}
+  .board-tools {display:flex;justify-content:flex-end;gap:16px;margin-bottom:8px;}
+  .board-tools button {background:none;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:0 0 1px;color:#888;font-size:.82rem;line-height:1.5;}
+  .board-tools button[aria-pressed=true] {color:#4a6fa5;border-color:#4a6fa5;}
+  #yajilinBoard {display:block;width:100%;height:auto;background:white;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+  .mode-buttons button {font-weight:400;}
+  .mode-buttons .active {font-weight:700;}
+  #yajilinBoard:focus {outline:none;}
+  .sr-only {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+</style>
