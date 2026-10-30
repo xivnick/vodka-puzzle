@@ -32,15 +32,10 @@ function render() {
     }
   }
   for (const clue of clues) {
-    const [x,y] = xy(clue.cell), vertical = ['up','down'].includes(clue.direction);
+    const [x,y] = xy(clue.cell);
     const color = bad.has(clue.cell) ? '#a22' : '#292929';
-    const arrow = {
-      up:`M${x+11} ${y+11}V${y-11}m-4 4 4-4 4 4`,
-      down:`M${x+11} ${y-11}V${y+11}m-4-4 4 4 4-4`,
-      left:`M${x+12} ${y+11}H${x-12}m4-4-4 4 4 4`,
-      right:`M${x-12} ${y+11}H${x+12}m-4-4 4 4-4 4`,
-    }[clue.direction];
-    html += `<g role="img" aria-label="${Math.floor(clue.cell / size)+1}행 ${clue.cell % size+1}열, ${clue.count} ${ {up:'위',down:'아래',left:'왼쪽',right:'오른쪽'}[clue.direction]}" fill="${color}" pointer-events="none"><text x="${vertical ? x-5 : x}" y="${vertical ? y+8 : y+1}" text-anchor="middle" font-family="inherit" font-size="22" font-weight="400" style="font-variant-numeric:tabular-nums">${clue.count}</text><path d="${arrow}" fill="none" stroke="${color}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+    const rotation = {up:0,right:90,down:180,left:270}[clue.direction];
+    html += `<g role="img" aria-label="${Math.floor(clue.cell / size)+1}행 ${clue.cell % size+1}열, ${clue.count} ${ {up:'위',down:'아래',left:'왼쪽',right:'오른쪽'}[clue.direction]}" pointer-events="none"><path d="M-4 16H4V-4H12L0-17-12-4H-4Z" transform="translate(${x} ${y}) rotate(${rotation})" fill="#858585"/><text x="${x}" y="${y+8}" text-anchor="middle" font-family="inherit" font-size="22" font-weight="500" fill="${color}" stroke="#bdbdbd" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke" style="font-variant-numeric:tabular-nums">${clue.count}</text></g>`;
   }
   html += '<rect x="1.5" y="1.5" width="517" height="517" fill="none" stroke="#222" stroke-width="3" pointer-events="none"/>';
   board.innerHTML = html;
