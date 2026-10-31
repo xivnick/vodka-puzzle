@@ -18,41 +18,32 @@ const points = [...perimeter, perimeter[0]].map(([r, c]) => `${c * 50 + 25},${r 
     숫자에 따른 이동 방법과 추가 규칙은 아직 정하지 않았습니다.
   </div>
   <section class="marble-preview" aria-label="주루마블 경로 시안">
-    <p class="preview-label">형태 시안 · 퍼즐 숫자 없음</p>
     <svg class="marble-board" viewBox="0 0 450 450" role="img" aria-labelledby="marbleTitle marbleDescription">
       <title id="marbleTitle">네 방향으로 꺾이며 32칸을 순환하는 스도쿠 경로</title>
       <desc id="marbleDescription">맨 윗줄 5번째 칸에서 출발합니다. 각 변 가운데에서는 바깥으로 나오고 모서리에서는 안쪽으로 꺾이는 경로를 시계 방향으로 따라 출발 칸으로 돌아옵니다.</desc>
       <rect width="450" height="450" fill="white" />
-      {perimeter.map(([r, c]) => <rect x={c * 50} y={r * 50} width="50" height="50" fill="#edf2f7" />)}
-      <polyline points={points} fill="none" stroke="#91a9c6" stroke-width="5" stroke-linejoin="round" />
+      <polyline points={points} fill="none" stroke="#aaa" stroke-width="2" stroke-linejoin="round" />
       {Array.from({length: 8}, (_, i) => i + 1).map(i => <>
         <path d={`M${i * 50} 0V450 M0 ${i * 50}H450`} fill="none" stroke={i % 3 === 0 ? '#555' : '#c9ced4'} stroke-width={i % 3 === 0 ? 2 : 1} />
       </>)}
-      <rect x="200" y="0" width="50" height="50" fill="#dce8d9" />
-      <text x="225" y="46" text-anchor="middle" font-size="9" fill="#5d7956">출발</text>
-      <g fill="none" stroke="#617fA3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M318 69l7 6-7 6 M419 218l6 7 6-7 M132 369l-7 6 7 6 M19 232l6-7 6 7" />
-      </g>
-      <g id="marblePawn" transform="translate(225 25)" fill="#4a6fa5" stroke="white" stroke-width="1.5" aria-hidden="true">
-        <circle cy="-7" r="7" />
-        <path d="M-5 0H5L9 11H-9Z" />
-        <rect x="-11" y="10" width="22" height="5" rx="2" />
+      <g id="marblePawn" transform="translate(225 25)" aria-hidden="true">
+        <g transform="scale(.75)" fill="#555" stroke="white" stroke-width="1.5">
+          <circle cy="-7" r="7" />
+          <path d="M-5 0H5L9 11H-9Z" />
+          <rect x="-11" y="10" width="22" height="5" rx="2" />
+        </g>
       </g>
       <rect x="1" y="1" width="448" height="448" fill="none" stroke="#555" stroke-width="2" />
     </svg>
     <div class="marble-buttons">
-      <button id="marbleStep" type="button">한 칸 이동</button>
       <button id="marbleLap" type="button">한 바퀴 보기</button>
-      <button id="marbleReset" type="button">출발 위치로</button>
     </div>
     <p id="marbleStatus" class="marble-status" role="status">출발 · 0 / 32칸</p>
-    <p class="preview-note">이동 버튼은 경로를 확인하기 위한 시연입니다.<br />말의 이동과 스도쿠 숫자의 관계는 규칙 토의 후 정합니다.</p>
   </section>
 </PuzzleLayout>
 <script define:vars={{perimeter}}>
   const pawn = document.getElementById('marblePawn');
   const status = document.getElementById('marbleStatus');
-  const step = document.getElementById('marbleStep');
   const lap = document.getElementById('marbleLap');
   let moved = 0;
   let timer;
@@ -60,11 +51,9 @@ const points = [...perimeter, perimeter[0]].map(([r, c]) => `${c * 50 + 25},${r 
     const [r, c] = perimeter[moved % 32];
     pawn.setAttribute('transform', `translate(${c * 50 + 25} ${r * 50 + 25})`);
     status.textContent = moved === 0 ? '출발 · 0 / 32칸' : moved === 32 ? '한 바퀴 완료 · 32 / 32칸' : `이동 중 · ${moved} / 32칸`;
-    step.disabled = moved === 32 || Boolean(timer);
     lap.disabled = Boolean(timer);
   }
   function stop() { clearInterval(timer); timer = undefined; }
-  step.addEventListener('click', () => { moved += 1; render(); });
   lap.addEventListener('click', () => {
     stop();
     moved = 0;
@@ -75,15 +64,12 @@ const points = [...perimeter, perimeter[0]].map(([r, c]) => `${c * 50 + 25},${r 
     }, 220);
     render();
   });
-  document.getElementById('marbleReset').addEventListener('click', () => { stop(); moved = 0; render(); });
   window.addEventListener('pagehide', stop);
 </script>
 <style>
-  .preview-label { margin:0 0 10px; color:#888; font-size:.78rem; text-align:center; }
   .marble-board { display:block; width:100%; height:auto; }
-  .marble-buttons { display:flex; justify-content:center; flex-wrap:wrap; gap:8px; margin-top:16px; }
-  .marble-buttons button { margin:0; padding:8px 12px; border:1px solid #d6d4cd; border-radius:3px; background:#faf8f4; color:#555; font-size:.82rem; }
+  .marble-buttons { text-align:center; margin-top:16px; }
+  .marble-buttons button { margin:0; padding:0 0 1px; border:0; border-bottom:1px solid #ccc; border-radius:0; background:none; color:#888; font-size:.78rem; }
   .marble-buttons button:disabled { opacity:.5; cursor:default; }
-  .marble-status { margin:12px 0; text-align:center; color:#617fa3; font-size:.82rem; font-variant-numeric:tabular-nums; }
-  .preview-note { margin:18px 0 0; text-align:center; color:#888; font-size:.78rem; line-height:1.7; }
+  .marble-status { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 </style>
