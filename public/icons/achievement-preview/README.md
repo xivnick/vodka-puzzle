@@ -14,3 +14,5 @@ Additional formula achievement candidates use `brain`, `bulb`, `pencil`, `writin
 Difficulty mission candidates add `cherry` and `skull` from the same pinned Tabler Icons v3.40.0 outline set, unchanged; `brain` reuses the existing candidate asset.
 
 First-blood reward candidates add `sword` and `swords` from the same pinned Tabler Icons v3.40.0 outline set, unchanged, and reuse `crown`.
+
+Basic mission preview adds `leaf` from the same pinned Tabler Icons v3.40.0 outline set, unchanged, and reuses `puzzle` and `flame`.

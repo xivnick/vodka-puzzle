@@ -1,0 +1,33 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+import NicknameBadge from '../../../../components/NicknameBadge.astro';
+const icons=[['leaf','첫걸음','잎사귀','일반 문제 1개 완료','입문 보상'],['puzzle','퍼즐 수집가','퍼즐 조각','일반 문제 10개 완료','이후 10개마다 코인'],['flame','꺼지지 않는 불','불꽃','데일리 연속 수치 7 달성','이후 7마다 코인']];
+const sources=import.meta.glob('../../../../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
+const svg=(id)=>String(sources[`../../../../../public/icons/achievement-preview/${id}.svg`]);
+---
+<PageLayout title="기본 미션 아이콘 시안" subtitle="첫걸음 · 퍼즐 수집가 · 꺼지지 않는 불">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="icon-comparison" aria-label="입문·일반·데일리 미션 아이콘 비교">
+    <div class="icon-grid">{icons.map(([id,name,label,condition,reward])=><article>
+      <span class="big" aria-hidden="true"><Fragment set:html={svg(id)} /></span>
+      <h2>{name}</h2><span class="milestone">{condition}</span><span class="icon-label">{label}</span>
+      <span class="nickname"><NicknameBadge icon={id} label={label}/></span><span class="reward">{reward}</span>
+    </article>)}</div>
+    <p>위는 56px 확대, 이름 옆은 실제 표시 크기인 18px입니다.<br />이름 옆 아이콘은 기존 크기와 비율을 유지하고 공통 정렬을 적용했습니다.</p>
+    <p class="credit">아이콘: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
+  </section>
+</PageLayout>
+<style>
+.icon-comparison{width:100%;color:#444}
+.icon-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+article{display:flex;flex-direction:column;align-items:center;gap:18px;padding:30px 6px 24px;border:1px solid #e8e5df;border-radius:4px;background:white}
+.milestone{color:#999;font-size:.68rem;text-align:center;line-height:1.7;word-break:keep-all;min-height:2.3rem}
+.icon-label{font-size:.64rem;color:#aaa}.reward{font-size:.62rem;color:#999;text-align:center;line-height:1.7;word-break:keep-all}
+h2{display:flex;align-items:center;justify-content:center;min-height:2.8rem;font-size:.84rem;font-weight:500;margin:0;text-align:center;word-break:keep-all;line-height:1.6}
+.big{display:block;width:56px;height:56px}
+.big :global(svg){display:block;width:100%;height:100%}
+.nickname{display:flex;align-items:center;gap:4px;font-size:.8rem;white-space:nowrap}
+p{margin:18px 0 0;font-size:.71rem;line-height:1.8;color:#999}
+.credit{font-size:.63rem;margin-top:10px}.credit a{color:inherit}
+@media(max-width:380px){h2{font-size:.76rem}.nickname{font-size:.72rem}article{padding:24px 4px 20px}.icon-grid{gap:5px}}
+</style>
