@@ -25,11 +25,10 @@ export function conflicts(values) {
     }
     if (new Set(numbers.filter(Boolean)).size>3) mark(numbers.flatMap((n,i)=>n?[i]:[]));
     for (const cage of board.cages) {
-      const filled=cage.cells.filter(i=>numbers[i]);
-      const sum=filled.reduce((total,i)=>total+numbers[i],0);
-      if (new Set(filled.map(i=>numbers[i])).size!==filled.length
-        || sum>cage.sum || (filled.length===cage.cells.length && sum!==cage.sum)
-        || (filled.length<cage.cells.length && sum>=cage.sum)) mark(cage.cells);
+      if (!cage.cells.every(i=>numbers[i])) continue;
+      const sum=cage.cells.reduce((total,i)=>total+numbers[i],0);
+      if (new Set(cage.cells.map(i=>numbers[i])).size!==cage.cells.length
+        || sum!==cage.sum) mark(cage.cells);
     }
     const sum=board.arrow.reduce((total,i)=>total+numbers[i],0);
     const full=board.arrow.every(i=>numbers[i]);
