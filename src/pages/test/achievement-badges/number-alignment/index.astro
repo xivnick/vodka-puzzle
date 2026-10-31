@@ -7,7 +7,7 @@ const icons=[['number-123','숫자'],['star','별'],['temperature','온도계'],
 <PageLayout title="아이콘 공통 정렬 비교" subtitle="실제 글자 높이와 SVG 그림 영역을 기준으로 자동 정렬">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="comparison" aria-label="공통 아이콘 정렬 비교">
-    <p class="intro">숫자만 이동시키는 보정을 없앴습니다. 모든 아이콘에 같은 정렬 방식을 적용했습니다.</p>
+    <p class="intro">모든 아이콘의 기존 크기를 유지하고, 글자와 그림의 중심만 맞췄습니다. 숫자만을 위한 위치 보정은 없습니다.</p>
     <div class="cards">
       <article><h2>기존</h2><p>아이콘 박스끼리 중앙 정렬</p>{[12,14,16].map(size=><div class="sample" style={`font-size:${size}px`}><span class="old-name">퍼즐러 <span class="old-badge" aria-hidden="true"><Fragment set:html={number}/></span></span><span class="size">{size}px</span></div>)}</article>
       <article><h2>공통 정렬</h2><p>실제 글자와 그림 영역으로 계산</p>{[12,14,16].map(size=><div class="sample" style={`font-size:${size}px`}><NicknameBadge icon="number-123"/><span class="size">{size}px</span></div>)}</article>
@@ -16,7 +16,7 @@ const icons=[['number-123','숫자'],['star','별'],['temperature','온도계'],
     <div class="ranking">{icons.map(([icon,label],i)=><div class="row"><span class="rank">{i+1}</span><NicknameBadge name="숫자산책" icon={icon} label={label}/><span class="description">{label}</span></div>)}</div>
     <h2 class="section-title">글꼴·닉네임이 달라져도 같은 기준</h2>
     <div class="ranking">{[['퍼즐러','inherit'],['Puzzle123','inherit'],['별헤는밤','serif'],['Puzzle123','monospace']].map(([name,font])=><div class="row" style={`font-family:${font}`}><NicknameBadge name={name} icon="number-123"/><NicknameBadge name={name} icon="star"/></div>)}</div>
-    <p class="caption">모든 아이콘은 같은 18px 영역 안에서 원래 비율을 유지합니다.<br /><a href="/test/achievement-badges/math-icons-more/">전체 후보에서 보기</a></p>
+    <p class="caption">모든 아이콘은 같은 18px 영역 안에서 원래 비율과 크기를 유지합니다.<br /><a href="/test/achievement-badges/math-icons-more/">전체 후보에서 보기</a></p>
   </section>
 </PageLayout>
 <style>

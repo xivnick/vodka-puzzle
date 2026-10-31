@@ -162,7 +162,7 @@
 
 [NicknameBadge 컴포넌트](../src/components/NicknameBadge.astro)와 [정렬 스크립트](../src/scripts/nickname-badge-alignment.js)를 사용한다. 아이콘별 위치 보정이나 숫자 전용 크기·viewBox 예외를 두지 않는다.
 
-- SVG의 `getBBox()`와 선 두께로 실제 그림 영역을 구하고, 그 중심을 기준으로 정사각형 viewBox를 만든다. 모든 아이콘을 같은 표시 영역에 비율을 유지해 넣는다.
+- SVG의 `getBBox()`와 선 두께로 실제 그림 영역의 중심을 구한다. viewBox의 크기는 원본보다 줄이지 않고 중심만 이동하므로 기존 아이콘을 확대하지 않는다. 모든 아이콘은 같은 표시 영역에 원래 비율로 넣는다.
 - 닉네임과 아이콘 기준점을 같은 글자 베이스라인에 놓는다.
 - 실제 글꼴·크기·닉네임으로 `measureText()`의 `actualBoundingBoxAscent`와 `actualBoundingBoxDescent`를 읽는다. 글자 중심은 베이스라인에서 `(descent - ascent) / 2`이며, 이 위치에 아이콘 그림 중심을 맞춘다.
 - 웹폰트가 로드되거나 글자 크기가 바뀌면 다시 계산한다. 같은 글꼴·문자열의 측정값은 재사용한다.

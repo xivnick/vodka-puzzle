@@ -12,7 +12,10 @@ export function initNicknameBadges() {
     if(!svg.dataset.normalized){
       const bounds=svg.getBBox();
       const stroke=parseFloat(getComputedStyle(svg).strokeWidth)||0;
-      const side=Math.max(bounds.width,bounds.height)+stroke;
+      // Retain the original coordinate scale. Cropping to the ink bounds
+      // would enlarge icons that intentionally contain whitespace.
+      const viewport=svg.viewBox.baseVal;
+      const side=Math.max(viewport.width,viewport.height,bounds.width+stroke,bounds.height+stroke);
       if(side>0){
         svg.setAttribute('viewBox',`${bounds.x+bounds.width/2-side/2} ${bounds.y+bounds.height/2-side/2} ${side} ${side}`);
         svg.setAttribute('preserveAspectRatio','xMidYMid meet');
