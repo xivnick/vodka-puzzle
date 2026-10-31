@@ -59,13 +59,14 @@ while (pending.size) {
       </>)}
       <path d={trackLoops.join(" ")} fill="none" stroke="#888" stroke-width="2" stroke-linejoin="round" />
       <g id="marblePawn" transform="translate(225 25)" aria-hidden="true">
-        <image href="/icons/juru-marble/chess.svg" x="-13" y="-13" width="26" height="26" />
+        <image href="/icons/juru-marble/vodka-shot.png" x="-20" y="-20" width="40" height="40" />
       </g>
       <rect x="1" y="1" width="448" height="448" fill="none" stroke="#555" stroke-width="2" />
     </svg>
     <div class="marble-buttons">
       <button id="marbleLap" type="button">한 바퀴 보기</button>
     </div>
+    <p class="icon-credit"><a href="https://icons8.com/icons/set/vodka-shot">Vodka Shot</a> · <a href="https://icons8.com/">Icons8</a></p>
     <p id="marbleStatus" class="marble-status" role="status">출발 · 0 / 32칸</p>
   </section>
 </PuzzleLayout>
@@ -99,5 +100,7 @@ while (pending.size) {
   .marble-buttons { text-align:center; margin-top:16px; }
   .marble-buttons button { margin:0; padding:0 0 1px; border:0; border-bottom:1px solid #ccc; border-radius:0; background:none; color:#888; font-size:.78rem; }
   .marble-buttons button:disabled { opacity:.5; cursor:default; }
+  .icon-credit { margin:12px 0 0; text-align:center; font-size:.65rem; color:#999; }
+  .icon-credit a { color:inherit; }
   .marble-status { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 </style>
