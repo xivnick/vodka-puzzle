@@ -8,17 +8,39 @@ const perimeter = Array.from({length: 4}, (_, turn) => quarter.map(cell => {
   for (let i = 0; i < turn; i++) [r, c] = [c, 8 - r];
   return [r, c];
 })).flat();
-// Keep only edges facing a non-track cell, forming the two track boundaries.
+// Trace the exposed edges with track cells on their right, then inset both loops.
 const trackCells = new Set(perimeter.map(([r, c]) => `${r},${c}`));
-const trackEdges = perimeter.flatMap(([r, c]) => {
+const edges = perimeter.flatMap(([r, c]) => {
   const x = c * 50, y = r * 50;
   return [
-    {neighbor: [r - 1, c], line: `M${x} ${y}h50`},
-    {neighbor: [r + 1, c], line: `M${x} ${y + 50}h50`},
-    {neighbor: [r, c - 1], line: `M${x} ${y}v50`},
-    {neighbor: [r, c + 1], line: `M${x + 50} ${y}v50`},
-  ].filter(({neighbor}) => !trackCells.has(neighbor.join(','))).map(({line}) => line);
-}).join(' ');
+    {neighbor: [r - 1, c], from: [x, y], to: [x + 50, y]},
+    {neighbor: [r, c + 1], from: [x + 50, y], to: [x + 50, y + 50]},
+    {neighbor: [r + 1, c], from: [x + 50, y + 50], to: [x, y + 50]},
+    {neighbor: [r, c - 1], from: [x, y + 50], to: [x, y]},
+  ].filter(({neighbor}) => !trackCells.has(neighbor.join(',')));
+});
+const pending = new Map(edges.map(edge => [edge.from.join(','), edge]));
+const trackLoops = [];
+const inset = 4;
+while (pending.size) {
+  const first = pending.values().next().value;
+  const vertices = [];
+  let edge = first;
+  do {
+    vertices.push(edge.from);
+    pending.delete(edge.from.join(','));
+    edge = pending.get(edge.to.join(','));
+  } while (edge);
+  const normal = (from, to) => [(from[1] - to[1]) / 50, (to[0] - from[0]) / 50];
+  const points = vertices.map((point, i) => {
+    const prev = normal(vertices[(i + vertices.length - 1) % vertices.length], point);
+    const next = normal(point, vertices[(i + 1) % vertices.length]);
+    const straight = prev[0] === next[0] && prev[1] === next[1];
+    return point.map((n, axis) => n + inset * (straight ? next[axis] : prev[axis] + next[axis]));
+  });
+  trackLoops.push(`M${points.map(point => point.join(',')).join('L')}Z`);
+}
+
 ---
 <PuzzleLayout title="주루마블 스도쿠" subtitle="9×9 스도쿠에 그린 32칸 경로를 따라 말이 한 바퀴 도는 형태" description="주루마블 스도쿠 경로 시안" preview showPreviewCloud={false} showPreviewLeaderboard={false} showLeaderboard={false}>
   <div slot="head"><meta name="robots" content="noindex, nofollow" /></div>
@@ -35,13 +57,9 @@ const trackEdges = perimeter.flatMap(([r, c]) => {
       {Array.from({length: 8}, (_, i) => i + 1).map(i => <>
         <path d={`M${i * 50} 0V450 M0 ${i * 50}H450`} fill="none" stroke={i % 3 === 0 ? '#555' : '#c9ced4'} stroke-width={i % 3 === 0 ? 2 : 1} />
       </>)}
-      <path d={trackEdges} fill="none" stroke="#888" stroke-width="3" stroke-linecap="square" />
+      <path d={trackLoops.join(" ")} fill="none" stroke="#888" stroke-width="2" stroke-linejoin="round" />
       <g id="marblePawn" transform="translate(225 25)" aria-hidden="true">
-        <g transform="scale(.75)" fill="#555" stroke="white" stroke-width="1.5">
-          <circle cy="-7" r="7" />
-          <path d="M-5 0H5L9 11H-9Z" />
-          <rect x="-11" y="10" width="22" height="5" rx="2" />
-        </g>
+        <image href="/icons/juru-marble/chess.svg" x="-13" y="-13" width="26" height="26" />
       </g>
       <rect x="1" y="1" width="448" height="448" fill="none" stroke="#555" stroke-width="2" />
     </svg>
