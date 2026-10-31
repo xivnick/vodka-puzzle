@@ -87,6 +87,7 @@ while (pending.size) {
   #marbleCells { position:relative; display:grid; grid-template-columns:repeat(9,minmax(0,1fr)); width:100%; height:100%; }
   .marble-cell { display:flex; align-items:center; justify-content:center; aspect-ratio:1; padding:0; border:0; border-radius:0; background:transparent; color:#4a6fa5; font-size:clamp(18px,5vw,27px); font-weight:700; line-height:1; touch-action:manipulation; }
   .marble-cell.selected { background:rgba(111,155,208,.16); }
+  .marble-cell.conflict { background:rgba(225,133,133,.15); color:#bc4141; }
   .icon-credit { margin:12px 0 0; text-align:center; font-size:.65rem; color:#999; }
   .icon-credit a { color:inherit; }
   .marble-status { min-height:1.5em; margin:12px 0 0; color:#888; font-size:.78rem; text-align:center; font-variant-numeric:tabular-nums; }

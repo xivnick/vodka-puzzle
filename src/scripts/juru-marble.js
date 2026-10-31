@@ -1,4 +1,4 @@
-import { traceGlasses } from '../lib/juru-marble.js';
+import { traceGlasses, stopConflicts } from '../lib/juru-marble.js';
 
 const path = window.marblePath;
 const cells = document.getElementById('marbleCells');
@@ -9,6 +9,7 @@ let selected = 4;
 
 function render() {
   const { stops, distance } = traceGlasses(path, values);
+  const { bad, reasons } = stopConflicts(path, values, stops);
   const marked = new Set(stops.map(index => {
     const [r, c] = path[index];
     return r * 9 + c;
@@ -27,13 +28,15 @@ function render() {
     const i = Number(cell.dataset.cell);
     cell.textContent = values[i] || '';
     cell.classList.toggle('selected', i === selected);
+    cell.classList.toggle('conflict', bad.has(i));
     cell.tabIndex = i === selected ? 0 : -1;
-    cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${values[i] || '빈칸'}${marked.has(i) ? ', 잔' : ''}`);
+    cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${values[i] || '빈칸'}${marked.has(i) ? ', 잔' : ''}${bad.has(i) ? ', 정차 규칙 위반' : ''}`);
   }
-  status.textContent = distance > 32 ? `출발 칸을 지나쳤습니다 · ${distance} / 32칸`
+  const progress = distance > 32 ? `출발 칸을 지나쳤습니다 · ${distance} / 32칸`
     : distance === 32 ? '출발 칸에 도착했습니다 · 32 / 32칸'
     : distance ? `정차 ${marked.size}칸 · 이동 ${distance} / 32칸`
     : '잔이 있는 칸에 숫자를 입력하면 다음 정차 칸에 잔이 표시됩니다.';
+  status.textContent = [...reasons, progress].join(' · ');
 }
 
 function change(number) {
