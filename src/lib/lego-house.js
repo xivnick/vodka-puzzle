@@ -33,7 +33,7 @@ export function conflicts(values) {
     }
     const sum=board.arrow.reduce((total,i)=>total+numbers[i],0);
     const full=board.arrow.every(i=>numbers[i]);
-    if (numbers[board.bulb] && (full ? sum!==numbers[board.bulb] : sum>=numbers[board.bulb])) mark([board.bulb,...board.arrow]);
+    if (numbers[board.bulb] && full && sum!==numbers[board.bulb]) mark([board.bulb,...board.arrow]);
   });
   return bad;
 }
