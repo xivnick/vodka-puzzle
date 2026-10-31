@@ -1,0 +1,72 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import NumberPad from './NumberPad.astro';
+import '../styles/daily-sudoku.css';
+import { boards, center, arrowDrawing, cagePath } from '../lib/lego-house.js';
+const { puzzleId } = Astro.props;
+---
+<PuzzleLayout title="261031 Lego House" {puzzleId}
+  subtitle="아홉 개의 작은 스도쿠에서 킬러와 화살표의 합을 맞추세요"
+  description="각각 세 종류의 숫자를 사용하는 아홉 개의 3×3 스도쿠">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <div slot="rules">
+    9개의 독립된 3×3 스도쿠입니다.<br />
+    각 스도쿠에는 1~9 중 서로 다른 3개의 숫자만 사용합니다.<br />
+    각 행과 열에는 이 3개의 숫자가 중복 없이 들어갑니다.<br /><br />
+    Killer: 점선 영역의 왼쪽 위 숫자는 그 영역에 들어가는 숫자의 합입니다. 같은 영역 안에서는 숫자가 중복될 수 없습니다.<br /><br />
+    Arrow: 원 안의 숫자는 화살표가 지나가는 칸의 숫자의 합입니다. 다른 규칙에 위배되지 않는다면 화살표 위의 숫자는 중복될 수 있습니다.
+  </div>
+  <div slot="controls">
+    칸을 선택한 뒤 숫자를 입력하세요.<br />
+    메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br />
+    다른 칸을 눌러 이동하고, 지우기로 선택한 칸을 지우세요.
+  </div>
+  <section id="legoGame" data-puzzle-id={puzzleId} data-preview="false" aria-label="Lego House">
+    <div class="sudoku-board-tools"><button id="legoNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <div id="legoBoard" class="lego-boards" role="group" aria-label="3×3으로 배치된 아홉 개의 독립 스도쿠">
+      {boards.map((board,b)=>{
+        const arrow=arrowDrawing(board);
+        return <div class="lego-mini" role="group" aria-label={`${b+1}번 스도쿠`}>
+          {Array.from({length:9},(_,i)=><button class="lego-cell" type="button" data-cell={b*9+i} tabindex={b===0&&i===0?0:-1} aria-label={`${b+1}번 보드, ${Math.floor(i/3)+1}행 ${i%3+1}열, 빈칸`} />)}
+          <svg viewBox="0 0 300 300" aria-hidden="true">
+            <g class="lego-arrow">
+              <polyline points={arrow.line} />
+              <polyline points={arrow.head} />
+              <circle cx={center(board.bulb)[0]} cy={center(board.bulb)[1]} r="34" />
+            </g>
+            {board.cages.map(cage=><g>
+              <path class="lego-cage" d={cagePath(cage.cells)} />
+              <text class="lego-sum" x={cage.cells[0]%3*100+12} y={Math.floor(cage.cells[0]/3)*100+28}>{cage.sum}</text>
+            </g>)}
+          </svg>
+        </div>;
+      })}
+    </div>
+    <NumberPad id="legoNumbers" max={9} />
+    <div class="bottom-buttons">
+      <button id="legoErase" type="button">지우기</button>
+      <button id="legoReset" type="button" class="danger">초기화</button>
+    </div>
+  </section>
+  <PuzzleCompletion slot="completion" id="legoComplete" />
+</PuzzleLayout>
+<script>import '../scripts/lego-house.js';</script>
+<style>
+  #legoGame { width:100%; }
+  .lego-boards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+  .lego-mini { position:relative; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border:2px solid #555; background:white; }
+  .lego-cell { position:relative; aspect-ratio:1; min-width:0; padding:0; border:0; border-right:1px solid #d6d4cd; border-bottom:1px solid #d6d4cd; border-radius:0; background:white; color:#4a6fa5; font-family:inherit; font-weight:700; font-size:clamp(16px,4.8vw,25px); line-height:1; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+  .lego-cell:nth-child(3n) { border-right:0; }
+  .lego-cell:nth-child(n+7) { border-bottom:0; }
+  .lego-cell.selected { background:#e1e9f3; }
+  .lego-cell.conflict { background:#fbeaea; color:#c34242; }
+  .lego-mini svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:1; }
+  .lego-arrow { fill:none; stroke:#999; stroke-width:3; stroke-linejoin:round; stroke-linecap:round; }
+  .lego-cage { fill:none; stroke:#555; stroke-width:1.5; stroke-dasharray:4 3; stroke-linejoin:round; }
+  .lego-sum { fill:#333; stroke:white; stroke-width:3; paint-order:stroke; font-size:20px; font-weight:400; }
+  .lego-cell :global(.entry) { position:relative; z-index:2; text-shadow:0 0 2px white,0 0 3px white; }
+  .lego-cell :global(.notes) { position:absolute; inset:10px 2px 2px; z-index:2; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:repeat(3,minmax(0,1fr)); color:#555; font-size:clamp(6px,1.7vw,9px); line-height:1; }
+  .lego-cell :global(.notes span) { display:flex; align-items:center; justify-content:center; text-shadow:0 0 2px white,0 0 2px white; }
+  @media(max-width:400px) { .lego-boards { gap:6px; } }
+</style>
