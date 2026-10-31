@@ -8,7 +8,17 @@ const perimeter = Array.from({length: 4}, (_, turn) => quarter.map(cell => {
   for (let i = 0; i < turn; i++) [r, c] = [c, 8 - r];
   return [r, c];
 })).flat();
-const points = [...perimeter, perimeter[0]].map(([r, c]) => `${c * 50 + 25},${r * 50 + 25}`).join(' ');
+// Keep only edges facing a non-track cell, forming the two track boundaries.
+const trackCells = new Set(perimeter.map(([r, c]) => `${r},${c}`));
+const trackEdges = perimeter.flatMap(([r, c]) => {
+  const x = c * 50, y = r * 50;
+  return [
+    {neighbor: [r - 1, c], line: `M${x} ${y}h50`},
+    {neighbor: [r + 1, c], line: `M${x} ${y + 50}h50`},
+    {neighbor: [r, c - 1], line: `M${x} ${y}v50`},
+    {neighbor: [r, c + 1], line: `M${x + 50} ${y}v50`},
+  ].filter(({neighbor}) => !trackCells.has(neighbor.join(','))).map(({line}) => line);
+}).join(' ');
 ---
 <PuzzleLayout title="주루마블 스도쿠" subtitle="9×9 스도쿠에 그린 32칸 경로를 따라 말이 한 바퀴 도는 형태" description="주루마블 스도쿠 경로 시안" preview showPreviewCloud={false} showPreviewLeaderboard={false} showLeaderboard={false}>
   <div slot="head"><meta name="robots" content="noindex, nofollow" /></div>
@@ -22,10 +32,10 @@ const points = [...perimeter, perimeter[0]].map(([r, c]) => `${c * 50 + 25},${r 
       <title id="marbleTitle">네 방향으로 꺾이며 32칸을 순환하는 스도쿠 경로</title>
       <desc id="marbleDescription">맨 윗줄 5번째 칸에서 출발합니다. 각 변 가운데에서는 바깥으로 나오고 모서리에서는 안쪽으로 꺾이는 경로를 시계 방향으로 따라 출발 칸으로 돌아옵니다.</desc>
       <rect width="450" height="450" fill="white" />
-      <polyline points={points} fill="none" stroke="#aaa" stroke-width="2" stroke-linejoin="round" />
       {Array.from({length: 8}, (_, i) => i + 1).map(i => <>
         <path d={`M${i * 50} 0V450 M0 ${i * 50}H450`} fill="none" stroke={i % 3 === 0 ? '#555' : '#c9ced4'} stroke-width={i % 3 === 0 ? 2 : 1} />
       </>)}
+      <path d={trackEdges} fill="none" stroke="#888" stroke-width="3" stroke-linecap="square" />
       <g id="marblePawn" transform="translate(225 25)" aria-hidden="true">
         <g transform="scale(.75)" fill="#555" stroke="white" stroke-width="1.5">
           <circle cy="-7" r="7" />
