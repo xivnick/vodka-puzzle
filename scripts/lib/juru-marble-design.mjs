@@ -90,3 +90,32 @@ export function grade(input,{route=true,maxLookahead=3,log=true}={}){
  }
  return {solved:false,board,steps};
 }
+
+export function flowMetrics(givens, steps) {
+ const board=givens.slice(),cs=candidates(board),routes=enumerateRoutes(),routeCells=new Set(),classicStops=[];
+ const supportCount=()=>routes.filter(route=>route.stops.every((p,k)=>(cs[path[p]]&(1<<route.numbers[k]))!==0)).length;
+ const initialWalks=supportCount();
+ let routeCompleteRemaining=null,uniqueWalkRemaining=initialWalks===1?board.filter(n=>!n).length:null;
+ let ordinarySinceRoute=0,seenRoute=false;const ordinaryGaps=[];
+ for(const step of steps){
+  if(step.kind==='route-elimination'){
+   routeCells.add(step.cell);cs[step.cell]&=~(1<<step.value);
+   if(seenRoute&&ordinarySinceRoute)ordinaryGaps.push(ordinarySinceRoute);
+   seenRoute=true;ordinarySinceRoute=0;
+  } else if(step.kind==='locked')step.cells.forEach(i=>cs[i]&=~(1<<step.value));
+  else if(step.kind==='pair'){const mask=step.values.reduce((m,n)=>m|1<<n,0);step.targets.forEach(i=>cs[i]&=~mask);}
+  if(['single','hidden-single'].includes(step.kind)){
+   if(step.cell!==4&&!routeCells.has(step.cell)&&path.includes(step.cell))classicStops.push({cell:step.cell,afterRoute:seenRoute});
+   board[step.cell]=step.value;cs[step.cell]=1<<step.value;
+   for(const j of peers[step.cell])if(!board[j])cs[j]&=~(1<<step.value);
+   ordinarySinceRoute++;
+  }
+  const remaining=board.filter(n=>!n).length;
+  if(uniqueWalkRemaining===null&&supportCount()===1)uniqueWalkRemaining=remaining;
+  if(routeCompleteRemaining===null&&walkPrefix(board).complete)routeCompleteRemaining=remaining;
+ }
+ const finalRoute=routes.find(route=>route.stops.every((p,k)=>board[path[p]]===route.numbers[k]));
+ const actualClassicStops=classicStops.filter(s=>finalRoute?.stops.some(p=>path[p]===s.cell));
+ return {initialWalks,uniqueWalkRemaining,routeCompleteRemaining,ordinaryGaps,routeCells:routeCells.size,
+   classicStops:actualClassicStops.length,classicStopsAfterRoute:actualClassicStops.filter(s=>s.afterRoute).length};
+}
