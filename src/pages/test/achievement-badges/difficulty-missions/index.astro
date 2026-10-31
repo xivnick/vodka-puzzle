@@ -1,0 +1,46 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+import NicknameBadge from '../../../../components/NicknameBadge.astro';
+const missions=[
+ {name:'체리피커',difficulty:'하',icon:'cherry',label:'체리',count:6},
+ {name:'두뇌 회전',difficulty:'중',icon:'brain',label:'두뇌',count:10},
+ {name:'하드코어',difficulty:'상',icon:'skull',label:'해골',count:12},
+];
+const files=import.meta.glob('../../../../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
+const svg=(icon)=>String(files[`../../../../../public/icons/achievement-preview/${icon}.svg`]);
+const names=['퍼즐러','숫자산책','네모왕','별헤는밤','민트초코','연필한자루'];
+---
+<PageLayout title="난이도별 미션 시안" subtitle="체리피커 · 두뇌 회전 · 하드코어">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="difficulty-preview" aria-label="난이도별 미션 3종 비교">
+    <p class="intro">난이도별 일반 문제 10개를 완료하면 아이콘을 받습니다.<br />이후 20·30·40개…를 완료할 때마다 코인을 받습니다.</p>
+    <div class="icon-grid">{missions.map(m=><article class="icon-card">
+      <span class="big" aria-hidden="true"><Fragment set:html={svg(m.icon)}/></span>
+      <h2>{m.name}</h2><p class="condition">난이도 {m.difficulty}<br />10개 완료</p>
+      <span class="nickname"><NicknameBadge icon={m.icon} label={m.label}/></span>
+    </article>)}</div>
+    <h2 class="section-heading">미션 진행 예시<span>가상 기록</span></h2>
+    <div class="missions">{missions.map(m=>{const unlocked=m.count>=10;const target=unlocked?20:10;return <article class="mission-row">
+      <div class="mission-top"><span>{m.name}</span><span class="progress-label">{m.count} / {target}개</span></div>
+      <p>난이도 {m.difficulty} 일반 문제 완료</p>
+      <div class="progress" role="progressbar" aria-label={`${m.name} 진행도`} aria-valuemin="0" aria-valuemax={target} aria-valuenow={m.count}><span style={`width:${m.count/target*100}%`}/></div>
+      <div class="reward"><span>{unlocked?'아이콘 획득 완료':'다음 보상: '+m.label+' 아이콘'}</span><span>{unlocked?'다음 보상: 코인':'10개 달성 시 지급'}</span></div>
+    </article>})}</div>
+    <h2 class="section-heading">이름 옆 실제 크기<span>18px · 공통 정렬</span></h2>
+    <div class="ranking">{names.map((name,i)=>{const m=missions[i%3];return <div class="rank-row"><span class="rank">{i+1}</span><NicknameBadge name={name} icon={m.icon} label={m.label}/><span class="mission-name">{m.name}</span></div>})}</div>
+    <p class="caption">확대 아이콘은 48px입니다. 닉네임 옆 아이콘은 원래 비율과 크기를 유지하고, 글자와 그림의 중심을 기준으로 공통 정렬합니다. 진행도는 비교용 예시입니다.</p>
+    <p class="credit">아이콘: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
+  </section>
+</PageLayout>
+<style>
+.difficulty-preview{width:100%;color:#444}.intro{margin:0 0 20px;font-size:.75rem;line-height:1.8;color:#888}
+.icon-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.icon-card{display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 6px 22px;border:1px solid #e8e5df;border-radius:4px;background:white}
+.big{display:block;width:48px;height:48px}.big :global(svg){display:block;width:100%;height:100%}
+h2{margin:0;font-size:.84rem;font-weight:500}.condition{margin:0;color:#999;font-size:.68rem;line-height:1.7;text-align:center}.nickname{font-size:.8rem;line-height:1.5}
+.section-heading{display:flex;justify-content:space-between;align-items:center;margin:28px 0 12px;font-size:.8rem;color:#555}.section-heading>span{font-size:.64rem;color:#aaa;font-weight:400}
+.missions{display:flex;flex-direction:column;gap:8px}.mission-row{border:1px solid #e8e5df;border-radius:4px;padding:15px 16px}.mission-top{display:flex;justify-content:space-between;gap:8px;font-size:.78rem}.progress-label{color:#888;font-size:.7rem}.mission-row p{margin:7px 0 12px;font-size:.68rem;color:#999}
+.progress{height:4px;background:#eeece7;border-radius:2px;overflow:hidden}.progress>span{display:block;height:100%;background:#938b7d}.reward{display:flex;justify-content:space-between;gap:8px;margin-top:10px;color:#999;font-size:.64rem}
+.rank-row{display:flex;align-items:center;gap:14px;padding:13px 8px;border-bottom:1px solid #eee;font-size:.84rem;line-height:1.5}.rank{width:14px;font-size:.7rem;text-align:center;color:#aaa}.mission-name{margin-left:auto;font-size:.66rem;color:#aaa}
+.caption{font-size:.68rem;color:#999;line-height:1.8;margin-top:18px}.credit{font-size:.63rem;color:#aaa;margin:10px 0 0}.credit a{color:inherit}
+@media(max-width:360px){.icon-grid{gap:5px}.icon-card{padding:22px 4px 18px}.icon-card h2{font-size:.76rem}.nickname{font-size:.72rem}}
+</style>

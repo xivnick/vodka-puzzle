@@ -10,3 +10,5 @@ Challenge preview adds `calendar-check`, `history`, `temperature`, `bomb`, `wind
 Math badge alternatives add `sum`, `square-root`, `math`, `math-symbols`, `equal`, and `abacus` from the same pinned Tabler Icons v3.40.0 outline set. SVG geometry is unchanged.
 
 Additional formula achievement candidates use `brain`, `bulb`, `pencil`, `writing`, `school`, `flask`, `atom`, `number-123`, `function`, and `variable` from the same pinned Tabler Icons v3.40.0 outline set, unchanged.
+
+Difficulty mission candidates add `cherry` and `skull` from the same pinned Tabler Icons v3.40.0 outline set, unchanged; `brain` reuses the existing candidate asset.
