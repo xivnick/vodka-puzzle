@@ -2,7 +2,7 @@
 import PageLayout from '../../../../layouts/PageLayout.astro';
 const icons=[['brain','두뇌','생각하고 푸는 즐거움'],['bulb','전구','해답이 떠오르는 순간'],['pencil','연필','직접 풀어낸 흔적'],['writing','풀이 노트','수식을 적는 모습'],['school','학사모','수식 풀이 숙련'],['flask','플라스크','여러 방법을 실험'],['atom','원자','수학·과학의 상징'],['number-123','숫자 123','숫자 자체를 강조'],['function','함수','수식의 상징'],['variable','변수','미지수를 찾는 느낌']];
 const sources=import.meta.glob('../../../../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
-const svg=(id)=>String(sources[`../../../../../public/icons/achievement-preview/${id}.svg`]);
+const svg=(id,compact=false)=>{const source=String(sources[`../../../../../public/icons/achievement-preview/${id}.svg`]);return compact&&id==='number-123'?source.replace('viewBox="0 0 24 24"','viewBox="0 5 24 14"'):source;};
 ---
 <PageLayout title="수식완성 추가 아이콘" subtitle="새 후보 10개 · 확대와 실제 크기 비교">
   <meta slot="head" name="robots" content="noindex, nofollow" />
@@ -10,9 +10,9 @@ const svg=(id)=>String(sources[`../../../../../public/icons/achievement-preview/
     <div class="icon-grid">{icons.map(([id,label,description])=><article>
       <span class="big" aria-hidden="true"><Fragment set:html={svg(id)} /></span>
       <h2>{label}</h2><span class="description">{description}</span>
-      <span class="nickname">퍼즐러 <span class="small" role="img" aria-label={label}><Fragment set:html={svg(id)} /></span></span>
+      <span class="nickname">퍼즐러 <span class:list={["small",{"number-badge":id==='number-123'}]} role="img" aria-label={label}><Fragment set:html={svg(id,true)} /></span></span>
     </article>)}</div>
-    <p>위는 56px 확대, 이름 옆은 실제 표시 크기인 18px입니다.<br /><a href="/test/achievement-badges/math-icons/">이전 수학 기호 후보 6종 보기</a></p>
+    <p>위는 56px 확대, 이름 옆은 실제 표시 크기인 18px입니다.<br /><a href="/test/achievement-badges/number-alignment/">숫자 123의 크기·정렬 조정 비교</a><br /><a href="/test/achievement-badges/math-icons/">이전 수학 기호 후보 6종 보기</a></p>
     <p class="credit">아이콘: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
   </section>
 </PageLayout>
@@ -23,7 +23,8 @@ article{display:flex;flex-direction:column;align-items:center;gap:16px;padding:2
 .description{color:#999;font-size:.62rem;line-height:1.6;text-align:center;word-break:keep-all;min-height:2em}
 h2{font-size:.84rem;font-weight:500;margin:0}
 .big{display:block;width:56px;height:56px}
-.small{display:block;width:18px;height:18px}
+.small{display:block;flex:0 0 auto;width:18px;height:18px}
+.number-badge{width:26px}
 .big :global(svg),.small :global(svg){display:block;width:100%;height:100%}
 .nickname{display:flex;align-items:center;gap:4px;font-size:.8rem;white-space:nowrap}
 p{margin:18px 0 0;font-size:.71rem;line-height:1.8;color:#999}
