@@ -8,6 +8,13 @@ const perimeter = Array.from({length: 4}, (_, turn) => quarter.map(cell => {
   for (let i = 0; i < turn; i++) [r, c] = [c, 8 - r];
   return [r, c];
 })).flat();
+const example = [
+  {index: 0, value: 3},
+  {index: 3, value: 5},
+  {index: 8, value: 7},
+  {index: 15, value: 8},
+  {index: 23, value: 9},
+];
 // Trace the exposed edges with track cells on their right, then inset both loops.
 const trackCells = new Set(perimeter.map(([r, c]) => `${r},${c}`));
 const edges = perimeter.flatMap(([r, c]) => {
@@ -42,12 +49,13 @@ while (pending.size) {
 }
 
 ---
-<PuzzleLayout title="주루마블 스도쿠" subtitle="9×9 스도쿠에 그린 32칸 경로를 따라 말이 한 바퀴 도는 형태" description="주루마블 스도쿠 경로 시안" preview showPreviewCloud={false} showPreviewLeaderboard={false} showLeaderboard={false}>
+<PuzzleLayout title="주루마블 스도쿠" subtitle="칸의 숫자만큼 전진하며, 정차 칸의 행·열·상자와 숫자가 겹치지 않는 스도쿠" description="주루마블 스도쿠 경로 시안" preview showPreviewCloud={false} showPreviewLeaderboard={false} showLeaderboard={false}>
   <div slot="head"><meta name="robots" content="noindex, nofollow" /></div>
   <div slot="rules">
     기본 스도쿠는 각 가로줄, 세로줄, 3×3 영역에 1부터 9까지의 숫자를 한 번씩 채웁니다.<br />
-    각 3×3 구역의 칸을 위에서부터 123 / 456 / 789로 볼 때, 좌상단의 8→5→6과 상단 가운데의 4→1→2→3→6을 연결하고 네 방향으로 반복해 32칸 경로를 만들었습니다. 말은 맨 윗줄 가운데에서 출발해 시계 방향으로 한 바퀴 돕니다.<br />
-    숫자에 따른 이동 방법과 추가 규칙은 아직 정하지 않았습니다.
+    잔은 현재 칸의 숫자만큼 경로를 따라 시계 방향으로 전진하고, 정확히 한 바퀴를 돌아 출발 칸에 도착합니다.<br />
+    출발 칸과 중간에 멈춘 칸은 서로 같은 행, 열, 3×3 상자에 있을 수 없으며 숫자도 모두 달라야 합니다. 마지막에 돌아온 출발 칸은 한 번만 셉니다.<br />
+    이 예시는 정차하는 다섯 칸의 숫자만 표시합니다.
   </div>
   <section class="marble-preview" aria-label="주루마블 경로 시안">
     <svg class="marble-board" viewBox="0 0 450 450" role="img" aria-labelledby="marbleTitle marbleDescription">
@@ -58,19 +66,24 @@ while (pending.size) {
         <path d={`M${i * 50} 0V450 M0 ${i * 50}H450`} fill="none" stroke={i % 3 === 0 ? '#555' : '#c9ced4'} stroke-width={i % 3 === 0 ? 2 : 1} />
       </>)}
       <path d={trackLoops.join(" ")} fill="none" stroke="#888" stroke-width="2" stroke-linejoin="round" />
-      <g id="marblePawn" transform="translate(225 25)" aria-hidden="true">
-        <image href="/icons/juru-marble/vodka-shot.png" x="-20" y="-20" width="40" height="40" />
+      {example.map(({index, value}) => {
+        const [r, c] = perimeter[index];
+        return <text x={c * 50 + 17} y={r * 50 + 26} text-anchor="middle" dominant-baseline="middle" font-size="23" fill="#333">{value}</text>;
+      })}
+      <g id="marblePawn" transform="translate(235 25)" aria-hidden="true">
+        <image href="/icons/juru-marble/vodka-shot.png" x="-15" y="-15" width="30" height="30" />
       </g>
       <rect x="1" y="1" width="448" height="448" fill="none" stroke="#555" stroke-width="2" />
     </svg>
+    <p class="example-sequence">3 → 5 → 7 → 8 → 9 · 합계 32</p>
     <div class="marble-buttons">
       <button id="marbleLap" type="button">한 바퀴 보기</button>
     </div>
+    <p id="marbleStatus" class="marble-status" role="status">출발 · 3칸 전진</p>
     <p class="icon-credit"><a href="https://icons8.com/icons/set/vodka-shot">Vodka Shot</a> · <a href="https://icons8.com/">Icons8</a></p>
-    <p id="marbleStatus" class="marble-status" role="status">출발 · 0 / 32칸</p>
   </section>
 </PuzzleLayout>
-<script define:vars={{perimeter}}>
+<script define:vars={{perimeter, example}}>
   const pawn = document.getElementById('marblePawn');
   const status = document.getElementById('marbleStatus');
   const lap = document.getElementById('marbleLap');
@@ -78,19 +91,22 @@ while (pending.size) {
   let timer;
   function render() {
     const [r, c] = perimeter[moved % 32];
-    pawn.setAttribute('transform', `translate(${c * 50 + 25} ${r * 50 + 25})`);
-    status.textContent = moved === 0 ? '출발 · 0 / 32칸' : moved === 32 ? '한 바퀴 완료 · 32 / 32칸' : `이동 중 · ${moved} / 32칸`;
+    pawn.setAttribute('transform', `translate(${c * 50 + 35} ${r * 50 + 25})`);
+    const landed = example.find(({index}) => index === moved);
+    status.textContent = moved === 32 ? '한 바퀴 완료 · 32 / 32칸' : landed ? `${moved === 0 ? '출발' : `${moved} / 32칸 도착`} · ${landed.value}칸 전진` : `이동 중 · ${moved} / 32칸`;
     lap.disabled = Boolean(timer);
   }
-  function stop() { clearInterval(timer); timer = undefined; }
+  function stop() { clearTimeout(timer); timer = undefined; }
+  function advance() {
+    moved += 1;
+    if (moved === 32) stop();
+    else timer = setTimeout(advance, example.some(({index}) => index === moved) ? 1000 : 160);
+    render();
+  }
   lap.addEventListener('click', () => {
     stop();
     moved = 0;
-    timer = setInterval(() => {
-      moved += 1;
-      if (moved === 32) stop();
-      render();
-    }, 220);
+    timer = setTimeout(advance, 1000);
     render();
   });
   window.addEventListener('pagehide', stop);
@@ -102,5 +118,6 @@ while (pending.size) {
   .marble-buttons button:disabled { opacity:.5; cursor:default; }
   .icon-credit { margin:12px 0 0; text-align:center; font-size:.65rem; color:#999; }
   .icon-credit a { color:inherit; }
-  .marble-status { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  .example-sequence { margin:14px 0 0; color:#555; font-size:.82rem; text-align:center; }
+  .marble-status { min-height:1.5em; margin:12px 0 0; color:#888; font-size:.78rem; text-align:center; font-variant-numeric:tabular-nums; }
 </style>
