@@ -1,21 +1,22 @@
 ---
 import PageLayout from '../../../../layouts/PageLayout.astro';
+import NicknameBadge from '../../../../components/NicknameBadge.astro';
 import number from '../../../../../public/icons/achievement-preview/number-123.svg?raw';
-import star from '../../../../../public/icons/achievement-preview/star.svg?raw';
-const adjusted=number.replace('viewBox="0 0 24 24"','viewBox="0 5 24 14"');
-const versions=[['before','기존','18 × 18px · 원본 여백',number],['after','조정','20 × 18px · 아래로 1.5px',adjusted]];
+const icons=[['number-123','숫자'],['star','별'],['temperature','온도계'],['calculator','계산기'],['moon','달'],['pencil','연필']];
 ---
-<PageLayout title="숫자 아이콘 크기·정렬" subtitle="같은 숫자 모양으로 여백과 표시 크기만 조정">
+<PageLayout title="아이콘 공통 정렬 비교" subtitle="실제 글자 높이와 SVG 그림 영역을 기준으로 자동 정렬">
   <meta slot="head" name="robots" content="noindex, nofollow" />
-  <section class="comparison" aria-label="숫자 아이콘 조정 전후 비교">
-    <p class="intro">숫자의 폭과 비율은 유지하고, 위치만 1.5px 아래로 내렸습니다. 닉네임 글자의 실제 높이를 기준으로 비교했습니다.</p>
-    <div class="cards">{versions.map(([id,label,description,svg])=><article>
-      <h2>{label}</h2><p>{description}</p>
-      {[12,14,16].map(size=><div class="sample" style={`font-size:${size}px`}><span>퍼즐러</span><span class:list={['badge',id]} aria-hidden="true"><Fragment set:html={svg}/></span><span class="size">{size}px</span></div>)}
-    </article>)}</div>
-    <h2 class="section-title">다른 아이콘과 같은 줄에서 비교</h2>
-    <div class="ranking">{['퍼즐러','네모왕','숫자산책','연필한자루','민트초코','별헤는밤'].map((name,i)=><div class="row"><span class="rank">{i+1}</span><span class="nickname">{name}<span class:list={['badge',i%2===0?'after':'before']} aria-hidden="true"><Fragment set:html={i%2===0?adjusted:star}/></span></span><span class="description">{i%2===0?'조정한 숫자':'기존 별'}</span></div>)}</div>
-    <p class="caption">아이콘을 가로·세로로 다르게 늘리지 않았습니다. 별은 폭 18px, 숫자는 폭 20px이며 표시 영역의 높이는 모두 18px입니다.<br /><a href="/test/achievement-badges/math-icons-more/">전체 후보에서 보기</a></p>
+  <section class="comparison" aria-label="공통 아이콘 정렬 비교">
+    <p class="intro">숫자만 이동시키는 보정을 없앴습니다. 모든 아이콘에 같은 정렬 방식을 적용했습니다.</p>
+    <div class="cards">
+      <article><h2>기존</h2><p>아이콘 박스끼리 중앙 정렬</p>{[12,14,16].map(size=><div class="sample" style={`font-size:${size}px`}><span class="old-name">퍼즐러 <span class="old-badge" aria-hidden="true"><Fragment set:html={number}/></span></span><span class="size">{size}px</span></div>)}</article>
+      <article><h2>공통 정렬</h2><p>실제 글자와 그림 영역으로 계산</p>{[12,14,16].map(size=><div class="sample" style={`font-size:${size}px`}><NicknameBadge icon="number-123"/><span class="size">{size}px</span></div>)}</article>
+    </div>
+    <h2 class="section-title">아이콘별 비교</h2>
+    <div class="ranking">{icons.map(([icon,label],i)=><div class="row"><span class="rank">{i+1}</span><NicknameBadge name="숫자산책" icon={icon} label={label}/><span class="description">{label}</span></div>)}</div>
+    <h2 class="section-title">글꼴·닉네임이 달라져도 같은 기준</h2>
+    <div class="ranking">{[['퍼즐러','inherit'],['Puzzle123','inherit'],['별헤는밤','serif'],['Puzzle123','monospace']].map(([name,font])=><div class="row" style={`font-family:${font}`}><NicknameBadge name={name} icon="number-123"/><NicknameBadge name={name} icon="star"/></div>)}</div>
+    <p class="caption">모든 아이콘은 같은 18px 영역 안에서 원래 비율을 유지합니다.<br /><a href="/test/achievement-badges/math-icons-more/">전체 후보에서 보기</a></p>
   </section>
 </PageLayout>
 <style>
@@ -24,9 +25,9 @@ const versions=[['before','기존','18 × 18px · 원본 여백',number],['after
 article{padding:20px 12px;border:1px solid #e8e5df;border-radius:4px}
 h2{margin:0;font-size:.84rem;font-weight:500}article p{margin:8px 0 24px;font-size:.62rem;color:#999;line-height:1.7}
 .sample{display:flex;align-items:center;gap:4px;margin:22px 0;line-height:1.5;white-space:nowrap}
-.badge{display:block;flex:0 0 auto;height:18px}.before{width:18px}.after{width:20px;transform:translateY(1.5px)}.badge :global(svg){display:block;width:100%;height:100%}
-.size{margin-left:auto;font-size:10px;color:#aaa}.section-title{margin:28px 0 12px}.row{display:flex;align-items:center;gap:14px;padding:14px 8px;border-bottom:1px solid #eee;font-size:.84rem}
-.rank{font-size:.72rem;color:#aaa;width:14px;text-align:center}.nickname{display:flex;align-items:center;gap:4px;line-height:1.5}.description{margin-left:auto;font-size:.65rem;color:#aaa}
+.old-name{display:inline-flex;align-items:center;gap:4px}.old-badge{display:block;width:18px;height:18px}.old-badge :global(svg){display:block;width:100%;height:100%}
+.size{margin-left:auto;font-size:10px;color:#aaa}.section-title{margin:28px 0 12px}.row{display:flex;align-items:center;gap:14px;padding:14px 8px;border-bottom:1px solid #eee;font-size:.84rem;line-height:1.5}
+.rank{font-size:.72rem;color:#aaa;width:14px;text-align:center}.description{margin-left:auto;font-size:.65rem;color:#aaa}
 .caption{font-size:.68rem;color:#999;line-height:1.8;margin-top:20px}.caption a{color:inherit}
 @media(max-width:360px){article{padding:18px 8px}.size{display:none}}
 </style>

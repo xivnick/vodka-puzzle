@@ -1,5 +1,6 @@
 ---
 import PageLayout from '../../../../layouts/PageLayout.astro';
+import NicknameBadge from '../../../../components/NicknameBadge.astro';
 const icons=[['sum','시그마','합계·계산을 상징'],['square-root','루트','단순한 수학 기호'],['math','루트와 곱셈','수식의 느낌을 강조'],['math-symbols','사칙연산','연산 기호를 모은 형태'],['equal','등호','가장 간결한 표현'],['abacus','주판','계산 도구를 상징'],['calculator','기존 계산기','비교용']];
 const sources=import.meta.glob('../../../../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
 const svg=(id)=>String(sources[`../../../../../public/icons/achievement-preview/${id}.svg`]);
@@ -10,7 +11,7 @@ const svg=(id)=>String(sources[`../../../../../public/icons/achievement-preview/
     <div class="icon-grid">{icons.map(([id,label,description])=><article>
       <span class="big" aria-hidden="true"><Fragment set:html={svg(id)} /></span>
       <h2>{label}</h2><span class="description">{description}</span>
-      <span class="nickname">퍼즐러 <span class="small" role="img" aria-label={label}><Fragment set:html={svg(id)} /></span></span>
+      <span class="nickname"><NicknameBadge icon={id} label={label}/></span>
     </article>)}</div>
     <p>위는 56px 확대, 이름 옆은 실제 표시 크기인 18px입니다.<br />시그마는 계산의 의미가 명확하고, 루트는 작은 크기에서도 모양이 단순합니다.</p>
     <p class="credit">아이콘: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
@@ -26,8 +27,7 @@ article:last-child .big{width:32px;height:32px}
 article:last-child .description{min-height:0}
 h2{font-size:.84rem;font-weight:500;margin:0}
 .big{display:block;width:56px;height:56px}
-.small{display:block;width:18px;height:18px}
-.big :global(svg),.small :global(svg){display:block;width:100%;height:100%}
+.big :global(svg){display:block;width:100%;height:100%}
 .nickname{display:flex;align-items:center;gap:4px;font-size:.8rem;white-space:nowrap}
 p{margin:18px 0 0;font-size:.71rem;line-height:1.8;color:#999}
 .credit{font-size:.63rem;margin-top:10px}.credit a{color:inherit}
