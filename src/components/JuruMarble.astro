@@ -1,0 +1,99 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import NumberPad from './NumberPad.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import { marblePath } from '../lib/juru-marble.js';
+const { puzzleId = '', givens = Array(81).fill(0), preview = false } = Astro.props;
+
+const perimeter = marblePath;
+// Trace the exposed edges with track cells on their right, then inset both loops.
+const trackCells = new Set(perimeter.map(([r, c]) => `${r},${c}`));
+const edges = perimeter.flatMap(([r, c]) => {
+  const x = c * 50, y = r * 50;
+  return [
+    {neighbor: [r - 1, c], from: [x, y], to: [x + 50, y]},
+    {neighbor: [r, c + 1], from: [x + 50, y], to: [x + 50, y + 50]},
+    {neighbor: [r + 1, c], from: [x + 50, y + 50], to: [x, y + 50]},
+    {neighbor: [r, c - 1], from: [x, y + 50], to: [x, y]},
+  ].filter(({neighbor}) => !trackCells.has(neighbor.join(',')));
+});
+const pending = new Map(edges.map(edge => [edge.from.join(','), edge]));
+const trackLoops = [];
+const inset = 4;
+while (pending.size) {
+  const first = pending.values().next().value;
+  const vertices = [];
+  let edge = first;
+  do {
+    vertices.push(edge.from);
+    pending.delete(edge.from.join(','));
+    edge = pending.get(edge.to.join(','));
+  } while (edge);
+  const normal = (from, to) => [(from[1] - to[1]) / 50, (to[0] - from[0]) / 50];
+  const points = vertices.map((point, i) => {
+    const prev = normal(vertices[(i + vertices.length - 1) % vertices.length], point);
+    const next = normal(point, vertices[(i + 1) % vertices.length]);
+    const straight = prev[0] === next[0] && prev[1] === next[1];
+    return point.map((n, axis) => n + inset * (straight ? next[axis] : prev[axis] + next[axis]));
+  });
+  trackLoops.push(`M${points.map(point => point.join(',')).join('L')}Z`);
+}
+
+---
+<PuzzleLayout title="주루마블 스도쿠" subtitle="칸의 숫자만큼 전진하며, 정차 칸의 행·열·상자와 숫자가 겹치지 않는 스도쿠" description="숫자와 정차 위치의 중복을 피하며 한 바퀴 도는 스도쿠" {puzzleId} preview={preview} showCloud={false} showPreviewCloud={false} showPreviewLeaderboard={false} showLeaderboard={false}>
+  <div slot="head"><meta name="robots" content="noindex, nofollow" /></div>
+  <div slot="rules">
+    기본 스도쿠는 각 가로줄, 세로줄, 3×3 영역에 1부터 9까지의 숫자를 한 번씩 채웁니다.<br />
+    잔은 맨 윗줄 가운데 칸에서 출발합니다. 현재 칸의 숫자만큼 경로를 따라 시계 방향으로 전진하고, 정확히 한 바퀴를 돌아 출발 칸에 도착합니다.<br />
+    출발 칸과 중간에 멈춘 칸은 서로 같은 행, 열, 3×3 상자에 있을 수 없으며 숫자도 모두 달라야 합니다. 마지막에 돌아온 출발 칸은 한 번만 셉니다.<br />
+    지나가기만 하는 칸에는 정차 조건을 적용하지 않습니다.
+  </div>
+  <div slot="controls">칸을 선택하고 숫자 버튼으로 입력하세요.<br />메모하기 버튼이나 M으로 메모 입력을 켜고 끄세요.<br />지우기로 숫자나 메모를 지울 수 있습니다.</div>
+  <section id="marbleGame" class="marble-preview" aria-label="주루마블 스도쿠">
+    <div class="marble-board-tools"><button id="marbleNotes" type="button" aria-pressed="false">메모하기</button></div>
+    <div class="marble-board">
+    <svg viewBox="0 0 450 450" role="img" aria-labelledby="marbleTitle marbleDescription">
+      <title id="marbleTitle">네 방향으로 꺾이며 32칸을 순환하는 스도쿠 경로</title>
+      <desc id="marbleDescription">맨 윗줄 5번째 칸에서 출발합니다. 각 변 가운데에서는 바깥으로 나오고 모서리에서는 안쪽으로 꺾이는 경로를 시계 방향으로 따라 출발 칸으로 돌아옵니다.</desc>
+      <rect width="450" height="450" fill="white" />
+      {Array.from({length: 8}, (_, i) => i + 1).map(i => <>
+        <path d={`M${i * 50} 0V450 M0 ${i * 50}H450`} fill="none" stroke={i % 3 === 0 ? '#555' : '#c9ced4'} stroke-width={i % 3 === 0 ? 2 : 1} />
+      </>)}
+      <path d={trackLoops.join(" ")} fill="none" stroke="#888" stroke-width="2" stroke-linejoin="round" />
+      <g id="marbleGlasses" opacity=".2" aria-hidden="true">
+        <image href="/icons/juru-marble/vodka-shot.png" x="205" y="5" width="40" height="40" />
+      </g>
+      <rect x="1" y="1" width="448" height="448" fill="none" stroke="#555" stroke-width="2" />
+    </svg>
+    <div id="marbleCells" role="group" aria-label="9행 9열 스도쿠 입력">
+      {Array.from({length: 81}, (_, i) => <button type="button" class:list={['marble-cell', {given: !!givens[i]}]} data-cell={i} tabindex={i === 4 ? 0 : -1} aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${givens[i] || '빈칸'}${givens[i] ? ', 고정 숫자' : ''}${i === 4 ? ', 잔' : ''}`}>{givens[i] || ''}</button>)}
+    </div>
+    </div>
+    <NumberPad id="marbleNumbers" max={9} />
+    <div class="bottom-buttons"><button id="marbleErase" type="button">지우기</button>{!preview && <button id="marbleReset" type="button" class="danger">초기화</button>}</div>
+    <p id="marbleStatus" class="marble-status" role="status">잔이 있는 칸에 숫자를 입력하면 다음 정차 칸에 잔이 표시됩니다.</p>
+    <p class="icon-credit"><a href="https://icons8.com/icons/set/vodka-shot">Vodka Shot</a> · <a href="https://icons8.com/">Icons8</a></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="marbleComplete" />
+</PuzzleLayout>
+<script define:vars={{perimeter, givens, puzzleId, preview}}>
+  window.marbleConfig = { path: perimeter, givens, puzzleId, preview };
+</script>
+<script>import '../scripts/juru-marble.js';</script>
+<style>
+  .marble-board { position:relative; width:100%; aspect-ratio:1; }
+  .marble-board svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  #marbleCells { position:relative; display:grid; grid-template-columns:repeat(9,minmax(0,1fr)); width:100%; height:100%; }
+  .marble-cell { position:relative; display:flex; align-items:center; justify-content:center; aspect-ratio:1; padding:0; border:0; border-radius:0; background:transparent; color:#4a6fa5; font-size:clamp(18px,5vw,27px); font-weight:700; line-height:1; touch-action:manipulation; }
+  .marble-cell.given { color:#333; }
+  .marble-board-tools { display:flex; justify-content:flex-end; margin-bottom:8px; }
+  #marbleNotes { margin:0; padding:0 0 1px; border:0; border-bottom:1px solid #ccc; border-radius:0; background:none; color:#888; font-size:.82rem; }
+  #marbleNotes[aria-pressed=true] { color:#4a6fa5; border-color:#4a6fa5; }
+  .marble-cell :global(.notes) { position:absolute; inset:3px; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); color:#606975; font-size:clamp(9px,2.4vw,13px); font-weight:500; }
+  .marble-cell :global(.notes span) { display:flex; align-items:center; justify-content:center; }
+  .marble-cell.selected { background:rgba(111,155,208,.16); }
+  .marble-cell.conflict { background:rgba(225,133,133,.15); color:#bc4141; }
+  .icon-credit { margin:12px 0 0; text-align:center; font-size:.65rem; color:#999; }
+  .icon-credit a { color:inherit; }
+  .marble-status { min-height:1.5em; margin:12px 0 0; color:#888; font-size:.78rem; text-align:center; font-variant-numeric:tabular-nums; }
+</style>
