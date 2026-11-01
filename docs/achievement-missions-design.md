@@ -58,6 +58,8 @@
 
 ## 확인용 페이지
 
+- [전체 미션 정리](https://puzzle.xivnick.me/test/achievement-badges/mission-overview/): 기본 6개·퍼스트 블러드 1개·문제 묶음 4개·특수문제 5개·전체 완료 1개를 모은 종합 예시. 이름·후속 보상 등 미정 항목은 별도로 표시한다. 공개 문제 목록 스냅샷은 `src/data/achievement-missions-preview.json`에 있다.
+
 - [Spiral Galaxies 아이콘 비교](https://puzzle.xivnick.me/test/achievement-badges/galaxy-icons/): 나선 은하를 보상 아이콘으로 확정.
 - [특수 미션 5종](https://puzzle.xivnick.me/test/achievement-badges/special-missions/): 각 지정 문제 완료 시 해당 아이콘 1회 지급.
 - [첫걸음·퍼즐 수집가·꺼지지 않는 불](https://puzzle.xivnick.me/test/achievement-badges/basic-missions/): 이름과 아이콘 확정. 카드 디자인은 최종안이 아니다.

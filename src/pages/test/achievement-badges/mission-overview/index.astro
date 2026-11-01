@@ -1,0 +1,107 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+import NicknameBadge from '../../../../components/NicknameBadge.astro';
+import snapshot from '../../../../data/achievement-missions-preview.json';
+const base=[
+ {name:'첫걸음',icon:'leaf',label:'잎사귀',condition:'일반 문제 1개 완료',reward:'잎사귀 아이콘',after:'한 번만 지급'},
+ {name:'퍼즐 수집가',icon:'puzzle',label:'퍼즐 조각',condition:'일반 문제 10개 완료',reward:'퍼즐 조각 아이콘',after:'20·30·40개… 이후 10개마다 코인'},
+ {name:'꺼지지 않는 불',icon:'flame',label:'불꽃',condition:'데일리 연속 수치 7 달성',reward:'불꽃 아이콘',after:'14·21·28… 이후 7마다 코인'},
+ {name:'체리피커',icon:'cherry',label:'체리',condition:'난이도 하 일반 문제 10개 완료',reward:'체리 아이콘',after:'20·30·40개… 이후 10개마다 코인'},
+ {name:'두뇌 회전',icon:'brain',label:'두뇌',condition:'난이도 중 일반 문제 10개 완료',reward:'두뇌 아이콘',after:'20·30·40개… 이후 10개마다 코인'},
+ {name:'하드코어',icon:'skull',label:'해골',condition:'난이도 상 일반 문제 10개 완료',reward:'해골 아이콘',after:'20·30·40개… 이후 10개마다 코인'},
+];
+const firstBlood=[['sword','검',1],['swords','교차한 검',3],['crown','왕관',10]];
+const groupIcons={star:'별',temperature:'온도계','number-123':'숫자 123',galaxy:'나선 은하'};
+const special=[
+ ['한가위 스도쿠','토끼','260925_01','/icons/seasonal/rabbit.svg'],
+ ['란영 스도쿠','꽃','260928_03','/icons/flower/flower.svg'],
+ ['봄버스터즈 스도쿠','폭탄','261003_01','/icons/bomb/bomb-red.svg'],
+ ['토마토스 스도쿠','토마토','261005_01','/icons/tomato.svg'],
+ ['주루마블 스도쿠','잔','261101_03','/icons/juru-marble/vodka-shot.png'],
+];
+const files=import.meta.glob('../../../../../public/icons/**/*.svg',{query:'?raw',import:'default',eager:true});
+const iconPath=(id)=>`/icons/achievement-preview/${id}.svg`;
+const svg=(path)=>String(files[`../../../../../public${path}`]??'');
+const sections=[['basic','기본',6],['first-blood','퍼스트 블러드',1],['groups','문제 묶음',4],['special','특수',5],['all-clear','전체 완료',1]];
+---
+<PageLayout title="업적 미션 전체 정리" subtitle="17개 미션 · 18개 아이콘 · 별빛 반짝임 전용 보상">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="overview" aria-label="업적 미션 전체 예시">
+    <p class="intro">지금까지 정한 미션과 보상을 한곳에 모았습니다.<br />색상은 별도로 꾸미며, 여기서는 기본색으로 모양을 비교합니다.</p>
+    <nav class="sections" aria-label="미션 분류">{sections.map(([id,name,count])=><a href={`#${id}`}>{name}<span>{count}</span></a>)}</nav>
+    <section id="basic" class="mission-section">
+      <h2>기본 미션 <span>6개 · 확정</span></h2>
+      <div class="mission-list">{base.map(m=><article class="mission">
+        <span class="reward-icon" aria-hidden="true"><Fragment set:html={svg(iconPath(m.icon))}/></span>
+        <div class="mission-body"><h3>{m.name}</h3><p class="condition">{m.condition}</p><p class="reward-text">{m.reward}</p><div class="nickname-sample"><NicknameBadge icon={m.icon} label={m.label}/></div><p class="after">{m.after}</p></div>
+      </article>)}</div>
+      <p class="note">아이콘은 지정 목표에서 한 번 지급합니다. 같은 과제의 완료 수가 늘어나도 별도 미션으로 나누지 않습니다. 난이도 미표시 문제는 난이도별 미션에서 제외합니다.</p>
+    </section>
+    <section id="first-blood" class="mission-section">
+      <h2>퍼스트 블러드 <span>1개 미션 · 아이콘 3종</span></h2>
+      <p class="section-intro">일반 문제의 첫 완료자가 된 횟수입니다. 데일리는 포함하지 않습니다.</p>
+      <div class="milestones">{firstBlood.map(([icon,label,count])=><article class="milestone"><span class="milestone-count">{count}회</span><span class="reward-icon" aria-hidden="true"><Fragment set:html={svg(iconPath(icon))}/></span><h3>{label}</h3><span class="nickname-sample"><NicknameBadge icon={icon} label={label}/></span></article>)}</div>
+      <p class="note">각 단계에서 새 아이콘을 받고, 이전 아이콘도 계속 선택할 수 있습니다. 코인 보상은 미정입니다.</p>
+      <div class="separate-reward"><span>데일리 1등</span><p>별도로 타임머신 티켓 지급 예정 · 수량 미정</p></div>
+    </section>
+    <section id="groups" class="mission-section">
+      <h2>문제 묶음별 미션 <span>4개 · 3문제째 아이콘</span></h2>
+      <p class="section-intro">공개 문제가 세 개 이상인 묶음만 대상입니다. 그중 어떤 문제든 세 개를 완료하면 아이콘을 받습니다.</p>
+      <div class="mission-list">{snapshot.groups.map(group=><article class="mission">
+        <span class="reward-icon" aria-hidden="true"><Fragment set:html={svg(iconPath(group.icon))}/></span>
+        <div class="mission-body"><h3>{group.name}</h3><p class="condition">해당 묶음 3문제 완료 · 공개 {group.puzzles.length}개</p><p class="reward-text">{groupIcons[group.icon]} 아이콘{group.icon!=='galaxy'&&<span class="pending">시안</span>}</p><div class="nickname-sample"><NicknameBadge icon={group.icon} label={groupIcons[group.icon]}/></div>
+        <details><summary>대상 문제 {group.puzzles.length}개</summary><ul>{group.puzzles.map(p=><li><a href={`/${p.id}/`}>{p.title}</a></li>)}</ul></details>
+        </div>
+      </article>)}</div>
+      <p class="note">묶음별 정식 미션 이름과 이후 보상은 미정입니다. 나선 은하 아이콘은 확정했으며, 별·온도계·숫자 123은 기존 시안을 사용했습니다. 목록은 {snapshot.asOf} 공개 상태 기준입니다.</p>
+    </section>
+    <section id="special" class="mission-section">
+      <h2>특수문제 미션 <span>5개 · 각각 한 번</span></h2>
+      <p class="section-intro">각 지정 문제 하나를 완료하면 해당 아이콘을 한 번 받습니다. 추가 단계나 반복 코인 보상은 없습니다.</p>
+      <div class="mission-list">{special.map(([name,label,id,src])=><article class="mission">
+        <span class="reward-icon" aria-hidden="true">{src.endsWith('.svg')?<Fragment set:html={svg(src)}/>:<img src={src} alt="" width="40" height="40"/>}</span>
+        <div class="mission-body"><h3>{name}</h3><p class="condition">해당 문제 완료</p><p class="reward-text">{label} 아이콘</p><div class="nickname-sample"><NicknameBadge src={src} label={label}/></div><a class="target-link" href={`/${id}/`}>대상 문제 보기</a></div>
+      </article>)}</div>
+      <p class="note">실제 퍼즐과 기존 배지의 아이콘을 사용합니다. 주루마블은 퍼즐에서 쓰는 잔 이미지 그대로입니다.</p>
+    </section>
+    <section id="all-clear" class="mission-section">
+      <h2>전체 완료 특수 퀘스트 <span>별빛 반짝임</span></h2>
+      <article class="completion">
+        <h3>해당 학기의 일반 문제 모두 완료</h3><p class="condition">현재 공개 목록 {snapshot.total}개 · 데일리 제외</p>
+        <div class="sparkle-sample"><NicknameBadge name="퍼즐러" icon="star" label="별빛 반짝임 적용 예시" sparkle/></div>
+        <p class="reward-text">아이콘 오른쪽 위에서 작은 십자별이 반짝이며 회전합니다.</p>
+        <p class="note">별 아이콘은 효과를 보여주기 위한 예시입니다. 보상은 별빛 반짝임 효과이며, 뽑기로는 얻을 수 없습니다.</p>
+        <button type="button" id="pauseSparkle" aria-pressed="false">반짝임 일시정지</button>
+      </article>
+    </section>
+    <section class="pending-section" aria-label="추후 결정할 내용"><h2>아직 정하지 않은 내용</h2><ul><li>코인 지급량과 아이콘 획득 단계에서의 코인 동시 지급 여부</li><li>데일리 연속 기록이 끊긴 뒤 재달성했을 때의 보상 처리</li><li>묶음별 미션 이름·후속 보상, 퍼스트 블러드 코인 보상</li><li>새 문제가 추가될 때 전체 완료 보상을 유지하는 기준</li><li>미션 카드 디자인과 실제 달성·지급 기능</li></ul></section>
+    <p class="caption">닉네임은 예시입니다. 계정 기록과 보상 지급은 연결하지 않은 확인용 페이지입니다.</p>
+    <p class="credit">아이콘: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a><br />토끼: <a href="https://lucide.dev/icons/rabbit">Lucide</a> · <a href="/icons/seasonal/LICENSE-lucide">ISC</a><br />토마토: IconPark Outline · <a href="/icons/tomato-LICENSE.md">Apache 2.0</a><br />잔: <a href="https://icons8.com/icons/set/vodka-shot">Vodka Shot</a> · <a href="https://icons8.com/">Icons8</a></p>
+  </section>
+</PageLayout>
+<script>
+  const button=document.querySelector('#pauseSparkle');
+  button?.addEventListener('click',()=>{
+    const paused=button.getAttribute('aria-pressed')!=='true';
+    document.querySelector('.overview')?.classList.toggle('paused',paused);
+    button.setAttribute('aria-pressed',String(paused));
+    button.textContent=paused?'반짝임 재생':'반짝임 일시정지';
+  });
+</script>
+<style>
+.overview{width:100%;color:#444}.intro,.section-intro{margin:0 0 18px;color:#888;font-size:.75rem;line-height:1.8}
+.sections{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:30px}.sections a{display:flex;gap:6px;padding:6px 9px;border:1px solid #e8e5df;border-radius:4px;color:#777;text-decoration:none;font-size:.68rem}.sections span{color:#aaa}
+.mission-section{margin-bottom:32px;scroll-margin-top:65px}h2{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 14px;font-size:.88rem;font-weight:500;color:#444}h2>span{font-size:.64rem;color:#999;font-weight:400}h3{margin:0;font-size:.83rem;font-weight:500;line-height:1.6;word-break:keep-all}
+.mission{display:flex;align-items:flex-start;gap:18px;padding:19px 8px;border-top:1px solid #eee}.mission-list{border-bottom:1px solid #eee}.mission-body{flex:1;min-width:0}
+.reward-icon{display:block;flex:0 0 auto;width:40px;height:40px;margin-top:3px}.reward-icon :global(svg),.reward-icon img{display:block;width:100%;height:100%;object-fit:contain}
+.condition{margin:5px 0 0;color:#888;font-size:.71rem;line-height:1.8}.reward-text{margin:7px 0 0;color:#666;font-size:.7rem;line-height:1.8}.nickname-sample{display:block;font-size:.84rem;line-height:1.5;margin-top:10px}.after{margin:12px 0 0;color:#999;font-size:.66rem;line-height:1.7}
+.note{margin:12px 0 0;font-size:.67rem;color:#999;line-height:1.8}.pending{display:inline-block;margin-left:6px;font-size:.6rem;color:#aaa}
+.milestones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.milestone{display:flex;flex-direction:column;align-items:center;gap:14px;padding:18px 6px;border:1px solid #e8e5df;border-radius:4px}.milestone .nickname-sample{font-size:.76rem;margin:0}.milestone h3{font-size:.74rem}.milestone-count{font-size:.71rem;color:#999}
+.separate-reward{margin-top:16px;padding:12px 14px;background:#faf8f4;border-radius:4px;font-size:.72rem}.separate-reward p{margin:5px 0 0;color:#999;font-size:.66rem;line-height:1.8}
+summary,.target-link{font-size:.66rem;color:#999;cursor:pointer}details{margin-top:13px}details ul{padding-left:16px;margin:10px 0 0}details li{margin:7px 0;font-size:.68rem;line-height:1.7}details a{color:#888}.target-link{display:inline-block;margin-top:12px}
+.completion{padding:20px 16px;border:1px solid #e8e5df;border-radius:4px;background:#faf8f4}.sparkle-sample{margin:24px 0;font-size:1rem;line-height:1.5}.completion button{margin-top:16px;padding:6px 10px;border:1px solid #d9d5cc;border-radius:3px;background:white;color:#888;font-size:.66rem;cursor:pointer}
+.overview.paused :global(.badge-sparkle){animation-play-state:paused}
+.overview :global(svg[stroke]:not([stroke="none"])),.overview :global(svg [stroke]:not([stroke="none"])){stroke:currentColor}.overview :global(svg[fill]:not([fill="none"])),.overview :global(svg [fill]:not([fill="none"])){fill:currentColor}.overview :global(img){filter:grayscale(1)}
+.pending-section{margin-top:30px}.pending-section ul{padding-left:18px;color:#999;font-size:.68rem;line-height:1.9}.pending-section h2{font-size:.79rem}.caption{font-size:.67rem;color:#999;line-height:1.8;margin-top:24px}.credit{color:#aaa;font-size:.62rem;line-height:1.8}.credit a{color:inherit}
+@media(max-width:360px){.mission{gap:12px;padding-inline:4px}.reward-icon{width:34px;height:34px}h2{font-size:.8rem}.milestones{gap:5px}.milestone .nickname-sample{font-size:.68rem}}
+</style>
