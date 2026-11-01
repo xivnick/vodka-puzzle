@@ -44,7 +44,17 @@ function continuation(board,cs,at,used,stops,depth){
  return false;
 }
 export function walkPrefix(board){let at=0;const used=[],stops=[0];while(board[path[at]]){const n=board[path[at]];if(used.includes(n)||at+n>32)return {invalid:true};used.push(n);at+=n;if(at===32)return {complete:true};if(stops.some(p=>clash(path[p],path[at])))return {invalid:true};stops.push(at);}return {at,used,stops};}
-export function grade(input,{route=true,maxLookahead=3,log=true}={}){
+export function directRejection(board, at, used, stops, n) {
+ if(used.includes(n))return 'used-number';
+ if(at+n>32)return 'overshoot';
+ if(at+n===32)return null;
+ const next=at+n;
+ if(stops.some(p=>clash(path[p],path[next])))return 'landing-position';
+ const landing=board[path[next]];
+ if(landing&&[...used,n].includes(landing))return 'landing-number';
+ return null;
+}
+export function grade(input,{route=true,maxLookahead=3,directOnly=false,allowPairs=true,log=true}={}){
  const board=input.slice(),cs=candidates(board),steps=[];
  const emit=e=>{if(log)steps.push(e)};
  function put(i,n,kind,extra={}){board[i]=n;cs[i]=1<<n;for(const j of peers[i])if(!board[j])cs[j]&=~(1<<n);emit({kind,cell:i,value:n,...extra});}
@@ -70,15 +80,22 @@ export function grade(input,{route=true,maxLookahead=3,log=true}={}){
     if(targets.length){targets.forEach(i=>cs[i]&=~(1<<n));emit({kind:'locked',unit:a,targetUnit:b,value:n,cells:targets});changed=true;break locked;}
    }
   }if(changed)continue;
+  if(allowPairs){
   pairs:for(let u=0;u<27;u++)for(const i of units[u])if(!board[i]&&digits(cs[i]).length===2){
    const twins=units[u].filter(j=>!board[j]&&cs[j]===cs[i]);if(twins.length!==2)continue;
    const targets=units[u].filter(j=>!board[j]&&!twins.includes(j)&&(cs[j]&cs[i]));
    if(targets.length){const mask=cs[i];targets.forEach(j=>cs[j]&=~mask);emit({kind:'pair',unit:u,cells:twins,targets,values:digits(mask)});changed=true;break pairs;}
+  }
   }if(changed)continue;
   if(route){
    const prefix=walkPrefix(board);if(prefix.invalid)return {solved:false,invalid:true,board,steps};
    if(!prefix.complete){const {at,used,stops}=prefix,i=path[at];
     for(const n of digits(cs[i])){
+     if(directOnly){
+      const reason=directRejection(board,at,used,stops,n);
+      if(!reason)continue;
+      cs[i]&=~(1<<n);emit({kind:'route-elimination',cell:i,value:n,depth:1,mode:'direct',reason,prefix:used.slice(),stops:stops.map(p=>path[p]),candidates:digits(cs[i])});changed=true;break;
+     }
      const assumed=board.slice();assumed[i]=n;
      if(continuation(assumed,cs,at,used,stops,maxLookahead))continue;
      let depth=1;while(depth<maxLookahead&&continuation(assumed,cs,at,used,stops,depth))depth++;
@@ -96,10 +113,11 @@ export function flowMetrics(givens, steps) {
  const supportCount=()=>routes.filter(route=>route.stops.every((p,k)=>(cs[path[p]]&(1<<route.numbers[k]))!==0)).length;
  const initialWalks=supportCount();
  let routeCompleteRemaining=null,uniqueWalkRemaining=initialWalks===1?board.filter(n=>!n).length:null;
- let ordinarySinceRoute=0,seenRoute=false;const ordinaryGaps=[];
+ let ordinarySinceRoute=0,seenRoute=false,openingWalks=null,openingPrefixes3=null,firstRouteRemaining=null;const ordinaryGaps=[];
  for(const step of steps){
   if(step.kind==='route-elimination'){
    routeCells.add(step.cell);cs[step.cell]&=~(1<<step.value);
+   if(firstRouteRemaining===null)firstRouteRemaining=board.filter(n=>!n).length;
    if(seenRoute&&ordinarySinceRoute)ordinaryGaps.push(ordinarySinceRoute);
    seenRoute=true;ordinarySinceRoute=0;
   } else if(step.kind==='locked')step.cells.forEach(i=>cs[i]&=~(1<<step.value));
@@ -110,12 +128,16 @@ export function flowMetrics(givens, steps) {
    for(const j of peers[step.cell])if(!board[j])cs[j]&=~(1<<step.value);
    ordinarySinceRoute++;
   }
+  if(step.cell===4&&['single','hidden-single'].includes(step.kind)){
+   const opening=routes.filter(route=>route.stops.every((p,k)=>(cs[path[p]]&(1<<route.numbers[k]))!==0));
+   openingWalks=opening.length;openingPrefixes3=new Set(opening.map(r=>r.numbers.slice(0,3).join(','))).size;
+  }
   const remaining=board.filter(n=>!n).length;
   if(uniqueWalkRemaining===null&&supportCount()===1)uniqueWalkRemaining=remaining;
   if(routeCompleteRemaining===null&&walkPrefix(board).complete)routeCompleteRemaining=remaining;
  }
  const finalRoute=routes.find(route=>route.stops.every((p,k)=>board[path[p]]===route.numbers[k]));
  const actualClassicStops=classicStops.filter(s=>finalRoute?.stops.some(p=>path[p]===s.cell));
- return {initialWalks,uniqueWalkRemaining,routeCompleteRemaining,ordinaryGaps,routeCells:routeCells.size,
+ return {initialWalks,openingWalks,openingPrefixes3,firstRouteRemaining,uniqueWalkRemaining,routeCompleteRemaining,ordinaryGaps,routeCells:routeCells.size,
    classicStops:actualClassicStops.length,classicStopsAfterRoute:actualClassicStops.filter(s=>s.afterRoute).length};
 }
