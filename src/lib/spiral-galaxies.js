@@ -67,7 +67,7 @@ export function validateSpiralGalaxies(puzzle, lines) {
       });
     }
     region.valid = region.centers.length === 1 && symmetric && !region.splitCenter && !region.internalLine;
-    const invalid = region.centers.length === 1 && !symmetric || region.centers.length === 0 && region.splitCenter;
+    const invalid = region.centers.length === 1 && !symmetric || region.centers.length === 0;
     region.feedback = region.valid ? 'valid' : invalid ? 'invalid' : 'pending';
   }
   return { regions, regionOf, splitCenters, complete: regions.every(region => region.valid) };
