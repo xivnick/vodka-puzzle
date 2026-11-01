@@ -113,8 +113,8 @@ if (game) {
     reset.disabled = !ready || !edges.size && !notes.size;
     notesButton.disabled = !ready;
     notesButton.setAttribute('aria-pressed', String(notesMode));
-    notesButton.textContent = notesMode ? '길게 눌러 경계선 긋기' : '길게 눌러 × 표시';
-    status.textContent = result.complete ? '퍼즐을 완성했습니다.' : '짧게 누르면 ' + (notesMode ? '× 메모, 길게 누르면 경계선을 넣습니다.' : '경계선, 길게 누르면 × 메모를 넣습니다.');
+    notesButton.textContent = notesMode ? '길게 눌러 선 긋기' : '길게 눌러 × 표시';
+    status.textContent = result.complete ? '퍼즐을 완성했습니다.' : notesMode ? '짧게 누르면 × 메모를 넣고, 길게 누르면 선을 긋습니다.' : '짧게 누르면 선을 긋고, 길게 누르면 × 메모를 넣습니다.';
     if (!result.complete) completionRecorded = false;
     if (!preview && ready && owner === account() && window.puzzlePage?.published && result.complete && !completionRecorded) {
       completionRecorded = true;
