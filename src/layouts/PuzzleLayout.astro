@@ -16,6 +16,7 @@ const managed = !preview && /^\d{6}_\d{2}$/.test(puzzleId || '');
   </script>}
 </Fragment>
 <slot name="above-title" slot="above-title" />
+<slot name="footer" slot="footer" />
 <div class="container">
 {managed && <p id="puzzleReleaseStatus" class="release-status" role="status" hidden></p>}
 <div class="help-toggles">

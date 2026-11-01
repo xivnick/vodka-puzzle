@@ -76,9 +76,9 @@ while (pending.size) {
     <NumberPad id="marbleNumbers" max={9} />
     <div class="bottom-buttons"><button id="marbleErase" type="button">지우기</button>{!preview && <button id="marbleReset" type="button" class="danger">초기화</button>}</div>
     <p id="marbleStatus" class="marble-status" role="status" hidden></p>
-    <p class="icon-credit"><a href="https://icons8.com/icons/set/vodka-shot">Vodka Shot</a> · <a href="https://icons8.com/">Icons8</a></p>
   </section>
   <PuzzleCompletion slot="completion" id="marbleComplete" />
+  <footer slot="footer" class="icon-credit"><a href="https://icons8.com/icons/set/vodka-shot">Vodka Shot</a> · <a href="https://icons8.com/">Icons8</a></footer>
 </PuzzleLayout>
 <script define:vars={{perimeter, givens, puzzleId, preview, released}}>
   window.marbleConfig = { path: perimeter, givens, puzzleId, preview, released };
@@ -98,7 +98,7 @@ while (pending.size) {
   .marble-cell :global(.notes span) { display:flex; align-items:center; justify-content:center; }
   .marble-cell.selected { background:rgba(111,155,208,.16); }
   .marble-cell.conflict { background:rgba(225,133,133,.15); color:#bc4141; }
-  .icon-credit { margin:12px 0 0; text-align:center; font-size:.65rem; color:#999; }
+  .icon-credit { margin:24px 0 0; text-align:center; font-size:.65rem; color:#999; }
   .icon-credit a { color:inherit; }
   .marble-status { min-height:1.5em; margin:12px 0 0; color:#888; font-size:.78rem; text-align:center; font-variant-numeric:tabular-nums; }
   .marble-status[hidden] { display:none; }
