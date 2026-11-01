@@ -19,15 +19,17 @@
 
 꺼지지 않는 불은 데일리 누적 완료 횟수가 아닌 데일리 연속 수치를 기준으로 한다. 끊긴 기록의 재달성·소급 지급·중복 보상 처리와 현재/최장 기록의 저장 방식은 구현 전에 정리한다.
 
-## 퍼스트 블러드: 보류
+## 퍼스트 블러드: 일반 문제 1등 완료
 
-문제의 첫 완료자가 된 횟수를 세는 미션이다. 다음 사항은 확정하지 않았다.
+공개된 일반 문제의 첫 완료자가 된 횟수를 세는 하나의 미션이다. 데일리 1등은 합산하지 않는다. 아래 단계별로 서로 다른 아이콘을 지급하며, 이전에 얻은 아이콘도 계속 선택할 수 있다.
 
-- 일반 문제만 집계할지, 데일리 1등도 합산할지.
-- 보상 단계와 아이콘 개수. 검 한 자루·교차한 검·왕관의 1·3·10회 구성은 비교용 후보다.
-- 코인 보상 기준.
+| 일반 문제 1등 완료 횟수 | 보상 아이콘 | 파일 |
+|---|---|---|
+| 1회 | 검 한 자루 | `sword.svg` |
+| 3회 | 교차한 검 | `swords.svg` |
+| 10회 | 왕관 | `crown.svg` |
 
-데일리 1등에게 타임머신 티켓을 주는 별도 보상 구상이 있으며, 티켓 수량과 지급 방식은 미정이다. 퍼스트 블러드 합산 여부를 결정한 것으로 취급하지 않는다.
+아이콘 파일은 `public/icons/achievement-preview/`에 있다. 코인 보상 기준은 미정이다. 데일리 1등에게 타임머신 티켓을 주는 별도 보상 구상은 유지하며, 티켓 수량과 지급 방식은 미정이다.
 
 ## 별도로 구성할 미션
 
@@ -60,6 +62,6 @@
 - [특수 미션 5종](https://puzzle.xivnick.me/test/achievement-badges/special-missions/): 각 지정 문제 완료 시 해당 아이콘 1회 지급.
 - [첫걸음·퍼즐 수집가·꺼지지 않는 불](https://puzzle.xivnick.me/test/achievement-badges/basic-missions/): 이름과 아이콘 확정. 카드 디자인은 최종안이 아니다.
 - [난이도별 미션 3종](https://puzzle.xivnick.me/test/achievement-badges/difficulty-missions/): 이름과 아이콘 확정. 카드 디자인은 추후 수정한다.
-- [퍼스트 블러드 후보](https://puzzle.xivnick.me/test/achievement-badges/first-blood-icons/): 보류한 후보이며 확정 보상이 아니다.
+- [퍼스트 블러드 아이콘](https://puzzle.xivnick.me/test/achievement-badges/first-blood-icons/): 일반 문제 1등 완료 1·3·10회에 검·교차한 검·왕관 지급으로 확정.
 
 색상·효과와 닉네임 옆 공통 정렬 방식은 [업적 배지 색상·효과 설계](achievement-badge-cosmetics-design.md)를 따른다.
