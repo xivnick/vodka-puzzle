@@ -1,7 +1,7 @@
 ---
 import PageLayout from '../../../../layouts/PageLayout.astro';
 import NicknameBadge from '../../../../components/NicknameBadge.astro';
-const icons=[['leaf','첫걸음','잎사귀','일반 문제 1개 완료','입문 보상'],['puzzle','퍼즐 수집가','퍼즐 조각','일반 문제 10개 완료','이후 10개마다 코인'],['flame','꺼지지 않는 불','불꽃','데일리 연속 수치 7 달성','이후 7마다 코인']];
+const icons=[['leaf','첫걸음','잎사귀','일반 문제 1개 완료','입문 보상'],['puzzle','퍼즐 수집가','퍼즐 조각','일반 문제 10개 완료','이후 10개마다 코인'],['flame','꺼지지 않는 불','불꽃','현재 데일리 연속 수치 7 달성','이후 7마다 코인']];
 const sources=import.meta.glob('../../../../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
 const svg=(id)=>String(sources[`../../../../../public/icons/achievement-preview/${id}.svg`]);
 ---
