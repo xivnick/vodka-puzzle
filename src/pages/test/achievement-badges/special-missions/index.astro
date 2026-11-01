@@ -22,12 +22,15 @@ const svg=(path)=>String(files[`../../../../../public${path}`]??'');
       <span class="reward">보상: {label} 아이콘 1회 지급</span>
       <a class="puzzle-link" href={`/${id}/`}>대상 문제 보기</a>
     </article>)}</div>
-    <p class="caption">확대 56px · 이름 옆 18px. 실제 퍼즐과 기존 배지에서 사용 중인 이미지를 그대로 사용했습니다. 이 페이지에서는 실제 보상을 지급하지 않습니다.</p>
+    <p class="caption">확대 56px · 이름 옆 18px. 기존 아이콘의 모양을 유지하고 기본색만 적용했습니다. 색상은 획득 후 별도로 꾸밉니다. 이 페이지에서는 실제 보상을 지급하지 않습니다.</p>
     <p class="credit">토끼: <a href="https://lucide.dev/icons/rabbit">Lucide</a> · <a href="/icons/seasonal/LICENSE-lucide">ISC</a><br />꽃·폭탄: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a><br />토마토: IconPark Outline · <a href="/icons/tomato-LICENSE.md">Apache 2.0</a><br />잔: <a href="https://icons8.com/icons/set/vodka-shot">Vodka Shot</a> · <a href="https://icons8.com/">Icons8</a></p>
   </section>
 </PageLayout>
 <style>
 .special-preview{width:100%;color:#444}.intro{margin:0 0 20px;font-size:.75rem;line-height:1.8;color:#888}
+.special-preview :global(svg[stroke]:not([stroke="none"])),.special-preview :global(svg [stroke]:not([stroke="none"])){stroke:currentColor}
+.special-preview :global(svg[fill]:not([fill="none"])),.special-preview :global(svg [fill]:not([fill="none"])){fill:currentColor}
+.special-preview :global(img){filter:grayscale(1)}
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 article{display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px 10px 20px;border:1px solid #e8e5df;border-radius:4px;background:white}
 article:last-child{grid-column:1/-1}.large{display:block;width:56px;height:56px;margin-bottom:5px}.large :global(svg),.large img{display:block;width:100%;height:100%;object-fit:contain}
