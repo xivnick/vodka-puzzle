@@ -1,0 +1,32 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+import NicknameBadge from '../../../../components/NicknameBadge.astro';
+const icons=[['galaxy','나선 은하','중심에서 뻗는 은하의 팔'],['spiral','소용돌이','중심을 감싸는 나선'],['universe','궤도','중심과 궤도를 도는 점'],['planet','토성','고리가 있는 행성']];
+const sources=import.meta.glob('../../../../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
+const svg=(id)=>String(sources[`../../../../../public/icons/achievement-preview/${id}.svg`]);
+---
+<PageLayout title="Spiral Galaxies 아이콘 후보" subtitle="나선 은하 · 소용돌이 · 궤도 · 토성">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="icon-comparison" aria-label="Spiral Galaxies 아이콘 후보 비교">
+    <div class="icon-grid">{icons.map(([id,label,description])=><article>
+      <span class="big" aria-hidden="true"><Fragment set:html={svg(id)} /></span>
+      <h2>{label}</h2><span class="description">{description}</span>
+      <span class="nickname"><NicknameBadge icon={id} label={label}/></span>
+    </article>)}</div>
+    <p>Spiral Galaxies 3문제 완료 보상 후보입니다.<br />확대 56px · 이름 옆 18px. 색상 없이 모양만 비교합니다.</p>
+    <p class="credit">아이콘: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
+  </section>
+</PageLayout>
+<style>
+.icon-comparison{width:100%;color:#444}
+.icon-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+article{display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 6px 22px;border:1px solid #e8e5df;border-radius:4px;background:white}
+.description{color:#999;font-size:.62rem;line-height:1.6;text-align:center;word-break:keep-all;min-height:2em}
+h2{font-size:.84rem;font-weight:500;margin:0}
+.big{display:block;width:56px;height:56px}
+.big :global(svg){display:block;width:100%;height:100%}
+.nickname{display:flex;align-items:center;gap:4px;font-size:.8rem;white-space:nowrap}
+p{margin:18px 0 0;font-size:.71rem;line-height:1.8;color:#999}
+.credit{font-size:.63rem;margin-top:10px}.credit a{color:inherit}p a{color:#888}
+@media(max-width:400px){.icon-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
