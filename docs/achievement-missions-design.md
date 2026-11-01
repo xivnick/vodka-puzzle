@@ -33,6 +33,7 @@
 
 - 문제 묶음별 미션은 공개된 문제가 3개 이상인 묶음만 구성하며, 해당 묶음의 문제를 3개 완료했을 때 아이콘을 지급한다. 2026-11-01 공개 목록 기준 대상은 스타배틀 계열 8개, 온도계 스도쿠 5개, 수식완성 3개, Spiral Galaxies 3개다. 미션 이름과 후속 보상은 추후 정한다.
 - 스타배틀은 기본 1·2, 침입자, 도미노, 배틀 스타, 스타 루프, 스타 디비전, 큐브를 한 묶음으로 구성한다.
+- Spiral Galaxies 미션의 보상 아이콘은 나선 은하(`public/icons/achievement-preview/galaxy.svg`)로 확정한다. 해당 종류의 공개 문제 3개를 완료하면 지급한다. 소용돌이·궤도·토성은 비교용 후보로만 남긴다.
 - 사풍·밸런스 루프·빙판길·침수된 길·펜토미너스는 각각 공개 문제가 2개이므로 현재 묶음별 미션에서 제외한다. 추후 3개 이상이 되면 추가할 수 있다.
 - 특수문제 개별 미션은 아래 확정 구성을 따른다.
 - 전체 완료 특수 퀘스트: 해당 학기 일반 문제 전체 완료 시 별빛 반짝임을 지급한다. 자세한 내용은 [색상·효과 설계](achievement-badge-cosmetics-design.md)를 따른다.
@@ -55,6 +56,7 @@
 
 ## 확인용 페이지
 
+- [Spiral Galaxies 아이콘 비교](https://puzzle.xivnick.me/test/achievement-badges/galaxy-icons/): 나선 은하를 보상 아이콘으로 확정.
 - [특수 미션 5종](https://puzzle.xivnick.me/test/achievement-badges/special-missions/): 각 지정 문제 완료 시 해당 아이콘 1회 지급.
 - [첫걸음·퍼즐 수집가·꺼지지 않는 불](https://puzzle.xivnick.me/test/achievement-badges/basic-missions/): 이름과 아이콘 확정. 카드 디자인은 최종안이 아니다.
 - [난이도별 미션 3종](https://puzzle.xivnick.me/test/achievement-badges/difficulty-missions/): 이름과 아이콘 확정. 카드 디자인은 추후 수정한다.
