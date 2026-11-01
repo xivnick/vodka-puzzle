@@ -7,6 +7,7 @@ if (game) {
   const preview = game.dataset.preview === 'true';
   const { rows, cols, centers } = puzzle;
   const board = document.getElementById('spiral-galaxiesBoard');
+  const notesButton = document.getElementById('spiral-galaxiesNotes');
   const reset = document.getElementById('spiral-galaxiesReset');
   const complete = document.getElementById('spiral-galaxiesComplete');
   const status = document.getElementById('spiral-galaxiesStatus');
@@ -20,13 +21,14 @@ if (game) {
     if (c < cols - 1) validEdges.add(edgeKey(index, index + 1));
     if (r < rows - 1) validEdges.add(edgeKey(index, index + cols));
   }
-  let edges = new Set();
+  let edges = new Set(), notes = new Set(), notesMode = false;
   if (preview) {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
       if (Array.isArray(saved)) edges = new Set(saved.filter(key => validEdges.has(key)));
       else if ([1, 2].includes(saved?.version) && Array.isArray(saved.lines)) {
         edges = new Set(saved.lines.filter(key => validEdges.has(key)));
+        notes = new Set((Array.isArray(saved.notes) ? saved.notes : []).filter(key => validEdges.has(key) && !edges.has(key)));
       }
     } catch { /* Storage may be unavailable. */ }
   }
@@ -35,7 +37,7 @@ if (game) {
   const account = () => window.puzzleAccount?.user?.id || 'guest';
   board.setAttribute('viewBox', `${-framePadding} ${-framePadding} ${width + framePadding * 2} ${height + framePadding * 2}`);
 
-  const snapshot = () => ({ version: 1, puzzleId, lines: [...edges] });
+  const snapshot = () => ({ version: 1, puzzleId, lines: [...edges], notes: [...notes] });
   function persist() {
     if (!ready) return;
     try {
@@ -65,10 +67,11 @@ if (game) {
     return { x: (event.clientX - rect.left) / rect.width * (width + framePadding * 2) - framePadding,
       y: (event.clientY - rect.top) / rect.height * (height + framePadding * 2) - framePadding };
   }
-  function toggleLine(key) {
+  function toggleLine(key, memo) {
     if (!ready || !preview && owner !== account()) return;
-    if (edges.has(key)) edges.delete(key);
-    else edges.add(key);
+    const target = memo ? notes : edges, other = memo ? edges : notes;
+    if (target.has(key)) target.delete(key);
+    else { other.delete(key); target.add(key); }
     persist(); render();
   }
   function render() {
@@ -94,14 +97,23 @@ if (game) {
         html += `<path d="M${x} ${y}H${x + size}" stroke="#334f72" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linecap="round"/>`;
       }
     }
+    for (const key of notes) {
+      const [a, b] = key.split(':').map(Number);
+      const vertical = b - a === 1;
+      const x = vertical ? (b % cols) * size : (a % cols + .5) * size;
+      const y = vertical ? (Math.floor(a / cols) + .5) * size : Math.floor(b / cols) * size;
+      html += `<path data-note="${key}" d="M${x - 3} ${y - 3}l6 6m0 -6l-6 6" fill="none" stroke="#888" stroke-width="1.5" stroke-linecap="round" vector-effect="non-scaling-stroke" pointer-events="none"/>`;
+    }
     centers.forEach(([x, y]) => {
       html += `<circle cx="${x * size}" cy="${y * size}" r="7" fill="white" stroke="#333" stroke-width="2" vector-effect="non-scaling-stroke" pointer-events="none"/>`;
     });
     html += `<rect x="0" y="0" width="${width}" height="${height}" fill="none" stroke="#202a36" stroke-width="3" vector-effect="non-scaling-stroke" pointer-events="none"/>`;
     board.innerHTML = html;
     complete.hidden = !result.complete;
-    reset.disabled = !ready || !edges.size;
-    status.textContent = result.complete ? '퍼즐을 완성했습니다.' : '점선을 눌러 영역을 나누세요.';
+    reset.disabled = !ready || !edges.size && !notes.size;
+    notesButton.disabled = !ready;
+    notesButton.setAttribute('aria-pressed', String(notesMode));
+    status.textContent = result.complete ? '퍼즐을 완성했습니다.' : notesMode ? '점선을 눌러 X 메모를 넣으세요.' : '점선을 눌러 영역을 나누세요.';
     if (!result.complete) completionRecorded = false;
     if (!preview && ready && owner === account() && window.puzzlePage?.published && result.complete && !completionRecorded) {
       completionRecorded = true;
@@ -113,7 +125,7 @@ if (game) {
     if (!ready || !preview && owner !== account() || event.button !== 0 || press) return;
     const point = position(event), key = edgeAt(point.x, point.y);
     if (!key) return;
-    press = { id: event.pointerId, key, x: event.clientX, y: event.clientY };
+    press = { id: event.pointerId, key, memo: notesMode, x: event.clientX, y: event.clientY };
   });
   window.addEventListener('pointermove', event => {
     if (!press || press.id !== event.pointerId) return;
@@ -123,19 +135,28 @@ if (game) {
   });
   window.addEventListener('pointerup', event => {
     if (!press || press.id !== event.pointerId) return;
-    const { key, x, y } = press;
+    const { key, memo, x, y } = press;
     press = null;
     if (Math.hypot(event.clientX - x, event.clientY - y) <= 10) {
-      toggleLine(key);
+      toggleLine(key, memo);
     }
   });
   window.addEventListener('pointercancel', event => {
     if (!press || press.id !== event.pointerId) return;
     press = null;
   });
+  notesButton.addEventListener('click', () => {
+    if (!ready || !preview && owner !== account()) return;
+    notesMode = !notesMode; render();
+  });
+  window.addEventListener('keydown', event => {
+    if (event.ctrlKey || event.metaKey || event.altKey || event.repeat || event.key.toLowerCase() !== 'm' ||
+        event.target.closest('input, textarea, select, [contenteditable]')) return;
+    event.preventDefault(); notesButton.click();
+  });
   reset.addEventListener('click', () => {
-    if (!ready || !preview && owner !== account() || !edges.size) return;
-    edges.clear(); persist(); render();
+    if (!ready || !preview && owner !== account() || !edges.size && !notes.size) return;
+    edges.clear(); notes.clear(); persist(); render();
   });
   function init() {
     const nextOwner = account();
@@ -148,6 +169,7 @@ if (game) {
     try { saved = window.loadLocalState(puzzleId); } catch {}
     const parsed = parseSpiralGalaxiesState(puzzle, saved, puzzleId);
     edges = parsed?.lines || new Set();
+    notes = parsed?.notes || new Set();
     ready = true;
     render();
     window.initCloudBtns();
@@ -164,6 +186,7 @@ if (game) {
       const parsed = parseSpiralGalaxiesState(puzzle, saved, puzzleId);
       if (!parsed) { window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.'); return; }
       edges = parsed.lines;
+      notes = parsed.notes;
       persist();
       render();
     };

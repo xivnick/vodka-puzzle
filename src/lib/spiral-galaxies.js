@@ -7,7 +7,14 @@ export const spiralGalaxies = {
 
 export { edgeKey } from './star-division.js';
 import { edgeKey, parseStarDivisionState } from './star-division.js';
-export const parseSpiralGalaxiesState = parseStarDivisionState;
+export function parseSpiralGalaxiesState(puzzle, state, puzzleId) {
+  const parsed = parseStarDivisionState(puzzle, state, puzzleId);
+  if (!parsed) return null;
+  // Saves made before X notes were added contain only boundary lines.
+  const notes = parseStarDivisionState(puzzle, { ...state, lines: state.notes ?? [] }, puzzleId);
+  if (!notes || [...notes.lines].some(key => parsed.lines.has(key))) return null;
+  return { lines: parsed.lines, notes: notes.lines };
+}
 
 export function validateSpiralGalaxies(puzzle, lines) {
   const { rows, cols, centers } = puzzle;
