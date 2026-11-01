@@ -18,7 +18,7 @@ export function parseSpiralGalaxiesState(puzzle, state, puzzleId) {
 
 export function validateSpiralGalaxies(puzzle, lines) {
   const { rows, cols, centers } = puzzle;
-  const regionOf = Array(rows * cols).fill(-1), regions = [];
+  const regionOf = Array(rows * cols).fill(-1), regions = [], splitCenters = new Set();
   for (let start = 0; start < regionOf.length; start++) {
     if (regionOf[start] !== -1) continue;
     const id = regions.length, cells = [], pending = [start];
@@ -36,15 +36,21 @@ export function validateSpiralGalaxies(puzzle, lines) {
     regions.push({ cells, centers: [], splitCenter: false, internalLine: false });
   }
   // A circle on an edge or vertex belongs to all touching cells. They must stay together.
-  centers.forEach(([x, y]) => {
+  centers.forEach(([x, y], centerIndex) => {
     const touching = [];
     for (const r of [Math.ceil(y) - 1, Math.floor(y)]) for (const c of [Math.ceil(x) - 1, Math.floor(x)]) {
       if (r >= 0 && r < rows && c >= 0 && c < cols) touching.push(r * cols + c);
     }
     const ids = new Set(touching.map(i => regionOf[i]));
+    const touchingCells = new Set(touching);
+    const cut = ids.size > 1 || [...lines].some(key => {
+      const [a, b] = key.split(':').map(Number);
+      return touchingCells.has(a) && touchingCells.has(b);
+    });
+    if (cut) splitCenters.add(centerIndex);
     for (const id of ids) {
-      regions[id].centers.push([x, y]);
-      if (ids.size > 1) regions[id].splitCenter = true;
+      if (cut) regions[id].splitCenter = true;
+      else regions[id].centers.push([x, y]);
     }
   });
   for (const key of lines) {
@@ -52,15 +58,17 @@ export function validateSpiralGalaxies(puzzle, lines) {
     if (regionOf[a] === regionOf[b]) regions[regionOf[a]].internalLine = true;
   }
   for (const region of regions) {
-    region.valid = region.centers.length === 1 && !region.splitCenter && !region.internalLine;
-    if (region.valid) {
+    let symmetric = false;
+    if (region.centers.length === 1) {
       const [x, y] = region.centers[0];
-      region.valid = region.cells.every(i => {
+      symmetric = region.cells.every(i => {
         const r = 2 * y - Math.floor(i / cols) - 1, c = 2 * x - i % cols - 1;
         return r >= 0 && r < rows && c >= 0 && c < cols && regionOf[r * cols + c] === regionOf[i];
       });
     }
-    region.feedback = region.valid ? 'valid' : region.centers.length === 0 || region.splitCenter ? 'invalid' : 'pending';
+    region.valid = region.centers.length === 1 && symmetric && !region.splitCenter && !region.internalLine;
+    const invalid = region.centers.length === 1 && !symmetric || region.centers.length === 0 && region.splitCenter;
+    region.feedback = region.valid ? 'valid' : invalid ? 'invalid' : 'pending';
   }
-  return { regions, regionOf, complete: regions.every(region => region.valid) };
+  return { regions, regionOf, splitCenters, complete: regions.every(region => region.valid) };
 }

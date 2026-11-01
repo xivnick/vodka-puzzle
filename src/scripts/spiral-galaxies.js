@@ -104,8 +104,9 @@ if (game) {
       const y = vertical ? (Math.floor(a / cols) + .5) * size : Math.floor(b / cols) * size;
       html += `<path data-note="${key}" d="M${x - 3} ${y - 3}l6 6m0 -6l-6 6" fill="none" stroke="#888" stroke-width="1.5" stroke-linecap="round" vector-effect="non-scaling-stroke" pointer-events="none"/>`;
     }
-    centers.forEach(([x, y]) => {
-      html += `<circle cx="${x * size}" cy="${y * size}" r="7" fill="white" stroke="#333" stroke-width="2" vector-effect="non-scaling-stroke" pointer-events="none"/>`;
+    centers.forEach(([x, y], index) => {
+      const cut = result.splitCenters.has(index);
+      html += `<circle cx="${x * size}" cy="${y * size}" r="7" fill="${cut ? '#fce8e7' : 'white'}" stroke="${cut ? '#c64545' : '#333'}" stroke-width="2" vector-effect="non-scaling-stroke" pointer-events="none"/>`;
     });
     html += `<rect x="0" y="0" width="${width}" height="${height}" fill="none" stroke="#202a36" stroke-width="3" vector-effect="non-scaling-stroke" pointer-events="none"/>`;
     board.innerHTML = html;
