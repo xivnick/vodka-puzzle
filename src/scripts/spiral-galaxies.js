@@ -113,37 +113,49 @@ if (game) {
     reset.disabled = !ready || !edges.size && !notes.size;
     notesButton.disabled = !ready;
     notesButton.setAttribute('aria-pressed', String(notesMode));
-    status.textContent = result.complete ? '퍼즐을 완성했습니다.' : notesMode ? '점선을 눌러 X 메모를 넣으세요.' : '점선을 눌러 영역을 나누세요.';
+    notesButton.textContent = notesMode ? '길게 눌러 경계선 긋기' : '길게 눌러 × 표시';
+    status.textContent = result.complete ? '퍼즐을 완성했습니다.' : '짧게 누르면 ' + (notesMode ? '× 메모, 길게 누르면 경계선을 넣습니다.' : '경계선, 길게 누르면 × 메모를 넣습니다.');
     if (!result.complete) completionRecorded = false;
     if (!preview && ready && owner === account() && window.puzzlePage?.published && result.complete && !completionRecorded) {
       completionRecorded = true;
       window.recordCompletion(puzzleId, snapshot());
     }
   }
-  board.addEventListener('contextmenu', event => event.preventDefault());
+  function cancelPress() {
+    if (press) clearTimeout(press.timer);
+    press = null;
+  }
   board.addEventListener('pointerdown', event => {
     if (!ready || !preview && owner !== account() || event.button !== 0 || press) return;
     const point = position(event), key = edgeAt(point.x, point.y);
     if (!key) return;
-    press = { id: event.pointerId, key, memo: notesMode, x: event.clientX, y: event.clientY };
+    press = { id: event.pointerId, key, memo: notesMode, x: event.clientX, y: event.clientY, long: false, timer: null };
+    press.timer = setTimeout(() => {
+      if (!press || press.id !== event.pointerId) return;
+      press.long = true;
+      toggleLine(key, !press.memo);
+    }, 550);
   });
   window.addEventListener('pointermove', event => {
-    if (!press || press.id !== event.pointerId) return;
-    if (Math.hypot(event.clientX - press.x, event.clientY - press.y) > 10) {
-      press = null;
-    }
+    if (!press || press.id !== event.pointerId || press.long) return;
+    if (Math.hypot(event.clientX - press.x, event.clientY - press.y) > 10) cancelPress();
   });
   window.addEventListener('pointerup', event => {
     if (!press || press.id !== event.pointerId) return;
-    const { key, memo, x, y } = press;
-    press = null;
-    if (Math.hypot(event.clientX - x, event.clientY - y) <= 10) {
-      toggleLine(key, memo);
-    }
+    const { key, memo, x, y, long } = press;
+    cancelPress();
+    if (!long && Math.hypot(event.clientX - x, event.clientY - y) <= 10) toggleLine(key, memo);
   });
   window.addEventListener('pointercancel', event => {
-    if (!press || press.id !== event.pointerId) return;
-    press = null;
+    if (press?.id === event.pointerId) cancelPress();
+  });
+  window.addEventListener('blur', cancelPress);
+  board.addEventListener('contextmenu', event => {
+    event.preventDefault();
+    const point = position(event), key = edgeAt(point.x, point.y);
+    const alreadyMarked = press?.long;
+    cancelPress();
+    if (key && !alreadyMarked) toggleLine(key, !notesMode);
   });
   notesButton.addEventListener('click', () => {
     if (!ready || !preview && owner !== account()) return;
@@ -156,6 +168,7 @@ if (game) {
   });
   reset.addEventListener('click', () => {
     if (!ready || !preview && owner !== account() || !edges.size && !notes.size) return;
+    cancelPress();
     edges.clear(); notes.clear(); persist(); render();
   });
   function init() {
@@ -163,7 +176,7 @@ if (game) {
     if (ready && owner === nextOwner) return;
     owner = nextOwner;
     ready = false;
-    press = null;
+    cancelPress();
     completionRecorded = false;
     let saved = null;
     try { saved = window.loadLocalState(puzzleId); } catch {}

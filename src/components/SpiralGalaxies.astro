@@ -17,11 +17,11 @@ const number = ['261101_04', '261101_05', '261101_06'].indexOf(puzzleId) + 1;
     </ul>
   </div>
   <div slot="controls">
-    칸 사이 점선을 누르면 경계선을 긋고, 같은 선을 다시 누르면 지웁니다.<br />
-    메모하기 버튼이나 M 키로 X 메모 입력을 켜고 끄세요. 같은 메모를 다시 누르면 지웁니다.
+    칸 사이 점선을 짧게 누르면 경계선, 길게 누르거나 우클릭하면 × 메모를 넣습니다. 같은 입력을 반복하면 지웁니다.<br />
+    오른쪽 위 버튼이나 M 키로 짧게 누르기와 길게 누르기를 바꾸세요.
   </div>
   <section id="spiral-galaxiesGame" data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} aria-label="Spiral Galaxies">
-    <div class="galaxies-board-tools"><button id="spiral-galaxiesNotes" class="galaxies-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+    <div class="galaxies-board-tools"><button id="spiral-galaxiesNotes" class="galaxies-notes-toggle" type="button" aria-pressed="false">길게 눌러 × 표시</button></div>
     <svg id="spiral-galaxiesBoard" role="group" aria-label={`${puzzle.rows}행 ${puzzle.cols}열 Spiral Galaxies 격자. 칸 사이 점선을 눌러 영역을 나누세요`}></svg>
     <div class="bottom-buttons"><button id="spiral-galaxiesReset" class="danger" type="button">초기화</button></div>
     <p id="spiral-galaxiesStatus" role="status" aria-live="polite" class="sr-only"></p>
