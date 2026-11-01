@@ -400,5 +400,32 @@
     "season": "2026-2",
     "href": "/261101_03/",
     "difficulty": "중"
+  },
+  {
+    "id": "261101_04",
+    "title": "261101 Spiral Galaxies 1",
+    "summary": "원 하나를 중심으로 회전대칭인 영역들을 만드세요",
+    "type": "Spiral Galaxies",
+    "season": "2026-2",
+    "href": "/261101_04/",
+    "difficulty": "하"
+  },
+  {
+    "id": "261101_05",
+    "title": "261101 Spiral Galaxies 2",
+    "summary": "원 하나를 중심으로 회전대칭인 영역들을 만드세요",
+    "type": "Spiral Galaxies",
+    "season": "2026-2",
+    "href": "/261101_05/",
+    "difficulty": "하"
+  },
+  {
+    "id": "261101_06",
+    "title": "261101 Spiral Galaxies 3",
+    "summary": "원 하나를 중심으로 회전대칭인 영역들을 만드세요",
+    "type": "Spiral Galaxies",
+    "season": "2026-2",
+    "href": "/261101_06/",
+    "difficulty": "중"
   }
 ]

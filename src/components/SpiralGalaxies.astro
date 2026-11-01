@@ -1,0 +1,34 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import { spiralGalaxies } from '../lib/spiral-galaxies.js';
+const { puzzleId } = Astro.props;
+const puzzle = spiralGalaxies[puzzleId];
+const number = ['261101_04', '261101_05', '261101_06'].indexOf(puzzleId) + 1;
+---
+<PuzzleLayout title={`261101 Spiral Galaxies ${number}`} {puzzleId}
+  subtitle="원 하나를 중심으로 회전대칭인 영역들을 만드세요"
+  description="원을 중심으로 180도 회전대칭인 영역으로 격자를 나누는 Spiral Galaxies">
+  <div slot="rules">
+    주어진 격자를 점선을 따라 여러 영역으로 분할하세요.
+    <ul>
+      <li>모든 칸은 정확히 하나의 영역에 속해야 합니다. 한 영역의 칸들은 변으로 이어져야 합니다.</li>
+      <li>각 영역은 정확히 하나의 원을 포함해야 하며, 그 원을 중심으로 180도 회전했을 때 같은 모양이어야 합니다.</li>
+    </ul>
+  </div>
+  <div slot="controls">
+    칸 사이 점선을 누르면 경계선을 긋고, 같은 선을 다시 누르면 지웁니다.
+  </div>
+  <section id="spiral-galaxiesGame" data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} aria-label="Spiral Galaxies">
+    <svg id="spiral-galaxiesBoard" role="group" aria-label={`${puzzle.rows}행 ${puzzle.cols}열 Spiral Galaxies 격자. 칸 사이 점선을 눌러 영역을 나누세요`}></svg>
+    <div class="bottom-buttons"><button id="spiral-galaxiesReset" class="danger" type="button">초기화</button></div>
+    <p id="spiral-galaxiesStatus" role="status" aria-live="polite" class="sr-only"></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="spiral-galaxiesComplete" />
+</PuzzleLayout>
+<script>import '../scripts/spiral-galaxies.js';</script>
+<style>
+  ul { padding-left:20px; margin:8px 0 0; }
+  #spiral-galaxiesBoard { display:block; width:100%; height:auto; background:white; touch-action:auto; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+</style>
