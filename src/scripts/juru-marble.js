@@ -55,11 +55,9 @@ function render() {
     cell.setAttribute('aria-pressed', String(i === selected));
     cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${values[i] || '빈칸'}${fixed[i] ? ', 고정 숫자' : ''}${marked.has(i) ? ', 잔' : ''}${bad.has(i) ? ', 규칙 위반' : ''}${notes[i].length ? ', 메모 ' + notes[i].join(', ') : ''}`);
   }
-  const progress = distance > 32 ? `출발 칸을 지나쳤습니다 · ${distance} / 32칸`
-    : distance === 32 ? '출발 칸에 도착했습니다 · 32 / 32칸'
-    : distance ? `정차 ${marked.size}칸 · 이동 ${distance} / 32칸`
-    : '잔이 있는 칸에 숫자를 입력하면 다음 정차 칸에 잔이 표시됩니다.';
-  status.textContent = [...(sudokuBad.size ? ['스도쿠 숫자 중복'] : []), ...reasons, progress].join(' · ');
+  status.textContent = [...(sudokuBad.size ? ['스도쿠 숫자 중복'] : []), ...reasons,
+    ...(distance > 32 ? ['출발 칸을 지나쳤습니다.'] : [])].join(' · ');
+  status.hidden = !status.textContent;
   document.getElementById('marbleComplete').hidden = !marbleSolved(values, fixed);
 }
 
