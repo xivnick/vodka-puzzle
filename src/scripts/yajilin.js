@@ -11,7 +11,7 @@ function persist() {
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
 function render() {
-  const {bad, complete} = analyze(values, edges);
+  const {bad, complete, counts} = analyze(values, edges);
   let html = '';
   for (let i = 0; i < values.length; i++) {
     const [x,y] = xy(i);
@@ -31,9 +31,9 @@ function render() {
       html += `<text x="${x}" y="${y}" dy=".35em" text-anchor="middle" font-family="inherit" font-size="24" fill="${bad.has(i) ? '#c34242' : '#99a4ae'}" pointer-events="none">×</text>`;
     }
   }
-  for (const clue of clues) {
+  for (const [index, clue] of clues.entries()) {
     const [x,y] = xy(clue.cell);
-    const color = bad.has(clue.cell) ? '#a22' : '#28343e';
+    const color = bad.has(clue.cell) ? '#a22' : counts[index] === clue.count ? '#39844a' : '#28343e';
     const rotation = {up:0,right:90,down:180,left:270}[clue.direction];
     html += `<g role="img" aria-label="${Math.floor(clue.cell / size)+1}행 ${clue.cell % size+1}열, ${clue.count} ${ {up:'위',down:'아래',left:'왼쪽',right:'오른쪽'}[clue.direction]}" pointer-events="none"><path d="M-4 16H4V-4H12L0-17-12-4H-4Z" transform="translate(${x} ${y}) rotate(${rotation})" fill="#a5b2be"/><text x="${x}" y="${y+8}" text-anchor="middle" font-family="inherit" font-size="22" font-weight="500" fill="${color}" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke" style="font-variant-numeric:tabular-nums">${clue.count}</text></g>`;
   }
