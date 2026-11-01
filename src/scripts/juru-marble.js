@@ -1,6 +1,6 @@
 import { traceGlasses, stopConflicts, sudokuConflicts, marbleSolved, parseMarbleState } from '../lib/juru-marble.js';
 
-const { path, givens: fixed, puzzleId, preview } = window.marbleConfig;
+const { path, givens: fixed, puzzleId, preview, released } = window.marbleConfig;
 const cells = document.getElementById('marbleCells');
 const glasses = document.getElementById('marbleGlasses');
 const status = document.getElementById('marbleStatus');
@@ -8,10 +8,15 @@ const notesButton = document.getElementById('marbleNotes');
 let values = fixed.slice();
 let notes = Array.from({length:81}, () => []);
 let selected = 4, notesMode = false;
+let completionRecorded = false;
+
+function state() {
+  return { version:1, puzzleId, values:values.slice(), notes:notes.map(note => note.slice()) };
+}
 
 function persist() {
   if (preview || !puzzleId) return;
-  try { window.saveLocalState(puzzleId, { version:1, puzzleId, values:values.slice(), notes:notes.map(note => note.slice()) }); }
+  try { window.saveLocalState(puzzleId, state()); }
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
 
@@ -62,7 +67,13 @@ function render() {
   status.textContent = [...(sudokuBad.size ? ['스도쿠 숫자 중복'] : []), ...reasons,
     ...(distance > 32 ? ['출발 칸을 지나쳤습니다.'] : [])].join(' · ');
   status.hidden = !status.textContent;
-  document.getElementById('marbleComplete').hidden = !marbleSolved(values, fixed);
+  const complete = marbleSolved(values, fixed);
+  document.getElementById('marbleComplete').hidden = !complete;
+  if (!complete) completionRecorded = false;
+  else if (released && !preview && !completionRecorded) {
+    completionRecorded = true;
+    window.recordCompletion(puzzleId, state());
+  }
 }
 
 function change(number) {
@@ -139,8 +150,22 @@ function restore() {
   }
   values = saved?.values || fixed.slice();
   notes = saved?.notes || Array.from({length:81}, () => []);
+  completionRecorded = false;
   render();
 }
-// Device-only progress. This test puzzle never submits completions or cloud saves.
+if (released && !preview) {
+  window.handleCloudSave = () => window.saveProgressCloud(puzzleId, state());
+  window.handleCloudLoad = async () => {
+    const saved = await window.loadProgressCloud(puzzleId);
+    if (saved == null) return;
+    const parsed = parseMarbleState(saved, puzzleId, fixed);
+    if (!parsed) { window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.'); return; }
+    values = parsed.values;
+    notes = parsed.notes;
+    completionRecorded = false;
+    persist();
+    render();
+  };
+}
 if (!preview && puzzleId) window.startLocalPuzzle(puzzleId, restore, restore);
 else restore();

@@ -3,7 +3,7 @@ import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import NumberPad from './NumberPad.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
 import { marblePath } from '../lib/juru-marble.js';
-const { puzzleId = '', givens = Array(81).fill(0), preview = false } = Astro.props;
+const { puzzleId = '', givens = Array(81).fill(0), preview = false, released = false } = Astro.props;
 
 const perimeter = marblePath;
 // Trace the exposed edges with track cells on their right, then inset both loops.
@@ -40,8 +40,8 @@ while (pending.size) {
 }
 
 ---
-<PuzzleLayout title="주루마블 스도쿠" subtitle="숫자만큼 잔을 움직여 한 바퀴 도는 스도쿠" description="숫자와 정차 위치의 중복을 피하며 한 바퀴 도는 스도쿠" {puzzleId} preview={preview} showCloud={false} showPreviewCloud={false} showPreviewLeaderboard={false} showLeaderboard={false}>
-  <div slot="head"><meta name="robots" content="noindex, nofollow" /></div>
+<PuzzleLayout title="주루마블 스도쿠" subtitle="숫자만큼 잔을 움직여 한 바퀴 도는 스도쿠" description="숫자와 정차 위치의 중복을 피하며 한 바퀴 도는 스도쿠" {puzzleId} preview={preview} showCloud={released} showPreviewCloud={false} showPreviewLeaderboard={false} showLeaderboard={released}>
+  <div slot="head">{!released && <meta name="robots" content="noindex, nofollow" />}</div>
   <div slot="rules">
     각 행·열·3×3 상자에 1~9를 한 번씩 넣으세요.<br />
     잔은 맨 윗줄 가운데에서 출발해 칸의 숫자만큼 시계 방향으로 이동하며, 정확히 한 바퀴 돌아옵니다.<br />
@@ -80,8 +80,8 @@ while (pending.size) {
   </section>
   <PuzzleCompletion slot="completion" id="marbleComplete" />
 </PuzzleLayout>
-<script define:vars={{perimeter, givens, puzzleId, preview}}>
-  window.marbleConfig = { path: perimeter, givens, puzzleId, preview };
+<script define:vars={{perimeter, givens, puzzleId, preview, released}}>
+  window.marbleConfig = { path: perimeter, givens, puzzleId, preview, released };
 </script>
 <script>import '../scripts/juru-marble.js';</script>
 <style>
