@@ -9,7 +9,7 @@ export function initNicknameBadges() {
     const name=badge.querySelector('[data-badge-name]');
     const svg=badge.querySelector('svg');
     if(!name.getClientRects().length)return;
-    if(!svg.dataset.normalized){
+    if(svg&&!svg.dataset.normalized){
       const bounds=svg.getBBox();
       const stroke=parseFloat(getComputedStyle(svg).strokeWidth)||0;
       // Retain the original coordinate scale. Cropping to the ink bounds

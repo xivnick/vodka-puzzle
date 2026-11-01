@@ -1,0 +1,36 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+import NicknameBadge from '../../../../components/NicknameBadge.astro';
+const missions=[
+ ['한가위 스도쿠','토끼','260925_01','/icons/seasonal/rabbit.svg'],
+ ['란영 스도쿠','꽃','260928_03','/icons/flower/flower.svg'],
+ ['봄버스터즈 스도쿠','폭탄','261003_01','/icons/bomb/bomb-red.svg'],
+ ['토마토스 스도쿠','토마토','261005_01','/icons/tomato.svg'],
+ ['주루마블 스도쿠','잔','261101_03','/icons/juru-marble/vodka-shot.png'],
+];
+const files=import.meta.glob('../../../../../public/icons/**/*.svg',{query:'?raw',import:'default',eager:true});
+const svg=(path)=>String(files[`../../../../../public${path}`]??'');
+---
+<PageLayout title="특수 미션 아이콘 시안" subtitle="지정 문제 하나 완료 → 아이콘 하나">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="special-preview" aria-label="특수 미션 5종 비교">
+    <p class="intro">각 지정 문제를 한 번 완료하면 해당 아이콘을 받습니다.<br />추가 단계나 반복 코인 보상은 없습니다.</p>
+    <div class="cards">{missions.map(([name,label,id,src])=><article>
+      <span class="large" aria-hidden="true">{src.endsWith('.svg')?<Fragment set:html={svg(src)}/>:<img src={src} alt="" width="56" height="56"/>}</span>
+      <h2>{name}</h2><span class="condition">해당 문제 완료</span>
+      <span class="nickname"><NicknameBadge src={src} label={label}/></span>
+      <span class="reward">보상: {label} 아이콘 1회 지급</span>
+      <a class="puzzle-link" href={`/${id}/`}>대상 문제 보기</a>
+    </article>)}</div>
+    <p class="caption">확대 56px · 이름 옆 18px. 실제 퍼즐과 기존 배지에서 사용 중인 이미지를 그대로 사용했습니다. 이 페이지에서는 실제 보상을 지급하지 않습니다.</p>
+    <p class="credit">토끼: <a href="https://lucide.dev/icons/rabbit">Lucide</a> · <a href="/icons/seasonal/LICENSE-lucide">ISC</a><br />꽃·폭탄: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a><br />토마토: IconPark Outline · <a href="/icons/tomato-LICENSE.md">Apache 2.0</a><br />잔: <a href="https://icons8.com/icons/set/vodka-shot">Vodka Shot</a> · <a href="https://icons8.com/">Icons8</a></p>
+  </section>
+</PageLayout>
+<style>
+.special-preview{width:100%;color:#444}.intro{margin:0 0 20px;font-size:.75rem;line-height:1.8;color:#888}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+article{display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px 10px 20px;border:1px solid #e8e5df;border-radius:4px;background:white}
+article:last-child{grid-column:1/-1}.large{display:block;width:56px;height:56px;margin-bottom:5px}.large :global(svg),.large img{display:block;width:100%;height:100%;object-fit:contain}
+h2{font-size:.8rem;font-weight:500;line-height:1.6;margin:0;text-align:center;word-break:keep-all}.condition{font-size:.68rem;color:#999}.nickname{font-size:.84rem;line-height:1.5}.reward{font-size:.64rem;color:#999}.puzzle-link{font-size:.64rem;color:#999}
+.caption{margin:18px 0 0;font-size:.68rem;color:#999;line-height:1.8}.credit{margin:12px 0 0;font-size:.62rem;color:#aaa;line-height:1.8}.credit a{color:inherit}
+</style>
