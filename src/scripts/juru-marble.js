@@ -20,6 +20,10 @@ function render() {
   const { bad: stopBad, reasons } = stopConflicts(path, values, stops);
   const sudokuBad = sudokuConflicts(values);
   const bad = new Set([...stopBad, ...sudokuBad]);
+  const routeValid = distance === path.length && bad.size === 0;
+  document.getElementById('marbleGame').classList.toggle('route-valid', routeValid);
+  glasses.setAttribute('filter', routeValid ? 'url(#marbleGlassGreen)' : 'none');
+  glasses.setAttribute('opacity', routeValid ? '.35' : '.2');
   const marked = new Set(stops.map(index => {
     const [r, c] = path[index];
     return r * 9 + c;

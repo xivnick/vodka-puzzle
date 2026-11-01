@@ -54,11 +54,16 @@ while (pending.size) {
     <svg viewBox="0 0 450 450" role="img" aria-labelledby="marbleTitle marbleDescription">
       <title id="marbleTitle">네 방향으로 꺾이며 32칸을 순환하는 스도쿠 경로</title>
       <desc id="marbleDescription">맨 윗줄 5번째 칸에서 출발합니다. 각 변 가운데에서는 바깥으로 나오고 모서리에서는 안쪽으로 꺾이는 경로를 시계 방향으로 따라 출발 칸으로 돌아옵니다.</desc>
+      <defs>
+        <filter id="marbleGlassGreen" color-interpolation-filters="sRGB">
+          <feColorMatrix type="matrix" values="0 0 0 0 .22  0 0 0 0 .55  0 0 0 0 .36  0 0 0 1 0" />
+        </filter>
+      </defs>
       <rect width="450" height="450" fill="white" />
       {Array.from({length: 8}, (_, i) => i + 1).map(i => <>
         <path d={`M${i * 50} 0V450 M0 ${i * 50}H450`} fill="none" stroke={i % 3 === 0 ? '#555' : '#c9ced4'} stroke-width={i % 3 === 0 ? 2 : 1} />
       </>)}
-      <path d={trackLoops.join(" ")} fill="none" stroke="#888" stroke-width="2" stroke-linejoin="round" />
+      <path class="marble-track" d={trackLoops.join(" ")} fill="none" stroke="#888" stroke-width="2" stroke-linejoin="round" />
       <g id="marbleGlasses" opacity=".2" aria-hidden="true">
         <image href="/icons/juru-marble/vodka-shot.png" x="205" y="5" width="40" height="40" />
       </g>
@@ -82,6 +87,7 @@ while (pending.size) {
 <style>
   .marble-board { position:relative; width:100%; aspect-ratio:1; }
   .marble-board svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .route-valid .marble-track { stroke:#388c5c; }
   #marbleCells { position:relative; display:grid; grid-template-columns:repeat(9,minmax(0,1fr)); width:100%; height:100%; }
   .marble-cell { position:relative; display:flex; align-items:center; justify-content:center; aspect-ratio:1; padding:0; border:0; border-radius:0; background:transparent; color:#4a6fa5; font-size:clamp(18px,5vw,27px); font-weight:700; line-height:1; touch-action:manipulation; }
   .marble-cell.given { color:#333; }
