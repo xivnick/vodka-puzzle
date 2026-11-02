@@ -2,7 +2,7 @@
 import PageLayout from '../../../layouts/PageLayout.astro';
 import NicknameBadge from '../../../components/NicknameBadge.astro';
 import CoinAmount from '../../../components/CoinAmount.astro';
-import coin from '../../../../public/icons/akar/coin.svg?raw';
+import coin from '../../../../public/icons/coin-candidates/tabler-coins.svg?raw';
 import data from '../../../data/mypage-v2-preview.json';
 import '../../../styles/mypage-v2-preview.css';
 const files=import.meta.glob('../../../../public/icons/**/*.svg',{query:'?raw',import:'default',eager:true});
@@ -45,7 +45,7 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
       <section id="wardrobe-effects" role="tabpanel" aria-labelledby="wardrobe-tab-effects" hidden><p id="effectHint" class="helper">효과는 언커먼·레어 색상에 적용할 수 있어요.</p><div id="effectInventory" class="effect-inventory"></div></section>
       <div class="dress-footer"><span id="saveStatus">선택한 조합을 미리보고 있어요.</span><button type="button" id="saveStyle">적용하기</button></div>
     </section>
-    <div class="prototype-footer"><p>가상 기록을 사용한 시안입니다. 코인 보상량·뽑기 가격은 예시입니다.</p><div class="preview-links"><a href="/test/achievement-badges/mission-overview/">전체 미션 기준</a><button type="button" id="resetDemo">시안 초기화</button></div><p class="icon-credit">아이콘: <a href="https://tabler.io/icons">Tabler</a> · <a href="https://lucide.dev/">Lucide</a> · <a href="https://github.com/bytedance/IconPark">IconPark</a> · <a href="https://icons8.com/">Icons8</a> · <a href="https://akaricons.com/">Akar</a></p></div>
+    <div class="prototype-footer"><p>가상 기록을 사용한 시안입니다. 코인 보상량·뽑기 가격은 예시입니다.</p><div class="preview-links"><a href="/test/achievement-badges/mission-overview/">전체 미션 기준</a><button type="button" id="resetDemo">시안 초기화</button></div><p class="icon-credit">아이콘: <a href="https://tabler.io/icons">Tabler</a> · <a href="https://lucide.dev/">Lucide</a> · <a href="https://github.com/bytedance/IconPark">IconPark</a> · <a href="https://icons8.com/">Icons8</a></p></div>
     <div id="previewToast" role="status" aria-live="polite" hidden></div>
     <dialog id="craftDialog" aria-labelledby="craftTitle"><div class="dialog-heading"><h2 id="craftTitle">색 조합</h2><button type="button" id="closeCraft" aria-label="닫기">×</button></div><p>커먼 색상 3개를 골라 언커먼을 만들어보세요.</p><div id="craftSlots" class="craft-slots"></div><div id="craftChoices" class="craft-choices"></div><div class="craft-outcome"><span>결과</span><span id="craftOutcome">세 가지 색을 선택해주세요.</span></div><p class="helper">서로 다른 색이 세 가지면, 시안에서는 앞의 두 색을 사용합니다. 같은 색 세 개는 언커먼 단색이 됩니다.</p><button type="button" id="craftConfirm" disabled>조합하기</button></dialog>
     <template id="coinIconTemplate"><span class="coin-icon" aria-hidden="true"><Fragment set:html={coin}/></span></template>
