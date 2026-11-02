@@ -1,6 +1,8 @@
 ---
 import PageLayout from '../../../layouts/PageLayout.astro';
 import NicknameBadge from '../../../components/NicknameBadge.astro';
+import CoinAmount from '../../../components/CoinAmount.astro';
+import coin from '../../../../public/icons/achievement-preview/coin.svg?raw';
 import data from '../../../data/mypage-v2-preview.json';
 import '../../../styles/mypage-v2-preview.css';
 const files=import.meta.glob('../../../../public/icons/**/*.svg',{query:'?raw',import:'default',eager:true});
@@ -14,7 +16,7 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
   <section class="mypage-v2" aria-label="마이페이지 v2 시안">
     <header class="profile">
       <div><span class="season">{data.season}</span><div class="profile-name" id="profileBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="현재 대표 배지"/></div></div>
-      <button type="button" class="balance" data-open-tab="draw" aria-label="보유 코인, 뽑기로 이동"><span class="balance-label">코인</span><span id="coinBalance">1,240</span></button>
+      <button type="button" class="balance" data-open-tab="draw" aria-label="보유 코인, 뽑기로 이동"><CoinAmount amount={1240} id="coinBalance"/></button>
     </header>
     <div class="main-tabs" role="tablist" aria-label="마이페이지 메뉴">{[['missions','미션'],['draw','뽑기'],['dress','꾸미기']].map(([id,name],i)=><button type="button" id={`tab-${id}`} role="tab" aria-selected={i===0?'true':'false'} aria-controls={`panel-${id}`} tabindex={i===0?'0':'-1'} data-tab={id}>{name}{id==='missions'&&<span class="tab-count" id="readyCount">{initialReady}</span>}</button>)}</div>
     <section id="panel-missions" role="tabpanel" aria-labelledby="tab-missions">
@@ -22,14 +24,14 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
       <div class="filters" aria-label="미션 분류">{[['all','전체'],['ready','받을 수 있음'],['basic','기본'],['group','문제 묶음'],['special','특수']].map(([id,label],i)=><button type="button" data-filter={id} aria-pressed={i===0?'true':'false'}>{label}</button>)}</div>
       <div class="mission-list">{data.missions.map(m=>{const s=goal(m);const ready=s&&m.count>=s.at;const icon=data.icons.find(i=>i.id===m.icon);return <article class:list={['mission-row',{'is-complete':!s}]} data-mission={m.id} data-group={m.group}>
         <span class="mission-icon" aria-hidden="true">{icon.src.endsWith('.svg')?<Fragment set:html={raw(icon.src)}/>:<img src={icon.src} alt="" width="28" height="28"/>}</span>
-        <div class="mission-content"><div class="mission-title"><h3>{m.name}</h3><span class="mission-value">{s?`${m.count} / ${s.at}`:'완료'}</span></div><p class="mission-condition">{m.text}</p><div class="mission-progress" role="progressbar" aria-label={`${m.name} 진행도`} aria-valuemin="0" aria-valuemax={s?.at??1} aria-valuenow={Math.min(m.count,s?.at??1)}><span style={`width:${s?Math.min(m.count/s.at,1)*100:100}%`}/></div><div class="mission-bottom"><span class="mission-reward">{s?(s.kind==='coins'?`${s.value} 코인`:s.kind==='effect'?'별빛 반짝임 효과':`${data.icons.find(i=>i.id===s.value)?.name} 아이콘`):'아이콘 획득 완료'}</span><button type="button" data-claim={m.id} disabled={!ready} class:list={['claim-button',{'claim-ready':ready}]}>{ready?'받기':s?'진행 중':'획득 완료'}</button></div></div>
+        <div class="mission-content"><div class="mission-title"><h3>{m.name}</h3><span class="mission-value">{s?`${m.count} / ${s.at}`:'완료'}</span></div><p class="mission-condition">{m.text}</p><div class="mission-progress" role="progressbar" aria-label={`${m.name} 진행도`} aria-valuemin="0" aria-valuemax={s?.at??1} aria-valuenow={Math.min(m.count,s?.at??1)}><span style={`width:${s?Math.min(m.count/s.at,1)*100:100}%`}/></div><div class="mission-bottom"><span class="mission-reward">{s?(s.kind==='coins'?<CoinAmount amount={s.value}/>:s.kind==='effect'?'별빛 반짝임 효과':`${data.icons.find(i=>i.id===s.value)?.name} 아이콘`):'아이콘 획득 완료'}</span><button type="button" data-claim={m.id} disabled={!ready} class:list={['claim-button',{'claim-ready':ready}]}>{ready?'받기':s?'진행 중':'획득 완료'}</button></div></div>
       </article>})}</div>
       <p id="emptyMissions" class="empty-state" hidden>지금 받을 보상은 모두 받았어요.</p>
     </section>
     <section id="panel-draw" role="tabpanel" aria-labelledby="tab-draw" hidden>
       <div class="panel-heading"><div><h2>색상과 효과 뽑기</h2></div></div>
       <p class="draw-summary">커먼 색상 · 레어 조합 · 에픽 효과를 얻을 수 있습니다.</p>
-      <div class="draw-actions"><button type="button" data-draw="1"><strong>1회 뽑기</strong><span>100 C</span></button><button type="button" data-draw="10"><strong>10회 뽑기</strong><span>1,000 C</span></button></div>
+      <div class="draw-actions"><button type="button" data-draw="1"><strong>1회 뽑기</strong><CoinAmount amount={100}/></button><button type="button" data-draw="10"><strong>10회 뽑기</strong><CoinAmount amount={1000}/></button></div>
       <div id="drawResult" class="draw-result" aria-live="polite" hidden><div class="result-heading"><h3>뽑기 결과</h3><button type="button" data-open-tab="dress">꾸미기</button></div><div id="resultItems" class="result-items"></div></div>
       <details class="draw-guide"><summary>무엇을 얻을 수 있나요?</summary><ul><li>커먼: 기본 단색 36종</li><li>레어: 선정된 두 색 조합 24종</li><li>에픽: 빛의 띠·포일·간섭광·렌티큘러·잔광</li><li>언커먼은 커먼 색 3개를 조합해서 만듭니다.</li></ul></details>
       <p class="demo-note">뽑기 가격과 결과 구성은 시연용입니다. 실제 코인은 사용되지 않습니다.</p>
@@ -46,6 +48,7 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
     <div class="prototype-footer"><p>가상 기록을 사용한 시안입니다. 코인 보상량·뽑기 가격은 예시입니다.</p><div class="preview-links"><a href="/test/achievement-badges/mission-overview/">전체 미션 기준</a><button type="button" id="resetDemo">시안 초기화</button></div><p class="icon-credit">아이콘: <a href="https://tabler.io/icons">Tabler</a> · <a href="https://lucide.dev/">Lucide</a> · <a href="https://github.com/bytedance/IconPark">IconPark</a> · <a href="https://icons8.com/">Icons8</a></p></div>
     <div id="previewToast" role="status" aria-live="polite" hidden></div>
     <dialog id="craftDialog" aria-labelledby="craftTitle"><div class="dialog-heading"><h2 id="craftTitle">색 조합</h2><button type="button" id="closeCraft" aria-label="닫기">×</button></div><p>커먼 색상 3개를 골라 언커먼을 만들어보세요.</p><div id="craftSlots" class="craft-slots"></div><div id="craftChoices" class="craft-choices"></div><div class="craft-outcome"><span>결과</span><span id="craftOutcome">세 가지 색을 선택해주세요.</span></div><p class="helper">서로 다른 색이 세 가지면, 시안에서는 앞의 두 색을 사용합니다. 같은 색 세 개는 언커먼 단색이 됩니다.</p><button type="button" id="craftConfirm" disabled>조합하기</button></dialog>
+    <template id="coinIconTemplate"><span class="coin-icon" aria-hidden="true"><Fragment set:html={coin}/></span></template>
     <script id="mypagePreviewData" type="application/json" set:html={JSON.stringify(data)}/>
     {data.icons.map(icon=><template data-icon-template={icon.id}>{icon.src.endsWith('.svg')?<Fragment set:html={raw(icon.src)}/>:<img src={icon.src} alt="" width="18" height="18"/>}</template>)}
   </section>

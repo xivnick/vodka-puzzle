@@ -18,3 +18,5 @@ First-blood reward candidates add `sword` and `swords` from the same pinned Tabl
 Basic mission preview adds `leaf` from the same pinned Tabler Icons v3.40.0 outline set, unchanged, and reuses `puzzle` and `flame`.
 
 Spiral Galaxies mission candidates add `galaxy`, `spiral`, `universe`, and `planet` from the same pinned Tabler Icons v3.40.0 outline set, unchanged.
+
+Mypage v2 coin amounts use `coin` from the same pinned Tabler Icons v3.40.0 outline set, unchanged.

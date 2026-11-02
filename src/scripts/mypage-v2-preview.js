@@ -50,8 +50,15 @@ if(root){
   all('[data-wardrobe]').forEach(b=>b.addEventListener('click',()=>wardrobe(b.dataset.wardrobe)));
   keyboardTabs('[data-tab]','tab',openTab);keyboardTabs('[data-wardrobe]','wardrobe',wardrobe);
   $('#resetDemo').addEventListener('click',()=>location.reload());
+  function coinAmount(amount){
+    const formatted=amount.toLocaleString('ko-KR'),wrapper=make('span','coin-amount');
+    wrapper.setAttribute('aria-label',`${formatted} 코인`);
+    wrapper.append($('#coinIconTemplate').content.cloneNode(true),make('span','',formatted));
+    return wrapper;
+  }
   function renderCoins(){
     $('#coinBalance').textContent=coins.toLocaleString('ko-KR');
+    $('#coinBalance').closest('.coin-amount').setAttribute('aria-label',`${coins.toLocaleString('ko-KR')} 코인`);
     all('[data-draw]').forEach(b=>b.disabled=coins<Number(b.dataset.draw)*100);
   }
   function renderMissions(){
@@ -66,7 +73,9 @@ if(root){
       const bar=row.querySelector('.mission-progress');
       bar.setAttribute('aria-valuemax',s?.at??1);bar.setAttribute('aria-valuenow',Math.min(m.count,s?.at??1));
       bar.firstElementChild.style.width=(s?Math.min(m.count/s.at,1)*100:100)+'%';
-      row.querySelector('.mission-reward').textContent=s?(s.kind==='coins'?`${s.value} 코인`:s.kind==='effect'?'별빛 반짝임 효과':`${icons.get(s.value).name} 아이콘`):m.id==='all'?'별빛 반짝임 획득 완료':'아이콘 획득 완료';
+      const reward=row.querySelector('.mission-reward');
+      if(s?.kind==='coins')reward.replaceChildren(coinAmount(s.value));
+      else reward.textContent=s?(s.kind==='effect'?'별빛 반짝임 효과':`${icons.get(s.value).name} 아이콘`):m.id==='all'?'별빛 반짝임 획득 완료':'아이콘 획득 완료';
       const button=row.querySelector('[data-claim]');button.disabled=!ready;button.classList.toggle('claim-ready',ready);button.textContent=ready?'받기':s?'진행 중':'획득 완료';
     });
     $('#readyCount').textContent=String(readyCount);$('#readyCount').hidden=!readyCount;
