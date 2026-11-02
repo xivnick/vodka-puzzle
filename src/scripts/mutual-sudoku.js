@@ -41,6 +41,7 @@ function render() {
   document.querySelectorAll('[data-clue]').forEach(clue => {
     const check = checks.find(check => check.key === clue.dataset.clue);
     clue.classList.toggle('error', Boolean(check?.conflict));
+    clue.classList.toggle('satisfied', Boolean(check?.satisfied));
   });
   const duplicateConflicts = sudokuConflicts(puzzle, values);
   const clueConflicts = new Set(checks.filter(check => check.conflict).flatMap(check => check.cells));

@@ -26,7 +26,7 @@ export function mutualClueChecks(puzzle, values) {
     const [x, y] = pair;
     const first = values[indices[y - 1]];
     const second = values[indices[x - 1]];
-    return [{ key: `${side}-${line}`, cells: [indices[y - 1], indices[x - 1]], conflict: Boolean(first && second && first !== x && second !== y) }];
+    return [{ key: `${side}-${line}`, cells: [indices[y - 1], indices[x - 1]], satisfied: first === x || second === y, conflict: Boolean(first && second && first !== x && second !== y) }];
   }));
 }
 
