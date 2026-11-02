@@ -18,9 +18,15 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
     <section aria-labelledby="accountTitle" hidden={customize}>
     <div class="view-heading"><h2 id="accountTitle">계정</h2></div>
     <header class="profile">
-      <div class="profile-identity"><form id="profileNicknameForm"><label for="accountNickname">닉네임</label><div class="nickname-entry"><input id="accountNickname" type="text" value="퍼즐러" maxlength="20" required autocomplete="off"/><button type="submit">저장</button></div></form><p class="account-email">puzzler@example.com</p><a class="customize-link" href="/test/mypage-v2/customize/">꾸미기</a><div id="profileBadge" hidden><NicknameBadge name="퍼즐러" icon="leaf" label="현재 대표 배지"/></div></div>
-      <div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span><button type="button" class="draw-link" data-toggle-view="draw" aria-expanded="false" aria-controls="panel-draw">뽑기</button></div>
+      <div class="profile-identity"><form id="profileNicknameForm"><label for="accountNickname">닉네임</label><div class="nickname-entry"><input id="accountNickname" type="text" value="퍼즐러" maxlength="20" required autocomplete="off"/><button type="submit">저장</button></div></form><p class="account-email">puzzler@example.com</p></div>
+
     </header>
+    </section>
+    <section class="icon-section" aria-labelledby="iconsTitle" hidden={customize}>
+      <div class="view-heading"><h2 id="iconsTitle">아이콘</h2></div>
+      <div class="icon-overview"><div class="icon-display"><div id="profileBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="현재 표시 이름"/></div><a class="customize-link" href="/test/mypage-v2/customize/">꾸미기</a></div>
+      <div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span><button type="button" class="draw-link" data-toggle-view="draw" aria-expanded="false" aria-controls="panel-draw">뽑기</button></div>
+      </div>
     </section>
     <section id="panel-missions" aria-labelledby="missionsTitle" hidden={customize}>
       <div class="view-heading"><h2 id="missionsTitle" tabindex="-1">도전 과제</h2></div>
