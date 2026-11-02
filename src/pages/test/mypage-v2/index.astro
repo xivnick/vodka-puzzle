@@ -9,14 +9,13 @@ const initialOwned=new Set(['leaf','puzzle','flame','sword','rabbit']);
 const goal=(m)=>m.stages.find(s=>!m.claimed.includes(s.at));
 const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s.at}).length;
 ---
-<PageLayout title="마이페이지" subtitle="미션 · 뽑기 · 꾸미기">
+<PageLayout title="마이페이지">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="mypage-v2" aria-label="마이페이지 v2 시안">
     <header class="profile">
       <div><span class="season">{data.season}</span><div class="profile-name" id="profileBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="현재 대표 배지"/></div></div>
       <button type="button" class="balance" data-open-tab="draw" aria-label="보유 코인, 뽑기로 이동"><span class="balance-label">코인</span><span id="coinBalance">1,240</span></button>
     </header>
-    <div class="stats"><div><strong>22</strong><span>일반 완료</span></div><div><strong>12</strong><span>현재 데일리 연속</span></div><div><strong>3</strong><span>일반 1등</span></div></div>
     <div class="main-tabs" role="tablist" aria-label="마이페이지 메뉴">{[['missions','미션'],['draw','뽑기'],['dress','꾸미기']].map(([id,name],i)=><button type="button" id={`tab-${id}`} role="tab" aria-selected={i===0?'true':'false'} aria-controls={`panel-${id}`} tabindex={i===0?'0':'-1'} data-tab={id}>{name}{id==='missions'&&<span class="tab-count" id="readyCount">{initialReady}</span>}</button>)}</div>
     <section id="panel-missions" role="tabpanel" aria-labelledby="tab-missions">
       <div class="panel-heading"><div><h2>나의 미션</h2></div><span class="collection-count"><b id="ownedCount">5</b> / 18 <small>아이콘</small></span></div>
