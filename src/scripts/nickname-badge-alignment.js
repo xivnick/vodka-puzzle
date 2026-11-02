@@ -45,4 +45,8 @@ export function initNicknameBadges() {
   // another font is loaded. ResizeObserver handles responsive font sizes.
   document.fonts.ready.then(refresh);
   document.fonts.addEventListener('loadingdone',refresh);
+  // An icon picker can replace the geometry without changing the nickname.
+  document.addEventListener('nickname-badge:change',event=>{
+    if(badges.includes(event.target))align(event.target);
+  });
 }

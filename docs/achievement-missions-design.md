@@ -58,6 +58,8 @@
 
 ## 확인용 페이지
 
+- [마이페이지 v2](https://puzzle.xivnick.me/test/mypage-v2/): 닉네임 배지·코인 잔액과 미션·뽑기·꾸미기 탭을 모은 인터랙티브 시안. 미션 보상 받기, 1회·10회 뽑기, 아이콘·색상·효과 선택, 커먼 3개 조합과 대표 배지 적용을 가상 데이터로 시연한다. 계정과 연결하지 않으며 새로고침하면 초기화한다. 코인 보상량·뽑기 가격·결과 구성은 미확정 예시다. 세 종류의 서로 다른 재료를 조합할 때에는 시연 편의상 앞의 두 색을 사용하며, 정식 조합 규칙을 확정한 뜻은 아니다.
+
 - [전체 미션 정리](https://puzzle.xivnick.me/test/achievement-badges/mission-overview/): 기본 6개·퍼스트 블러드 1개·문제 묶음 4개·특수문제 5개·전체 완료 1개를 모은 종합 예시. 이름·후속 보상 등 미정 항목은 별도로 표시한다. 공개 문제 목록 스냅샷은 `src/data/achievement-missions-preview.json`에 있다.
 
 - [Spiral Galaxies 아이콘 비교](https://puzzle.xivnick.me/test/achievement-badges/galaxy-icons/): 나선 은하를 보상 아이콘으로 확정.

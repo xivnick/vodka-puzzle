@@ -1,0 +1,959 @@
+{
+  "common": [
+    {
+      "id": "c0",
+      "name": "수박",
+      "a": "#D9747C",
+      "b": "#D9747C",
+      "rarity": "common"
+    },
+    {
+      "id": "c1",
+      "name": "빨강",
+      "a": "#C4515D",
+      "b": "#C4515D",
+      "rarity": "common"
+    },
+    {
+      "id": "c2",
+      "name": "와인",
+      "a": "#953E4B",
+      "b": "#953E4B",
+      "rarity": "common"
+    },
+    {
+      "id": "c3",
+      "name": "살구",
+      "a": "#D98A62",
+      "b": "#D98A62",
+      "rarity": "common"
+    },
+    {
+      "id": "c4",
+      "name": "주황",
+      "a": "#C57543",
+      "b": "#C57543",
+      "rarity": "common"
+    },
+    {
+      "id": "c5",
+      "name": "구리",
+      "a": "#965329",
+      "b": "#965329",
+      "rarity": "common"
+    },
+    {
+      "id": "c6",
+      "name": "모래",
+      "a": "#C3AA4E",
+      "b": "#C3AA4E",
+      "rarity": "common"
+    },
+    {
+      "id": "c7",
+      "name": "노랑",
+      "a": "#A99231",
+      "b": "#A99231",
+      "rarity": "common"
+    },
+    {
+      "id": "c8",
+      "name": "머스터드",
+      "a": "#827222",
+      "b": "#827222",
+      "rarity": "common"
+    },
+    {
+      "id": "c9",
+      "name": "밀크티",
+      "a": "#AF8A6D",
+      "b": "#AF8A6D",
+      "rarity": "common"
+    },
+    {
+      "id": "c10",
+      "name": "갈색",
+      "a": "#8F6A50",
+      "b": "#8F6A50",
+      "rarity": "common"
+    },
+    {
+      "id": "c11",
+      "name": "초콜릿",
+      "a": "#694D3D",
+      "b": "#694D3D",
+      "rarity": "common"
+    },
+    {
+      "id": "c12",
+      "name": "풀잎",
+      "a": "#7DA06A",
+      "b": "#7DA06A",
+      "rarity": "common"
+    },
+    {
+      "id": "c13",
+      "name": "초록",
+      "a": "#578761",
+      "b": "#578761",
+      "rarity": "common"
+    },
+    {
+      "id": "c14",
+      "name": "숲",
+      "a": "#38664B",
+      "b": "#38664B",
+      "rarity": "common"
+    },
+    {
+      "id": "c15",
+      "name": "민트",
+      "a": "#6FAE95",
+      "b": "#6FAE95",
+      "rarity": "common"
+    },
+    {
+      "id": "c16",
+      "name": "비취",
+      "a": "#42977D",
+      "b": "#42977D",
+      "rarity": "common"
+    },
+    {
+      "id": "c17",
+      "name": "깊은 민트",
+      "a": "#2E7364",
+      "b": "#2E7364",
+      "rarity": "common"
+    },
+    {
+      "id": "c18",
+      "name": "물빛",
+      "a": "#6BA7AA",
+      "b": "#6BA7AA",
+      "rarity": "common"
+    },
+    {
+      "id": "c19",
+      "name": "청록",
+      "a": "#368B91",
+      "b": "#368B91",
+      "rarity": "common"
+    },
+    {
+      "id": "c20",
+      "name": "깊은 청록",
+      "a": "#28676F",
+      "b": "#28676F",
+      "rarity": "common"
+    },
+    {
+      "id": "c21",
+      "name": "하늘",
+      "a": "#79A9C8",
+      "b": "#79A9C8",
+      "rarity": "common"
+    },
+    {
+      "id": "c22",
+      "name": "바다",
+      "a": "#488FAF",
+      "b": "#488FAF",
+      "rarity": "common"
+    },
+    {
+      "id": "c23",
+      "name": "잉크블루",
+      "a": "#366B8C",
+      "b": "#366B8C",
+      "rarity": "common"
+    },
+    {
+      "id": "c24",
+      "name": "수국",
+      "a": "#809ACC",
+      "b": "#809ACC",
+      "rarity": "common"
+    },
+    {
+      "id": "c25",
+      "name": "파랑",
+      "a": "#527BC0",
+      "b": "#527BC0",
+      "rarity": "common"
+    },
+    {
+      "id": "c26",
+      "name": "남색",
+      "a": "#3D5994",
+      "b": "#3D5994",
+      "rarity": "common"
+    },
+    {
+      "id": "c27",
+      "name": "라벤더",
+      "a": "#A78AC9",
+      "b": "#A78AC9",
+      "rarity": "common"
+    },
+    {
+      "id": "c28",
+      "name": "보라",
+      "a": "#8B69B1",
+      "b": "#8B69B1",
+      "rarity": "common"
+    },
+    {
+      "id": "c29",
+      "name": "포도",
+      "a": "#674B8D",
+      "b": "#674B8D",
+      "rarity": "common"
+    },
+    {
+      "id": "c30",
+      "name": "벚꽃",
+      "a": "#CF91B2",
+      "b": "#CF91B2",
+      "rarity": "common"
+    },
+    {
+      "id": "c31",
+      "name": "분홍",
+      "a": "#BB6B98",
+      "b": "#BB6B98",
+      "rarity": "common"
+    },
+    {
+      "id": "c32",
+      "name": "자두",
+      "a": "#914B76",
+      "b": "#914B76",
+      "rarity": "common"
+    },
+    {
+      "id": "c33",
+      "name": "은회색",
+      "a": "#9898A1",
+      "b": "#9898A1",
+      "rarity": "common"
+    },
+    {
+      "id": "c34",
+      "name": "회색",
+      "a": "#727C8B",
+      "b": "#727C8B",
+      "rarity": "common"
+    },
+    {
+      "id": "c35",
+      "name": "먹색",
+      "a": "#485360",
+      "b": "#485360",
+      "rarity": "common"
+    }
+  ],
+  "rare": [
+    {
+      "id": "r-berry",
+      "name": "베리소다",
+      "a": "#BB6B98",
+      "b": "#527BC0",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-sunset",
+      "name": "선셋",
+      "a": "#C57543",
+      "b": "#8B69B1",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-mint-chocolate",
+      "name": "민트초코",
+      "a": "#42977D",
+      "b": "#8F6A50",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-sea",
+      "name": "바다",
+      "a": "#488FAF",
+      "b": "#28676F",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-petal",
+      "name": "꽃잎",
+      "a": "#CF91B2",
+      "b": "#674B8D",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-autumn",
+      "name": "가을",
+      "a": "#A99231",
+      "b": "#965329",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-peach",
+      "name": "복숭아",
+      "a": "#D98A62",
+      "b": "#D9747C",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-lemon-soda",
+      "name": "레몬소다",
+      "a": "#C3AA4E",
+      "b": "#6FAE95",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-hydrangea",
+      "name": "수국",
+      "a": "#809ACC",
+      "b": "#A78AC9",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-aurora",
+      "name": "오로라",
+      "a": "#368B91",
+      "b": "#8B69B1",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-glacier",
+      "name": "빙하",
+      "a": "#6BA7AA",
+      "b": "#9898A1",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-deep-sea",
+      "name": "심해",
+      "a": "#366B8C",
+      "b": "#3D5994",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-rose",
+      "name": "장미",
+      "a": "#C4515D",
+      "b": "#914B76",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-camellia",
+      "name": "동백",
+      "a": "#D9747C",
+      "b": "#578761",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-black-tea",
+      "name": "홍차",
+      "a": "#AF8A6D",
+      "b": "#953E4B",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-caramel",
+      "name": "카라멜",
+      "a": "#C3AA4E",
+      "b": "#694D3D",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-matcha",
+      "name": "말차",
+      "a": "#7DA06A",
+      "b": "#AF8A6D",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-olive",
+      "name": "올리브",
+      "a": "#827222",
+      "b": "#38664B",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-twilight",
+      "name": "황혼",
+      "a": "#965329",
+      "b": "#3D5994",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-fire",
+      "name": "불꽃",
+      "a": "#C4515D",
+      "b": "#A99231",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-cotton-candy",
+      "name": "솜사탕",
+      "a": "#CF91B2",
+      "b": "#79A9C8",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-moonlight",
+      "name": "달빛",
+      "a": "#A78AC9",
+      "b": "#9898A1",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-black-pearl",
+      "name": "흑진주",
+      "a": "#727C8B",
+      "b": "#2E7364",
+      "rarity": "rare"
+    },
+    {
+      "id": "r-black-rose",
+      "name": "흑장미",
+      "a": "#953E4B",
+      "b": "#485360",
+      "rarity": "rare"
+    }
+  ],
+  "icons": [
+    {
+      "id": "leaf",
+      "name": "잎사귀",
+      "mission": "첫걸음",
+      "src": "/icons/achievement-preview/leaf.svg"
+    },
+    {
+      "id": "puzzle",
+      "name": "퍼즐 조각",
+      "mission": "퍼즐 수집가",
+      "src": "/icons/achievement-preview/puzzle.svg"
+    },
+    {
+      "id": "flame",
+      "name": "불꽃",
+      "mission": "꺼지지 않는 불",
+      "src": "/icons/achievement-preview/flame.svg"
+    },
+    {
+      "id": "cherry",
+      "name": "체리",
+      "mission": "체리피커",
+      "src": "/icons/achievement-preview/cherry.svg"
+    },
+    {
+      "id": "brain",
+      "name": "두뇌",
+      "mission": "두뇌 회전",
+      "src": "/icons/achievement-preview/brain.svg"
+    },
+    {
+      "id": "skull",
+      "name": "해골",
+      "mission": "하드코어",
+      "src": "/icons/achievement-preview/skull.svg"
+    },
+    {
+      "id": "sword",
+      "name": "검",
+      "mission": "퍼스트 블러드 1회",
+      "src": "/icons/achievement-preview/sword.svg"
+    },
+    {
+      "id": "swords",
+      "name": "교차한 검",
+      "mission": "퍼스트 블러드 3회",
+      "src": "/icons/achievement-preview/swords.svg"
+    },
+    {
+      "id": "crown",
+      "name": "왕관",
+      "mission": "퍼스트 블러드 10회",
+      "src": "/icons/achievement-preview/crown.svg"
+    },
+    {
+      "id": "star",
+      "name": "별",
+      "mission": "별 수집가",
+      "src": "/icons/achievement-preview/star.svg"
+    },
+    {
+      "id": "temperature",
+      "name": "온도계",
+      "mission": "온도 체크",
+      "src": "/icons/achievement-preview/temperature.svg"
+    },
+    {
+      "id": "number-123",
+      "name": "숫자 123",
+      "mission": "숫자놀음",
+      "src": "/icons/achievement-preview/number-123.svg"
+    },
+    {
+      "id": "galaxy",
+      "name": "나선 은하",
+      "mission": "은하 개척자",
+      "src": "/icons/achievement-preview/galaxy.svg"
+    },
+    {
+      "id": "rabbit",
+      "name": "토끼",
+      "mission": "한가위 스도쿠",
+      "src": "/icons/seasonal/rabbit.svg"
+    },
+    {
+      "id": "flower",
+      "name": "꽃",
+      "mission": "란영 스도쿠",
+      "src": "/icons/flower/flower.svg"
+    },
+    {
+      "id": "bomb",
+      "name": "폭탄",
+      "mission": "봄버스터즈 스도쿠",
+      "src": "/icons/bomb/bomb-red.svg"
+    },
+    {
+      "id": "tomato",
+      "name": "토마토",
+      "mission": "토마토스 스도쿠",
+      "src": "/icons/tomato.svg"
+    },
+    {
+      "id": "glass",
+      "name": "잔",
+      "mission": "주루마블 스도쿠",
+      "src": "/icons/juru-marble/vodka-shot.png"
+    }
+  ],
+  "missions": [
+    {
+      "id": "first",
+      "name": "첫걸음",
+      "icon": "leaf",
+      "group": "basic",
+      "text": "일반 문제 완료",
+      "count": 22,
+      "stages": [
+        {
+          "at": 1,
+          "kind": "icon",
+          "value": "leaf"
+        }
+      ],
+      "claimed": [
+        1
+      ]
+    },
+    {
+      "id": "regular",
+      "name": "퍼즐 수집가",
+      "icon": "puzzle",
+      "group": "basic",
+      "text": "일반 문제 완료",
+      "count": 22,
+      "stages": [
+        {
+          "at": 10,
+          "kind": "icon",
+          "value": "puzzle"
+        },
+        {
+          "at": 20,
+          "kind": "coins",
+          "value": 80
+        },
+        {
+          "at": 30,
+          "kind": "coins",
+          "value": 80
+        },
+        {
+          "at": 40,
+          "kind": "coins",
+          "value": 80
+        },
+        {
+          "at": 50,
+          "kind": "coins",
+          "value": 80
+        }
+      ],
+      "claimed": [
+        10
+      ]
+    },
+    {
+      "id": "daily",
+      "name": "꺼지지 않는 불",
+      "icon": "flame",
+      "group": "basic",
+      "text": "현재 데일리 연속 수치",
+      "count": 12,
+      "stages": [
+        {
+          "at": 7,
+          "kind": "icon",
+          "value": "flame"
+        },
+        {
+          "at": 14,
+          "kind": "coins",
+          "value": 60
+        },
+        {
+          "at": 21,
+          "kind": "coins",
+          "value": 60
+        },
+        {
+          "at": 28,
+          "kind": "coins",
+          "value": 60
+        },
+        {
+          "at": 35,
+          "kind": "coins",
+          "value": 60
+        }
+      ],
+      "claimed": [
+        7
+      ]
+    },
+    {
+      "id": "easy",
+      "name": "체리피커",
+      "icon": "cherry",
+      "group": "basic",
+      "text": "난이도 하 일반 문제 완료",
+      "count": 10,
+      "stages": [
+        {
+          "at": 10,
+          "kind": "icon",
+          "value": "cherry"
+        },
+        {
+          "at": 20,
+          "kind": "coins",
+          "value": 60
+        },
+        {
+          "at": 30,
+          "kind": "coins",
+          "value": 60
+        },
+        {
+          "at": 40,
+          "kind": "coins",
+          "value": 60
+        },
+        {
+          "at": 50,
+          "kind": "coins",
+          "value": 60
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "medium",
+      "name": "두뇌 회전",
+      "icon": "brain",
+      "group": "basic",
+      "text": "난이도 중 일반 문제 완료",
+      "count": 7,
+      "stages": [
+        {
+          "at": 10,
+          "kind": "icon",
+          "value": "brain"
+        },
+        {
+          "at": 20,
+          "kind": "coins",
+          "value": 90
+        },
+        {
+          "at": 30,
+          "kind": "coins",
+          "value": 90
+        },
+        {
+          "at": 40,
+          "kind": "coins",
+          "value": 90
+        },
+        {
+          "at": 50,
+          "kind": "coins",
+          "value": 90
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "hard",
+      "name": "하드코어",
+      "icon": "skull",
+      "group": "basic",
+      "text": "난이도 상 일반 문제 완료",
+      "count": 4,
+      "stages": [
+        {
+          "at": 10,
+          "kind": "icon",
+          "value": "skull"
+        },
+        {
+          "at": 20,
+          "kind": "coins",
+          "value": 120
+        },
+        {
+          "at": 30,
+          "kind": "coins",
+          "value": 120
+        },
+        {
+          "at": 40,
+          "kind": "coins",
+          "value": 120
+        },
+        {
+          "at": 50,
+          "kind": "coins",
+          "value": 120
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "first-blood",
+      "name": "퍼스트 블러드",
+      "icon": "swords",
+      "group": "basic",
+      "text": "일반 문제 1등 완료",
+      "count": 3,
+      "stages": [
+        {
+          "at": 1,
+          "kind": "icon",
+          "value": "sword"
+        },
+        {
+          "at": 3,
+          "kind": "icon",
+          "value": "swords"
+        },
+        {
+          "at": 10,
+          "kind": "icon",
+          "value": "crown"
+        }
+      ],
+      "claimed": [
+        1
+      ]
+    },
+    {
+      "id": "stars",
+      "name": "별 수집가",
+      "icon": "star",
+      "group": "group",
+      "text": "스타배틀 계열 문제 완료",
+      "count": 3,
+      "stages": [
+        {
+          "at": 3,
+          "kind": "icon",
+          "value": "star"
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "thermo",
+      "name": "온도 체크",
+      "icon": "temperature",
+      "group": "group",
+      "text": "온도계 스도쿠 완료",
+      "count": 2,
+      "stages": [
+        {
+          "at": 3,
+          "kind": "icon",
+          "value": "temperature"
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "math",
+      "name": "숫자놀음",
+      "icon": "number-123",
+      "group": "group",
+      "text": "수식완성 문제 완료",
+      "count": 1,
+      "stages": [
+        {
+          "at": 3,
+          "kind": "icon",
+          "value": "number-123"
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "galaxies",
+      "name": "은하 개척자",
+      "icon": "galaxy",
+      "group": "group",
+      "text": "Spiral Galaxies 완료",
+      "count": 0,
+      "stages": [
+        {
+          "at": 3,
+          "kind": "icon",
+          "value": "galaxy"
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "chuseok",
+      "name": "한가위 스도쿠",
+      "icon": "rabbit",
+      "group": "special",
+      "text": "지정 문제 완료",
+      "count": 1,
+      "stages": [
+        {
+          "at": 1,
+          "kind": "icon",
+          "value": "rabbit"
+        }
+      ],
+      "claimed": [
+        1
+      ]
+    },
+    {
+      "id": "flower",
+      "name": "란영 스도쿠",
+      "icon": "flower",
+      "group": "special",
+      "text": "지정 문제 완료",
+      "count": 0,
+      "stages": [
+        {
+          "at": 1,
+          "kind": "icon",
+          "value": "flower"
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "bomb",
+      "name": "봄버스터즈 스도쿠",
+      "icon": "bomb",
+      "group": "special",
+      "text": "지정 문제 완료",
+      "count": 0,
+      "stages": [
+        {
+          "at": 1,
+          "kind": "icon",
+          "value": "bomb"
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "tomato",
+      "name": "토마토스 스도쿠",
+      "icon": "tomato",
+      "group": "special",
+      "text": "지정 문제 완료",
+      "count": 0,
+      "stages": [
+        {
+          "at": 1,
+          "kind": "icon",
+          "value": "tomato"
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "marble",
+      "name": "주루마블 스도쿠",
+      "icon": "glass",
+      "group": "special",
+      "text": "지정 문제 완료",
+      "count": 0,
+      "stages": [
+        {
+          "at": 1,
+          "kind": "icon",
+          "value": "glass"
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "all",
+      "name": "완전 정복",
+      "icon": "galaxy",
+      "group": "special",
+      "text": "해당 학기 일반 문제 모두 완료",
+      "count": 22,
+      "stages": [
+        {
+          "at": 50,
+          "kind": "effect",
+          "value": "sparkle"
+        }
+      ],
+      "claimed": []
+    }
+  ],
+  "effects": [
+    {
+      "id": "ribbon",
+      "name": "빛의 띠",
+      "rarity": "epic"
+    },
+    {
+      "id": "foil",
+      "name": "포일",
+      "rarity": "epic"
+    },
+    {
+      "id": "interference",
+      "name": "간섭광",
+      "rarity": "epic"
+    },
+    {
+      "id": "lenticular",
+      "name": "렌티큘러",
+      "rarity": "epic"
+    },
+    {
+      "id": "afterglow",
+      "name": "잔광",
+      "rarity": "epic"
+    }
+  ],
+  "season": "2026년 2학기",
+  "total": 50
+}
