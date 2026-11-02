@@ -25,10 +25,12 @@ if(root){
   const goal=m=>m.stages.find(s=>!m.claimed.includes(s.at));
   const effectAllowed=()=>['uncommon','rare'].includes(colors.get(draft.color).rarity);
   function openView(focus=false){
-    const requested=location.hash.slice(1),id=['draw','dress'].includes(requested)?requested:'missions';
-    if(id!=='dress')draft={...applied};
-    ['missions','draw','dress'].forEach(k=>$('#panel-'+k).hidden=k!==id);
+    const requested=location.hash.slice(1),id=['draw','dress','nickname','craft'].includes(requested)?requested:'missions';
+    if(!['dress','craft'].includes(id))draft={...applied};
+    ['missions','draw','dress','nickname','craft'].forEach(k=>$('#panel-'+k).hidden=k!==id);
     if(id==='dress')renderDress();
+    if(id==='nickname'){const input=$('#previewNickname');input.value=$('#profileBadge [data-badge-name]').textContent;input.setCustomValidity('');}
+    if(id==='craft'){craft=[];renderCraft();}
     if(focus){$('#panel-'+id).querySelector('h2').focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}
   }
   function wardrobe(id){
@@ -50,17 +52,12 @@ if(root){
   window.addEventListener('hashchange',()=>openView(true));
   all('[data-wardrobe]').forEach(b=>b.addEventListener('click',()=>wardrobe(b.dataset.wardrobe)));
   keyboardTabs('[data-wardrobe]','wardrobe',wardrobe);
-  $('#openNickname').addEventListener('click',()=>{
-    const input=$('#previewNickname');input.value=$('#profileBadge [data-badge-name]').textContent;input.setCustomValidity('');
-    $('#nicknameDialog').showModal();input.focus();input.select();
-  });
-  ['closeNickname','cancelNickname'].forEach(id=>$('#'+id).addEventListener('click',()=>$('#nicknameDialog').close()));
   $('#previewNickname').addEventListener('input',event=>event.target.setCustomValidity(''));
   $('#nicknamePreviewForm').addEventListener('submit',event=>{
     event.preventDefault();const input=$('#previewNickname'),nickname=input.value.trim();
     if(!nickname){input.setCustomValidity('닉네임을 입력해주세요.');input.reportValidity();return;}
     all('[data-badge-name]').forEach(name=>{name.textContent=nickname;name.closest('[data-nickname-badge]').dispatchEvent(new CustomEvent('nickname-badge:change',{bubbles:true}));});
-    $('#nicknameDialog').close();toast('시안의 닉네임을 변경했어요.');
+    location.hash='missions';toast('시안의 닉네임을 변경했어요.');
   });
   $('#resetDemo').addEventListener('click',()=>location.reload());
   function coinAmount(amount){
@@ -207,15 +204,14 @@ if(root){
     });
     const result=craftResult();$('#craftOutcome').textContent=result?`${result.name} · 언커먼`:'세 가지 색을 선택해주세요.';$('#craftConfirm').disabled=!result;
   }
-  $('#openCraft').addEventListener('click',()=>{craft=[];renderCraft();$('#craftDialog').showModal();});
-  $('#closeCraft').addEventListener('click',()=>$('#craftDialog').close());
+  $('#openCraft').addEventListener('click',()=>{location.hash='craft';});
   $('#craftConfirm').addEventListener('click',()=>{
     const result=craftResult();if(!result)return;
     const needed=new Map();craft.forEach(id=>needed.set(id,(needed.get(id)||0)+1));
     if([...needed].some(([id,n])=>(inventory.get(id)||0)<n))return;
     needed.forEach((n,id)=>{const left=inventory.get(id)-n;if(left)inventory.set(id,left);else inventory.delete(id);});
     colors.set(result.id,result);inventory.set(result.id,(inventory.get(result.id)||0)+1);draft.color=result.id;
-    $('#craftDialog').close();renderDress();toast(`${result.name} 언커먼을 만들었어요.`);
+    location.hash='dress';renderDress();toast(`${result.name} 언커먼을 만들었어요.`);
   });
   document.addEventListener('visibilitychange',()=>root.classList.toggle('page-hidden',document.hidden));
   initNicknameBadges();renderCoins();renderMissions();renderDress();openView();
