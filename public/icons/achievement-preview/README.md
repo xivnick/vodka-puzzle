@@ -19,4 +19,4 @@ Basic mission preview adds `leaf` from the same pinned Tabler Icons v3.40.0 outl
 
 Spiral Galaxies mission candidates add `galaxy`, `spiral`, `universe`, and `planet` from the same pinned Tabler Icons v3.40.0 outline set, unchanged.
 
-Mypage v2 coin amounts use `coin` from the same pinned Tabler Icons v3.40.0 outline set, unchanged.
+Mypage v2 coin amounts use `coin` adapted from the same pinned Tabler Icons v3.40.0 outline set (MIT), replacing the dollar mark with C.
