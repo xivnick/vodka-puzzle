@@ -1,0 +1,51 @@
+---
+import PageLayout from '../../../layouts/PageLayout.astro';
+import '../../../styles/nickname.css';
+---
+<PageLayout title="계정 배치 시안">
+  <meta slot="head" name="robots" content="noindex, nofollow"/>
+  <div class="account-options">
+    <nav aria-label="시안 바로가기"><a href="#option-1">1. 기본형</a><a href="#option-2">2. 간결형</a><a href="#option-3">3. 정보형</a><a href="#option-4">4. 보기형</a></nav>
+    <section id="option-1" class="option">
+      <header class="option-caption"><h2>1. 기본형</h2><p>기존 계정 화면을 정돈한 배치</p></header>
+      <div class="sample"><h3>계정</h3><p class="email email-first">puzzler@example.com</p><form><label for="nick-1">닉네임</label><input class="nick-input" id="nick-1" name="nickname" value="퍼즐러" maxlength="20" required/><button class="use-btn" type="submit">저장</button><p class="status" role="status"></p></form></div>
+    </section>
+    <section id="option-2" class="option">
+      <header class="option-caption"><h2>2. 간결형</h2><p>추천 · 닉네임과 저장을 한 줄에</p></header>
+      <div class="sample"><h3>계정</h3><form><label for="nick-2">닉네임</label><div class="inline-edit"><input class="nick-input" id="nick-2" name="nickname" value="퍼즐러" maxlength="20" required/><button class="small-btn" type="submit">저장</button></div><p class="email">puzzler@example.com</p><p class="status" role="status"></p></form></div>
+    </section>
+    <section id="option-3" class="option">
+      <header class="option-caption"><h2>3. 정보형</h2><p>닉네임과 이메일을 같은 기준선에</p></header>
+      <div class="sample"><h3>계정</h3><form><div class="info-row"><label for="nick-3">닉네임</label><input class="nick-input" id="nick-3" name="nickname" value="퍼즐러" maxlength="20" required/></div><div class="info-row"><span class="field-label">이메일</span><span class="email">puzzler@example.com</span></div><div class="save-row"><p class="status" role="status"></p><button class="small-btn" type="submit">저장</button></div></form></div>
+    </section>
+    <section id="option-4" class="option">
+      <header class="option-caption"><h2>4. 보기형</h2><p>평소에는 이름만, 변경할 때 입력칸 표시</p></header>
+      <div class="sample"><h3>계정</h3><div class="read-profile"><div class="read-row"><span id="readNickname">퍼즐러</span><button class="small-btn" id="editNickname" type="button" aria-expanded="false" aria-controls="editForm">변경</button></div><p class="email">puzzler@example.com</p></div><form id="editForm" hidden><label for="nick-4">닉네임</label><div class="inline-edit"><input class="nick-input" id="nick-4" name="nickname" value="퍼즐러" maxlength="20" required/><button class="small-btn" type="submit">저장</button></div></form><p class="status" role="status" id="readStatus"></p></div>
+    </section>
+    <p class="demo-note">가상 계정으로 배치만 비교합니다. 실제 계정은 변경되지 않습니다.</p>
+    <a class="return-link" href="/test/mypage-v2/">마이페이지 시안</a>
+  </div>
+</PageLayout>
+<style is:global>
+.account-options{width:100%;color:#555}.account-options [hidden]{display:none!important}.account-options nav{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:24px}.account-options a{color:#999;font-size:.7rem}.account-options .option{padding:0 0 24px;margin-bottom:28px;border-bottom:1px solid #e8e5df;scroll-margin-top:20px}.account-options .option-caption{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}.account-options .option-caption h2{font-size:.73rem;font-weight:400;color:#999;margin:0}.account-options .option-caption p{font-size:.65rem;color:#aaa;margin:0}.account-options .sample h3{font-size:.85rem;font-weight:500;line-height:1.6;margin:0 0 14px}.account-options label,.account-options .field-label{font-size:.78rem;color:#999}.account-options form>label{display:block}.account-options .nick-input{box-sizing:border-box;min-width:0}.account-options .email{font-size:.73rem;color:#999;line-height:1.6;margin:8px 0 0;overflow-wrap:anywhere}.account-options .email-first{margin:0 0 16px}.account-options .use-btn{font-size:.8rem;padding:10px;margin-top:16px}.account-options .small-btn{flex-shrink:0;font:inherit;font-size:.73rem;line-height:1.4;color:#666;padding:6px 12px;border:1px solid #ddd8cf;border-radius:3px;background:#fff;cursor:pointer}.account-options .small-btn:hover{background:#faf8f4;border-color:#cfc8bd}.account-options .inline-edit{display:flex;align-items:center;gap:14px}.account-options .inline-edit .nick-input{flex:1}.account-options .status{font-size:.67rem;color:#999;min-height:16px;line-height:1.6;margin:8px 0 0}.account-options .info-row{display:grid;grid-template-columns:62px minmax(0,1fr);align-items:center;gap:12px;margin-bottom:12px}.account-options .info-row .email{margin:0}.account-options .save-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px}.account-options .save-row .status{margin:0}.account-options .read-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:32px}.account-options #readNickname{font-size:1rem;color:#222}.account-options #editForm{margin-top:18px}.account-options .demo-note{font-size:.67rem;color:#aaa;line-height:1.8;margin:0 0 10px}
+</style>
+<script>
+const root=document.querySelector('.account-options');
+if(root){
+  const edit=root.querySelector('#editForm'),toggle=root.querySelector('#editNickname');
+  toggle.addEventListener('click',()=>{
+    const open=edit.hidden;edit.hidden=!open;toggle.setAttribute('aria-expanded',String(open));toggle.textContent=open?'취소':'변경';
+    if(open){edit.querySelector('input').value=root.querySelector('#readNickname').textContent;edit.querySelector('input').focus();}
+  });
+  root.querySelectorAll('form').forEach(form=>{
+    const input=form.querySelector('input');input.addEventListener('input',()=>input.setCustomValidity(''));
+    form.addEventListener('submit',event=>{
+      event.preventDefault();const name=input.value.trim();
+      if(!name){input.setCustomValidity('닉네임을 입력해주세요.');input.reportValidity();return;}
+      input.value=name;
+      if(form===edit){root.querySelector('#readNickname').textContent=name;edit.hidden=true;toggle.setAttribute('aria-expanded','false');toggle.textContent='변경';root.querySelector('#readStatus').textContent='저장했습니다.';}
+      else form.querySelector('.status').textContent='저장했습니다.';
+    });
+  });
+}
+</script>
