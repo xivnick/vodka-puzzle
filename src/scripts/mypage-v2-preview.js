@@ -164,6 +164,13 @@ if(root){
     if(!effectAllowed())draft.effect='none';
     setBadgeName($('#dressBadge'),$('#previewNickname').value.trim()||$('#profileBadge [data-badge-name]').textContent);
     renderBadge($('#profileBadge'),applied);renderBadge($('#dressBadge'),draft);
+    const iconPreview=$('#equippedIcon'),colorPreview=$('#equippedColor'),equippedColor=colors.get(applied.color);
+    iconPreview.querySelectorAll('.custom-badge-effect').forEach(effect=>visible.unobserve(effect));
+    iconPreview.replaceChildren(...[...$('#profileBadge .badge-visual').childNodes].map(node=>node.cloneNode(true)));
+    iconPreview.querySelectorAll('.custom-badge-effect').forEach(effect=>visible.observe(effect));
+    iconPreview.setAttribute('aria-label',`현재 아이콘: ${icons.get(applied.icon).name}`);
+    colorPreview.style.background=`linear-gradient(${applied.angle},${equippedColor.a} ${applied.mode==='split'?'50%':'15%'},${equippedColor.b} ${applied.mode==='split'?'50%':'85%'})`;
+    colorPreview.setAttribute('aria-label',`현재 색상: ${equippedColor.name}`);colorPreview.title=equippedColor.name;
     pressed('[data-select-icon]',b=>b.dataset.selectIcon===draft.icon);
     pressed('[data-style]',b=>b.dataset.style===draft.mode);pressed('[data-angle]',b=>b.dataset.angle===draft.angle);
     $('#selectionLabel').textContent=[icons.get(draft.icon).name,colors.get(draft.color).name,draft.effect==='none'?null:effects.get(draft.effect)?.name].filter(Boolean).join(' · ');

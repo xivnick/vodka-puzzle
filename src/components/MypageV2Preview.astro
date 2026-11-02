@@ -23,8 +23,8 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
     </header>
     </section>
     <section class="icon-section" aria-labelledby="iconsTitle" hidden={customize}>
-      <div class="view-heading"><h2 id="iconsTitle">아이콘</h2></div>
-      <div class="icon-overview"><div class="icon-display"><div id="profileBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="현재 표시 이름"/></div><a class="customize-link" href="/test/mypage-v2/customize/">꾸미기</a></div>
+      <div class="view-heading"><h2 id="iconsTitle">꾸미기</h2></div>
+      <div class="icon-overview"><div class="icon-display"><div id="profileBadge" hidden><NicknameBadge name="퍼즐러" icon="leaf" label="현재 표시 이름"/></div><span id="equippedIcon" class="equipped-icon" role="img" aria-label="현재 아이콘: 잎사귀"></span><span id="equippedColor" class="equipped-color" role="img" aria-label="현재 색상: 기본색"></span><a class="customize-link" href="/test/mypage-v2/customize/" aria-label="꾸미기 변경">변경</a></div>
       <div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span><button type="button" class="draw-link" data-toggle-view="draw" aria-expanded="false" aria-controls="panel-draw">뽑기</button></div>
       </div>
     </section>
