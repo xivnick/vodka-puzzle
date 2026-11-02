@@ -14,10 +14,13 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
 <PageLayout title="마이페이지">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="mypage-v2" aria-label="마이페이지 v2 시안">
+    <section aria-labelledby="accountTitle">
+    <div class="view-heading"><h2 id="accountTitle">계정</h2></div>
     <header class="profile">
       <div class="profile-identity"><div class="profile-name" id="profileBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="현재 대표 배지"/></div><div class="profile-settings"><a href="#nickname">닉네임 변경</a><a href="#dress">아이콘 설정</a></div></div>
       <div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span><a class="draw-link" href="#draw">뽑기</a></div>
     </header>
+    </section>
     <section id="panel-missions" aria-labelledby="missionsTitle">
       <div class="view-heading"><h2 id="missionsTitle" tabindex="-1">도전 과제</h2></div>
       <div class="filters" aria-label="도전 과제 분류">{[['all','전체'],['ready','받을 수 있음'],['basic','기본'],['group','문제 묶음'],['special','특수']].map(([id,label],i)=><button type="button" data-filter={id} aria-pressed={i===0?'true':'false'}>{label}{id==='ready'&&<span class="ready-count" id="readyCount">{initialReady}</span>}</button>)}</div>
