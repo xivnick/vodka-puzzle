@@ -77,13 +77,13 @@ const givens = puzzle.givens.flat();
 .mutual-board{grid-column:2 / 11;grid-row:2 / 11;display:grid;grid-template-columns:repeat(var(--sudoku-size),minmax(0,1fr));border:2px solid #444;background:#fff}
 .mutual-cell{appearance:none;position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:1;min-width:0;padding:0;margin:0;overflow:hidden;border:0;border-right:1px solid #aaa;border-bottom:1px solid #aaa;border-radius:0;background:#fff;color:#4a6fa5;font:700 clamp(18px,5vw,27px) 'Noto Sans KR',sans-serif;cursor:pointer;touch-action:manipulation}
 .mutual-cell:nth-child(3n){border-right:2px solid #444}.mutual-cell:nth-child(9n){border-right:0}.mutual-cell:nth-child(n+19):nth-child(-n+27),.mutual-cell:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid #444}.mutual-cell:nth-child(n+73){border-bottom:0}
-.mutual-cell:hover{box-shadow:inset 0 0 0 999px rgba(244,241,235,.45)}.mutual-cell.selected{background:#e1e9f3}.mutual-cell.selected:hover{box-shadow:none}.mutual-cell.given{color:#222}.mutual-cell.sudoku-conflict{color:#a43d3d}.mutual-cell:focus{outline:none}
+.mutual-cell:hover{box-shadow:inset 0 0 0 999px rgba(244,241,235,.45)}.mutual-cell.selected{background:#e1e9f3}.mutual-cell.selected:hover{box-shadow:none}.mutual-cell.given{color:#222}.mutual-cell.conflict{background:#fbe0e0}.mutual-cell.conflict:hover{box-shadow:none}.mutual-cell:focus{outline:none}
 .mutual-cell :global(.notes){position:absolute;inset:3px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));font-size:clamp(8px,2.2vw,12px);font-weight:500;line-height:1;color:#555f6b}.mutual-cell :global(.notes span){display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;overflow:hidden}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 
 .mutual-frame{display:grid;grid-template-columns:7% repeat(9,minmax(0,1fr)) 7%;grid-template-rows:44px repeat(9,minmax(0,1fr)) 44px}
 .mutual-clue{display:flex;align-items:center;justify-content:space-evenly;color:#333;font-size:clamp(11px,3vw,17px);line-height:1.3;font-variant-numeric:tabular-nums}
-.mutual-clue.vertical{flex-direction:column;justify-content:center;gap:2px}.mutual-clue.error{color:#a43d3d}
+.mutual-clue.vertical{flex-direction:column;justify-content:center;gap:2px}.mutual-clue.error{background:#fbe0e0}
 .mutual-board-tools,.mutual-input,.mutual-game .bottom-buttons{width:86%;margin-inline:auto}.mutual-game .bottom-buttons{margin:12px auto 0!important}
 .mutual-cell{font-size:clamp(16px,4.5vw,25px)}
 </style>
