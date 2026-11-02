@@ -66,10 +66,16 @@ if(root){
   }
   $('#previewNickname').addEventListener('input',event=>{event.target.setCustomValidity('');renderDress();});
   $('#resetDemo').addEventListener('click',()=>{try{sessionStorage.removeItem(storageKey);}catch{}location.reload();});
+  function editNickname(open){
+    $('#nicknameDisplay').hidden=open;$('#profileNicknameForm').hidden=!open;$('#editAccountNickname').setAttribute('aria-expanded',String(open));
+    if(open){$('#accountNickname').value=nickname;$('#accountNickname').setCustomValidity('');$('#accountNickname').focus();$('#accountNickname').select();}
+  }
+  $('#editAccountNickname').addEventListener('click',()=>editNickname(true));
+  $('#accountNickname').addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();editNickname(false);$('#editAccountNickname').focus();}});
   $('#profileNicknameForm').addEventListener('submit',event=>{
     event.preventDefault();const input=$('#accountNickname'),next=input.value.trim();
     if(!next){input.setCustomValidity('닉네임을 입력해주세요.');input.reportValidity();return;}
-    nickname=next;setBadgeName($('#profileBadge'),nickname);$('#previewNickname').value=nickname;renderDress();persist();toast('닉네임을 저장했어요.');
+    nickname=next;$('#accountName').textContent=nickname;editNickname(false);setBadgeName($('#profileBadge'),nickname);$('#previewNickname').value=nickname;renderDress();persist();toast('닉네임을 저장했어요.');
   });
   $('#accountNickname').addEventListener('input',event=>event.target.setCustomValidity(''));
   function coinAmount(amount){
@@ -243,7 +249,7 @@ if(root){
     setCraftOpen(false);renderDress();persist();toast(`${result.name} 언커먼을 만들었어요.`);
   });
   document.addEventListener('visibilitychange',()=>root.classList.toggle('page-hidden',document.hidden));
-  $('#accountNickname').value=nickname;$('#previewNickname').value=nickname;setBadgeName($('#profileBadge'),nickname);
+  $('#accountName').textContent=nickname;$('#accountNickname').value=nickname;$('#previewNickname').value=nickname;setBadgeName($('#profileBadge'),nickname);
   initNicknameBadges();renderCoins();renderMissions();renderDress();openView();
   document.fonts.ready.then(()=>{renderBadge($('#profileBadge'),applied);renderBadge($('#dressBadge'),draft);});
 }

@@ -19,7 +19,7 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
     <section aria-labelledby="accountTitle" hidden={customize}>
     <div class="view-heading"><h2 id="accountTitle">계정</h2></div>
     <header class="profile">
-      <div class="profile-identity"><form id="profileNicknameForm"><label class="nick-label" for="accountNickname">닉네임</label><input id="accountNickname" class="nick-input" type="text" value="퍼즐러" maxlength="20" required autocomplete="off"/><p class="account-email">puzzler@example.com</p><button class="use-btn" type="submit">저장</button></form></div>
+      <div class="profile-identity"><div class="nickname-control"><div id="nicknameDisplay" class="nickname-display"><span id="accountName">퍼즐러</span><button id="editAccountNickname" class="nickname-pencil" type="button" aria-label="닉네임 편집" aria-expanded="false" aria-controls="profileNicknameForm"><span aria-hidden="true"><Fragment set:html={raw('/icons/achievement-preview/pencil.svg')}/></span></button></div><form id="profileNicknameForm" hidden><input id="accountNickname" class="nick-input" type="text" aria-label="닉네임" value="퍼즐러" maxlength="20" required autocomplete="off"/><button class="nickname-save" type="submit">저장</button></form></div><p class="account-email">puzzler@example.com</p></div>
 
     </header>
     </section>
