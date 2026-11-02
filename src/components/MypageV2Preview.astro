@@ -4,6 +4,7 @@ import NicknameBadge from './NicknameBadge.astro';
 import CoinAmount from './CoinAmount.astro';
 import coin from '../../public/icons/coin-candidates/tabler-coins.svg?raw';
 import data from '../data/mypage-v2-preview.json';
+import '../styles/nickname.css';
 import '../styles/mypage-v2-preview.css';
 const {customize=false}=Astro.props;
 const files=import.meta.glob('../../public/icons/**/*.svg',{query:'?raw',import:'default',eager:true});
@@ -18,7 +19,7 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
     <section aria-labelledby="accountTitle" hidden={customize}>
     <div class="view-heading"><h2 id="accountTitle">계정</h2></div>
     <header class="profile">
-      <div class="profile-identity"><form id="profileNicknameForm"><label for="accountNickname">닉네임</label><div class="nickname-entry"><input id="accountNickname" type="text" value="퍼즐러" maxlength="20" required autocomplete="off"/><button type="submit">저장</button></div></form><p class="account-email">puzzler@example.com</p></div>
+      <div class="profile-identity"><form id="profileNicknameForm"><label class="nick-label" for="accountNickname">닉네임</label><input id="accountNickname" class="nick-input" type="text" value="퍼즐러" maxlength="20" required autocomplete="off"/><p class="account-email">puzzler@example.com</p><button class="use-btn" type="submit">저장</button></form></div>
 
     </header>
     </section>
