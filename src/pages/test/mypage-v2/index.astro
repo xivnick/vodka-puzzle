@@ -17,7 +17,7 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
     <section aria-labelledby="accountTitle">
     <div class="view-heading"><h2 id="accountTitle">계정</h2></div>
     <header class="profile">
-      <div class="profile-identity"><div class="profile-name" id="profileBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="현재 대표 배지"/></div><div class="profile-settings"><a href="#nickname">닉네임 변경</a><a href="#dress">아이콘 설정</a></div></div>
+      <div class="profile-identity"><div class="profile-name" id="profileBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="현재 대표 배지"/></div><div class="profile-settings"><a href="#nickname"><span class="setting-icon" aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/pencil.svg")}/></span>닉네임 변경</a><a href="#dress"><span class="setting-icon" aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/palette.svg")}/></span>아이콘 설정</a></div></div>
       <div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span><a class="draw-link" href="#draw">뽑기</a></div>
     </header>
     </section>

@@ -28,6 +28,7 @@ if(root){
     const requested=location.hash.slice(1),id=['draw','dress','nickname','craft'].includes(requested)?requested:'missions';
     if(!['dress','craft'].includes(id))draft={...applied};
     ['missions','draw','dress','nickname','craft'].forEach(k=>$('#panel-'+k).hidden=k!==id);
+    all('.profile-settings a').forEach(link=>{if(link.hash===`#${id}`)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
     if(id==='dress')renderDress();
     if(id==='nickname'){const input=$('#previewNickname');input.value=$('#profileBadge [data-badge-name]').textContent;input.setCustomValidity('');}
     if(id==='craft'){craft=[];renderCraft();}
