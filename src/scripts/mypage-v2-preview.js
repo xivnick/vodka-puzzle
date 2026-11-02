@@ -24,10 +24,11 @@ if(root){
   const toast=message=>{clearTimeout(toastTimer);$('#previewToast').textContent=message;$('#previewToast').hidden=false;toastTimer=setTimeout(()=>$('#previewToast').hidden=true,2600);};
   const goal=m=>m.stages.find(s=>!m.claimed.includes(s.at));
   const effectAllowed=()=>['uncommon','rare'].includes(colors.get(draft.color).rarity);
-  function openTab(id){
-    all('[data-tab]').forEach(b=>{const selected=b.dataset.tab===id;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;});
+  function openView(focus=false){
+    const requested=location.hash.slice(1),id=['draw','dress'].includes(requested)?requested:'missions';
     ['missions','draw','dress'].forEach(k=>$('#panel-'+k).hidden=k!==id);
     if(id==='dress')renderDress();
+    if(focus)$('#panel-'+id).querySelector('h2').focus({preventScroll:true});
   }
   function wardrobe(id){
     all('[data-wardrobe]').forEach(b=>{const selected=b.dataset.wardrobe===id;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;});
@@ -45,10 +46,9 @@ if(root){
       event.preventDefault();callback(buttons[next].dataset[attribute]);buttons[next].focus();
     }));
   }
-  all('[data-tab]').forEach(b=>b.addEventListener('click',()=>openTab(b.dataset.tab)));
-  all('[data-open-tab]').forEach(b=>b.addEventListener('click',()=>openTab(b.dataset.openTab)));
+  window.addEventListener('hashchange',()=>openView(true));
   all('[data-wardrobe]').forEach(b=>b.addEventListener('click',()=>wardrobe(b.dataset.wardrobe)));
-  keyboardTabs('[data-tab]','tab',openTab);keyboardTabs('[data-wardrobe]','wardrobe',wardrobe);
+  keyboardTabs('[data-wardrobe]','wardrobe',wardrobe);
   $('#resetDemo').addEventListener('click',()=>location.reload());
   function coinAmount(amount){
     const formatted=amount.toLocaleString('ko-KR'),wrapper=make('span','coin-amount');
@@ -204,6 +204,6 @@ if(root){
     $('#craftDialog').close();renderDress();toast(`${result.name} 언커먼을 만들었어요.`);
   });
   document.addEventListener('visibilitychange',()=>root.classList.toggle('page-hidden',document.hidden));
-  initNicknameBadges();renderCoins();renderMissions();renderDress();
+  initNicknameBadges();renderCoins();renderMissions();renderDress();openView();
   document.fonts.ready.then(()=>{renderBadge($('#profileBadge'),applied);renderBadge($('#dressBadge'),draft);});
 }

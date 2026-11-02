@@ -2,19 +2,17 @@
 .mypage-v2 [hidden]{display:none!important}
 .mypage-v2 button{font:inherit;cursor:pointer}.mypage-v2 button:disabled{cursor:default}
 .mypage-v2 h2,.mypage-v2 h3,.mypage-v2 p{margin:0}.mypage-v2 a{color:#999}
-.mypage-v2 .profile{display:flex;align-items:center;justify-content:space-between;margin:0 0 16px}
-.mypage-v2 .profile-identity{display:flex;align-items:center;gap:10px;min-width:0}.mypage-v2 .profile-name{font-size:1rem;line-height:1.5;font-weight:400}.mypage-v2 .nickname-edit{font-size:.68rem;white-space:nowrap;text-decoration:underline;text-underline-offset:3px}
-.mypage-v2 .balance{display:flex;align-items:center;gap:8px;padding:0;border:0;background:none;color:#555;font-size:.85rem;font-variant-numeric:tabular-nums}
+.mypage-v2 .profile{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:0 0 30px}
+.mypage-v2 .profile-identity{min-width:0}.mypage-v2 .profile-name{font-size:1rem;line-height:1.5;font-weight:400}
+.mypage-v2 .profile-settings{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}.mypage-v2 .profile-settings a{font-size:.68rem;white-space:nowrap;text-decoration:underline;text-underline-offset:3px}
+.mypage-v2 .profile-wallet{display:flex;align-items:center;gap:12px;min-height:24px;flex-shrink:0}.mypage-v2 .balance{display:flex;align-items:center;color:#555;font-size:.85rem;font-variant-numeric:tabular-nums}
+.mypage-v2 .draw-link{display:inline-flex;align-items:center;justify-content:center;height:28px;padding:0 10px;border:1px solid #ddd8cf;border-radius:3px;background:#fff;font-size:.74rem;text-decoration:none}
 .mypage-v2 .coin-amount{display:inline-flex;align-items:center;gap:5px;vertical-align:middle;font-variant-numeric:tabular-nums;white-space:nowrap}
 /* Center the coin against numeral cap height, excluding the font line-box padding. */
 .mypage-v2 .coin-amount>span:last-child{text-box:trim-both cap alphabetic}
 .mypage-v2 .coin-icon{display:block;flex:0 0 auto;width:1em;height:1em;color:inherit}
 .mypage-v2 .coin-icon svg{display:block;width:100%;height:100%;overflow:visible}
-/* Same small bordered buttons as the home ranking and time-machine toolbar. */
-.mypage-v2 .main-tabs{display:flex;gap:4px;margin:0 0 24px}
-.mypage-v2 .main-tabs button{display:flex;align-items:center;gap:5px;height:28px;padding:0 10px;border:1px solid #ddd8cf;border-radius:3px;background:#fff;color:#999;font-size:.74rem}
-.mypage-v2 .main-tabs button[aria-selected=true]{background:#faf8f4;color:#555;border-color:#cfc8bd;font-weight:700}
-.mypage-v2 .tab-count{font-size:.61rem;font-weight:400;color:#999}
+.mypage-v2 .view-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.mypage-v2 .view-heading h2{font-size:.85rem;font-weight:500;line-height:1.6}.mypage-v2 .view-heading a{font-size:.68rem;text-underline-offset:3px}.mypage-v2 .ready-count{margin-left:4px;font-size:.61rem}
 .mypage-v2 .dress-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .mypage-v2 .collection-count{display:flex;align-items:baseline;gap:4px;font-size:.68rem;color:#999;white-space:nowrap}.mypage-v2 .collection-count b{font-weight:400}.mypage-v2 .collection-count small{font-size:.64rem}
 .mypage-v2 .filters{display:flex;flex-wrap:wrap;gap:0 14px;margin-bottom:8px}
@@ -37,7 +35,7 @@
 .mypage-v2 .draw-actions button:hover:not(:disabled),.mypage-v2 .dress-footer button:hover,.mypage-v2 #craftConfirm:hover:not(:disabled){background:#ede9e1}
 .mypage-v2 .draw-actions strong{font-size:.8rem;font-weight:400}.mypage-v2 .draw-actions button>.coin-amount{font-size:.7rem;color:#999}.mypage-v2 .draw-actions button:disabled{opacity:.4}
 .mypage-v2 .result-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}.mypage-v2 .result-heading h3{font-size:.78rem;font-weight:400}
-.mypage-v2 .result-heading button,.mypage-v2 .quiet-link,.mypage-v2 .color-tools button{border:0;background:none;padding:0;color:#999;font-size:.68rem;text-decoration:underline}
+.mypage-v2 .result-heading a,.mypage-v2 .quiet-link,.mypage-v2 .color-tools button{border:0;background:none;padding:0;color:#999;font-size:.68rem;text-decoration:underline}
 .mypage-v2 .result-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
 .mypage-v2 .result-item{display:flex;gap:9px;align-items:center;padding:12px 0;border-bottom:1px solid #eee}
 .mypage-v2 .result-dot{display:block;flex:0 0 18px;width:18px;height:18px;border-radius:50%}.mypage-v2 .result-item b{display:block;font-size:.72rem;font-weight:400}.mypage-v2 .result-item small{display:block;font-size:.61rem;color:#999;margin-top:3px}
@@ -68,7 +66,7 @@
 .mypage-v2 dialog>p{font-size:.73rem;line-height:1.8;color:#999}.mypage-v2 .craft-slots{display:flex;justify-content:center;gap:12px;margin:24px 0}.mypage-v2 .craft-slot{display:block;width:32px;height:32px;border:1px solid #ddd8cf;border-radius:50%;background:white}
 .mypage-v2 .craft-choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.mypage-v2 .craft-choice{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 3px;border:1px solid transparent;background:none;font-size:.65rem;color:#888}.mypage-v2 .craft-choice i{width:20px;height:20px;border-radius:50%}.mypage-v2 .craft-choice small{color:#aaa;font-size:.59rem}.mypage-v2 .craft-choice:disabled{opacity:.35}
 .mypage-v2 .craft-outcome{display:flex;justify-content:space-between;gap:10px;margin-top:18px;font-size:.73rem;color:#999}.mypage-v2 .craft-outcome>span:last-child{color:#555}.mypage-v2 #craftConfirm{width:100%}.mypage-v2 #craftConfirm:disabled{opacity:.35}
-@media(max-width:380px){.mypage-v2 .item-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.mypage-v2 .filters{gap:0 12px}.mypage-v2 .draw-actions button{gap:8px}.mypage-v2 .draw-actions strong{font-size:.74rem}.mypage-v2 .draw-actions span{font-size:.65rem}}
+@media(max-width:380px){.mypage-v2 .item-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.mypage-v2 .filters{gap:0 12px}.mypage-v2 .draw-actions button{gap:8px}.mypage-v2 .draw-actions strong{font-size:.74rem}.mypage-v2 .draw-actions button>.coin-amount{font-size:.65rem}}
 .mypage-v2 .custom-badge-base,.mypage-v2 .custom-badge-effect{position:absolute;inset:0;display:block;mask-repeat:no-repeat;mask-position:center;mask-size:contain;-webkit-mask-repeat:no-repeat;-webkit-mask-position:center;-webkit-mask-size:contain}.custom-badge-effect.effect-ribbon{background:linear-gradient(135deg,transparent 44%,#ffffffda 50%,transparent 56%);background-size:300% 300%;animation:mypage-ribbon 1.9s linear infinite}.custom-badge-effect.effect-foil{background:conic-gradient(from 30deg at 30% 30%,transparent 0 60deg,#fffc 60deg 120deg,transparent 120deg 220deg,#fff8 220deg 280deg,transparent 280deg);animation:mypage-foil 5.2s linear infinite}.custom-badge-effect.effect-interference{background:repeating-radial-gradient(ellipse at 30% 35%,transparent 0 2px,#fff9 3px,transparent 5px);animation:mypage-interference 3.2s ease-in-out infinite}.custom-badge-effect.effect-lenticular{background:repeating-linear-gradient(90deg,transparent 0 2px,#fffc 3px,transparent 4px);animation:mypage-interference 2.1s ease-in-out infinite}.custom-badge-effect.effect-afterglow{background:white;animation:mypage-afterglow 4.2s ease-out infinite}
 @keyframes mypage-ribbon{from{background-position:100% 100%}to{background-position:0 0}}@keyframes mypage-foil{0%,34%,100%{opacity:0}16%{opacity:.85}23%{opacity:.2}}@keyframes mypage-interference{0%,100%{opacity:0}50%{opacity:.8}}@keyframes mypage-afterglow{0%,10%,100%{opacity:0}15%{opacity:.78}35%{opacity:.3}70%{opacity:.03}}
 .mypage-v2.page-hidden .custom-badge-effect,.mypage-v2 .custom-badge-effect.is-offscreen{animation-play-state:paused}@media(prefers-reduced-motion:reduce){.mypage-v2 .custom-badge-effect{animation:none}}

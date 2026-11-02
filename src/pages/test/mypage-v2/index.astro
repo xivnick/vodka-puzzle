@@ -15,25 +15,27 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="mypage-v2" aria-label="마이페이지 v2 시안">
     <header class="profile">
-      <div class="profile-identity"><div class="profile-name" id="profileBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="현재 대표 배지"/></div><a class="nickname-edit" href="/nickname/?next=%2Ftest%2Fmypage-v2%2F" aria-label="닉네임 변경">변경</a></div>
-      <button type="button" class="balance" data-open-tab="draw" aria-label="보유 코인, 뽑기로 이동" title="보유 코인 · 뽑기로 이동"><CoinAmount amount={1240} id="coinBalance"/></button>
+      <div class="profile-identity"><div class="profile-name" id="profileBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="현재 대표 배지"/></div><div class="profile-settings"><a href="/nickname/?next=%2Ftest%2Fmypage-v2%2F">닉네임 변경</a><a href="#dress">아이콘 설정</a></div></div>
+      <div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span><a class="draw-link" href="#draw">뽑기</a></div>
     </header>
-    <div class="main-tabs" role="tablist" aria-label="마이페이지 메뉴">{[['missions','미션'],['draw','뽑기'],['dress','꾸미기']].map(([id,name],i)=><button type="button" id={`tab-${id}`} role="tab" aria-selected={i===0?'true':'false'} aria-controls={`panel-${id}`} tabindex={i===0?'0':'-1'} data-tab={id}>{name}{id==='missions'&&<span class="tab-count" id="readyCount">{initialReady}</span>}</button>)}</div>
-    <section id="panel-missions" role="tabpanel" aria-labelledby="tab-missions">
-      <div class="filters" aria-label="미션 분류">{[['all','전체'],['ready','받을 수 있음'],['basic','기본'],['group','문제 묶음'],['special','특수']].map(([id,label],i)=><button type="button" data-filter={id} aria-pressed={i===0?'true':'false'}>{label}</button>)}</div>
+    <section id="panel-missions" aria-labelledby="missionsTitle">
+      <div class="view-heading"><h2 id="missionsTitle" tabindex="-1">도전 과제</h2></div>
+      <div class="filters" aria-label="도전 과제 분류">{[['all','전체'],['ready','받을 수 있음'],['basic','기본'],['group','문제 묶음'],['special','특수']].map(([id,label],i)=><button type="button" data-filter={id} aria-pressed={i===0?'true':'false'}>{label}{id==='ready'&&<span class="ready-count" id="readyCount">{initialReady}</span>}</button>)}</div>
       <div class="mission-list">{data.missions.map(m=>{const s=goal(m);const ready=s&&m.count>=s.at;const icon=data.icons.find(i=>i.id===m.icon);return <article class:list={['mission-row',{'is-complete':!s}]} data-mission={m.id} data-group={m.group}>
         <span class="mission-icon" aria-hidden="true">{icon.src.endsWith('.svg')?<Fragment set:html={raw(icon.src)}/>:<img src={icon.src} alt="" width="28" height="28"/>}</span>
         <div class="mission-content"><div class="mission-title"><h3>{m.name}</h3><span class="mission-value">{s?`${m.count} / ${s.at}`:'완료'}</span></div><p class="mission-condition">{m.text}</p><div class="mission-progress" role="progressbar" aria-label={`${m.name} 진행도`} aria-valuemin="0" aria-valuemax={s?.at??1} aria-valuenow={Math.min(m.count,s?.at??1)}><span style={`width:${s?Math.min(m.count/s.at,1)*100:100}%`}/></div><div class="mission-bottom"><span class="mission-reward">{s?(s.kind==='coins'?<CoinAmount amount={s.value}/>:s.kind==='effect'?'별빛 반짝임 효과':`${data.icons.find(i=>i.id===s.value)?.name} 아이콘`):'아이콘 획득 완료'}</span><button type="button" data-claim={m.id} disabled={!ready} class:list={['claim-button',{'claim-ready':ready}]}>{ready?'받기':s?'진행 중':'획득 완료'}</button></div></div>
       </article>})}</div>
       <p id="emptyMissions" class="empty-state" hidden>지금 받을 보상은 모두 받았어요.</p>
     </section>
-    <section id="panel-draw" role="tabpanel" aria-labelledby="tab-draw" hidden>
+    <section id="panel-draw" aria-labelledby="drawTitle" hidden>
+      <div class="view-heading"><h2 id="drawTitle" tabindex="-1">뽑기</h2><a href="#missions">도전 과제로</a></div>
       <div class="draw-actions"><button type="button" data-draw="1"><strong>1회 뽑기</strong><CoinAmount amount={100}/></button><button type="button" data-draw="10"><strong>10회 뽑기</strong><CoinAmount amount={1000}/></button></div>
-      <div id="drawResult" class="draw-result" aria-live="polite" hidden><div class="result-heading"><h3>뽑기 결과</h3><button type="button" data-open-tab="dress">꾸미기</button></div><div id="resultItems" class="result-items"></div></div>
+      <div id="drawResult" class="draw-result" aria-live="polite" hidden><div class="result-heading"><h3>뽑기 결과</h3><a href="#dress">아이콘 설정</a></div><div id="resultItems" class="result-items"></div></div>
       <details class="draw-guide"><summary>무엇을 얻을 수 있나요?</summary><ul><li>커먼: 기본 단색 36종</li><li>레어: 선정된 두 색 조합 24종</li><li>에픽: 빛의 띠·포일·간섭광·렌티큘러·잔광</li><li>언커먼은 커먼 색 3개를 조합해서 만듭니다.</li></ul></details>
       <p class="demo-note">뽑기 가격과 결과 구성은 시연용입니다. 실제 코인은 사용되지 않습니다.</p>
     </section>
-    <section id="panel-dress" role="tabpanel" aria-labelledby="tab-dress" hidden>
+    <section id="panel-dress" aria-labelledby="dressTitle" hidden>
+      <div class="view-heading"><h2 id="dressTitle" tabindex="-1">아이콘 설정</h2><a href="#missions">도전 과제로</a></div>
       <div class="dress-toolbar"><span class="collection-count">보유 아이콘 <b id="ownedCount">5</b> / 18</span><button type="button" class="quiet-link" id="resetStyle">기본으로</button></div>
       <div class="dress-preview"><span class="eyebrow">미리보기</span><div class="preview-ranking"><span class="sample-rank">3</span><span id="dressBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="꾸미기 미리보기"/></span><span class="sample-value">22개</span></div><p id="selectionLabel">잎사귀 · 기본색</p></div>
       <div class="wardrobe-tabs" role="tablist" aria-label="꾸미기 항목">{[['icons','아이콘'],['colors','색상'],['effects','효과']].map(([id,name],i)=><button type="button" role="tab" id={`wardrobe-tab-${id}`} aria-controls={`wardrobe-${id}`} aria-selected={i===0?'true':'false'} tabindex={i===0?'0':'-1'} data-wardrobe={id}>{name}</button>)}</div>
