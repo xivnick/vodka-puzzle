@@ -25,13 +25,13 @@ if(root){
   const goal=m=>m.stages.find(s=>!m.claimed.includes(s.at));
   const effectAllowed=()=>['uncommon','rare'].includes(colors.get(draft.color).rarity);
   function openView(focus=false){
-    const requested=location.hash.slice(1),id=['draw','dress','nickname','craft'].includes(requested)?requested:'missions';
-    if(!['dress','craft'].includes(id))draft={...applied};
-    ['missions','draw','dress','nickname','craft'].forEach(k=>$('#panel-'+k).hidden=k!==id);
-    all('.profile-settings a').forEach(link=>{if(link.hash===`#${id}`)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
+    const requested=location.hash.slice(1),id=['draw','dress','nickname'].includes(requested)?requested:'missions';
+    if(id!=='dress')draft={...applied};
+    ['missions','draw','dress','nickname'].forEach(k=>$('#panel-'+k).hidden=k!==id);
+    all('[data-toggle-view]').forEach(button=>button.setAttribute('aria-expanded',String(button.dataset.toggleView===id)));
+    setCraftOpen(false);
     if(id==='dress')renderDress();
     if(id==='nickname'){const input=$('#previewNickname');input.value=$('#profileBadge [data-badge-name]').textContent;input.setCustomValidity('');}
-    if(id==='craft'){craft=[];renderCraft();}
     if(focus){$('#panel-'+id).querySelector('h2').focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}
   }
   function wardrobe(id){
@@ -50,6 +50,7 @@ if(root){
       event.preventDefault();callback(buttons[next].dataset[attribute]);buttons[next].focus();
     }));
   }
+  all('[data-toggle-view]').forEach(button=>button.addEventListener('click',()=>{location.hash=button.getAttribute('aria-expanded')==='true'?'missions':button.dataset.toggleView;}));
   window.addEventListener('hashchange',()=>openView(true));
   all('[data-wardrobe]').forEach(b=>b.addEventListener('click',()=>wardrobe(b.dataset.wardrobe)));
   keyboardTabs('[data-wardrobe]','wardrobe',wardrobe);
@@ -205,14 +206,19 @@ if(root){
     });
     const result=craftResult();$('#craftOutcome').textContent=result?`${result.name} · 언커먼`:'세 가지 색을 선택해주세요.';$('#craftConfirm').disabled=!result;
   }
-  $('#openCraft').addEventListener('click',()=>{location.hash='craft';});
+  function setCraftOpen(open){
+    $('#panel-craft').hidden=!open;$('#openCraft').setAttribute('aria-expanded',String(open));
+    $('#openCraft').textContent=open?'색 조합 닫기':'커먼 3개 조합하기 ↗';
+    if(open){craft=[];renderCraft();}
+  }
+  $('#openCraft').addEventListener('click',()=>setCraftOpen($('#panel-craft').hidden));
   $('#craftConfirm').addEventListener('click',()=>{
     const result=craftResult();if(!result)return;
     const needed=new Map();craft.forEach(id=>needed.set(id,(needed.get(id)||0)+1));
     if([...needed].some(([id,n])=>(inventory.get(id)||0)<n))return;
     needed.forEach((n,id)=>{const left=inventory.get(id)-n;if(left)inventory.set(id,left);else inventory.delete(id);});
     colors.set(result.id,result);inventory.set(result.id,(inventory.get(result.id)||0)+1);draft.color=result.id;
-    location.hash='dress';renderDress();toast(`${result.name} 언커먼을 만들었어요.`);
+    setCraftOpen(false);renderDress();toast(`${result.name} 언커먼을 만들었어요.`);
   });
   document.addEventListener('visibilitychange',()=>root.classList.toggle('page-hidden',document.hidden));
   initNicknameBadges();renderCoins();renderMissions();renderDress();openView();
