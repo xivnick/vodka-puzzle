@@ -1,0 +1,37 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import { words } from '../lib/alphabet-choice.js';
+const puzzleId = '261103_01';
+---
+<PuzzleLayout title="261103 알파벳 고르기" puzzleId={puzzleId} subtitle="칸마다 글자를 하나씩 골라 모든 단어를 잇는 경로를 만드세요" description="각 단어에서 알파벳을 하나씩 선택하고 인접한 칸을 이어 단어를 만드는 퍼즐">
+  <div slot="rules" class="alphabet-rules">
+    <p>각 칸의 단어에 쓰인 알파벳 중 하나를 골라 그 칸에 넣으세요.</p>
+    <p>선택한 글자들을 이어 격자의 모든 단어를 각각 만들 수 있어야 합니다. 어느 칸에서든 시작할 수 있으며, 변이나 꼭짓점을 공유하는 칸으로 이동하면서 글자를 순서대로 읽습니다.</p>
+    <p>각 단어의 경로에는 반드시 그 단어가 적힌 칸이 포함되어야 합니다. 한 경로에서 같은 칸을 두 번 이상 사용할 수 없습니다.</p>
+    <p>여러 칸에서 같은 글자를 골라도 되며, 한 단어를 만드는 경로가 여러 개여도 됩니다.</p>
+    <p>현재 선택한 글자들로 유효한 경로를 만들 수 있는 단어는 초록색으로 표시됩니다.</p>
+  </div>
+  <div slot="controls">칸을 선택한 뒤 알파벳 버튼을 누르세요. 지우기로 선택한 칸의 글자를 지웁니다.</div>
+  <section id="alphabetGame" data-puzzle-id={puzzleId} aria-label="알파벳 고르기 퍼즐">
+    <div id="alphabetBoard" class="alphabet-board" role="grid" aria-label="6행 5열 알파벳 격자">
+      {words.map((word, index) => <button type="button" role="gridcell" class="alphabet-cell" data-index={index} tabindex={index === 0 ? 0 : -1} aria-label={`${Math.floor(index/5)+1}행 ${index%5+1}열 ${word}, 빈칸`}>
+        <span class="word">{word}</span><span class="letter" aria-hidden="true"></span>
+      </button>)}
+    </div>
+    <p id="alphabetPrompt" class="alphabet-prompt">DEAL에서 글자를 고르세요</p>
+    <div id="alphabetPad" class="alphabet-pad" aria-label="알파벳 입력"></div>
+    <div class="bottom-buttons"><button id="alphabetErase" type="button">지우기</button><button id="alphabetReset" type="button" class="danger">초기화</button></div>
+    <span id="alphabetStatus" class="sr-only" role="status" aria-live="polite"></span>
+  </section>
+  <PuzzleCompletion slot="completion" id="alphabetComplete" />
+</PuzzleLayout>
+<script>import '../scripts/alphabet-choice.js';</script>
+<style>
+.alphabet-rules p{margin:0;line-height:1.7}.alphabet-rules p+p{margin-top:8px}
+.alphabet-board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid #999;border-left:1px solid #999;width:100%}
+.alphabet-cell{display:flex;flex-direction:column;align-items:center;justify-content:space-between;aspect-ratio:1;min-width:0;padding:9px 1px 7px;border:0;border-right:1px solid #999;border-bottom:1px solid #999;border-radius:0;background:#fff;cursor:pointer;touch-action:manipulation;font:inherit}
+.alphabet-cell.selected{background:#e8edf5}.word{color:#333;font-size:clamp(9px,2.55vw,13px);font-weight:500;white-space:nowrap;letter-spacing:-.025em}.word.satisfied{color:#54804b}.letter{color:#4a6fa5;font-size:clamp(23px,6vw,32px);font-weight:600;line-height:1.15;min-height:1.15em}
+.alphabet-prompt{margin:14px 0 8px;color:#777;font-size:.82rem;text-align:center}.alphabet-pad{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;min-height:44px}.alphabet-pad :global(button){min-width:38px;min-height:42px;padding:8px 10px;border:1px solid #d6d4cd;border-radius:3px;background:#faf8f4;color:#555;font:inherit;touch-action:manipulation}.alphabet-pad :global(button[aria-pressed=true]){background:#e8edf5;color:#4a6fa5;border-color:#a8b8ce}
+#alphabetGame .bottom-buttons{gap:8px}#alphabetGame .bottom-buttons button{flex:1;min-width:0;padding:8px 12px;font-size:.82rem}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+</style>
