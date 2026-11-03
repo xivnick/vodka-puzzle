@@ -11,7 +11,7 @@ const puzzleId = '261103_01';
     <p>각 단어의 경로에는 반드시 그 단어가 적힌 칸이 포함되어야 합니다. 한 경로에서 같은 칸을 두 번 이상 사용할 수 없습니다.</p>
     <p>여러 칸에서 같은 글자를 골라도 되며, 한 단어를 만드는 경로가 여러 개여도 됩니다.</p>
   </div>
-  <div slot="controls">칸을 선택한 뒤 알파벳 버튼을 누르세요. 단어에 없는 글자를 입력한 칸은 붉은색으로 표시됩니다. 지우기로 선택한 칸의 글자를 지웁니다.</div>
+  <div slot="controls">칸을 선택한 뒤 알파벳 버튼을 누르세요. 지우기로 선택한 칸의 글자를 지웁니다.</div>
   <section id="alphabetGame" data-puzzle-id={puzzleId} aria-label="알파벳 고르기 퍼즐">
     <div id="alphabetBoard" class="alphabet-board" role="grid" aria-label="6행 5열 알파벳 격자">
       {words.map((word, index) => <button type="button" role="gridcell" class="alphabet-cell" data-index={index} tabindex={index === 0 ? 0 : -1} aria-label={`${Math.floor(index/5)+1}행 ${index%5+1}열 ${word}, 빈칸`}>
