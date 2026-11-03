@@ -12,9 +12,9 @@ export function inspectAlphabetChoice(values, boardWords = words, columns = 5) {
   const neighbors = boardWords.map((_, index) => boardWords.flatMap((_, other) =>
     other !== index && Math.abs(Math.floor(index / columns) - Math.floor(other / columns)) <= 1 &&
     Math.abs(index % columns - other % columns) <= 1 ? [other] : []));
-  const valid = values.length === boardWords.length && boardWords.every((word, index) =>
-    values[index] === '' || typeof values[index] === 'string' && values[index].length === 1 && word.includes(values[index]));
-  if (!valid) return { satisfied: boardWords.map(() => false), solved: false };
+  const valid = values.length === boardWords.length && values.every(letter => letter === '' || typeof letter === 'string' && /^[A-Z]$/.test(letter));
+  if (!valid) return { satisfied: boardWords.map(() => false), conflicts: new Set(), solved: false };
+  const conflicts = new Set(boardWords.flatMap((word, index) => values[index] && !word.includes(values[index]) ? [index] : []));
   const satisfied = boardWords.map((word, target) => {
     function visit(index, offset, used, included) {
       if (values[index] !== word[offset] || used.has(index)) return false;
@@ -27,12 +27,12 @@ export function inspectAlphabetChoice(values, boardWords = words, columns = 5) {
     }
     return boardWords.some((_, index) => visit(index, 0, new Set(), false));
   });
-  return { satisfied, solved: values.every(Boolean) && satisfied.every(Boolean) };
+  return { satisfied, conflicts, solved: !conflicts.size && values.every(Boolean) && satisfied.every(Boolean) };
 }
 
 export function parseAlphabetChoiceState(saved, puzzleId) {
   if (!saved || saved.version !== 1 || saved.puzzleId !== puzzleId || !Array.isArray(saved.values) ||
-      saved.values.length !== words.length || !saved.values.every((letter, index) =>
-        letter === '' || typeof letter === 'string' && letter.length === 1 && words[index].includes(letter))) return null;
+      saved.values.length !== words.length || !saved.values.every(letter =>
+        letter === '' || typeof letter === 'string' && /^[A-Z]$/.test(letter))) return null;
   return { values: [...saved.values] };
 }

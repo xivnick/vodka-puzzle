@@ -20,12 +20,14 @@ function render() {
     cell.querySelector('.letter').textContent = values[index];
     cell.querySelector('.word').classList.toggle('satisfied', result.satisfied[index]);
     cell.classList.toggle('selected', selected === index);
+    cell.classList.toggle('conflict', result.conflicts.has(index));
+    cell.setAttribute('aria-invalid', String(result.conflicts.has(index)));
     cell.tabIndex = selected === index ? 0 : -1;
     cell.setAttribute('aria-selected', String(selected === index));
-    cell.setAttribute('aria-label', `${Math.floor(index/5)+1}행 ${index%5+1}열 ${words[index]}, ${values[index] || '빈칸'}${result.satisfied[index] ? ', 경로 있음' : ''}`);
+    cell.setAttribute('aria-label', `${Math.floor(index/5)+1}행 ${index%5+1}열 ${words[index]}, ${values[index] || '빈칸'}${result.satisfied[index] ? ', 경로 있음' : ''}${result.conflicts.has(index) ? ', 단어에 없는 글자' : ''}`);
   });
   document.getElementById('alphabetPrompt').textContent = `${words[selected]}에서 글자를 고르세요`;
-  pad.replaceChildren(...[...new Set(words[selected])].map(letter => {
+  pad.replaceChildren(...[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map(letter => {
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = letter;
@@ -42,7 +44,7 @@ function render() {
   }
 }
 function input(letter) {
-  if (!ready || letter && !words[selected].includes(letter)) return;
+  if (!ready || letter !== '' && !/^[A-Z]$/.test(letter)) return;
   values[selected] = letter;
   persist(); render();
   document.getElementById('alphabetStatus').textContent = `${words[selected]}, ${letter ? `${letter} 입력` : '지웠습니다.'}`;
