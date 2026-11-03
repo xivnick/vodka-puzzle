@@ -35,7 +35,6 @@ function render() {
       button.textContent = letter;
       button.dataset.letter = letter;
       button.disabled = !ready;
-      button.setAttribute('aria-pressed', String(values[selected] === letter));
       return button;
     }));
     return row;
