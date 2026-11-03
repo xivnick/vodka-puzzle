@@ -26,7 +26,6 @@ function render() {
     cell.setAttribute('aria-selected', String(selected === index));
     cell.setAttribute('aria-label', `${Math.floor(index/5)+1}행 ${index%5+1}열 ${words[index]}, ${values[index] || '빈칸'}${result.satisfied[index] ? ', 경로 있음' : ''}${result.conflicts.has(index) ? ', 단어에 없는 글자' : ''}`);
   });
-  document.getElementById('alphabetPrompt').textContent = `${words[selected]}에서 글자를 고르세요`;
   pad.replaceChildren(...[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map(letter => {
     const button = document.createElement('button');
     button.type = 'button';
