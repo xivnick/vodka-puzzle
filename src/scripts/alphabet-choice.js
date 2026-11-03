@@ -26,14 +26,19 @@ function render() {
     cell.setAttribute('aria-selected', String(selected === index));
     cell.setAttribute('aria-label', `${Math.floor(index/5)+1}행 ${index%5+1}열 ${words[index]}, ${values[index] || '빈칸'}${result.satisfied[index] ? ', 경로 있음' : ''}${result.conflicts.has(index) ? ', 단어에 없는 글자' : ''}`);
   });
-  pad.replaceChildren(...[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map(letter => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.textContent = letter;
-    button.dataset.letter = letter;
-    button.disabled = !ready;
-    button.setAttribute('aria-pressed', String(values[selected] === letter));
-    return button;
+  pad.replaceChildren(...['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].map(letters => {
+    const row = document.createElement('div');
+    row.className = 'alphabet-key-row';
+    row.replaceChildren(...[...letters].map(letter => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = letter;
+      button.dataset.letter = letter;
+      button.disabled = !ready;
+      button.setAttribute('aria-pressed', String(values[selected] === letter));
+      return button;
+    }));
+    return row;
   }));
   complete.hidden = !result.solved;
   if (!result.solved) completionRecorded = false;
