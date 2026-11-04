@@ -99,7 +99,7 @@ if(root){
     syncDailyDate();
     data.dailyQuests.forEach(q=>{
       const row=$(`[data-daily-quest="${q.id}"]`),claimed=dailyClaimed.has(q.id),button=row.querySelector('[data-daily-claim]');
-      row.classList.toggle('is-complete',claimed);row.querySelector('[data-daily-state]').textContent=claimed||q.complete?'1/1':'0/1';
+      row.classList.toggle('is-complete',claimed);row.querySelector('[data-daily-state]').textContent=claimed?'완료':q.complete?'1/1':'0/1';
       button.disabled=claimed||!q.complete||q.unavailable;button.classList.toggle('claim-ready',!claimed&&q.complete&&!q.unavailable);button.textContent=claimed?'수령 완료':q.unavailable?'기회 종료':q.complete?'받기':'진행 중';
       if(q.unavailable)button.setAttribute('aria-label','기회 종료: 다른 사용자가 먼저 완료했습니다.');else button.removeAttribute('aria-label');
     });

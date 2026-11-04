@@ -27,8 +27,8 @@
 .mypage-v2 .mission-progress{height:2px;background:#eee;margin-top:var(--space-sm);overflow:hidden}.mypage-v2 .mission-progress>span{display:block;height:100%;background:#c7c1b6}
 .mypage-v2 .mission-bottom{display:flex;justify-content:space-between;align-items:center;gap:var(--space-sm);margin-top:var(--space-sm);min-height:24px}
 .mypage-v2 .mission-reward{font-size:.66rem;color:#999}
-.mypage-v2 .claim-button{border:1px solid transparent;border-radius:3px;padding:2px 9px;background:none;color:#aaa;font-size:.68rem}
-.mypage-v2 .claim-button.claim-ready{border-color:#e8e5df;color:#777}.mypage-v2 .claim-button.claim-ready:hover{background:#faf8f4;color:#555}
+.mypage-v2 .claim-button{border:0;border-radius:0;padding:var(--space-xs) 0;background:none;color:#aaa;font-size:.68rem;line-height:1.5;text-decoration:underline;text-underline-offset:3px;flex-shrink:0}
+.mypage-v2 .claim-button.claim-ready{color:#777}.mypage-v2 .claim-button.claim-ready:hover{color:#555}
 .mypage-v2 .is-complete .mission-icon{color:#bbb}.mypage-v2 .is-complete .mission-progress{display:none}
 .mypage-v2 .draw-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 24px}
 .mypage-v2 .draw-actions button,.mypage-v2 .dress-footer button,.mypage-v2 #craftConfirm{display:flex;align-items:center;justify-content:center;gap:12px;padding:11px;border:1px solid #c8c3b8;border-radius:2px;background:#f4f1eb;color:#444;font-size:.8rem}
@@ -116,4 +116,4 @@
 
 .mypage-v2 .mission-row.is-complete .mission-bottom{display:none}
 
-.mypage-v2 .claim-button:disabled{border-color:var(--line);background:var(--soft);color:#bbb}.mypage-v2 .account-section .profile-identity{display:flex;flex-direction:column;gap:var(--space-xs)}.mypage-v2 .account-section .profile-identity>.account-email{margin-top:0;line-height:1.5}.mypage-v2 #accountName{line-height:1.5}
+.mypage-v2 .claim-button:disabled{color:#bbb}.mypage-v2 .account-section .profile-identity{display:flex;flex-direction:column;gap:var(--space-xs)}.mypage-v2 .account-section .profile-identity>.account-email{margin-top:0;line-height:1.5}.mypage-v2 #accountName{line-height:1.5}
