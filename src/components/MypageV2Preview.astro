@@ -28,6 +28,10 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
 
       </div>
     </section>
+    <section class="preview-section" aria-labelledby="previewTitle" hidden={!customize}>
+      <div class="view-heading"><h2 id="previewTitle">미리보기</h2><button type="button" class="quiet-link" id="resetStyle">기본으로</button></div>
+      <div class="dress-preview"><div class="preview-ranking"><span class="sample-rank">3</span><span id="dressBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="꾸미기 미리보기"/></span><span class="sample-value">22개</span></div><p id="selectionLabel">잎사귀 · 기본</p></div>
+    </section>
     {customize&&<div class="customize-toolbar"><a class="mypage-link" href="/test/mypage-v2/">마이페이지</a><div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span><span class="ticket-amount" id="ticketBalanceWrapper" title="타임머신 티켓" aria-label="타임머신 티켓 0장" hidden><img src="/icons/time-machine/ticket.svg" alt="" width="16" height="16"/><span id="ticketBalance">0</span></span><button type="button" class="draw-link" data-toggle-view="draw" aria-expanded="false" aria-controls="panel-draw">뽑기</button></div></div>}
     <section id="panel-missions" aria-labelledby="missionsTitle" hidden={customize}>
       <section class="daily-quests" aria-labelledby="dailyQuestsTitle">
@@ -53,11 +57,12 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
       <p class="demo-note">뽑기 가격과 결과 구성은 시연용입니다. 실제 코인은 사용되지 않습니다.</p>
     </section>
     <section id="panel-dress" aria-labelledby="dressTitle" hidden={!customize}>
-      <div class="view-heading subpage-heading"><h2 id="dressTitle" tabindex="-1">표시 이름</h2></div>
+      <div class="view-heading subpage-heading"><h2 id="dressTitle" tabindex="-1">보관함</h2><span class="collection-count">보유 아이콘 <b id="ownedCount">5</b> / 18</span></div>
       <form id="accountSettingsForm">
       <input id="previewNickname" type="hidden" value="퍼즐러"/>
-      <div class="dress-toolbar"><span class="collection-count">보유 아이콘 <b id="ownedCount">5</b> / 18</span><button type="button" class="quiet-link" id="resetStyle">기본으로</button></div>
-      <div class="dress-preview"><span class="eyebrow">미리보기</span><div class="preview-ranking"><span class="sample-rank">3</span><span id="dressBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="꾸미기 미리보기"/></span><span class="sample-value">22개</span></div><p id="selectionLabel">잎사귀 · 기본</p></div>
+
+
+      <div class="wardrobe-body">
       <div class="wardrobe-tabs" role="tablist" aria-label="꾸미기 항목">{[['icons','아이콘'],['colors','색상'],['effects','효과']].map(([id,name],i)=><button type="button" role="tab" id={`wardrobe-tab-${id}`} aria-controls={`wardrobe-${id}`} aria-selected={i===0?'true':'false'} tabindex={i===0?'0':'-1'} data-wardrobe={id}>{name}</button>)}</div>
       <section id="wardrobe-icons" role="tabpanel" aria-labelledby="wardrobe-tab-icons"><div class="item-grid icons-grid">{data.icons.map(icon=><button type="button" class:list={['icon-item',{'locked':!initialOwned.has(icon.id)}]} data-select-icon={icon.id} disabled={!initialOwned.has(icon.id)} aria-pressed={icon.id==='leaf'?'true':'false'} title={icon.mission}><span class="item-icon" aria-hidden="true">{icon.src.endsWith('.svg')?<Fragment set:html={raw(icon.src)}/>:<img src={icon.src} alt="" width="28" height="28"/>}</span><span>{icon.name}</span><small>{initialOwned.has(icon.id)?'보유':icon.mission}</small></button>)}</div><p class="helper">아이콘은 미션을 달성해서 얻습니다.</p></section>
       <section id="wardrobe-colors" role="tabpanel" aria-labelledby="wardrobe-tab-colors" hidden><div class="color-tools"><span>내 색상</span><button type="button" id="openCraft" aria-expanded="false" aria-controls="panel-craft">커먼 3개 조합하기 ↗</button></div>    <section id="panel-craft" aria-labelledby="craftTitle" hidden>
@@ -65,6 +70,7 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
       <p class="helper">커먼 색상 3개를 골라 언커먼을 만들어보세요.</p><div id="craftSlots" class="craft-slots"></div><div id="craftChoices" class="craft-choices"></div><div class="craft-outcome"><span>결과</span><span id="craftOutcome">세 가지 색을 선택해주세요.</span></div><p class="helper">서로 다른 색이 세 가지면, 시안에서는 앞의 두 색을 사용합니다. 같은 색 세 개는 언커먼 단색이 됩니다.</p><button type="button" id="craftConfirm" disabled>조합하기</button>
     </section><div id="colorInventory" class="color-inventory"></div><fieldset class="appearance-options"><legend>색 표현</legend><div>{[['gradient','그라데이션'],['split','2분할']].map(([id,label],i)=><button type="button" data-style={id} aria-pressed={i===0?'true':'false'}>{label}</button>)}</div><div>{[['135deg','대각선'],['90deg','좌우']].map(([id,label],i)=><button type="button" data-angle={id} aria-pressed={i===0?'true':'false'}>{label}</button>)}</div></fieldset></section>
       <section id="wardrobe-effects" role="tabpanel" aria-labelledby="wardrobe-tab-effects" hidden><p id="effectHint" class="helper">효과는 언커먼·레어 색상에 적용할 수 있어요.</p><div id="effectInventory" class="effect-inventory"></div></section>
+      </div>
       <div class="dress-footer"><span id="saveStatus">선택한 조합을 미리보고 있어요.</span><div class="dress-actions"><a href="/test/mypage-v2/">취소</a><button type="submit" id="saveStyle">저장</button></div></div>
       </form>
     </section>
