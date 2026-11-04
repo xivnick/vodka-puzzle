@@ -960,7 +960,7 @@
     {
       "id": "attendance",
       "name": "출석 체크",
-      "text": "오늘 사이트 방문",
+      "text": "사이트 방문",
       "icon": "calendar-check",
       "kind": "coins",
       "value": 20,
@@ -968,8 +968,8 @@
     },
     {
       "id": "daily-complete",
-      "name": "데일리 스도쿠 완료",
-      "text": "오늘의 데일리 스도쿠 완료",
+      "name": "하루 한 문제",
+      "text": "일반 퍼즐 또는 데일리 스도쿠 1개 완료",
       "icon": "puzzle",
       "kind": "coins",
       "value": 100,
@@ -977,8 +977,8 @@
     },
     {
       "id": "daily-first",
-      "name": "데일리 스도쿠 1등 완료",
-      "text": "오늘의 데일리 스도쿠를 가장 먼저 완료",
+      "name": "데일리 챔피언",
+      "text": "데일리 스도쿠를 1등으로 완료",
       "icon": "trophy",
       "kind": "ticket",
       "value": 1,
