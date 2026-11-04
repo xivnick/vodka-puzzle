@@ -16,6 +16,7 @@ function render() {
   regions.forEach((region, index) => {
     const chosen = selected.includes(index);
     region.classList.toggle('chosen', chosen);
+    if (!chosen) region.querySelector('.dart-flight').getAnimations().forEach(animation => animation.cancel());
     region.setAttribute('aria-pressed', String(chosen));
     region.setAttribute('aria-label', `${puzzle.scores[index]}점, 다트 ${chosen ? '지우기' : '놓기'}`);
     region.setAttribute('aria-disabled', String(!ready || !chosen && selected.length === puzzle.darts));
@@ -31,12 +32,22 @@ function render() {
 }
 function toggle(index) {
   if (!ready) return;
-  if (selected.includes(index)) selected = selected.filter(value => value !== index);
+  const placing = !selected.includes(index);
+  if (!placing) selected = selected.filter(value => value !== index);
   else {
     if (selected.length >= puzzle.darts) { window.showToast('놓은 다트를 먼저 지워주세요.'); return; }
     selected.push(index);
   }
   persist(); render();
+  if (placing && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const dart = regions[index].querySelector('.dart-flight');
+    dart.getAnimations().forEach(animation => animation.cancel());
+    dart.animate([
+      { transform: 'translate(18px, -24px) rotate(-24deg) scale(1.3)', opacity: 0 },
+      { transform: 'translate(0, 0) rotate(4deg) scale(1)', opacity: 1, offset: .78 },
+      { transform: 'translate(0, 0) rotate(0deg) scale(1)', opacity: 1 },
+    ], { duration: 300, easing: 'cubic-bezier(.18,.7,.3,1)' });
+  }
 }
 regions.forEach((region, index) => {
   region.addEventListener('click', () => toggle(index));
