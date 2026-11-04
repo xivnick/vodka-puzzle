@@ -26,7 +26,7 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
     </section>
     <section class="icon-section" aria-labelledby="iconsTitle" hidden={customize}>
       <div class="view-heading"><h2 id="iconsTitle">아이콘</h2></div>
-      <div class="icon-overview"><div class="icon-display"><div id="profileBadge" hidden><NicknameBadge name="퍼즐러" icon="leaf" label="현재 표시 이름"/></div><span id="equippedIcon" class="equipped-icon" role="img" aria-label="현재 아이콘: 잎사귀"></span><span id="equippedColor" class="equipped-color" role="img" aria-label="현재 색상: 기본색"></span><a class="nickname-pencil" href="/test/mypage-v2/customize/" aria-label="아이콘 편집" title="아이콘 편집"><span aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/pencil.svg")}/></span></a></div>
+      <div class="icon-overview"><div class="icon-display"><div id="profileBadge" hidden><NicknameBadge name="퍼즐러" icon="leaf" label="현재 표시 이름"/></div><span id="equippedIcon" class="equipped-icon" role="img" aria-label="현재 아이콘: 잎사귀"></span><div class="equipped-description"><span id="equippedIconName">잎사귀</span><span id="equippedColor" class="equipped-color-name">기본색</span></div></div><a class="appearance-link" href="/test/mypage-v2/customize/">꾸미기 <span aria-hidden="true">›</span></a>
 
       </div>
     </section>
