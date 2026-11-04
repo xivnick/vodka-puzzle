@@ -97,6 +97,7 @@ if(root){
   function syncDailyDate(){const current=today();if(current!==dailyDate){dailyDate=current;dailyClaimed.clear();}}
   function renderDailyQuests(){
     syncDailyDate();
+    $('#dailyQuestCount').textContent=`(${dailyClaimed.size}/${data.dailyQuests.length})`;
     data.dailyQuests.forEach(q=>{
       const row=$(`[data-daily-quest="${q.id}"]`),claimed=dailyClaimed.has(q.id),button=row.querySelector('[data-daily-claim]');
       row.classList.toggle('is-complete',claimed);row.querySelector('[data-daily-state]').textContent=claimed?'완료':q.complete?'1/1':'0/1';
@@ -128,6 +129,7 @@ if(root){
       else reward.textContent=s?(s.kind==='effect'?'별빛 반짝임 효과':`${icons.get(s.value).name} 아이콘`):m.id==='all'?'별빛 반짝임 획득 완료':'아이콘 획득 완료';
       const button=row.querySelector('[data-claim]');button.disabled=!ready;button.classList.toggle('claim-ready',ready);button.textContent=ready?'받기':s?'진행 중':'획득 완료';
     });
+    $('#missionCount').textContent=`(${data.missions.filter(m=>m.claimed.length>0).length}/${data.missions.length})`;
     $('#readyCount').textContent=String(readyCount);$('#readyCount').hidden=!readyCount;
     $('#ownedCount').textContent=String(ownedIcons.size);$('#emptyMissions').hidden=shown>0;
     all('[data-select-icon]').forEach(b=>{
