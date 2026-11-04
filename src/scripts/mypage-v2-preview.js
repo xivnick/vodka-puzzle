@@ -17,7 +17,7 @@ if(root){
   const ownedEffects=new Set(saved?.ownedEffects??['ribbon','afterglow']);
   const effects=new Map(data.effects.map(e=>[e.id,e]));
   effects.set('sparkle',{id:'sparkle',name:'별빛 반짝임',rarity:'special'});
-  let coins=saved?.coins??1240,filter='all',drawNumber=saved?.drawNumber??0,toastTimer,craft=[];
+  let coins=saved?.coins??1240,filter='all',drawNumber=saved?.drawNumber??0,craft=[];
   const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date());
   let dailyDate=today(),tickets=saved?.tickets??0;
   const dailyClaimed=new Set((saved?.dailyDate===dailyDate?saved.dailyClaimed??[]:[]).filter(id=>data.dailyQuests.some(q=>q.id===id&&q.complete)));
@@ -32,7 +32,7 @@ if(root){
   const visible=new IntersectionObserver(entries=>entries.forEach(e=>e.target.classList.toggle('is-offscreen',!e.isIntersecting)));
   const make=(tag,className,text)=>{const e=document.createElement(tag);if(className)e.className=className;if(text!==undefined)e.textContent=text;return e;};
   const pressed=(selector,current)=>all(selector).forEach(e=>e.setAttribute('aria-pressed',String(current(e))));
-  const toast=message=>{clearTimeout(toastTimer);$('#previewToast').textContent=message;$('#previewToast').hidden=false;toastTimer=setTimeout(()=>$('#previewToast').hidden=true,2600);};
+  const toast=message=>window.showToast(message);
   const goal=m=>m.stages.find(s=>!m.claimed.includes(s.at));
   const effectAllowed=()=>['uncommon','rare'].includes(colors.get(draft.color).rarity);
   function openView(focus=false){
