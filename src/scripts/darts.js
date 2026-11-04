@@ -4,6 +4,7 @@ const puzzleId = game.dataset.puzzleId;
 const puzzle = dartsPuzzles[puzzleId];
 const regions = [...game.querySelectorAll('.dart-region')];
 const complete = document.getElementById('dartsComplete');
+const labels = [...game.querySelectorAll('.dart-label')];
 const landedDarts = [...game.querySelectorAll('.placed-dart')];
 const flights = new Map();
 let selected = [], ready = false, completionRecorded = false;
@@ -18,6 +19,7 @@ function render() {
   regions.forEach((region, index) => {
     const chosen = selected.includes(index);
     region.classList.toggle('chosen', chosen);
+    labels[index].classList.toggle('chosen', chosen);
     if (!chosen) stopFlight(index);
     landedDarts[index].style.display = chosen && !flights.has(index) ? 'block' : 'none';
     region.setAttribute('aria-pressed', String(chosen));
@@ -52,7 +54,7 @@ function throwDart(index) {
   const svgNS = 'http://www.w3.org/2000/svg';
   const overlay = document.createElementNS(svgNS, 'svg');
   overlay.setAttribute('aria-hidden', 'true');
-  Object.assign(overlay.style, { position: 'fixed', inset: '0', width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden', zIndex: '2000', color: '#4a6fa5' });
+  Object.assign(overlay.style, { position: 'fixed', inset: '0', width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden', zIndex: '2000', color: '#222' });
   const anchor = document.createElementNS(svgNS, 'g');
   anchor.setAttribute('transform', `translate(${tip.x} ${tip.y})`);
   const moving = document.createElementNS(svgNS, 'g');
@@ -60,8 +62,8 @@ function throwDart(index) {
   icon.setAttribute('href', '#dartTip');
   icon.setAttribute('transform', `scale(${scale}) rotate(${marker.dataset.angle})`);
   moving.append(icon); anchor.append(moving); overlay.append(anchor); document.body.append(overlay);
-  const dx = window.innerWidth + 120 - tip.x;
-  const dy = Math.max(window.innerHeight + 120 - tip.y, dx * .85);
+  const dy = Math.max(window.innerHeight + 120 - tip.y, (window.innerWidth - tip.x) * 2.1);
+  const dx = dy * .46;
   const animation = moving.animate([
     { transform: `translate(${dx}px, ${dy}px) rotate(14deg) scale(1.65)`, offset: 0 },
     { transform: 'translate(0, 0) rotate(0deg) scale(1)', offset: .8 },
