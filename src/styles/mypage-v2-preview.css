@@ -131,3 +131,5 @@
 .mypage-v2 .draw-guide,.mypage-v2 #panel-draw>.demo-note{margin-left:var(--row-inset);margin-right:var(--row-inset)}
 
 .mypage-v2 .preview-section .profile-wallet{padding-top:0}.mypage-v2 .wardrobe-heading-actions{display:flex;align-items:center;gap:var(--space-md)}
+
+.mypage-v2 .wardrobe-section{margin-bottom:var(--section-gap)}.mypage-v2 .customize-return{font-size:.73rem}.mypage-v2 .color-tools{justify-content:flex-end}
