@@ -32,8 +32,8 @@ if(root){
   const goal=m=>m.stages.find(s=>!m.claimed.includes(s.at));
   const effectAllowed=()=>['uncommon','rare'].includes(colors.get(draft.color).rarity);
   function openView(focus=false){
-    const requested=location.hash.slice(1),id=customize?'dress':requested==='draw'?'draw':'missions';
-    if(id!=='dress')draft={...applied};
+    const requested=location.hash.slice(1),id=customize?(requested==='draw'?'draw':'dress'):'missions';
+    if(!customize&&id!=='dress')draft={...applied};
     ['missions','draw','dress'].forEach(k=>$('#panel-'+k).hidden=k!==id);
     all('[data-toggle-view]').forEach(button=>button.setAttribute('aria-expanded',String(button.dataset.toggleView===id)));
     setCraftOpen(false);

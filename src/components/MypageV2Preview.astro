@@ -21,14 +21,16 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
     <header class="profile">
       <div class="profile-identity"><div class="nickname-control"><div id="nicknameDisplay" class="nickname-display"><span id="accountName">퍼즐러</span><button id="editAccountNickname" class="nickname-pencil" type="button" aria-label="닉네임 편집" aria-expanded="false" aria-controls="profileNicknameForm"><span aria-hidden="true"><Fragment set:html={raw('/icons/achievement-preview/pencil.svg')}/></span></button></div><form id="profileNicknameForm" hidden><input id="accountNickname" class="nick-input" type="text" aria-label="닉네임" value="퍼즐러" maxlength="20" required autocomplete="off"/><button class="nickname-save" type="submit">저장</button></form></div><p class="account-email">puzzler@example.com</p></div>
 
+      {!customize&&<div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span></div>}
     </header>
     </section>
     <section class="icon-section" aria-labelledby="iconsTitle" hidden={customize}>
-      <div class="view-heading"><h2 id="iconsTitle">꾸미기</h2></div>
-      <div class="icon-overview"><div class="icon-display"><div id="profileBadge" hidden><NicknameBadge name="퍼즐러" icon="leaf" label="현재 표시 이름"/></div><span id="equippedIcon" class="equipped-icon" role="img" aria-label="현재 아이콘: 잎사귀"></span><span id="equippedColor" class="equipped-color" role="img" aria-label="현재 색상: 기본색"></span><a class="customize-link" href="/test/mypage-v2/customize/" aria-label="꾸미기 변경">변경</a></div>
-      <div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span><button type="button" class="draw-link" data-toggle-view="draw" aria-expanded="false" aria-controls="panel-draw">뽑기</button></div>
+      <div class="view-heading"><h2 id="iconsTitle">아이콘</h2></div>
+      <div class="icon-overview"><div class="icon-display"><div id="profileBadge" hidden><NicknameBadge name="퍼즐러" icon="leaf" label="현재 표시 이름"/></div><span id="equippedIcon" class="equipped-icon" role="img" aria-label="현재 아이콘: 잎사귀"></span><span id="equippedColor" class="equipped-color" role="img" aria-label="현재 색상: 기본색"></span><a class="nickname-pencil" href="/test/mypage-v2/customize/" aria-label="아이콘 편집" title="아이콘 편집"><span aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/pencil.svg")}/></span></a></div>
+
       </div>
     </section>
+    {customize&&<div class="customize-toolbar"><a class="mypage-link" href="/test/mypage-v2/">마이페이지</a><div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span><button type="button" class="draw-link" data-toggle-view="draw" aria-expanded="false" aria-controls="panel-draw">뽑기</button></div></div>}
     <section id="panel-missions" aria-labelledby="missionsTitle" hidden={customize}>
       <div class="view-heading"><h2 id="missionsTitle" tabindex="-1">도전 과제</h2></div>
       <div class="filters" aria-label="도전 과제 분류">{[['all','전체'],['ready','받을 수 있음'],['basic','기본'],['group','문제 묶음'],['special','특수']].map(([id,label],i)=><button type="button" data-filter={id} aria-pressed={i===0?'true':'false'}>{label}{id==='ready'&&<span class="ready-count" id="readyCount">{initialReady}</span>}</button>)}</div>
@@ -41,12 +43,12 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
     <section id="panel-draw" aria-labelledby="drawTitle" hidden>
       <div class="view-heading subpage-heading"><h2 id="drawTitle" tabindex="-1">뽑기</h2></div>
       <div class="draw-actions"><button type="button" data-draw="1"><strong>1회 뽑기</strong><CoinAmount amount={100}/></button><button type="button" data-draw="10"><strong>10회 뽑기</strong><CoinAmount amount={1000}/></button></div>
-      <div id="drawResult" class="draw-result" aria-live="polite" hidden><div class="result-heading"><h3>뽑기 결과</h3><a href="/test/mypage-v2/customize/">꾸미기</a></div><div id="resultItems" class="result-items"></div></div>
+      <div id="drawResult" class="draw-result" aria-live="polite" hidden><div class="result-heading"><h3>뽑기 결과</h3><a href="#dress">꾸미기</a></div><div id="resultItems" class="result-items"></div></div>
       <details class="draw-guide"><summary>무엇을 얻을 수 있나요?</summary><ul><li>커먼: 기본 단색 36종</li><li>레어: 선정된 두 색 조합 24종</li><li>에픽: 빛의 띠·포일·간섭광·렌티큘러·잔광</li><li>언커먼은 커먼 색 3개를 조합해서 만듭니다.</li></ul></details>
       <p class="demo-note">뽑기 가격과 결과 구성은 시연용입니다. 실제 코인은 사용되지 않습니다.</p>
     </section>
     <section id="panel-dress" aria-labelledby="dressTitle" hidden={!customize}>
-      <div class="view-heading subpage-heading"><h2 id="dressTitle" tabindex="-1">표시 이름</h2><a class="mypage-link" href="/test/mypage-v2/">마이페이지</a></div>
+      <div class="view-heading subpage-heading"><h2 id="dressTitle" tabindex="-1">표시 이름</h2></div>
       <form id="accountSettingsForm">
       <input id="previewNickname" type="hidden" value="퍼즐러"/>
       <div class="dress-toolbar"><span class="collection-count">보유 아이콘 <b id="ownedCount">5</b> / 18</span><button type="button" class="quiet-link" id="resetStyle">기본으로</button></div>
