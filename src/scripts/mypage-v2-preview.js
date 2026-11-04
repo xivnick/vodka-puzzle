@@ -239,7 +239,6 @@ if(root){
     if(!nickname){input.setCustomValidity('닉네임을 입력해주세요.');input.reportValidity();return;}
     applied={...draft};renderDress();persist();location.href='/test/mypage-v2/';
   });
-  $('#resetStyle').addEventListener('click',()=>{draft={icon:'leaf',color:'base',effect:'none',mode:'gradient',angle:'135deg'};pressed('[data-style]',b=>b.dataset.style==='gradient');pressed('[data-angle]',b=>b.dataset.angle==='135deg');renderDress();});
   function craftResult(){
     const unique=[...new Set(craft)];if(craft.length!==3)return null;
     const a=colors.get(unique[0]),b=colors.get(unique[1]||unique[0]);

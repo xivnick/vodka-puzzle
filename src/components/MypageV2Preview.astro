@@ -29,10 +29,10 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
       </div>
     </section>
     <section class="preview-section" aria-labelledby="previewTitle" hidden={!customize}>
-      <div class="view-heading"><h2 id="previewTitle">미리보기</h2><button type="button" class="quiet-link" id="resetStyle">기본으로</button></div>
+      <div class="view-heading"><h2 id="previewTitle">미리보기</h2>{customize&&<div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span><span class="ticket-amount" id="ticketBalanceWrapper" title="타임머신 티켓" aria-label="타임머신 티켓 0장" hidden><img src="/icons/time-machine/ticket.svg" alt="" width="16" height="16"/><span id="ticketBalance">0</span></span></div>}</div>
       <div class="dress-preview"><div class="preview-ranking"><span class="sample-rank">3</span><span id="dressBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="꾸미기 미리보기"/></span><span class="sample-value">22개</span></div><p id="selectionLabel">잎사귀 · 기본</p></div>
     </section>
-    {customize&&<div class="customize-toolbar"><a class="mypage-link" href="/test/mypage-v2/">마이페이지</a><div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span><span class="ticket-amount" id="ticketBalanceWrapper" title="타임머신 티켓" aria-label="타임머신 티켓 0장" hidden><img src="/icons/time-machine/ticket.svg" alt="" width="16" height="16"/><span id="ticketBalance">0</span></span><button type="button" class="draw-link" data-toggle-view="draw" aria-expanded="false" aria-controls="panel-draw">뽑기</button></div></div>}
+
     <section id="panel-missions" aria-labelledby="missionsTitle" hidden={customize}>
       <section class="daily-quests" aria-labelledby="dailyQuestsTitle">
         <div class="view-heading"><h2 id="dailyQuestsTitle">데일리 과제</h2><span class="daily-reset">매일 갱신</span></div>
@@ -50,14 +50,14 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
       <p id="emptyMissions" class="empty-state" hidden>지금 받을 보상은 모두 받았어요.</p>
     </section>
     <section id="panel-draw" aria-labelledby="drawTitle" hidden>
-      <div class="view-heading subpage-heading"><h2 id="drawTitle" tabindex="-1">뽑기</h2></div>
+      <div class="view-heading subpage-heading"><h2 id="drawTitle" tabindex="-1">뽑기</h2><a class="quiet-link" href="#dress">보관함</a></div>
       <div class="draw-actions"><button type="button" data-draw="1"><strong>1회 뽑기</strong><CoinAmount amount={100}/></button><button type="button" data-draw="10"><strong>10회 뽑기</strong><CoinAmount amount={1000}/></button></div>
       <div id="drawResult" class="draw-result" aria-live="polite" hidden><div class="result-heading"><h3>뽑기 결과</h3><a href="#dress">꾸미기</a></div><div id="resultItems" class="result-items"></div></div>
       <details class="draw-guide"><summary>무엇을 얻을 수 있나요?</summary><ul><li>커먼: 기본 단색 36종</li><li>레어: 선정된 두 색 조합 24종</li><li>에픽: 빛의 띠·포일·간섭광·렌티큘러·잔광</li><li>언커먼은 커먼 색 3개를 조합해서 만듭니다.</li></ul></details>
       <p class="demo-note">뽑기 가격과 결과 구성은 시연용입니다. 실제 코인은 사용되지 않습니다.</p>
     </section>
     <section id="panel-dress" aria-labelledby="dressTitle" hidden={!customize}>
-      <div class="view-heading subpage-heading"><h2 id="dressTitle" tabindex="-1">보관함</h2><span class="collection-count">보유 아이콘 <b id="ownedCount">5</b> / 18</span></div>
+      <div class="view-heading subpage-heading"><h2 id="dressTitle" tabindex="-1">보관함</h2><div class="wardrobe-heading-actions"><span class="collection-count">보유 아이콘 <b id="ownedCount">5</b> / 18</span><button type="button" class="quiet-link" data-toggle-view="draw" aria-expanded="false" aria-controls="panel-draw">뽑기</button></div></div>
       <form id="accountSettingsForm">
       <input id="previewNickname" type="hidden" value="퍼즐러"/>
 

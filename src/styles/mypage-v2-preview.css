@@ -129,3 +129,5 @@
 .mypage-v2 .dress-footer{margin-top:var(--space-lg);padding:var(--space-md) var(--row-inset);border-color:var(--line)}
 .mypage-v2 .draw-actions{padding:var(--row-padding) var(--row-inset);margin-bottom:var(--space-lg);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .mypage-v2 .draw-guide,.mypage-v2 #panel-draw>.demo-note{margin-left:var(--row-inset);margin-right:var(--row-inset)}
+
+.mypage-v2 .preview-section .profile-wallet{padding-top:0}.mypage-v2 .wardrobe-heading-actions{display:flex;align-items:center;gap:var(--space-md)}
