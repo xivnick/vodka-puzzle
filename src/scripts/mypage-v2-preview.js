@@ -9,7 +9,7 @@ if(root){
   const all=s=>[...root.querySelectorAll(s)];
   const icons=new Map(data.icons.map(i=>[i.id,i]));
   const colors=new Map([...data.common,...data.rare].map(c=>[c.id,c]));
-  const base={id:'base',name:'기본색',a:'#444444',b:'#444444',rarity:'base'};
+  const base={id:'base',name:'기본',a:'#444444',b:'#444444',rarity:'base'};
   colors.set('base',base);
   colors.set('u-start',{id:'u-start',name:'비취 · 갈색',a:'#42977D',b:'#8F6A50',rarity:'uncommon'});
   const inventory=new Map(saved?.inventory??[['c0',3],['c6',3],['c15',3],['c25',3],['c30',3],['u-start',1],['r-berry',1]]);
@@ -22,6 +22,7 @@ if(root){
   let applied=saved?.applied??{...draft};draft={...applied};
   let nickname=saved?.nickname??'퍼즐러';
   for(const color of saved?.colors??[])colors.set(color.id,color);
+  colors.set(base.id,base);
   for(const mission of data.missions)if(saved?.claimed?.[mission.id])mission.claimed=saved.claimed[mission.id];
   function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({coins,drawNumber,nickname,applied,inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
   const rarityNames={base:'기본',common:'커먼',uncommon:'언커먼',rare:'레어',epic:'에픽',special:'특수'};
@@ -192,7 +193,7 @@ if(root){
     [base,...[...inventory.keys()].map(id=>colors.get(id))].forEach(color=>{
       const b=make('button','color-item');b.type='button';b.dataset.selectColor=color.id;b.setAttribute('aria-pressed',String(draft.color===color.id));
       const swatch=make('i');swatch.style.background=`linear-gradient(135deg,${color.a},${color.b})`;
-      b.append(swatch,make('b','',color.name),make('small','',color.id==='base'?'기본색':`${rarityNames[color.rarity]} · ${inventory.get(color.id)}개`));
+      b.append(swatch,make('b','',color.name),make('small','',color.id==='base'?'기본':`${rarityNames[color.rarity]} · ${inventory.get(color.id)}개`));
       b.addEventListener('click',()=>{draft.color=color.id;renderDress();});panel.append(b);
     });
   }
