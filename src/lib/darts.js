@@ -18,7 +18,8 @@ export function parseDartsState(saved, puzzleId) {
     if (!Array.isArray(placements) || placements.length !== saved.selected.length || !placements.every((hit, i) =>
       hit && hit.index === saved.selected[i] && [hit.x,hit.y,hit.angle].every(Number.isFinite) && hit.angle >= -28 && hit.angle <= 14 &&
       dartTipInside(hit.index,hit.x,hit.y) && dartClearsLabels(hit,puzzle))) return null;
-  } else {
+  }
+  if (placements === undefined || saved.placementStyle !== 'upper-left') {
     // Older saves get repeatable placements without changing their selected scores.
     placements = saved.selected.map(index => {
       let seed = index + 1;
@@ -76,6 +77,15 @@ export function dartClearsLabels(placement, puzzle) {
 }
 
 export function createDartPlacement(index, puzzle, random = Math.random) {
+  const label = dartRegion(index);
+  const candidates = [];
+  const choose = () => {
+    const distance = hit => (hit.x-label.x+24)**2 + (hit.y-label.y+26)**2 +
+      4*Math.max(0,hit.x-label.x)**2 + 4*Math.max(0,hit.y-label.y)**2;
+    candidates.sort((a,b) => distance(a)-distance(b));
+    const nearby = candidates.filter(hit => distance(hit) <= distance(candidates[0])+160).slice(0,16);
+    return nearby[Math.floor(random()*nearby.length)];
+  };
   for (let attempt = 0; attempt < 1200; attempt++) {
     let x, y;
     if (index === 12) { x = 240 + (random()*2-1)*27; y = 240 + (random()*2-1)*27; }
@@ -86,11 +96,11 @@ export function createDartPlacement(index, puzzle, random = Math.random) {
       x = 240 + radius*Math.cos(theta); y = 240 + radius*Math.sin(theta);
     }
     const placement = { index, x, y, angle: random()*42-28 };
-    if (dartTipInside(index,x,y) && dartClearsLabels(placement,puzzle)) return placement;
+    if (dartTipInside(index,x,y) && dartClearsLabels(placement,puzzle)) candidates.push(placement);
   }
+  if (candidates.length) return choose();
   // Tight inner regions have few clear trajectories; use a bounded grid fallback.
   const radius = index === 12 ? 27 : [220,154,88][Math.floor(index/4)];
-  const candidates = [];
   for (let x=240-radius; x<=240+radius; x+=2) for (let y=240-radius; y<=240+radius; y+=2) {
     if (!dartTipInside(index,x,y)) continue;
     for (let angle=-28; angle<=14; angle+=2) {
@@ -98,5 +108,5 @@ export function createDartPlacement(index, puzzle, random = Math.random) {
       if (dartClearsLabels(hit,puzzle)) candidates.push(hit);
     }
   }
-  return candidates.length ? candidates[Math.floor(random()*candidates.length)] : null;
+  return candidates.length ? choose() : null;
 }

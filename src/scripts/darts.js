@@ -8,7 +8,7 @@ const labels = [...game.querySelectorAll('.dart-label')];
 const landedDarts = [...game.querySelectorAll('.placed-dart')];
 const flights = new Map();
 let selected = [], placements = [], ready = false, completionRecorded = false;
-function state() { return { version: 1, puzzleId, selected: [...selected], placements: placements.map(hit => ({...hit})) }; }
+function state() { return { version: 1, placementStyle: 'upper-left', puzzleId, selected: [...selected], placements: placements.map(hit => ({...hit})) }; }
 function persist() {
   if (!ready) return;
   try { window.saveLocalState(puzzleId, state()); }
