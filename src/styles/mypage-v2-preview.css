@@ -91,3 +91,19 @@
 .mypage-v2 .nickname-control{min-height:3rem}.mypage-v2 .nickname-display{display:flex;align-items:center;gap:5px;min-height:3rem}.mypage-v2 #accountName{font-size:1rem;color:#222}.mypage-v2 .nickname-pencil{display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:6px;border:0;border-radius:3px;background:none;color:#999;cursor:pointer}.mypage-v2 .nickname-pencil:hover{background:#faf8f4;color:#555}.mypage-v2 .nickname-pencil span,.mypage-v2 .nickname-pencil svg{display:block;width:16px;height:16px}.mypage-v2 #profileNicknameForm{display:flex;align-items:center;gap:14px;min-height:3rem}.mypage-v2 #profileNicknameForm .nick-input{flex:1;min-width:0}.mypage-v2 .nickname-save{flex-shrink:0;padding:6px 12px;border:1px solid #ddd8cf;border-radius:3px;background:#fff;color:#666;font-size:.73rem}.mypage-v2 .nickname-save:hover{background:#faf8f4;border-color:#cfc8bd}.mypage-v2 .profile-identity>.account-email{font-size:.73rem;margin-top:8px;color:#999;line-height:1.6}
 
 .mypage-v2 .profile>.profile-wallet{padding-top:0;min-height:3rem}.mypage-v2 .customize-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}.mypage-v2 .customize-toolbar>.mypage-link{font-size:.7rem}.mypage-v2 .customize-toolbar .profile-wallet{padding-top:0}.mypage-v2 .nickname-pencil{text-decoration:none}.mypage-v2 .profile-identity{min-width:0}
+
+/* Match the home problem list: headings outside the rules, contents inset as rows. */
+.mypage-v2[data-customize=false]{--list-inset:18px}
+.mypage-v2[data-customize=false] .view-heading{margin-bottom:8px;gap:10px}
+.mypage-v2[data-customize=false] .view-heading h2{font-size:.88rem;font-weight:700;color:#555;flex-shrink:0}
+.mypage-v2[data-customize=false] .profile{padding:14px var(--list-inset);border-top:1px solid #e8e5df;border-bottom:1px solid #e8e5df;margin-bottom:32px}
+.mypage-v2[data-customize=false] .icon-overview{padding:14px var(--list-inset);border-top:1px solid #e8e5df;border-bottom:1px solid #e8e5df}
+.mypage-v2[data-customize=false] .icon-section{margin-bottom:32px}
+.mypage-v2 .mission-heading .filters{justify-content:flex-end;gap:0 10px;margin:0}
+.mypage-v2 .mission-list{border-top:1px solid #e8e5df}
+.mypage-v2 .mission-row{padding:14px var(--list-inset,18px);border-bottom:1px solid #e8e5df}
+.mypage-v2 .mission-title h3{font-size:.95rem;font-weight:500;color:#333}
+.mypage-v2 .mission-value{font-size:.78rem;color:#bbb}
+.mypage-v2 .mission-condition{font-size:.73rem}
+@media(max-width:540px){.mypage-v2[data-customize=false]{--list-inset:14px}.mypage-v2 .mission-row{padding-top:12px;padding-bottom:12px}}
+@media(max-width:380px){.mypage-v2 .mission-heading{flex-wrap:wrap}.mypage-v2 .mission-heading .filters{justify-content:flex-start}}
