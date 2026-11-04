@@ -982,7 +982,8 @@
       "icon": "trophy",
       "kind": "ticket",
       "value": 1,
-      "complete": false
+      "complete": false,
+      "unavailable": true
     }
   ]
 }
