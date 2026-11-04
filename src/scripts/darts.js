@@ -23,11 +23,13 @@ function render() {
     if (!chosen) stopFlight(index);
     landedDarts[index].style.display = chosen && !flights.has(index) ? 'block' : 'none';
     region.setAttribute('aria-pressed', String(chosen));
-    region.setAttribute('aria-label', `${puzzle.scores[index]}점, 다트 ${chosen ? '지우기' : '놓기'}`);
-    region.setAttribute('aria-disabled', String(!ready || !chosen && selected.length === puzzle.darts));
+    region.setAttribute('aria-label', `${puzzle.scores[index]}점, 다트 ${chosen ? '꽂힘, 다시 던지려면 초기화하세요' : '놓기'}`);
+    region.setAttribute('aria-disabled', String(!ready));
   });
   game.querySelectorAll('.remaining-dart').forEach((dart, index) => dart.classList.toggle('used', index < selected.length));
   document.getElementById('dartsRemaining').setAttribute('aria-label', `남은 다트 ${puzzle.darts - selected.length}개`);
+  document.getElementById('dartsSum').textContent = result.sum;
+  document.getElementById('dartsRandom').disabled = !ready;
   complete.hidden = !result.solved;
   if (!result.solved) completionRecorded = false;
   else if (ready && !completionRecorded) {
@@ -82,25 +84,37 @@ function settleFlights() {
 }
 window.addEventListener('resize', settleFlights);
 window.addEventListener('scroll', settleFlights, { passive: true, capture: true });
-function toggle(index) {
+function placeDart(index) {
   if (!ready) return;
-  const placing = !selected.includes(index);
-  if (!placing) selected = selected.filter(value => value !== index);
-  else {
-    if (selected.length >= puzzle.darts) { window.showToast('놓은 다트를 먼저 지워주세요.'); return; }
-    selected.push(index);
+  if (selected.includes(index)) {
+    window.showToast('이미 다트가 꽂힌 영역입니다. 다시 던지려면 초기화하세요.');
+    return;
   }
-  if (placing) throwDart(index);
+  if (selected.length >= puzzle.darts) {
+    window.showToast('다트를 모두 던졌습니다. 다시 던지려면 초기화하세요.');
+    return;
+  }
+  selected.push(index);
+  throwDart(index);
   persist(); render();
 }
+document.getElementById('dartsRandom').addEventListener('click', () => {
+  if (!ready) return;
+  const available = puzzle.scores.map((_, index) => index).filter(index => !selected.includes(index));
+  if (selected.length >= puzzle.darts) {
+    window.showToast('다트를 모두 던졌습니다. 다시 던지려면 초기화하세요.');
+    return;
+  }
+  placeDart(available[Math.floor(Math.random() * available.length)]);
+});
 regions.forEach((region, index) => {
-  region.addEventListener('click', () => toggle(index));
+  region.addEventListener('click', () => placeDart(index));
   region.addEventListener('keydown', event => {
-    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggle(index); }
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); placeDart(index); }
   });
 });
 document.getElementById('dartsReset').addEventListener('click', () => {
-  if (!ready || !selected.length || !confirm('놓은 다트를 모두 지울까요?')) return;
+  if (!ready || !selected.length) return;
   selected = []; persist(); render();
 });
 function restore(saved) { selected = parseDartsState(saved, puzzleId)?.selected || []; completionRecorded = false; }

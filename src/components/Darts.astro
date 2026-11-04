@@ -9,9 +9,9 @@ const puzzle = dartsPuzzles[puzzleId];
 ---
 <PuzzleLayout title={`261104 다트 ${puzzle.number}`} {puzzleId} subtitle="다트 4개를 서로 다른 영역에 놓아 타겟 숫자를 만드세요" description="서로 다른 영역에 다트를 놓아 점수의 합을 타겟 숫자에 맞추는 퍼즐">
   <div slot="rules">주어진 다트를 모두 던져서 총합이 타겟 숫자가 되도록 만드세요. 단, 같은 영역에 두 개 이상의 다트를 던질 수 없습니다.</div>
-  <div slot="controls">영역을 누르면 다트를 놓고, 다시 누르면 지웁니다.</div>
+  <div slot="controls">영역을 누르면 다트를 던집니다. 무작위 던지기는 빈 영역에 다트를 하나 던집니다. 다트를 다시 던지려면 초기화하세요.</div>
   <section id="dartsGame" data-puzzle-id={puzzleId} aria-label={`다트 ${puzzle.number}`}>
-    <div class="target">타겟 <span>{puzzle.target}</span></div>
+    <div class="target" role="status" aria-live="polite" aria-atomic="true" aria-label="현재 합 / 목표"><span id="dartsSum">0</span><span class="score-divider">/</span><span>{puzzle.target}</span></div>
     <svg class="darts-board" viewBox="0 0 480 480" role="group" aria-label="다트판">
       <defs><g id="dartMark" transform="rotate(205) scale(.1) translate(-256 -256)" set:html={dartPaths} /><g id="dartTip" transform="rotate(205) scale(.11) translate(-489.91 -489.91)" set:html={dartPaths} /></defs>
       {puzzle.scores.map((score, index) => {
@@ -37,14 +37,14 @@ const puzzle = dartsPuzzles[puzzleId];
     <div class="darts-progress" aria-live="polite" aria-atomic="true">
       <div id="dartsRemaining" class="darts-remaining" aria-label="남은 다트 4개">{Array.from({length: 4}, (_, index) => <svg class="remaining-dart" data-dart={index} viewBox="-28 -28 56 56" aria-hidden="true"><use href="#dartMark" /></svg>)}</div>
     </div>
-    <div class="bottom-buttons"><button id="dartsReset" type="button" class="danger">초기화</button></div>
+    <div class="bottom-buttons"><button id="dartsRandom" type="button">무작위 던지기</button><button id="dartsReset" type="button" class="danger">초기화</button></div>
   </section>
   <PuzzleCompletion slot="completion" id="dartsComplete" />
   <p slot="after-leaderboard" class="icon-credit">다트 아이콘: <a href="https://game-icons.net/1x1/delapouite/dart.html">Delapouite · Game-icons.net</a> · <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a> (색상·회전 조정)</p>
 </PuzzleLayout>
 <script>import '../scripts/darts.js';</script>
 <style>
-.target{text-align:center;color:#555;font-size:.95rem}.target span{margin-left:6px;font-size:1.5rem;color:#222;font-weight:600}
+.target{text-align:center;color:#555;font-size:.95rem}.target span{font-size:1.5rem;color:#222;font-weight:600}.target .score-divider{margin:0 8px;color:#999;font-weight:400}#dartsGame .bottom-buttons{gap:8px}#dartsGame .bottom-buttons button{flex:1;min-width:0}
 .darts-board{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .dart-region{cursor:pointer;outline:none;touch-action:manipulation}.region-shape{fill:white;stroke:#333;stroke-width:1.6}.dart-labels{pointer-events:none}.dart-label{font:22px Arial,sans-serif;fill:#222;stroke:white;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill}.dart-label.chosen{fill:#4a6fa5}.placed-dart{display:none;color:#222;pointer-events:none}.dart-region.chosen .region-shape{fill:#e8edf5}
 .landed-darts{pointer-events:none}.icon-credit{margin:20px 0 0;text-align:center;color:#999;font-size:.65rem;line-height:1.5}.icon-credit a{color:inherit}
