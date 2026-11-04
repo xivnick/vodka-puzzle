@@ -23,7 +23,7 @@ const initialReady=data.missions.filter(m=>{const s=goal(m);return s&&m.count>=s
 
       {!customize&&<div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span><span class="ticket-amount" id="ticketBalanceWrapper" title="타임머신 티켓" aria-label="타임머신 티켓 0장" hidden><img src="/icons/time-machine/ticket.svg" alt="" width="16" height="16"/><span id="ticketBalance">0</span></span></div>}
     </header>
-      <div class="icon-overview"><div class="icon-display"><div id="profileBadge" hidden><NicknameBadge name="퍼즐러" icon="leaf" label="현재 표시 이름"/></div><span id="equippedIcon" class="equipped-icon" role="img" aria-label="현재 아이콘: 잎사귀"></span><div class="equipped-description"><span id="equippedIconName">잎사귀</span><span aria-hidden="true">·</span><span id="equippedColor" class="equipped-color-name">기본</span></div></div><a class="appearance-link" href="/test/mypage-v2/customize/">꾸미기 <span aria-hidden="true">›</span></a>
+      <div class="icon-overview"><div class="icon-display"><div id="profileBadge" hidden><NicknameBadge name="퍼즐러" icon="leaf" label="현재 표시 이름"/></div><span id="equippedIcon" class="equipped-icon" role="img" aria-label="현재 아이콘: 잎사귀"></span><div class="equipped-description"><span id="equippedIconName">잎사귀</span><span aria-hidden="true">·</span><span id="equippedColor" class="equipped-color-name">기본</span></div></div><a class="appearance-link" href="/test/mypage-v2/customize/"><span class="appearance-label">꾸미기</span><span class="appearance-chevron" aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/chevron-right.svg")}/></span></a>
 
       </div>
     </section>
