@@ -30,7 +30,7 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
     </section>
     <section class="preview-section" aria-labelledby="previewTitle" hidden={!customize}>
       <div class="view-heading"><h2 id="previewTitle">미리보기</h2>{customize&&<div class="profile-wallet"><span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span><span class="ticket-amount" id="ticketBalanceWrapper" title="타임머신 티켓" aria-label="타임머신 티켓 0장" hidden><img src="/icons/time-machine/ticket.svg" alt="" width="16" height="16"/><span id="ticketBalance">0</span></span></div>}</div>
-      <div class="dress-preview"><div class="preview-ranking"><span class="sample-rank">3</span><span id="dressBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="꾸미기 미리보기"/></span><span class="sample-value">22개</span></div><p id="selectionLabel">잎사귀 · 기본</p></div>
+      <div class="dress-preview"><div class="preview-ranking"><span class="sample-rank">3</span><span id="dressBadge"><NicknameBadge name="퍼즐러" icon="leaf" label="꾸미기 미리보기"/></span><span id="selectionLabel" class="sample-value">잎사귀 · 기본</span></div></div>
     </section>
 
     <section id="panel-missions" aria-labelledby="missionsTitle" hidden={customize}>

@@ -120,7 +120,7 @@
 .mypage-v2 .preview-section{margin-bottom:var(--section-gap)}
 .mypage-v2 .dress-preview{padding:var(--row-padding) var(--row-inset);margin-bottom:0;border-color:var(--line)}
 .mypage-v2 .preview-ranking{margin:0;gap:var(--space-md)}
-.mypage-v2 .dress-preview #selectionLabel{margin-top:var(--space-sm)}
+.mypage-v2 .dress-preview #selectionLabel{min-width:0;text-align:right;overflow-wrap:anywhere}
 .mypage-v2 .customize-toolbar{margin-bottom:var(--section-gap)}
 .mypage-v2 .wardrobe-body{padding:var(--row-padding) var(--row-inset);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .mypage-v2 .wardrobe-tabs{gap:var(--space-lg);margin-bottom:var(--space-lg)}
