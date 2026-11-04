@@ -29,7 +29,7 @@ function render() {
     }
     landedDarts[index].style.display = chosen && !flights.has(index) ? 'block' : 'none';
     region.setAttribute('aria-pressed', String(chosen));
-    region.setAttribute('aria-label', `${puzzle.scores[index]}점, 다트 ${chosen ? '꽂힘, 다시 던지려면 초기화하세요' : '놓기'}`);
+    region.setAttribute('aria-label', `${puzzle.scores[index]}점, 다트 ${chosen ? '꽂힘, 초기화 확인' : '놓기'}`);
     region.setAttribute('aria-disabled', String(!ready));
   });
   game.querySelectorAll('.remaining-dart').forEach((dart, index) => dart.classList.toggle('used', index < selected.length));
@@ -97,11 +97,11 @@ window.addEventListener('scroll', settleFlights, { passive: true, capture: true 
 function placeDart(index) {
   if (!ready) return;
   if (selected.includes(index)) {
-    window.showToast('이미 다트가 꽂힌 영역입니다. 다시 던지려면 초기화하세요.');
+    confirmReset();
     return;
   }
   if (selected.length >= puzzle.darts) {
-    window.showToast('다트를 모두 던졌습니다. 다시 던지려면 초기화하세요.');
+    confirmReset();
     return;
   }
   const hit = createDartPlacement(index, puzzle);
@@ -114,7 +114,7 @@ document.getElementById('dartsRandom').addEventListener('click', () => {
   if (!ready) return;
   const available = puzzle.scores.map((_, index) => index).filter(index => !selected.includes(index));
   if (selected.length >= puzzle.darts) {
-    window.showToast('다트를 모두 던졌습니다. 다시 던지려면 초기화하세요.');
+    confirmReset();
     return;
   }
   placeDart(available[Math.floor(Math.random() * available.length)]);
@@ -125,10 +125,14 @@ regions.forEach((region, index) => {
     if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); placeDart(index); }
   });
 });
-document.getElementById('dartsReset').addEventListener('click', () => {
+function resetPuzzle() {
   if (!ready || !selected.length) return;
   selected = []; placements = []; persist(); render();
-});
+}
+function confirmReset() {
+  if (confirm('초기화하시겠습니까?')) resetPuzzle();
+}
+document.getElementById('dartsReset').addEventListener('click', resetPuzzle);
 function restore(saved) {
   [...flights.keys()].forEach(stopFlight);
   const parsed = parseDartsState(saved, puzzleId);
