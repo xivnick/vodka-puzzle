@@ -117,4 +117,3 @@
 .mypage-v2 .mission-row.is-complete .mission-bottom{display:none}
 
 .mypage-v2 .claim-button:disabled{color:#bbb}.mypage-v2 .account-section .profile-identity{display:flex;flex-direction:column;gap:var(--space-xs)}.mypage-v2 .account-section .profile-identity>.account-email{margin-top:0;line-height:1.5}.mypage-v2 #accountName{line-height:1.5}
-
