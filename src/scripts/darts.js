@@ -28,7 +28,11 @@ function render() {
   });
   game.querySelectorAll('.remaining-dart').forEach((dart, index) => dart.classList.toggle('used', index < selected.length));
   document.getElementById('dartsRemaining').setAttribute('aria-label', `남은 다트 ${puzzle.darts - selected.length}개`);
-  document.getElementById('dartsSum').textContent = result.sum;
+  const sum = document.getElementById('dartsSum');
+  const failed = result.sum > puzzle.target || selected.length === puzzle.darts && !result.solved;
+  sum.textContent = result.sum;
+  sum.classList.toggle('failed', failed);
+  sum.setAttribute('aria-label', `${result.sum}${failed ? ', 목표와 맞지 않습니다' : ''}`);
   document.getElementById('dartsRandom').disabled = !ready;
   complete.hidden = !result.solved;
   if (!result.solved) completionRecorded = false;
