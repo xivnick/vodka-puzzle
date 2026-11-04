@@ -20,3 +20,5 @@ Basic mission preview adds `leaf` from the same pinned Tabler Icons v3.40.0 outl
 Spiral Galaxies mission candidates add `galaxy`, `spiral`, `universe`, and `planet` from the same pinned Tabler Icons v3.40.0 outline set, unchanged.
 
 Account setting buttons use the original `palette` from the same pinned Tabler Icons v3.40.0 outline set (MIT), and reuse `pencil`.
+
+Inline nickname editing uses the original `check` from the same pinned Tabler Icons v3.40.0 outline set (MIT).
