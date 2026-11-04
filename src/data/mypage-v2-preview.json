@@ -955,5 +955,34 @@
     }
   ],
   "season": "2026년 2학기",
-  "total": 50
+  "total": 50,
+  "dailyQuests": [
+    {
+      "id": "attendance",
+      "name": "출석 체크",
+      "text": "오늘 사이트 방문",
+      "icon": "calendar-check",
+      "kind": "coins",
+      "value": 20,
+      "complete": true
+    },
+    {
+      "id": "daily-complete",
+      "name": "데일리 스도쿠 완료",
+      "text": "오늘의 데일리 스도쿠 완료",
+      "icon": "puzzle",
+      "kind": "coins",
+      "value": 100,
+      "complete": true
+    },
+    {
+      "id": "daily-first",
+      "name": "데일리 스도쿠 1등 완료",
+      "text": "오늘의 데일리 스도쿠를 가장 먼저 완료",
+      "icon": "trophy",
+      "kind": "ticket",
+      "value": 1,
+      "complete": true
+    }
+  ]
 }

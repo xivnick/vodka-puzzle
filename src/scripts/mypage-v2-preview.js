@@ -18,13 +18,16 @@ if(root){
   const effects=new Map(data.effects.map(e=>[e.id,e]));
   effects.set('sparkle',{id:'sparkle',name:'별빛 반짝임',rarity:'special'});
   let coins=saved?.coins??1240,filter='all',drawNumber=saved?.drawNumber??0,toastTimer,craft=[];
+  const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date());
+  let dailyDate=today(),tickets=saved?.tickets??0;
+  const dailyClaimed=new Set(saved?.dailyDate===dailyDate?saved.dailyClaimed:[]);
   let draft={icon:'leaf',color:'base',effect:'none',mode:'gradient',angle:'135deg'};
   let applied=saved?.applied??{...draft};draft={...applied};
   let nickname=saved?.nickname??'퍼즐러';
   for(const color of saved?.colors??[])colors.set(color.id,color);
   colors.set(base.id,base);
   for(const mission of data.missions)if(saved?.claimed?.[mission.id])mission.claimed=saved.claimed[mission.id];
-  function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({coins,drawNumber,nickname,applied,inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
+  function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({coins,drawNumber,nickname,applied,tickets,dailyDate,dailyClaimed:[...dailyClaimed],inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
   const rarityNames={base:'기본',common:'커먼',uncommon:'언커먼',rare:'레어',epic:'에픽',special:'특수'};
   const visible=new IntersectionObserver(entries=>entries.forEach(e=>e.target.classList.toggle('is-offscreen',!e.isIntersecting)));
   const make=(tag,className,text)=>{const e=document.createElement(tag);if(className)e.className=className;if(text!==undefined)e.textContent=text;return e;};
@@ -89,7 +92,24 @@ if(root){
     $('#coinBalance').textContent=coins.toLocaleString('ko-KR');
     $('#coinBalance').closest('.coin-amount').setAttribute('aria-label',`${coins.toLocaleString('ko-KR')} 코인`);
     all('[data-draw]').forEach(b=>b.disabled=coins<Number(b.dataset.draw)*100);
+    $('#ticketBalance').textContent=tickets.toLocaleString('ko-KR');$('#ticketBalanceWrapper').hidden=tickets===0;$('#ticketBalanceWrapper').setAttribute('aria-label',`타임머신 티켓 ${tickets}장`);
   }
+  function syncDailyDate(){const current=today();if(current!==dailyDate){dailyDate=current;dailyClaimed.clear();}}
+  function renderDailyQuests(){
+    syncDailyDate();
+    data.dailyQuests.forEach(q=>{
+      const row=$(`[data-daily-quest="${q.id}"]`),claimed=dailyClaimed.has(q.id),button=row.querySelector('[data-daily-claim]');
+      row.classList.toggle('is-complete',claimed);row.querySelector('[data-daily-state]').textContent=claimed?'수령 완료':q.complete?'완료':'진행 중';
+      button.disabled=claimed||!q.complete;button.classList.toggle('claim-ready',!claimed&&q.complete);button.textContent=claimed?'수령 완료':q.complete?'받기':'진행 중';
+    });
+  }
+  all('[data-daily-claim]').forEach(button=>button.addEventListener('click',()=>{
+    syncDailyDate();const q=data.dailyQuests.find(q=>q.id===button.dataset.dailyClaim);
+    if(!q?.complete||dailyClaimed.has(q.id))return;
+    dailyClaimed.add(q.id);
+    if(q.kind==='coins'){coins+=q.value;toast(`${q.value} 코인을 받았어요.`);}else{tickets+=q.value;toast(`타임머신 티켓 ${q.value}장을 받았어요.`);}
+    renderCoins();renderDailyQuests();persist();
+  }));
   function renderMissions(){
     let readyCount=0,shown=0;
     data.missions.forEach(m=>{
@@ -251,6 +271,6 @@ if(root){
   });
   document.addEventListener('visibilitychange',()=>root.classList.toggle('page-hidden',document.hidden));
   $('#accountName').textContent=nickname;$('#accountNickname').value=nickname;$('#previewNickname').value=nickname;setBadgeName($('#profileBadge'),nickname);
-  initNicknameBadges();renderCoins();renderMissions();renderDress();openView();
+  initNicknameBadges();renderCoins();renderDailyQuests();renderMissions();renderDress();openView();
   document.fonts.ready.then(()=>{renderBadge($('#profileBadge'),applied);renderBadge($('#dressBadge'),draft);});
 }
