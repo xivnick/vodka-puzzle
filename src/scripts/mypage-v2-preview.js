@@ -191,6 +191,14 @@ if(root){
     pressed('[data-select-icon]',b=>b.dataset.selectIcon===draft.icon);
     pressed('[data-style]',b=>b.dataset.style===draft.mode);pressed('[data-angle]',b=>b.dataset.angle===draft.angle);
     $('#selectionLabel').textContent=[icons.get(draft.icon).name,colors.get(draft.color).name,draft.effect==='none'?null:effects.get(draft.effect)?.name].filter(Boolean).join(' · ');
+    const pickerIcon=$('#pickerIcon');
+    pickerIcon.querySelectorAll('.custom-badge-effect').forEach(effect=>visible.unobserve(effect));
+    pickerIcon.replaceChildren(...[...iconPreview.childNodes].map(node=>node.cloneNode(true)));
+    pickerIcon.querySelectorAll('.custom-badge-effect').forEach(effect=>visible.observe(effect));
+    $('#pickerIconName').textContent=icons.get(draft.icon).name;
+    $('#pickerColorName').textContent=colors.get(draft.color).name;
+    $('#pickerColorSwatch').style.background=`linear-gradient(135deg,${colors.get(draft.color).a},${colors.get(draft.color).b})`;
+    $('#pickerEffectName').textContent=draft.effect==='none'?'효과 없음':effects.get(draft.effect).name;
     renderInventory();renderEffects();
   }
   all('[data-select-icon]').forEach(b=>b.addEventListener('click',()=>{
@@ -210,11 +218,10 @@ if(root){
     const panel=$('#effectInventory');panel.replaceChildren();
     [{id:'none',name:'효과 없음'},...effects.values()].forEach(effect=>{
       const owned=effect.id==='none'||ownedEffects.has(effect.id),allowed=effect.id==='none'||effectAllowed();
-      const b=make('button','effect-item');b.type='button';b.dataset.selectEffect=effect.id;b.disabled=!owned||!allowed;b.setAttribute('aria-pressed',String(draft.effect===effect.id));
+      const b=make('button','effect-item');b.type='button';b.dataset.selectEffect=effect.id;b.disabled=!owned||!allowed;if(owned&&!allowed)b.title='효과는 언커먼·레어 색깔에 적용할 수 있어요.';b.setAttribute('aria-pressed',String(draft.effect===effect.id));
       b.append(make('i','effect-mark'),make('span','',effect.name),make('small','',effect.id==='none'?'':!owned?(effect.id==='sparkle'?'완전 정복 보상':'미보유'):!allowed?'색 조합 필요':'보유'));
       b.addEventListener('click',()=>{draft.effect=effect.id;applyDress();});panel.append(b);
     });
-    $('#effectHint').textContent=effectAllowed()?'보유한 효과를 선택해보세요.':'커먼 색상에는 효과를 입힐 수 없어요. 색을 조합해 언커먼으로 만들어보세요.';
   }
   all('[data-style]').forEach(b=>b.addEventListener('click',()=>{draft.mode=b.dataset.style;pressed('[data-style]',x=>x===b);applyDress();}));
   all('[data-angle]').forEach(b=>b.addEventListener('click',()=>{draft.angle=b.dataset.angle;pressed('[data-angle]',x=>x===b);applyDress();}));
