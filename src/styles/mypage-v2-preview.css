@@ -9,7 +9,7 @@
 .mypage-v2 .draw-link{display:inline-flex;align-items:center;justify-content:center;height:28px;padding:0 10px;border:1px solid #ddd8cf;border-radius:3px;background:#fff;font-size:.74rem;text-decoration:none}
 .mypage-v2 .coin-amount{display:inline-flex;align-items:center;gap:5px;vertical-align:middle;font-variant-numeric:tabular-nums;white-space:nowrap}
 /* Center the coin against numeral cap height, excluding the font line-box padding. */
-.mypage-v2 .coin-amount>span:last-child{text-box:trim-both cap alphabetic}
+.mypage-v2 .coin-amount>span:last-child,.mypage-v2 .ticket-amount>span:last-child,.mypage-v2 .daily-ticket>span:last-child{text-box:trim-both cap alphabetic}
 .mypage-v2 .coin-icon{display:block;flex:0 0 auto;width:1em;height:1em;color:inherit}
 .mypage-v2 .coin-icon svg{display:block;width:100%;height:100%;overflow:visible}
 .mypage-v2 .view-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.mypage-v2 .view-heading h2{font-size:.85rem;font-weight:500;line-height:1.6}.mypage-v2 .view-heading a{font-size:.68rem;text-underline-offset:3px}.mypage-v2 .ready-count{margin-left:4px;font-size:.61rem}
@@ -114,6 +114,6 @@
 
 .mypage-v2 .account-section{margin-bottom:32px}.mypage-v2[data-customize=false] .account-section .profile{margin-bottom:0;padding-bottom:8px;border-bottom:0}.mypage-v2[data-customize=false] .account-section .icon-overview{padding-top:12px;border-top:1px solid #e8e5df}
 
-.mypage-v2 .daily-quests{margin-bottom:32px}.mypage-v2 .daily-reset{font-size:.65rem;color:#aaa}.mypage-v2 .ticket-amount,.mypage-v2 .daily-ticket{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.mypage-v2 .ticket-amount{font-size:.85rem;color:#777}.mypage-v2 .ticket-amount img,.mypage-v2 .daily-ticket img{display:block;object-fit:contain}
+.mypage-v2 .daily-quests{margin-bottom:32px}.mypage-v2 .daily-reset{font-size:.65rem;color:#aaa}.mypage-v2 .ticket-amount,.mypage-v2 .daily-ticket{display:inline-flex;align-items:center;gap:5px;vertical-align:middle;font-variant-numeric:tabular-nums;white-space:nowrap}.mypage-v2 .ticket-amount{font-size:.85rem;color:#777}.mypage-v2 .ticket-amount img,.mypage-v2 .daily-ticket img{display:block;object-fit:contain}
 
 .mypage-v2 .mission-row.is-complete{padding-top:8px;padding-bottom:8px}.mypage-v2 .mission-row.is-complete .mission-bottom{display:none}
