@@ -13,7 +13,7 @@ const puzzle = dartsPuzzles[puzzleId];
   <section id="dartsGame" data-puzzle-id={puzzleId} aria-label={`다트 ${puzzle.number}`}>
     <div class="target">타겟 <span>{puzzle.target}</span></div>
     <svg class="darts-board" viewBox="0 0 480 480" role="group" aria-label="다트판">
-      <defs><g id="dartMark" transform="rotate(90) scale(.1) translate(-256 -256)" set:html={dartPaths} /><g id="dartTip" transform="rotate(90) scale(.11) translate(-489.91 -489.91)" set:html={dartPaths} /></defs>
+      <defs><g id="dartMark" transform="rotate(180) scale(.1) translate(-256 -256)" set:html={dartPaths} /><g id="dartTip" transform="rotate(180) scale(.11) translate(-489.91 -489.91)" set:html={dartPaths} /></defs>
       {puzzle.scores.map((score, index) => {
         const region = dartRegion(index);
         return <g class="dart-region" data-index={index} role="button" tabindex="0" aria-label={`${score}점, 다트 놓기`} aria-pressed="false">
@@ -25,7 +25,7 @@ const puzzle = dartsPuzzles[puzzleId];
         {puzzle.scores.map((_, index) => {
           const region = dartRegion(index);
           const angle = [-7, 3, -3, 7][index % 4];
-          return <g class="placed-dart" data-dart-index={index} data-angle={angle} transform={`translate(${region.x} ${region.y - 14})`}><use href="#dartTip" transform={`rotate(${angle})`} /></g>;
+          return <g class="placed-dart" data-dart-index={index} data-angle={angle} transform={`translate(${region.x} ${region.y + 14})`}><use href="#dartTip" transform={`rotate(${angle})`} /></g>;
         })}
       </g>
     </svg>

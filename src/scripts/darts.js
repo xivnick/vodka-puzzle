@@ -61,9 +61,9 @@ function throwDart(index) {
   icon.setAttribute('transform', `scale(${scale}) rotate(${marker.dataset.angle})`);
   moving.append(icon); anchor.append(moving); overlay.append(anchor); document.body.append(overlay);
   const dx = window.innerWidth + 120 - tip.x;
-  const dy = -Math.max(180, dx * .85);
+  const dy = Math.max(window.innerHeight + 120 - tip.y, dx * .85);
   const animation = moving.animate([
-    { transform: `translate(${dx}px, ${dy}px) rotate(-14deg) scale(1.65)`, offset: 0 },
+    { transform: `translate(${dx}px, ${dy}px) rotate(14deg) scale(1.65)`, offset: 0 },
     { transform: 'translate(0, 0) rotate(0deg) scale(1)', offset: .8 },
     { transform: 'translate(0, 0) rotate(5deg) scale(1)', offset: .88 },
     { transform: 'translate(0, 0) rotate(-2deg) scale(1)', offset: .95 },
