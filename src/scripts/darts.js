@@ -1,4 +1,4 @@
-import { dartsPuzzles, inspectDarts, parseDartsState } from '../lib/darts.js';
+import { dartsPuzzles, inspectDarts, parseDartsState, createDartPlacement } from '../lib/darts.js';
 const game = document.getElementById('dartsGame');
 const puzzleId = game.dataset.puzzleId;
 const puzzle = dartsPuzzles[puzzleId];
@@ -7,8 +7,8 @@ const complete = document.getElementById('dartsComplete');
 const labels = [...game.querySelectorAll('.dart-label')];
 const landedDarts = [...game.querySelectorAll('.placed-dart')];
 const flights = new Map();
-let selected = [], ready = false, completionRecorded = false;
-function state() { return { version: 1, puzzleId, selected: [...selected] }; }
+let selected = [], placements = [], ready = false, completionRecorded = false;
+function state() { return { version: 1, puzzleId, selected: [...selected], placements: placements.map(hit => ({...hit})) }; }
 function persist() {
   if (!ready) return;
   try { window.saveLocalState(puzzleId, state()); }
@@ -21,6 +21,12 @@ function render() {
     region.classList.toggle('chosen', chosen);
     labels[index].classList.toggle('chosen', chosen);
     if (!chosen) stopFlight(index);
+    const hit = placements.find(hit => hit.index === index);
+    if (hit) {
+      landedDarts[index].setAttribute('transform', `translate(${hit.x} ${hit.y})`);
+      landedDarts[index].dataset.angle = hit.angle;
+      landedDarts[index].querySelector('use').setAttribute('transform', `rotate(${hit.angle})`);
+    }
     landedDarts[index].style.display = chosen && !flights.has(index) ? 'block' : 'none';
     region.setAttribute('aria-pressed', String(chosen));
     region.setAttribute('aria-label', `${puzzle.scores[index]}점, 다트 ${chosen ? '꽂힘, 다시 던지려면 초기화하세요' : '놓기'}`);
@@ -69,7 +75,7 @@ function throwDart(index) {
   icon.setAttribute('transform', `scale(${scale}) rotate(${marker.dataset.angle})`);
   moving.append(icon); anchor.append(moving); overlay.append(anchor); document.body.append(overlay);
   const dy = Math.max(window.innerHeight + 120 - tip.y, (window.innerWidth - tip.x) * 2.1);
-  const dx = dy * .46;
+  const dx = dy * Math.tan((20 - Number(marker.dataset.angle)) * Math.PI / 180);
   const animation = moving.animate([
     { transform: `translate(${dx}px, ${dy}px) rotate(14deg) scale(1.65)`, offset: 0 },
     { transform: 'translate(0, 0) rotate(0deg) scale(1)', offset: .8 },
@@ -98,8 +104,10 @@ function placeDart(index) {
     window.showToast('다트를 모두 던졌습니다. 다시 던지려면 초기화하세요.');
     return;
   }
-  selected.push(index);
-  throwDart(index);
+  const hit = createDartPlacement(index, puzzle);
+  if (!hit) { window.showToast('던질 위치를 잡지 못했습니다. 다시 눌러주세요.'); return; }
+  selected.push(index); placements.push(hit);
+  render(); throwDart(index);
   persist(); render();
 }
 document.getElementById('dartsRandom').addEventListener('click', () => {
@@ -119,9 +127,13 @@ regions.forEach((region, index) => {
 });
 document.getElementById('dartsReset').addEventListener('click', () => {
   if (!ready || !selected.length) return;
-  selected = []; persist(); render();
+  selected = []; placements = []; persist(); render();
 });
-function restore(saved) { selected = parseDartsState(saved, puzzleId)?.selected || []; completionRecorded = false; }
+function restore(saved) {
+  [...flights.keys()].forEach(stopFlight);
+  const parsed = parseDartsState(saved, puzzleId);
+  selected = parsed?.selected || []; placements = parsed?.placements || []; completionRecorded = false;
+}
 window.handleCloudSave = () => window.saveProgressCloud(puzzleId, state());
 window.handleCloudLoad = async () => {
   const saved = await window.loadProgressCloud(puzzleId);
