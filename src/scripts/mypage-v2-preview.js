@@ -111,12 +111,17 @@ if(root){
     if(q.kind==='coins'){coins+=q.value;toast(`${q.value} 코인을 받았어요.`);}else{tickets+=q.value;toast(`타임머신 티켓 ${q.value}장을 받았어요.`);}
     renderCoins();renderDailyQuests();persist();
   }));
+  // Freeze row order for this page visit; reward claims only update row contents.
+  function sortMissionRows(){
+    const priority=m=>{const s=goal(m);return !s?2:m.count>=s.at?0:1;};
+    const ordered=[...data.missions].sort((a,b)=>priority(a)-priority(b));
+    $('#missionList').append(...ordered.map(m=>$(`[data-mission="${m.id}"]`)));
+  }
   function renderMissions(){
-    let readyCount=0,shown=0;
+    let shown=0;
     data.missions.forEach(m=>{
       const row=$(`[data-mission="${m.id}"]`),s=goal(m),ready=Boolean(s&&m.count>=s.at);
-      if(ready)readyCount++;
-      row.hidden=filter==='ready'?!ready:filter!=='all'&&m.group!==filter;
+      row.hidden=filter!=='all'&&m.group!==filter;
       if(!row.hidden)shown++;
       row.classList.toggle('is-complete',!s);
       row.querySelector('.mission-value').textContent=s?`${m.count} / ${s.at}`:'완료';
@@ -128,7 +133,6 @@ if(root){
       else reward.textContent=s?(s.kind==='effect'?'별빛 반짝임 효과':`${icons.get(s.value).name} 아이콘`):m.id==='all'?'별빛 반짝임 획득 완료':'아이콘 획득 완료';
       const button=row.querySelector('[data-claim]');button.disabled=!ready;button.classList.toggle('claim-ready',ready);button.textContent=ready?'받기':s?'진행 중':'획득 완료';
     });
-    $('#readyCount').textContent=String(readyCount);$('#readyCount').hidden=!readyCount;
     $('#ownedCount').textContent=String(ownedIcons.size);$('#emptyMissions').hidden=shown>0;
     all('[data-select-icon]').forEach(b=>{
       const owned=ownedIcons.has(b.dataset.selectIcon);b.disabled=!owned;b.classList.toggle('locked',!owned);
@@ -272,6 +276,6 @@ if(root){
   });
   document.addEventListener('visibilitychange',()=>root.classList.toggle('page-hidden',document.hidden));
   $('#accountName').textContent=nickname;$('#accountNickname').value=nickname;$('#previewNickname').value=nickname;setBadgeName($('#profileBadge'),nickname);
-  initNicknameBadges();renderCoins();renderDailyQuests();renderMissions();renderDress();openView();
+  initNicknameBadges();renderCoins();renderDailyQuests();sortMissionRows();renderMissions();renderDress();openView();
   document.fonts.ready.then(()=>{renderBadge($('#profileBadge'),applied);renderBadge($('#dressBadge'),draft);});
 }

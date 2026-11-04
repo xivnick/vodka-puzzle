@@ -12,7 +12,7 @@
 .mypage-v2 .coin-amount>span:last-child,.mypage-v2 .ticket-amount>span:last-child,.mypage-v2 .daily-ticket>span:last-child{text-box:trim-both cap alphabetic}
 .mypage-v2 .coin-icon{display:block;flex:0 0 auto;width:1em;height:1em;color:inherit}
 .mypage-v2 .coin-icon svg{display:block;width:100%;height:100%;overflow:visible}
-.mypage-v2 .view-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.mypage-v2 .view-heading h2{font-size:.85rem;font-weight:500;line-height:1.6}.mypage-v2 .view-heading a{font-size:.68rem;text-underline-offset:3px}.mypage-v2 .ready-count{margin-left:4px;font-size:.61rem}
+.mypage-v2 .view-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.mypage-v2 .view-heading h2{font-size:.85rem;font-weight:500;line-height:1.6}.mypage-v2 .view-heading a{font-size:.68rem;text-underline-offset:3px}
 .mypage-v2 .dress-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .mypage-v2 .collection-count{display:flex;align-items:baseline;gap:4px;font-size:.68rem;color:#999;white-space:nowrap}.mypage-v2 .collection-count b{font-weight:400}.mypage-v2 .collection-count small{font-size:.64rem}
 .mypage-v2 .filters{display:flex;flex-wrap:wrap;gap:0 14px;margin-bottom:8px}
