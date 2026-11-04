@@ -973,7 +973,7 @@
       "icon": "puzzle",
       "kind": "coins",
       "value": 100,
-      "complete": true
+      "complete": false
     },
     {
       "id": "daily-first",
@@ -982,7 +982,7 @@
       "icon": "trophy",
       "kind": "ticket",
       "value": 1,
-      "complete": true
+      "complete": false
     }
   ]
 }

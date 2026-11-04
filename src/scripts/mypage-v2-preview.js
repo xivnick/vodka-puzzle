@@ -20,7 +20,7 @@ if(root){
   let coins=saved?.coins??1240,filter='all',drawNumber=saved?.drawNumber??0,toastTimer,craft=[];
   const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date());
   let dailyDate=today(),tickets=saved?.tickets??0;
-  const dailyClaimed=new Set(saved?.dailyDate===dailyDate?saved.dailyClaimed:[]);
+  const dailyClaimed=new Set((saved?.dailyDate===dailyDate?saved.dailyClaimed??[]:[]).filter(id=>data.dailyQuests.some(q=>q.id===id&&q.complete)));
   let draft={icon:'leaf',color:'base',effect:'none',mode:'gradient',angle:'135deg'};
   let applied=saved?.applied??{...draft};draft={...applied};
   let nickname=saved?.nickname??'퍼즐러';
