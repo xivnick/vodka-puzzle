@@ -22,8 +22,6 @@ function render() {
   });
   game.querySelectorAll('.remaining-dart').forEach((dart, index) => dart.classList.toggle('used', index < selected.length));
   document.getElementById('dartsRemaining').setAttribute('aria-label', `남은 다트 ${puzzle.darts - selected.length}개`);
-  document.querySelector('#dartsSum span').textContent = result.sum;
-  document.getElementById('dartsEquation').textContent = selected.length ? `${selected.map(index => puzzle.scores[index]).join(' + ')} = ${result.sum}` : '다트를 놓을 영역을 선택하세요.';
   complete.hidden = !result.solved;
   if (!result.solved) completionRecorded = false;
   else if (ready && !completionRecorded) {
