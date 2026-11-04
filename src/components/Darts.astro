@@ -1,0 +1,40 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import { dartsPuzzles, dartRegion } from '../lib/darts.js';
+const { puzzleId } = Astro.props;
+const puzzle = dartsPuzzles[puzzleId];
+---
+<PuzzleLayout title={`261104 다트 ${puzzle.number}`} {puzzleId} subtitle="다트 4개를 서로 다른 영역에 놓아 타겟 숫자를 만드세요" description="서로 다른 영역에 다트를 놓아 점수의 합을 타겟 숫자에 맞추는 퍼즐">
+  <div slot="rules">주어진 다트를 모두 던져서 총합이 타겟 숫자가 되도록 만드세요. 단, 같은 영역에 두 개 이상의 다트를 던질 수 없습니다.</div>
+  <div slot="controls">영역을 누르면 다트를 놓고, 다시 누르면 지웁니다.</div>
+  <section id="dartsGame" data-puzzle-id={puzzleId} aria-label={`다트 ${puzzle.number}`}>
+    <div class="target">타겟 <span>{puzzle.target}</span></div>
+    <svg class="darts-board" viewBox="0 0 480 480" role="group" aria-label="다트판">
+      <defs><g id="dartMark"><path d="M-14 14 0-4 8-8 13-3 9 5-8 18Z" fill="currentColor"/><path d="m-14 14-6 10 10-6M0-4 1-17 8-22 12-17 8-8M13-3 22-8 25-3 20 4 9 5" fill="currentColor"/></g></defs>
+      {puzzle.scores.map((score, index) => {
+        const region = dartRegion(index);
+        return <g class="dart-region" data-index={index} role="button" tabindex="0" aria-label={`${score}점, 다트 놓기`} aria-pressed="false">
+          <path class="region-shape" d={region.path} />
+          <text x={region.x} y={region.y} dy=".35em" text-anchor="middle">{score}</text>
+          <use class="placed-dart" href="#dartMark" transform={`translate(${region.x} ${region.y - 20}) scale(.4)`} aria-hidden="true" />
+        </g>;
+      })}
+    </svg>
+    <div class="darts-progress" aria-live="polite" aria-atomic="true">
+      <div id="dartsRemaining" class="darts-remaining" aria-label="남은 다트 4개">{Array.from({length: 4}, (_, index) => <svg class="remaining-dart" data-dart={index} viewBox="-26 -28 58 58" aria-hidden="true"><use href="#dartMark" /></svg>)}</div>
+      <p id="dartsSum">현재 합 <span>0</span> / {puzzle.target}</p>
+      <p id="dartsEquation" class="darts-equation">다트를 놓을 영역을 선택하세요.</p>
+    </div>
+    <div class="bottom-buttons"><button id="dartsReset" type="button" class="danger">초기화</button></div>
+  </section>
+  <PuzzleCompletion slot="completion" id="dartsComplete" />
+</PuzzleLayout>
+<script>import '../scripts/darts.js';</script>
+<style>
+.target{text-align:center;color:#555;font-size:.95rem}.target span{margin-left:6px;font-size:1.5rem;color:#222;font-weight:600}
+.darts-board{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.dart-region{cursor:pointer;outline:none;touch-action:manipulation}.region-shape{fill:white;stroke:#333;stroke-width:1.6}.dart-region text{font:22px Arial,sans-serif;fill:#222;pointer-events:none}.placed-dart{display:none;color:#8b202e;pointer-events:none}.dart-region.chosen .region-shape{fill:#f5e7e8}.dart-region.chosen text{fill:#8b202e}.dart-region.chosen .placed-dart{display:block}
+.darts-progress{text-align:center}.darts-remaining{display:flex;justify-content:center;gap:5px;height:32px}.remaining-dart{height:32px;width:32px;color:#8b202e}.remaining-dart.used{opacity:.14}
+#dartsSum{margin:8px 0 0;color:#777;font-size:.9rem}#dartsSum span{font-size:1.2rem;font-weight:600;color:#333;margin:0 4px}.darts-equation{min-height:1.5em;margin:6px 0 0;color:#888;font-size:.8rem}
+</style>
