@@ -427,7 +427,7 @@
     {
       "id": "leaf",
       "name": "잎사귀",
-      "mission": "뉴비",
+      "mission": "반가워요",
       "src": "/icons/achievement-preview/leaf.svg"
     },
     {
@@ -505,7 +505,7 @@
     {
       "id": "rabbit",
       "name": "토끼",
-      "mission": "달토끼",
+      "mission": "달에 사는 토끼",
       "src": "/icons/seasonal/rabbit.svg"
     },
     {
@@ -554,7 +554,7 @@
   "missions": [
     {
       "id": "first",
-      "name": "뉴비",
+      "name": "반가워요",
       "icon": "leaf",
       "group": "basic",
       "text": "일반 문제 풀기",
@@ -848,7 +848,7 @@
     },
     {
       "id": "chuseok",
-      "name": "달토끼",
+      "name": "달에 사는 토끼",
       "icon": "rabbit",
       "group": "special",
       "text": "『한가위 스도쿠』 풀기",

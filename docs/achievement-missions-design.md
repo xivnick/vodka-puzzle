@@ -20,7 +20,7 @@
 
 | 미션 | 집계 대상 | 아이콘 지급 | 아이콘 파일 | 이후 보상 |
 |---|---|---|---|---|
-| 뉴비 | 일반 문제 완료 개수 | 1개 | `leaf.svg` · 잎사귀 | 이 미션의 반복 보상은 없음. 일반 누적은 퍼즐 수집가에서 이어감 |
+| 반가워요 | 일반 문제 완료 개수 | 1개 | `leaf.svg` · 잎사귀 | 이 미션의 반복 보상은 없음. 일반 누적은 퍼즐 수집가에서 이어감 |
 | 퍼즐 수집가 | 일반 문제 완료 개수 | 10개 | `puzzle.svg` · 퍼즐 조각 | 20·30·40개… 이후 10개마다 코인 |
 | 꺼지지 않는 불 | 데일리 연속 수치 | 7 | `flame.svg` · 불꽃 | 14·21·28… 이후 7마다 코인 |
 | 체리피커 | 난이도 1 일반 문제 완료 개수 | 10개 | `cherry.svg` · 체리 | 20·30·40개… 이후 10개마다 코인 |
@@ -60,7 +60,7 @@
 
 | 미션 이름 | 대상 문제 | 문제 ID | 보상 아이콘 | 사용 이미지 |
 |---|---|---|---|---|
-| 달토끼 | 한가위 스도쿠 | `260925_01` | 토끼 | `/icons/seasonal/rabbit.svg` |
+| 달에 사는 토끼 | 한가위 스도쿠 | `260925_01` | 토끼 | `/icons/seasonal/rabbit.svg` |
 | 누가 꽃이게 | 란영 스도쿠 | `260928_03` | 꽃 | `/icons/flower/flower.svg` |
 | 폭탄 해체반 | 봄버스터즈 스도쿠 | `261003_01` | 폭탄 | `/icons/bomb/bomb-red.svg` |
 | 토마토 축제 | 토마토스 스도쿠 | `261005_01` | 토마토 | `/icons/tomato.svg` |
@@ -78,7 +78,7 @@
 
 - [Spiral Galaxies 아이콘 비교](https://puzzle.xivnick.me/test/achievement-badges/galaxy-icons/): 나선 은하를 보상 아이콘으로 확정.
 - [특수 미션 5종](https://puzzle.xivnick.me/test/achievement-badges/special-missions/): 각 지정 문제 완료 시 해당 아이콘 1회 지급.
-- [뉴비·퍼즐 수집가·꺼지지 않는 불](https://puzzle.xivnick.me/test/achievement-badges/basic-missions/): 이름과 아이콘 확정. 카드 디자인은 최종안이 아니다.
+- [반가워요·퍼즐 수집가·꺼지지 않는 불](https://puzzle.xivnick.me/test/achievement-badges/basic-missions/): 이름과 아이콘 확정. 카드 디자인은 최종안이 아니다.
 - [난이도별 미션 3종](https://puzzle.xivnick.me/test/achievement-badges/difficulty-missions/): 이름과 아이콘 확정. 카드 디자인은 추후 수정한다.
 - [퍼스트 블러드 아이콘](https://puzzle.xivnick.me/test/achievement-badges/first-blood-icons/): 일반 문제 1등 완료 1·3·10회에 검·교차한 검·왕관 지급으로 확정.
 
