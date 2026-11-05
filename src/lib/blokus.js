@@ -15,7 +15,7 @@ export function edgeSegment(key) {
 }
 
 export function parseState(saved, puzzleId) {
-  if (saved?.version === 2) return parsePentominousState(blokus,saved,puzzleId);
+  if (saved?.version === 2 || saved?.version === 1 && Array.isArray(saved.lines)) return parsePentominousState(blokus,saved,puzzleId);
   // Preserve progress made with the earlier placement UI as block outlines.
   if (saved?.version !== 1 || saved.puzzleId !== puzzleId || !Array.isArray(saved.placements) || saved.placements.length > 12) return null;
   const occupied = new Map(), names = new Set();

@@ -9,7 +9,7 @@ const account=()=>window.puzzleAccount?.user?.id || 'guest';
 let lines=new Set(), crosses=new Set(), ready=false, owner=null, recorded=false;
 let press=null, longPressMeans='cross';
 board.setAttribute('viewBox',`0 0 ${width} ${height}`);
-const state=()=>({version:2,puzzleId,lines:[...lines],crosses:[...crosses]});
+const state=()=>({version:1,puzzleId,lines:[...lines],crosses:[...crosses]});
 const active=()=>ready && owner===account();
 function persist() {
   if(!active())return;
@@ -54,7 +54,7 @@ function render() {
   if(!result.complete)recorded=false;
   else if(active() && !recorded) {
     recorded=true;
-    if(window.puzzlePage?.published)window.recordCompletion(puzzleId,state());
+    window.recordCompletion(puzzleId,state());
   }
 }
 function toggleMark(key,mark) {
@@ -126,6 +126,12 @@ function init() {
   try {saved=window.loadLocalState(puzzleId);}catch {}
   restore(saved);ready=true;render();window.initCloudBtns();
 }
+window.checkComplete=()=>{
+  if(!ready)return;
+  // Device progress is shared across accounts; keep the board when auth settles.
+  if(owner!==account()) {cancelPress();owner=account();}
+  recorded=false;render();
+};
 window.handleCloudSave=()=>{if(active())return window.saveProgressCloud(puzzleId,state());};
 window.handleCloudLoad=async()=>{
   if(!active())return;
