@@ -32,7 +32,7 @@
 
 업적: id, name, description, category, rule_version, display_item_id, scope_key, current, threshold, goal, state, active, reward, configured.
 
-- 난이도별 미션 설명은 ◆ 퍼즐 풀기·◆◆ 퍼즐 풀기·◆◆◆ 퍼즐 풀기로 표시한다.
+- 난이도별 미션 설명은 ⬥ 퍼즐 풀기·⬥⬥ 퍼즐 풀기·⬥⬥⬥ 퍼즐 풀기로 표시한다.
 - category는 basic/group/special이며 화면에서 일반/유형/특수로 표시한다.
 - state는 claimable/in_progress/completed다. 유형 공개 문제 수가 3개 미만이거나 전체 공개 문제가 0개면 active=false다.
 - current는 실제 현재 수치다. 과거 연속 단계는 기록으로 재구성하므로 current가 낮아도 claimable일 수 있다.
