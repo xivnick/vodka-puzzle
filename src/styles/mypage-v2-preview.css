@@ -36,8 +36,8 @@
 .mypage-v2 .draw-actions strong{font-size:.8rem;font-weight:400}.mypage-v2 .draw-actions button>.coin-amount{font-size:.7rem;color:#999}.mypage-v2 .draw-actions button:disabled{opacity:.4}
 .mypage-v2 .result-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}.mypage-v2 .result-heading h3{font-size:.78rem;font-weight:400}
 .mypage-v2 .result-heading a,.mypage-v2 .quiet-link,.mypage-v2 .color-tools button{border:0;background:none;padding:0;color:#999;font-size:.68rem;text-decoration:underline}
-.mypage-v2 .result-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
-.mypage-v2 .result-item{display:flex;gap:9px;align-items:center;padding:12px 0;border-bottom:1px solid #eee}
+.mypage-v2 .result-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-sm)}
+.mypage-v2 .result-item{position:relative;display:flex;gap:9px;align-items:center;min-height:64px;box-sizing:border-box;padding:var(--space-md);border:0;border-radius:3px;background:var(--soft);overflow:hidden}
 .mypage-v2 .result-dot{display:block;flex:0 0 18px;width:18px;height:18px;border-radius:50%}.mypage-v2 .result-item b{display:block;font-size:.72rem;font-weight:400}.mypage-v2 .result-item small{display:block;font-size:.61rem;color:#999;margin-top:3px}
 .mypage-v2 .draw-guide{margin-top:24px;font-size:.73rem;color:#999}.mypage-v2 .draw-guide summary{cursor:pointer}.mypage-v2 .draw-guide ul{padding-left:18px;line-height:1.9;margin-top:10px}
 .mypage-v2 .demo-note,.mypage-v2 .helper{font-size:.67rem;line-height:1.8;color:#999;margin:14px 0}
@@ -182,3 +182,18 @@
 .mypage-v2 .draw-description{grid-column:1 / -1;font-size:.73rem;line-height:1.8;color:#888;margin-bottom:var(--space-xs)}
 .mypage-v2 .draw-actions .draw-guide{grid-column:1 / -1;margin:0;padding-top:var(--space-xs)}
 .mypage-v2 #drawResult{margin-top:var(--space-lg)}
+
+.mypage-v2 .draw-status{font-size:.65rem;color:#999;margin-bottom:var(--space-sm);line-height:1.5}
+.mypage-v2 .result-item>div{min-width:0}.mypage-v2 .result-item b{overflow-wrap:anywhere}
+.mypage-v2 .result-dot{position:relative;overflow:hidden}
+.mypage-v2 .result-item.is-sealed{justify-content:center;background:#f5f3ef}
+.mypage-v2 .result-cover{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#e9e5dd;color:#b2aa9c;font-size:.9rem}
+.mypage-v2 .result-item.is-sealed::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 25%,#ffffffc0 50%,transparent 75%);transform:translateX(-100%);animation:draw-waiting 1.15s ease-in-out infinite}
+.mypage-v2 .result-item.is-revealed{animation:draw-reveal .32s ease-out both}
+.mypage-v2 .result-item.is-rare{background:#f0f2f7}.mypage-v2 .result-item.is-epic{background:#f8f0df}
+.mypage-v2 .result-item.is-rare small{color:#7b8399}.mypage-v2 .result-item.is-epic small{color:#a08648}
+.mypage-v2 .result-item.is-epic::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 25%,#ffffffb0 50%,transparent 75%);animation:draw-epic .8s ease-out both}
+@keyframes draw-waiting{to{transform:translateX(100%)}}
+@keyframes draw-reveal{from{opacity:.4;transform:translateY(5px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes draw-epic{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@media(prefers-reduced-motion:reduce){.mypage-v2 .result-item.is-sealed::after,.mypage-v2 .result-item.is-revealed,.mypage-v2 .result-item.is-epic::after{animation:none}}

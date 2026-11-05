@@ -17,6 +17,7 @@ if(root){
   const effects=new Map(data.effects.map(e=>[e.id,e]));
   effects.set('sparkle',{id:'sparkle',name:'별빛 반짝임',rarity:'special'});
   let coins=saved?.coins??1240,filter='all',craft=[];
+  let drawBusy=false,finishDraw=null;
   const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date());
   let dailyDate=today(),tickets=saved?.tickets??0;
   const dailyClaimed=new Set((saved?.dailyDate===dailyDate?saved.dailyClaimed??[]:[]).filter(id=>data.dailyQuests.some(q=>q.id===id&&q.complete)));
@@ -60,7 +61,7 @@ if(root){
   function renderCoins(){
     $('#coinBalance').textContent=coins.toLocaleString('ko-KR');
     $('#coinBalance').closest('.coin-amount').setAttribute('aria-label',`${coins.toLocaleString('ko-KR')} 코인`);
-    all('[data-draw]').forEach(b=>b.disabled=coins<Number(b.dataset.draw)*100);
+    all('[data-draw]').forEach(b=>b.disabled=drawBusy||coins<Number(b.dataset.draw)*100);
     $('#ticketBalance').textContent=tickets.toLocaleString('ko-KR');$('#ticketBalanceWrapper').hidden=tickets===0;$('#ticketBalanceWrapper').setAttribute('aria-label',`타임머신 티켓 ${tickets}장`);
   }
   function syncDailyDate(){const current=today();if(current!==dailyDate){dailyDate=current;dailyClaimed.clear();}}
@@ -118,21 +119,52 @@ if(root){
     renderCoins();renderMissions();renderDress();persist();
   }));
   function renderResults(items){
-    $('#resultItems').replaceChildren();
+    const panel=$('#resultItems'),timers=[],reveals=[];
+    panel.querySelectorAll('.custom-badge-effect').forEach(effect=>visible.unobserve(effect));
+    panel.replaceChildren();panel.setAttribute('aria-busy','true');
+    $('#drawResult').hidden=false;$('#drawStatus').textContent='열어보는 중…';
+    $('#revealAll').hidden=false;$('#revealAll').textContent=items.length===1?'바로 보기':'모두 보기';
     items.forEach(item=>{
-      const card=make('div','result-item is-'+item.rarity),dot=make('i','result-dot');
-      dot.style.background=item.a?`linear-gradient(135deg,${item.a},${item.b})`:'linear-gradient(135deg,#8b7b9c,#ddd1e7,#8b7b9c)';
-      const text=make('div');text.append(make('b','',item.name),make('small','',rarityNames[item.rarity]+(item.rarity==='epic'?' · 효과':' · 색상')));card.append(dot,text);$('#resultItems').append(card);
+      const card=make('div','result-item is-sealed'),cover=make('span','result-cover','?');
+      card.setAttribute('aria-hidden','true');card.append(cover);panel.append(card);
+      let revealed=false;
+      reveals.push(()=>{
+        if(revealed)return;revealed=true;
+        card.className='result-item is-revealed is-'+item.rarity;card.removeAttribute('aria-hidden');
+        const dot=make('i','result-dot');
+        dot.style.background=item.a?`linear-gradient(135deg,${item.a},${item.b})`:'#8b7b9c';
+        if(item.rarity==='epic'){
+          const overlay=make('span','custom-badge-effect effect-'+item.id);dot.append(overlay);visible.observe(overlay);
+        }
+        const text=make('div');text.append(make('b','',item.name),make('small','',rarityNames[item.rarity]+(item.rarity==='epic'?' · 효과':' · 색상')));
+        card.replaceChildren(dot,text);
+      });
     });
-    $('#drawResult').hidden=false;
+    const complete=()=>{
+      if(finishDraw!==complete)return;
+      timers.forEach(clearTimeout);reveals.forEach(reveal=>reveal());
+      finishDraw=null;drawBusy=false;panel.setAttribute('aria-busy','false');$('#revealAll').hidden=true;
+      const counts=items.reduce((result,item)=>{result[item.rarity]=(result[item.rarity]||0)+1;return result;},{});
+      $('#drawStatus').textContent=['common','rare','epic'].filter(kind=>counts[kind]).map(kind=>`${rarityNames[kind]} ${counts[kind]}개`).join(' · ');
+      renderCoins();toast(items.length===1?`${items[0].name} 획득!`:`${items.length}개를 받았어요.`);
+    };
+    finishDraw=complete;
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches||document.hidden){complete();return;}
+    let delay=620;
+    reveals.forEach((reveal,index)=>{
+      timers.push(setTimeout(()=>{reveal();if(index===reveals.length-1)complete();},delay));
+      delay+=items[index].rarity==='epic'?360:160;
+    });
   }
+  $('#revealAll').addEventListener('click',()=>finishDraw?.());
   function drawRarity(){
     const roll=Math.random();let cumulative=0;
     for(const rate of data.drawRates){cumulative+=rate.probability;if(roll<cumulative)return rate.rarity;}
     return data.drawRates.at(-1).rarity;
   }
   all('[data-draw]').forEach(b=>b.addEventListener('click',()=>{
-    const count=Number(b.dataset.draw),cost=count*100;if(coins<cost)return;
+    const count=Number(b.dataset.draw),cost=count*100;if(drawBusy||coins<cost)return;
+    drawBusy=true;
     coins-=cost;
     const items=Array.from({length:count},()=>{
       const kind=drawRarity();
@@ -141,8 +173,7 @@ if(root){
       if(kind==='epic')ownedEffects.add(item.id);else inventory.set(item.id,(inventory.get(item.id)||0)+1);
       return item;
     });
-    renderCoins();renderResults(items);renderInventory();renderEffects();renderCraft();persist();
-    toast(count===1?`${items[0].name} 획득!`:`${count}개 색상과 효과를 받았어요.`);
+    renderCoins();renderInventory();renderEffects();renderCraft();persist();renderResults(items);
   }));
   function renderBadge(container,state){
     const badge=container.querySelector('[data-nickname-badge]'),visual=badge.querySelector('.badge-visual');
@@ -245,7 +276,7 @@ if(root){
     colors.set(result.id,result);inventory.set(result.id,(inventory.get(result.id)||0)+1);draft.color=result.id;
     craft=[];renderCraft();applyDress();toast(`${result.name} 언커먼을 만들었어요.`);
   });
-  document.addEventListener('visibilitychange',()=>root.classList.toggle('page-hidden',document.hidden));
+  document.addEventListener('visibilitychange',()=>{root.classList.toggle('page-hidden',document.hidden);if(document.hidden)finishDraw?.();});
   $('#accountName').textContent=nickname;$('#accountNickname').value=nickname;setBadgeName($('#profileBadge'),nickname);
   initNicknameBadges();renderCoins();renderDailyQuests();sortMissionRows();renderMissions();renderDress();renderCraft();
   document.fonts.ready.then(()=>{renderBadge($('#profileBadge'),applied);renderBadge($('#dressBadge'),draft);});
