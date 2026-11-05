@@ -85,5 +85,6 @@ if(root){
     render();
   });
   initNicknameBadges();
-  document.addEventListener('visibilitychange',()=>root.classList.toggle('page-hidden',document.hidden));
+  const updatePageVisibility=()=>root.classList.toggle('page-hidden',document.hidden);
+  document.addEventListener('visibilitychange',updatePageVisibility);updatePageVisibility();
 }

@@ -6,6 +6,7 @@ import Picker from '../../../components/CustomizeLayoutPicker.astro';
 import data from '../../../data/mypage-v2-preview.json';
 import '../../../styles/nickname.css';
 import '../../../styles/mypage-v2-preview.css';
+import '../../../styles/nickname-badge-effects.css';
 import '../../../styles/customize-layouts.css';
 const icons=data.icons.filter(icon=>['leaf','puzzle','flame','sword','rabbit'].includes(icon.id));
 const colors=[{id:'base',name:'기본',a:'#444444',b:'#444444',rarity:'base'},...data.common.filter(c=>['c0','c6','c15','c25','c30'].includes(c.id)),{id:'u-start',name:'비취 · 갈색',a:'#42977D',b:'#8F6A50',rarity:'uncommon'},...data.rare.slice(0,3)];

@@ -1,5 +1,5 @@
 import {getAchievementGoal as goal} from '../lib/achievement-goals.js';
-import {createBadgeEffect} from './nickname-badge-effects.js';
+import {createBadgeEffect,cloneBadgeVisual} from './nickname-badge-effects.js';
 import {initNicknameBadges} from './nickname-badge-alignment.js';
 const root=document.querySelector('.mypage-v2');
 if(root){
@@ -250,7 +250,7 @@ if(root){
     renderBadge($('#profileBadge'),applied);renderBadge($('#dressBadge'),draft);
     const iconPreview=$('#equippedIcon'),colorPreview=$('#equippedColor'),equippedColor=colors.get(applied.color);
     iconPreview.querySelectorAll('.custom-badge-effect,.badge-sparkle').forEach(effect=>visible.unobserve(effect));
-    iconPreview.replaceChildren(...[...$('#profileBadge .badge-visual').childNodes].map(node=>node.cloneNode(true)));
+    iconPreview.replaceChildren(...[...$('#profileBadge .badge-visual').childNodes].map(cloneBadgeVisual));
     iconPreview.querySelectorAll('.custom-badge-effect,.badge-sparkle').forEach(effect=>visible.observe(effect));
     iconPreview.hidden=applied.icon==='none';
     $('#equippedColor').hidden=applied.icon==='none';$('#equippedColorSeparator').hidden=applied.icon==='none';
@@ -371,7 +371,8 @@ if(root){
     craft=[];craftOpen=false;trackFeature('craft');renderCoins();applyDress();renderCraft();appendCraftResult(awarded);
     toast(awarded.refund?`${result.name} 중복 · ${awarded.refund} 코인을 받았어요.`:`${result.name} 언커먼을 만들었어요.`);
   });
-  document.addEventListener('visibilitychange',()=>{root.classList.toggle('page-hidden',document.hidden);if(document.hidden)finishDraw?.();});
+  const updatePageVisibility=()=>{root.classList.toggle('page-hidden',document.hidden);if(document.hidden)finishDraw?.();};
+  document.addEventListener('visibilitychange',updatePageVisibility);updatePageVisibility();
   $('#accountName').textContent=nickname;$('#accountNickname').value=nickname;setBadgeName($('#profileBadge'),nickname);
   persist();
   initNicknameBadges();renderCoins();renderDailyQuests();sortMissionRows();renderMissions();renderDress();renderCraft();
