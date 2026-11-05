@@ -7,10 +7,14 @@
     "build": "astro build",
     "preview": "astro preview --host 127.0.0.1",
     "daily:generate": "node scripts/generate-daily-sudoku.mjs",
-    "deploy": "npm run build && python3 scripts/deploy-site.py"
+    "deploy": "npm run build && python3 scripts/deploy-site.py",
+    "effects:generate": "node scripts/generate-badge-effect-textures.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
     "astro": "^7.3.2"
+  },
+  "devDependencies": {
+    "sharp": "0.35.5"
   }
 }

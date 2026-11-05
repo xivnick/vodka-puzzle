@@ -9,15 +9,14 @@ import '../../../../styles/nickname-badge-effects.css';
 <PageLayout title="확정 효과 확인">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <div class="mypage-v2 effects-check effects-paused">
-    <div class="view-heading"><h2>효과 5종</h2><span class="preview-hint">선택한 효과만 6초 재생</span></div>
+    <div class="view-heading"><h2>효과 5종</h2><button type="button" id="playAllEffects" aria-pressed="false">전체 재생</button></div>
     <div class="effect-examples">{data.effects.map((effect,index)=><section class="effect-example"><div class="effect-title"><h3>{effect.name}</h3><button type="button" data-play-effect={effect.id} aria-pressed="false">재생</button></div><div class="live-effect" data-effect={effect.id} data-icon="star"><NicknameBadge name="퍼즐러" icon="star" size={18}/></div><div class="live-effect large" data-effect={effect.id} data-icon="star"><span class="badge-visual standalone"><Fragment set:html={star}/></span></div></section>)}</div>
-    <p class="activity" id="activeEffectCount" aria-live="polite">재생을 누르면 잠깐 움직입니다.</p>
+    <p class="activity" id="activeEffectCount" aria-live="polite">재생을 누르면 계속 움직입니다.</p>
     <p class="reference"><a href="/test/mypage-v2/customize/">꾸미기</a></p>
   </div>
 </PageLayout>
 <script>
 import {createBadgeEffect} from '../../../../scripts/nickname-badge-effects.js';
-import {createTimedEffectPreview} from '../../../../scripts/timed-effect-preview.js';
 const root=document.querySelector('.effects-check');
 if(root){
   const status=document.querySelector('#activeEffectCount'),visible=new WeakMap();
@@ -29,15 +28,16 @@ if(root){
     root.classList.toggle('page-hidden',document.hidden);
     root.querySelectorAll('.custom-badge-effect').forEach(overlay=>{
       const card=overlay.closest('.effect-example');
-      overlay.classList.toggle('is-offscreen',!allowed||card.querySelector('[data-play-effect]').dataset.playEffect!==selected||!visible.get(overlay));
+      overlay.classList.toggle('is-paused',!allowed||(selected!=='all'&&card.querySelector('[data-play-effect]').dataset.playEffect!==selected)||!visible.get(overlay));
     });
-    root.querySelectorAll('[data-play-effect]').forEach(button=>{const active=allowed&&button.dataset.playEffect===selected;button.setAttribute('aria-pressed',String(active));button.textContent=active?'정지':'재생';});
-    status.textContent=reducedMotion.matches?'동작 줄이기 설정이 켜져 있습니다.':allowed?'6초 뒤 자동으로 멈춥니다.':'재생을 누르면 잠깐 움직입니다.';
+    root.querySelectorAll('[data-play-effect]').forEach(button=>{const active=allowed&&(selected==='all'||button.dataset.playEffect===selected);button.setAttribute('aria-pressed',String(active));button.textContent=active?'정지':'재생';});
+    const allButton=document.querySelector('#playAllEffects');allButton.setAttribute('aria-pressed',String(allowed&&selected==='all'));allButton.textContent=allowed&&selected==='all'?'전체 정지':'전체 재생';
+    status.textContent=reducedMotion.matches?'동작 줄이기 설정이 켜져 있습니다.':allowed?'시간 제한 없이 재생 중입니다.':'재생을 누르면 계속 움직입니다.';
   }
-  const player=createTimedEffectPreview(value=>{selected=value;update();});
+  const player={stop(){selected=null;update();},toggle(key){selected=selected===key?null:key;update();}};
   const visibility=new IntersectionObserver(entries=>{
     for(const entry of entries)visible.set(entry.target,entry.isIntersecting);
-    if(selected&&!Array.from(root.querySelectorAll(`[data-effect="${selected}"] .custom-badge-effect`)).some(overlay=>visible.get(overlay)))player.stop();
+    if(selected&&!Array.from(root.querySelectorAll(selected==='all'?'.custom-badge-effect':`[data-effect="${selected}"] .custom-badge-effect`)).some(overlay=>visible.get(overlay)))player.stop();
     else update();
   });
   root.querySelectorAll('.live-effect').forEach(sample=>{
@@ -47,6 +47,7 @@ if(root){
     visual.append(base,overlay);visibility.observe(overlay);
   });
   root.querySelectorAll('[data-play-effect]').forEach(button=>button.addEventListener('click',()=>{if(!reducedMotion.matches&&!document.hidden)player.toggle(button.dataset.playEffect);}));
+  document.querySelector('#playAllEffects').addEventListener('click',()=>{if(!reducedMotion.matches&&!document.hidden)player.toggle('all');});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)player.stop();else update();});
   window.addEventListener('pagehide',()=>player.stop());
   reducedMotion.addEventListener('change',()=>{player.stop();update();});
@@ -54,7 +55,7 @@ if(root){
 }
 </script>
 <style>
-.effects-check :global(.custom-badge-effect.is-offscreen){visibility:hidden}
+.effects-check :global(.custom-badge-effect.is-offscreen),.effects-check :global(.custom-badge-effect.is-paused){visibility:hidden}
 .effects-check button{border:0;background:none;padding:4px 0;color:#999;font-size:.7rem;text-decoration:underline;text-underline-offset:3px}
 .effect-examples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 16px;border-top:1px solid #e8e5df;padding-top:18px}
 .effect-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
