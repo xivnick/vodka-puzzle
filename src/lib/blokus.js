@@ -29,6 +29,8 @@ export function parseState(saved, puzzleId) {
   return boardOf(placements) ? placements.map(p => ({name:p.name,turn:p.turn,flip:p.flip,x:p.x,y:p.y})) : null;
 }
 export function inspect(placements) {
+  const used = new Set(placements.map(p => p?.name));
+  if (used.size !== placements.length || [...used].some(name => !Object.hasOwn(pieces,name))) return {solved:false,message:'주어진 블록 12개를 각각 한 번씩 놓아주세요.'};
   const board = boardOf(placements);
   if (!board) return {solved:false, message:'블록이 겹치거나 격자 밖으로 나갔습니다.'};
   const at = (x,y) => board[y]?.[x];
@@ -42,6 +44,6 @@ export function inspect(placements) {
     if (contact && !dots.has(`${x},${y}`)) return {solved:false,message:'점이 없는 곳에서 서로 다른 블록이 대각선으로 맞닿았습니다.'};
     if (!contact && dots.has(`${x},${y}`)) return {solved:false,message:'모든 점에서 서로 다른 블록이 대각선으로 맞닿아야 합니다.'};
   }
-  if (placements.length !== 12) return {solved:false,message:'주어진 블록 12개를 모두 놓아주세요.'};
+  if (used.size !== Object.keys(pieces).length) return {solved:false,message:'주어진 블록 12개를 각각 한 번씩 모두 놓아주세요.'};
   return {solved:true,message:'퍼즐을 완성했습니다!'};
 }
