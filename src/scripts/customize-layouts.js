@@ -1,3 +1,4 @@
+import {createBadgeEffect} from './nickname-badge-effects.js';
 import {initNicknameBadges} from './nickname-badge-alignment.js';
 const root=document.querySelector('.cl-comparison');
 if(root){
@@ -68,7 +69,7 @@ if(root){
       base.style.background=`linear-gradient(${state.angle},${color.a} ${state.mode==='split'?'50%':'15%'},${color.b} ${state.mode==='split'?'50%':'85%'})`;
       visual.append(base);
       if(state.effects!=='none'){
-        const overlay=make('span','custom-badge-effect effect-'+state.effects);overlay.style.maskImage=mask;overlay.style.webkitMaskImage=mask;
+        const overlay=createBadgeEffect(state.effects);overlay.style.maskImage=mask;overlay.style.webkitMaskImage=mask;
         visual.append(overlay);visible.observe(overlay);
       }
       const selected=[catalog.icons.get(state.icons).name,color.name,state.effects==='none'?null:catalog.effects.get(state.effects).name].filter(Boolean).join(' · ');

@@ -1,3 +1,4 @@
+import {createBadgeEffect} from './nickname-badge-effects.js';
 import {initNicknameBadges} from './nickname-badge-alignment.js';
 const root=document.querySelector('.mypage-v2');
 if(root){
@@ -144,7 +145,7 @@ if(root){
         const dot=make('i','result-dot');
         dot.style.background=item.a?`linear-gradient(135deg,${item.a},${item.b})`:'#8b7b9c';
         if(item.rarity==='epic'){
-          const overlay=make('span','custom-badge-effect effect-'+item.id);dot.append(overlay);visible.observe(overlay);
+          const overlay=createBadgeEffect(item.id);dot.append(overlay);visible.observe(overlay);
         }
         const text=make('div');text.append(make('b','',item.name),make('small','',rarityNames[item.rarity]+(item.rarity==='epic'?' · 효과':' · 색상')));
         card.replaceChildren(dot,text);
@@ -214,7 +215,7 @@ if(root){
     layer.style.background=`linear-gradient(${state.angle},${color.a} ${state.mode==='split'?'50%':'15%'},${color.b} ${state.mode==='split'?'50%':'85%'})`;
     layer.setAttribute('aria-hidden','true');visual.append(layer);
     if(state.effect!=='none'&&ownedEffects.has(state.effect)&&['uncommon','rare'].includes(color.rarity)){
-      const overlay=make('span','custom-badge-effect effect-'+state.effect);overlay.style.maskImage=mask;overlay.style.webkitMaskImage=mask;overlay.setAttribute('aria-hidden','true');visual.append(overlay);visible.observe(overlay);
+      const overlay=createBadgeEffect(state.effect);overlay.style.maskImage=mask;overlay.style.webkitMaskImage=mask;overlay.setAttribute('aria-hidden','true');visual.append(overlay);visible.observe(overlay);
     }
   }
   function applyDress(){
