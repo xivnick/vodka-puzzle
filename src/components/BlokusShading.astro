@@ -14,8 +14,9 @@ const { puzzleId = 'test-blokus-shading', preview = true } = Astro.props;
       <li>서로 다른 블록은 변끼리 맞닿을 수 없습니다.</li>
     </ul>
   </div>
-  <div slot="controls">칸을 짧게 눌러 칠하고, 길게 눌러 X로 메모하세요. 같은 표시를 다시 입력하면 지워집니다.</div>
+  <div slot="controls">칸을 짧게 눌러 칠하고, 길게 눌러 X로 메모하세요. 같은 표시를 다시 입력하면 지워집니다.<br />오른쪽 위 버튼으로 짧게 누르기와 길게 누르기의 동작을 바꿀 수 있습니다.</div>
   <section id="blokusGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="블로커스">
+    <div class="board-tools"><button id="blokusMode" class="mode-toggle" type="button" aria-pressed="false">길게 눌러 x 표시</button></div>
     <svg id="blokusBoard" viewBox="0 0 520 360" role="group" focusable="false" aria-label="9행 13열 블로커스 격자. 짧게 눌러 칠하고 길게 눌러 X로 메모하세요">
       <g id="blokusFills" aria-hidden="true" />
       <g id="blokusCrosses" aria-hidden="true" pointer-events="none" />
@@ -51,6 +52,9 @@ const { puzzleId = 'test-blokus-shading', preview = true } = Astro.props;
 <style>
   p { margin:0; }
   ul { padding-left:20px; margin:8px 0 0; }
+  .board-tools { display:flex; justify-content:flex-end; margin-bottom:8px; }
+  .mode-toggle { background:none; border:0; border-bottom:1px solid #ccc; border-radius:0; padding:0 0 1px; color:#888; font-size:.82rem; line-height:1.5; outline:none; box-shadow:none; }
+  .mode-toggle[aria-pressed="true"] { color:#4a6fa5; border-color:#4a6fa5; font-weight:700; }
   #blokusBoard { display:block; width:100%; height:auto; background:white; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
   .blokus-grid path { fill:none; stroke:#d2d8df; stroke-width:1; stroke-dasharray:3 4; }
   .blokus-input rect { cursor:pointer; }

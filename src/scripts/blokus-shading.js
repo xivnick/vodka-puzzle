@@ -3,9 +3,10 @@ import {blokus,parseState,inspect} from '../lib/blokus-shading.js';
 const game=document.getElementById('blokusGame');
 const puzzleId=game.dataset.puzzleId, preview=game.dataset.preview==='true';
 const $=id=>document.getElementById(`blokus${id}`);
-const board=$('Board'),inputs=[...board.querySelectorAll('[data-cell]')];
+const board=$('Board'),mode=$('Mode'),inputs=[...board.querySelectorAll('[data-cell]')];
 const account=()=>window.puzzleAccount?.user?.id || 'guest';
 let filled=new Set(),crosses=new Set(),ready=false,owner=null,recorded=false,press=null;
+let longPressMeans='cross';
 const state=()=>({version:4,puzzleId,filled:[...filled].sort((a,b)=>a-b),crosses:[...crosses].sort((a,b)=>a-b)});
 const active=()=>ready && (preview || owner===account());
 function persist() {
@@ -40,6 +41,10 @@ function render() {
     item.setAttribute('aria-label',`${item.dataset.piece} 블록, ${count}개`);
   });
   $('Complete').hidden=!result.complete;
+  mode.disabled=!active();
+  mode.textContent=longPressMeans==='cross' ? '길게 눌러 x 표시' : '길게 눌러 칠하기';
+  mode.setAttribute('aria-pressed',String(longPressMeans==='fill'));
+  board.setAttribute('aria-label',`9행 13열 블로커스 격자. ${longPressMeans==='cross' ? '짧게 눌러 칠하고 길게 눌러 X로 메모하세요' : '짧게 눌러 X로 메모하고 길게 눌러 칠하세요'}`);
   $('Reset').disabled=!active() || !filled.size && !crosses.size;
   const formed=Object.values(result.counts).filter(count=>count===1).length;
   $('Status').textContent=result.complete ? '퍼즐을 완성했습니다.' : `칠한 칸 ${filled.size}개. 한 번씩 만든 블록 ${formed} / 12개.`;
@@ -60,6 +65,12 @@ function cancelPress() {
   if(press)clearTimeout(press.timer);
   press=null;
 }
+mode.addEventListener('click',()=>{
+  if(!active())return;
+  cancelPress();
+  longPressMeans=longPressMeans==='cross' ? 'fill' : 'cross';
+  render();
+});
 board.addEventListener('contextmenu',event=>event.preventDefault());
 board.addEventListener('pointerdown',event=>{
   if(!active() || event.button!==0 || press)return;
@@ -70,7 +81,7 @@ board.addEventListener('pointerdown',event=>{
   press={id:event.pointerId,index,x:event.clientX,y:event.clientY,long:false,timer:null};
   press.timer=setTimeout(()=>{
     if(!press || press.id!==event.pointerId)return;
-    press.long=true;toggle(index,'cross');
+    press.long=true;toggle(index,longPressMeans);
   },550);
 });
 window.addEventListener('pointermove',event=>{
@@ -79,7 +90,7 @@ window.addEventListener('pointermove',event=>{
 window.addEventListener('pointerup',event=>{
   if(press?.id!==event.pointerId)return;
   const previous=press;cancelPress();
-  if(!previous.long && Math.hypot(event.clientX-previous.x,event.clientY-previous.y)<=10)toggle(previous.index);
+  if(!previous.long && Math.hypot(event.clientX-previous.x,event.clientY-previous.y)<=10)toggle(previous.index,longPressMeans==='cross' ? 'fill' : 'cross');
 });
 window.addEventListener('pointercancel',event=>{if(press?.id===event.pointerId)cancelPress();});
 window.addEventListener('blur',cancelPress);
