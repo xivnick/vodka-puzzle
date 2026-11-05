@@ -17,6 +17,7 @@ const { puzzleId = 'test-blokus-shading', preview = true } = Astro.props;
   <div slot="controls">칸을 짧게 눌러 칠하고, 길게 눌러 X로 메모하세요. 같은 표시를 다시 입력하면 지워집니다.</div>
   <section id="blokusGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="블로커스">
     <svg id="blokusBoard" viewBox="0 0 520 360" role="group" focusable="false" aria-label="9행 13열 블로커스 격자. 짧게 눌러 칠하고 길게 눌러 X로 메모하세요">
+      <defs><clipPath id="blokusBlackCells" clipPathUnits="userSpaceOnUse" /></defs>
       <g id="blokusFills" aria-hidden="true" />
       <g id="blokusCrosses" aria-hidden="true" pointer-events="none" />
       <g class="blokus-grid" aria-hidden="true">
@@ -25,6 +26,7 @@ const { puzzleId = 'test-blokus-shading', preview = true } = Astro.props;
       </g>
       <g class="blokus-input">{Array.from({length:117},(_,index)=><rect data-cell={index} x={index%13*40} y={Math.floor(index/13)*40} width="40" height="40" fill="transparent" role="button" focusable="false" aria-label={`${Math.floor(index/13)+1}행 ${index%13+1}열, 빈칸`} aria-pressed="false" />)}</g>
       <g class="blokus-dots" aria-hidden="true">{blokus.dots.map(([x,y])=><circle cx={x*40} cy={y*40} r="5" />)}</g>
+      <g class="blokus-inverse-dots" clip-path="url(#blokusBlackCells)" aria-hidden="true">{blokus.dots.map(([x,y])=><circle cx={x*40} cy={y*40} r="5" />)}</g>
       <rect class="blokus-border" x="1.5" y="1.5" width="517" height="357" aria-hidden="true" />
     </svg>
     <div class="bottom-buttons"><button id="blokusReset" type="button" class="danger">초기화</button></div>
@@ -56,6 +58,7 @@ const { puzzleId = 'test-blokus-shading', preview = true } = Astro.props;
   .blokus-input rect { cursor:pointer; }
   #blokusBoard, .blokus-input rect { outline:none; box-shadow:none; -webkit-tap-highlight-color:transparent; }
   .blokus-dots { fill:#222; pointer-events:none; }
+  .blokus-inverse-dots { fill:white; pointer-events:none; }
   .blokus-border { fill:none; stroke:#202a36; stroke-width:3; pointer-events:none; }
   .shape-reference { margin-top:22px; font-size:14px; }
   .shape-reference summary { color:#333; cursor:pointer; }
