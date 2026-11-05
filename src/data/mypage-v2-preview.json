@@ -985,7 +985,7 @@
       "name": "연금술사",
       "icon": "flask",
       "group": "basic",
-      "text": "커먼 색깔 조합하기",
+      "text": "색깔 조합하기",
       "count": 0,
       "featureAction": "craft",
       "stages": [
