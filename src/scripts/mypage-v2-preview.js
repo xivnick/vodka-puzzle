@@ -193,14 +193,18 @@ if(root){
     const iconRow=$('#ownedIconPreview'),colorRow=$('#ownedColorPreview');
     const iconStrip=iconRow.querySelector('.owned-strip'),colorStrip=colorRow.querySelector('.owned-strip');
     iconStrip.replaceChildren();colorStrip.replaceChildren();
-    [...ownedIcons].forEach(id=>{
+    $('#selectedIconVisual').replaceChildren($(`[data-icon-template="${draft.icon}"]`).content.cloneNode(true));
+    $('#selectedIconLabel').textContent=icons.get(draft.icon).name;
+    $('#selectedIconLabel').title=icons.get(draft.icon).name;
+    const selectedColor=colors.get(draft.color);
+    $('#selectedColorLabel').textContent=selectedColor.name;$('#selectedColorLabel').title=selectedColor.name;
+    $('#selectedColorSwatch').style.background=`linear-gradient(${draft.angle},${selectedColor.a} ${draft.mode==='split'?'50%':'15%'},${selectedColor.b} ${draft.mode==='split'?'50%':'85%'})`;
+    [...ownedIcons].filter(id=>id!==draft.icon).forEach(id=>{
       const item=make('span','owned-preview-item');item.title=icons.get(id).name;
-      item.classList.toggle('is-selected',id===draft.icon);
       item.append($(`[data-icon-template="${id}"]`).content.cloneNode(true));iconStrip.append(item);
     });
-    [base,...[...inventory.keys()].map(id=>colors.get(id))].forEach(color=>{
+    [base,...[...inventory.keys()].map(id=>colors.get(id))].filter(color=>color.id!==draft.color).forEach(color=>{
       const item=make('span','owned-preview-item');item.title=color.name;
-      item.classList.toggle('is-selected',color.id===draft.color);
       const swatch=make('i','picker-swatch');swatch.style.background=`linear-gradient(135deg,${color.a},${color.b})`;
       item.append(swatch);colorStrip.append(item);
     });

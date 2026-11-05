@@ -151,7 +151,6 @@
 .mypage-v2 .owned-preview{display:flex;align-items:center;flex:1;min-width:0;gap:var(--space-md);min-height:28px}
 .mypage-v2 .owned-strip{display:flex;align-items:center;flex:1;min-width:0;gap:var(--space-sm);overflow:hidden}
 .mypage-v2 .owned-preview-item{display:flex;align-items:center;justify-content:center;flex:0 0 28px;width:28px;height:28px;padding:3px;border:1px solid transparent;border-radius:3px;box-sizing:border-box;color:#666}
-.mypage-v2 .owned-preview-item.is-selected{border-color:#ddd8cf;background:var(--soft)}
 .mypage-v2 .owned-preview-item svg,.mypage-v2 .owned-preview-item img{display:block;width:20px;height:20px;object-fit:contain}
 .mypage-v2 .owned-more{flex-shrink:0;white-space:nowrap;font-size:.68rem;color:#999}
 .mypage-v2 .selected-color-options{margin-bottom:var(--space-md);padding-bottom:var(--row-padding);border-bottom:1px solid var(--line)}
@@ -160,3 +159,5 @@
 .mypage-v2 .color-option-groups>div{display:flex;gap:var(--space-sm)}
 .mypage-v2 .color-option-groups button{padding:3px 0;border:0;background:none;font-size:.68rem;color:#aaa}
 .mypage-v2 .color-option-groups button[aria-pressed=true]{color:#555;text-decoration:underline;text-underline-offset:4px}
+
+.mypage-v2 .selected-summary{display:flex;align-items:center;gap:var(--space-sm);max-width:45%;min-width:0;padding-right:var(--space-md);border-right:1px solid var(--line)}.mypage-v2 .picker-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.78rem;color:#555}.mypage-v2 .selected-summary>.owned-preview-item{padding:0;border:0;flex-basis:20px;width:20px;height:20px}
