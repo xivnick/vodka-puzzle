@@ -114,10 +114,9 @@ if(root){
       else reward.textContent=s?(s.kind==='effect'?'별빛 반짝임 효과':`${icons.get(s.value).name} 아이콘`):m.id==='all'?'별빛 반짝임 획득 완료':'아이콘 획득 완료';
       const button=row.querySelector('[data-claim]');button.disabled=!ready;button.classList.toggle('claim-ready',ready);button.textContent=ready?'받기':s?'진행 중':'획득 완료';
     });
-    $('#ownedCount').textContent=String(ownedIcons.size);$('#emptyMissions').hidden=shown>0;
+    $('#emptyMissions').hidden=shown>0;
     all('[data-select-icon]').forEach(b=>{
-      const owned=ownedIcons.has(b.dataset.selectIcon);b.disabled=!owned;b.classList.toggle('locked',!owned);
-      b.querySelector('small').textContent=owned?'보유':icons.get(b.dataset.selectIcon).mission;
+      const owned=ownedIcons.has(b.dataset.selectIcon);b.disabled=!owned;b.hidden=!owned;
     });
   }
   all('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;pressed('[data-filter]',x=>x===b);renderMissions();}));

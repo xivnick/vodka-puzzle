@@ -16,6 +16,7 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
 ---
 <PageLayout title={customize?"꾸미기":"마이페이지"}>
   <meta slot="head" name="robots" content="noindex, nofollow" />
+  {customize&&<nav slot="above-title" class="customize-back"><a href="/test/mypage-v2/"><span aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/chevron-right.svg")}/></span>돌아가기</a></nav>}
   <section class="mypage-v2" data-customize={customize?"true":"false"} aria-label="마이페이지 v2 시안">
     <section class="account-section" aria-labelledby="accountTitle" hidden={customize}>
     <div class="view-heading"><h2 id="accountTitle">계정</h2></div>
@@ -58,15 +59,14 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
     </section>
     <div id="panel-dress" hidden={!customize}>
       <section class="wardrobe-section" aria-labelledby="dressTitle">
-        <div class="view-heading"><h2 id="dressTitle" tabindex="-1">아이콘</h2><span class="collection-count">보유 아이콘 <b id="ownedCount">5</b> / 18</span></div>
+        <div class="view-heading"><h2 id="dressTitle" tabindex="-1">아이콘</h2></div>
         <details class="wardrobe-picker"><summary><span class="picker-current"><span id="pickerIcon" class="equipped-icon" aria-hidden="true"></span><span id="pickerIconName">잎사귀</span></span><span class="picker-chevron" aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/chevron-right.svg")}/></span></summary><div class="wardrobe-body">
-      <div id="wardrobe-icons"><div class="item-grid icons-grid">{data.icons.map(icon=><button type="button" class:list={['icon-item',{'locked':!initialOwned.has(icon.id)}]} data-select-icon={icon.id} disabled={!initialOwned.has(icon.id)} aria-pressed={icon.id==='leaf'?'true':'false'} title={icon.mission}><span class="item-icon" aria-hidden="true">{icon.src.endsWith('.svg')?<Fragment set:html={raw(icon.src)}/>:<img src={icon.src} alt="" width="28" height="28"/>}</span><span>{icon.name}</span><small>{initialOwned.has(icon.id)?'보유':icon.mission}</small></button>)}</div></div></div></details></section>
+      <div id="wardrobe-icons"><div class="item-grid icons-grid">{data.icons.map(icon=><button type="button" class="icon-item" hidden={!initialOwned.has(icon.id)} data-select-icon={icon.id} disabled={!initialOwned.has(icon.id)} aria-pressed={icon.id==='leaf'?'true':'false'} title={icon.name}><span class="item-icon" aria-hidden="true">{icon.src.endsWith('.svg')?<Fragment set:html={raw(icon.src)}/>:<img src={icon.src} alt="" width="28" height="28"/>}</span><span>{icon.name}</span></button>)}</div></div></div></details></section>
       <section class="wardrobe-section" aria-labelledby="colorsTitle"><div class="view-heading"><h2 id="colorsTitle">색깔</h2><button type="button" class="quiet-link" data-toggle-view="draw" aria-expanded="false" aria-controls="panel-draw">뽑기</button></div><details class="wardrobe-picker"><summary><span class="picker-current"><i id="pickerColorSwatch" class="picker-swatch" aria-hidden="true"></i><span id="pickerColorName">기본</span></span><span class="picker-chevron" aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/chevron-right.svg")}/></span></summary><div class="wardrobe-body" id="wardrobe-colors"><div class="color-tools"><button type="button" id="openCraft" aria-expanded="false" aria-controls="panel-craft">커먼 3개 조합하기 ↗</button></div>    <section id="panel-craft" aria-labelledby="craftTitle" hidden>
       <div class="craft-heading"><h3 id="craftTitle">색 조합</h3></div>
       <p class="helper">커먼 색상 3개를 골라 언커먼을 만들어보세요.</p><div id="craftSlots" class="craft-slots"></div><div id="craftChoices" class="craft-choices"></div><div class="craft-outcome"><span>결과</span><span id="craftOutcome">세 가지 색을 선택해주세요.</span></div><p class="helper">서로 다른 색이 세 가지면, 시안에서는 앞의 두 색을 사용합니다. 같은 색 세 개는 언커먼 단색이 됩니다.</p><button type="button" id="craftConfirm" disabled>조합하기</button>
     </section><div id="colorInventory" class="color-inventory"></div><fieldset class="appearance-options"><legend>색 표현</legend><div>{[['gradient','그라데이션'],['split','2분할']].map(([id,label],i)=><button type="button" data-style={id} aria-pressed={i===0?'true':'false'}>{label}</button>)}</div><div>{[['135deg','대각선'],['90deg','좌우']].map(([id,label],i)=><button type="button" data-angle={id} aria-pressed={i===0?'true':'false'}>{label}</button>)}</div></fieldset></div></details></section>
       <section class="wardrobe-section" aria-labelledby="effectsTitle"><div class="view-heading"><h2 id="effectsTitle">효과</h2></div><details class="wardrobe-picker"><summary><span class="picker-current" id="pickerEffectName">효과 없음</span><span class="picker-chevron" aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/chevron-right.svg")}/></span></summary><div class="wardrobe-body" id="wardrobe-effects"><div id="effectInventory" class="effect-inventory"></div></div></details></section>
-      <div class="customize-return"><a href="/test/mypage-v2/">마이페이지로 돌아가기</a></div>
     </div>
 
 
