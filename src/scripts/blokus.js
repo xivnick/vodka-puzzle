@@ -1,135 +1,139 @@
-import { pieces, shape, cellsOf, boardOf, parseState, inspect } from '../lib/blokus.js';
+import { blokus, edgeKey, edgeSegment, parseState, inspect } from '../lib/blokus.js';
 
-const game = document.getElementById('blokusGame');
-const puzzleId = game.dataset.puzzleId;
-const byId = id => document.getElementById(`blokus${id}`);
-const names = Object.keys(pieces);
-const colors = ['#c9d8ed','#ead2c5','#d7e2c2','#e7d0e4','#c3dfdc','#eee0b9','#d5d0ed','#cddfcb','#edced0','#ccdce4','#ded9c3','#d9cbe0'];
-let placements = [], selected = null, candidate = null, turn = 0, flip = false, ready = false, recorded = false;
-const state = () => ({version:1,puzzleId,placements:placements.map(p => ({...p}))});
-const draft = () => selected && candidate ? {name:selected,turn,flip,...candidate} : null;
-function validDraft() {
-  const p = draft();
-  return p && boardOf([...placements.filter(p => p.name !== selected),p]);
-}
+const game=document.getElementById('blokusGame');
+const puzzleId=game.dataset.puzzleId;
+const $=id=>document.getElementById(`blokus${id}`);
+const board=$('Board'), mode=$('Mode'), reset=$('Reset'), complete=$('Complete');
+const {rows,cols}=blokus, size=40, width=cols*size, height=rows*size;
+const account=()=>window.puzzleAccount?.user?.id || 'guest';
+let lines=new Set(), crosses=new Set(), ready=false, owner=null, recorded=false;
+let press=null, longPressMeans='cross';
+board.setAttribute('viewBox',`0 0 ${width} ${height}`);
+const state=()=>({version:2,puzzleId,lines:[...lines],crosses:[...crosses]});
+const active=()=>ready && owner===account();
 function persist() {
-  try { window.saveLocalState(puzzleId,state()); } catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
+  if(!active())return;
+  try {window.saveLocalState(puzzleId,state());}
+  catch {window.showToast('브라우저에 저장하지 못했습니다.');}
 }
-function draw(parent, piece, ghost = false) {
-  const color = ghost ? (validDraft() ? '#6b8fbb' : '#bf6a61') : colors[names.indexOf(piece.name)];
-  const cells = cellsOf(piece);
-  const group = document.createElementNS('http://www.w3.org/2000/svg','g');
-  group.setAttribute('opacity',ghost ? '.52' : '1');
-  for (const [x,y] of cells) {
-    const rect = document.createElementNS(group.namespaceURI,'rect');
-    Object.entries({x:x*40+1,y:y*40+1,width:38,height:38,fill:color}).forEach(([k,v]) => rect.setAttribute(k,v));
-    group.append(rect);
-  }
-  // Outline the whole block, keeping its five cells visually connected.
-  const has = (x,y) => cells.some(([cx,cy]) => cx===x && cy===y);
-  let path = '';
-  for (const [x,y] of cells) {
-    if (!has(x,y-1)) path+=`M${x*40+1} ${y*40+1}h38`;
-    if (!has(x,y+1)) path+=`M${x*40+1} ${y*40+39}h38`;
-    if (!has(x-1,y)) path+=`M${x*40+1} ${y*40+1}v38`;
-    if (!has(x+1,y)) path+=`M${x*40+39} ${y*40+1}v38`;
-  }
-  const outline = document.createElementNS(group.namespaceURI,'path');
-  Object.entries({d:path,fill:'none',stroke:'#56616e','stroke-width':1.7}).forEach(([k,v]) => outline.setAttribute(k,v));
-  group.append(outline);
-  parent.append(group);
+function cancelPress() {
+  if(press)clearTimeout(press.timer);
+  press=null;
 }
 function render() {
-  byId('Placed').replaceChildren(); byId('Ghost').replaceChildren();
-  placements.forEach(p => draw(byId('Placed'),p));
-  if (draft()) draw(byId('Ghost'),draft(),true);
-  game.querySelectorAll('[data-piece]').forEach(button => {
-    const name = button.dataset.piece;
-    const placed = placements.find(p => p.name===name);
-    const cells = shape(name, selected===name ? turn : placed?.turn ?? 0, selected===name ? flip : placed?.flip ?? false);
-    button.querySelectorAll('rect').forEach((rect,index) => {
-      rect.setAttribute('x',cells[index][0]*20);rect.setAttribute('y',cells[index][1]*20);
-    });
-    button.querySelector('svg').setAttribute('viewBox',`${(Math.max(...cells.map(([x]) => x))+1)*10-53} ${(Math.max(...cells.map(([,y]) => y))+1)*10-53} 106 106`);
-    button.classList.toggle('used',placements.some(p => p.name===button.dataset.piece));
-    button.setAttribute('aria-pressed',String(selected===button.dataset.piece));
-    button.disabled=!ready;
-  });
-  byId('Selection').textContent = selected ? `${selected} 블록 · ${candidate ? '위치를 확인하고 놓기를 누르세요.' : '격자를 눌러 위치를 잡으세요.'}` : '블록을 선택하세요.';
-  byId('Progress').textContent = `놓은 블록 ${placements.length} / 12`;
-  for (const id of ['Rotate','Flip']) byId(id).disabled=!ready || !selected;
-  byId('Place').disabled=!ready || !validDraft();
-  byId('Remove').disabled=!ready || !placements.some(p => p.name===selected);
-  byId('Check').disabled=!ready;
-  byId('Reset').disabled=!ready || !placements.length;
-}
-function select(name) {
-  selected=name;
-  const placed=placements.find(p => p.name===name);
-  turn=placed?.turn ?? 0; flip=placed?.flip ?? false;
-  candidate=placed ? {x:placed.x,y:placed.y} : null;
-  render();
-}
-function changed() {
-  recorded=false; byId('Complete').hidden=true; byId('Feedback').hidden=true;
-  persist(); render();
-}
-game.querySelectorAll('[data-piece]').forEach(button => button.addEventListener('click',() => {if(ready) select(button.dataset.piece);}));
-function chooseCell(x,y) {
-  if (!ready) return;
-  const hit=boardOf(placements)[y][x];
-  if (hit && hit!==selected) {select(hit); return;}
-  if (!selected) return;
-  candidate={x,y}; render();
-}
-game.querySelectorAll('.blokus-input rect').forEach(cell => {
-  const activate=() => chooseCell(Number(cell.dataset.x),Number(cell.dataset.y));
-  cell.addEventListener('click',activate);
-  cell.addEventListener('keydown',event => {if(event.key==='Enter' || event.key===' ') {event.preventDefault();activate();}});
-});
-byId('Rotate').addEventListener('click',() => {turn=(turn+1)%4;render();});
-byId('Flip').addEventListener('click',() => {flip=!flip;render();});
-byId('Place').addEventListener('click',() => {
-  if (!ready || !validDraft()) return;
-  placements=[...placements.filter(p => p.name!==selected),draft()];
-  selected=null;candidate=null;changed();
-});
-byId('Remove').addEventListener('click',() => {
-  if (!ready) return;
-  placements=placements.filter(p => p.name!==selected);candidate=null;changed();
-});
-byId('Reset').addEventListener('click',() => {
-  if (!ready || !confirm('초기화하시겠습니까?')) return;
-  placements=[];selected=null;candidate=null;changed();
-});
-byId('Check').addEventListener('click',() => {
-  if (!ready) return;
-  const result=inspect(placements);
-  byId('Complete').hidden=!result.solved;
-  byId('Feedback').hidden=result.solved;
-  byId('Feedback').textContent=result.message;
-  if (result.solved && !recorded) {
-    recorded=true;
-    if(window.puzzlePage?.published) window.recordCompletion(puzzleId,state());
+  const result=inspect(lines);
+  let html='';
+  for(const block of result.blocks)for(const index of block.cells) {
+    html+=`<rect x="${index%cols*size}" y="${Math.floor(index/cols)*size}" width="${size}" height="${size}" fill="${block.bad ? '#fce8e7' : '#e9f4e9'}"/>`;
   }
+  for(let y=1;y<rows;y++)html+=`<path d="M0 ${y*size}H${width}" stroke="#d2d8df" stroke-width="1" stroke-dasharray="3 4"/>`;
+  for(let x=1;x<cols;x++)html+=`<path d="M${x*size} 0V${height}" stroke="#d2d8df" stroke-width="1" stroke-dasharray="3 4"/>`;
+  for(const key of lines) {
+    const [x1,y1,x2,y2]=edgeSegment(key);
+    html+=`<path d="M${x1*size} ${y1*size}L${x2*size} ${y2*size}" stroke="#334f72" stroke-width="4" stroke-linecap="round"/>`;
+  }
+  for(const key of crosses) {
+    const [x1,y1,x2,y2]=edgeSegment(key), x=(x1+x2)/2*size, y=(y1+y2)/2*size;
+    html+=`<rect x="${x-9}" y="${y-9}" width="18" height="18" fill="white"/>`;
+    html+=`<path d="M${x-6} ${y-6}L${x+6} ${y+6}M${x+6} ${y-6}L${x-6} ${y+6}" stroke="#58636f" stroke-width="2.5" stroke-linecap="round"/>`;
+  }
+  for(const [x,y] of blokus.dots)html+=`<circle cx="${x*size}" cy="${y*size}" r="5" fill="#222"/>`;
+  html+=`<rect x="1.5" y="1.5" width="${width-3}" height="${height-3}" fill="none" stroke="#202a36" stroke-width="3"/>`;
+  board.innerHTML=html;
+  document.querySelectorAll('.shape-item[data-piece]').forEach(item=>{
+    const count=result.counts[item.dataset.piece] || 0;
+    item.classList.toggle('used',count===1);
+    item.classList.toggle('duplicate',count>1);
+    item.setAttribute('aria-label',`${item.dataset.piece} 블록, ${count}개`);
+  });
+  complete.hidden=!result.complete;
+  reset.disabled=!active() || !lines.size && !crosses.size;
+  mode.disabled=!active();
+  const formed=Object.values(result.counts).filter(count=>count===1).length;
+  $('Status').textContent=result.complete ? '퍼즐을 완성했습니다.' : `한 번씩 그린 블록 ${formed} / 12개. 서로 다른 블록이 맞닿은 점 ${result.metDots.size} / 16개.`;
+  if(!result.complete)recorded=false;
+  else if(active() && !recorded) {
+    recorded=true;
+    if(window.puzzlePage?.published)window.recordCompletion(puzzleId,state());
+  }
+}
+function toggleMark(key,mark) {
+  if(!active())return;
+  const target=mark==='line' ? lines : crosses, other=mark==='line' ? crosses : lines;
+  if(target.has(key))target.delete(key);
+  else {other.delete(key);target.add(key);}
+  persist();render();
+}
+function edgeAt(event) {
+  const rect=board.getBoundingClientRect();
+  const x=(event.clientX-rect.left)/rect.width*width, y=(event.clientY-rect.top)/rect.height*height;
+  if(x<0 || y<0 || x>width || y>height)return null;
+  const col=Math.round(x/size), row=Math.round(y/size);
+  const dx=Math.abs(x-col*size), dy=Math.abs(y-row*size);
+  const vertical=col>0 && col<cols && dx<14, horizontal=row>0 && row<rows && dy<14;
+  if(vertical && (!horizontal || dx<=dy)) {
+    const index=Math.min(rows-1,Math.floor(y/size))*cols+col;
+    return edgeKey(index-1,index);
+  }
+  if(horizontal) {
+    const index=row*cols+Math.min(cols-1,Math.floor(x/size));
+    return edgeKey(index-cols,index);
+  }
+  return null;
+}
+mode.addEventListener('click',()=>{
+  longPressMeans=longPressMeans==='cross' ? 'line' : 'cross';
+  mode.textContent=longPressMeans==='cross' ? '길게 눌러 x 표시' : '길게 눌러 선 긋기';
+  mode.setAttribute('aria-pressed',String(longPressMeans==='line'));
+});
+board.addEventListener('contextmenu',event=>event.preventDefault());
+board.addEventListener('pointerdown',event=>{
+  if(!active() || event.button!==0 || press)return;
+  const key=edgeAt(event);
+  if(!key)return;
+  press={id:event.pointerId,key,x:event.clientX,y:event.clientY,long:false,timer:null};
+  press.timer=setTimeout(()=>{
+    if(!press || press.id!==event.pointerId)return;
+    press.long=true;toggleMark(key,longPressMeans);
+  },550);
+});
+window.addEventListener('pointermove',event=>{
+  if(!press || press.id!==event.pointerId || press.long)return;
+  if(Math.hypot(event.clientX-press.x,event.clientY-press.y)>10)cancelPress();
+});
+window.addEventListener('pointerup',event=>{
+  if(!press || press.id!==event.pointerId)return;
+  const {key,long,x,y}=press;
+  cancelPress();
+  if(!long && Math.hypot(event.clientX-x,event.clientY-y)<=10)toggleMark(key,longPressMeans==='cross' ? 'line' : 'cross');
+});
+window.addEventListener('pointercancel',event=>{if(press?.id===event.pointerId)cancelPress();});
+window.addEventListener('blur',cancelPress);
+reset.addEventListener('click',()=>{
+  if(!active() || !lines.size && !crosses.size || !confirm('초기화하시겠습니까?'))return;
+  cancelPress();lines.clear();crosses.clear();persist();render();
 });
 function restore(saved) {
-  placements=parseState(saved,puzzleId) || [];
-  selected=null;candidate=null;recorded=false;
-  byId('Complete').hidden=true;byId('Feedback').hidden=true;
+  cancelPress();
+  const parsed=parseState(saved,puzzleId);
+  lines=parsed?.lines || new Set();crosses=parsed?.crosses || new Set();recorded=false;
 }
-window.handleCloudSave=() => window.saveProgressCloud(puzzleId,state());
-window.handleCloudLoad=async () => {
+function init() {
+  const nextOwner=account();
+  if(ready && owner===nextOwner)return;
+  ready=false;owner=nextOwner;
+  let saved=null;
+  try {saved=window.loadLocalState(puzzleId);}catch {}
+  restore(saved);ready=true;render();window.initCloudBtns();
+}
+window.handleCloudSave=()=>{if(active())return window.saveProgressCloud(puzzleId,state());};
+window.handleCloudLoad=async()=>{
+  if(!active())return;
+  const requestedOwner=owner,before=JSON.stringify(state());
   const saved=await window.loadProgressCloud(puzzleId);
-  if(saved==null)return;
+  if(saved==null || requestedOwner!==account() || before!==JSON.stringify(state()))return;
   if(!parseState(saved,puzzleId)){window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.');return;}
   restore(saved);persist();render();
 };
-function init() {
-  if(ready)return;
-  let saved=null;
-  try {saved=window.loadLocalState(puzzleId);} catch {}
-  restore(saved);ready=true;render();window.initCloudBtns();
-}
 render();
-window.startLocalPuzzle(puzzleId,init,() => {ready=false;init();});
+window.startLocalPuzzle(puzzleId,init,()=>{ready=false;init();});
