@@ -539,10 +539,10 @@
       "src": "/icons/achievement-preview/hanger.svg"
     },
     {
-      "id": "dice-5",
-      "name": "주사위",
+      "id": "clover",
+      "name": "네잎클로버",
       "mission": "행운의 손",
-      "src": "/icons/achievement-preview/dice-5.svg"
+      "src": "/icons/achievement-preview/clover.svg"
     },
     {
       "id": "flask",
@@ -964,7 +964,7 @@
     {
       "id": "feature-draw",
       "name": "행운의 손",
-      "icon": "dice-5",
+      "icon": "clover",
       "group": "basic",
       "text": "색깔·효과 뽑기",
       "count": 0,
@@ -973,7 +973,7 @@
         {
           "at": 5,
           "kind": "icon",
-          "value": "dice-5"
+          "value": "clover"
         }
       ],
       "claimed": [],

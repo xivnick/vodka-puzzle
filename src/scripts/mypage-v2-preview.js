@@ -17,7 +17,7 @@ if(root){
   colors.set('base',base);
   colors.set('u-start',{id:'u-start',name:'비취 · 갈색',a:'#42977D',b:'#8F6A50',rarity:'uncommon'});
   const inventory=new Map(saved?.inventory??[['c0',3],['c6',3],['c15',3],['c25',3],['c30',3],['u-start',1],['r-berry',1]]);
-  const ownedIcons=new Set(saved?.ownedIcons??['leaf','puzzle','flame','sword','rabbit']);
+  const ownedIcons=new Set((saved?.ownedIcons??['leaf','puzzle','flame','sword','rabbit']).map(id=>id==='dice-5'?'clover':id));
   const ownedEffects=new Set(saved?.ownedEffects??['ribbon','afterglow']);
   const effects=new Map(data.effects.map(e=>[e.id,e]));
   const drawHistory=[];
@@ -29,7 +29,7 @@ if(root){
   let dailyDate=today(),tickets=saved?.tickets??0;
   const dailyClaimed=new Set((saved?.dailyDate===dailyDate?saved.dailyClaimed??[]:[]).filter(id=>data.dailyQuests.some(q=>q.id===id&&q.complete)));
   let draft={icon:'leaf',color:'base',effect:'none',mode:'gradient',angle:'135deg'};
-  let applied=saved?.applied??{...draft};draft={...applied};
+  let applied=saved?.applied??{...draft};if(applied.icon==='dice-5')applied={...applied,icon:'clover'};draft={...applied};
   let nickname=saved?.nickname??'퍼즐러';
   for(const color of saved?.colors??[])if(!colors.has(color.id))colors.set(color.id,{...color,name:color.name.replaceAll('깊은 민트','청옥').replaceAll('깊은 청록','석유색')});
   colors.set(base.id,base);
