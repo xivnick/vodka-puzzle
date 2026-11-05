@@ -1,0 +1,37 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+import '../../../../styles/mypage-v2-preview.css';
+const variants=[
+ {id:'a',symbol:'◆',name:'채운 마름모'},
+ {id:'b',symbol:'◇',name:'빈 마름모'},
+ {id:'c',symbol:'♦\uFE0E',name:'카드 다이아'},
+ {id:'d',symbol:'♢',name:'가는 테두리'},
+ {id:'e',symbol:'⬥',name:'넓은 마름모'},
+ {id:'f',symbol:'⬦',name:'넓은 빈 마름모'},
+ {id:'g',symbol:'⬩',name:'작은 마름모'},
+ {id:'h',symbol:'◈',name:'겹친 마름모'},
+ {id:'i',symbol:'❖',name:'네 조각 마름모'},
+];
+const missions=[{name:'체리피커',icon:'cherry',level:1},{name:'두뇌 회전',icon:'brain',level:2},{name:'하드코어',icon:'skull',level:3}];
+const files=import.meta.glob('../../../../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
+const svg=id=>String(files[`../../../../../public/icons/achievement-preview/${id}.svg`]??'');
+---
+<PageLayout title="다이아몬드 문자 비교">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <div class="mypage-v2 symbol-comparison">
+    <nav class="symbol-nav" aria-label="문자 시안">{variants.map(v=><a href={`#symbol-${v.id}`}>{v.id.toUpperCase()} <span aria-hidden="true">{v.symbol}</span></a>)}</nav>
+    {variants.map(v=><section class="symbol-variant" id={`symbol-${v.id}`}>
+      <div class="view-heading"><h2>{v.id.toUpperCase()} · {v.name}</h2><span class="large-symbol" aria-hidden="true">{v.symbol}</span></div>
+      <div class="mission-list">{missions.map(m=><article class="mission-row">
+        <span class="mission-icon" aria-hidden="true"><Fragment set:html={svg(m.icon)}/></span>
+        <div class="mission-content"><div class="mission-title"><h3>{m.name}</h3><span class="mission-value">0 / 10</span></div><p class="mission-condition" aria-label={`난이도 ${m.level} 퍼즐 풀기`}>{v.symbol.repeat(m.level)} 퍼즐 풀기</p></div>
+      </article>)}</div>
+    </section>)}
+  </div>
+</PageLayout>
+<style>
+.symbol-nav{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:28px;font-size:.75rem;line-height:1.8}
+.symbol-nav a{text-decoration:none}.symbol-nav span{margin-left:3px}
+.symbol-variant{margin-bottom:32px;scroll-margin-top:20px}
+.large-symbol{font-size:1.2rem;color:#999}
+</style>
