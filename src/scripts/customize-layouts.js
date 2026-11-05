@@ -12,7 +12,8 @@ if(root){
     wrapper.title=item.name;return wrapper;
   }
   function fitOwned(row){
-    const width=row.clientWidth;if(!width)return;
+    const style=getComputedStyle(row);
+    const width=row.clientWidth-(parseFloat(style.paddingLeft)||0)-(parseFloat(style.paddingRight)||0);if(width<=0)return;
     const strip=row.querySelector('.cl-owned-items'),more=row.querySelector('.cl-more'),items=[...strip.children];
     items.forEach(item=>item.hidden=false);more.hidden=true;
     const gap=parseFloat(getComputedStyle(strip).gap)||0,widths=items.map(item=>item.getBoundingClientRect().width);

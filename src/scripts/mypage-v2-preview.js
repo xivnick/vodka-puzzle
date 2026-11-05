@@ -173,7 +173,8 @@ if(root){
     }
   }
   function fitOwnedPreview(row){
-    const width=row.clientWidth;if(!width)return;
+    const style=getComputedStyle(row);
+    const width=row.clientWidth-(parseFloat(style.paddingLeft)||0)-(parseFloat(style.paddingRight)||0);if(width<=0)return;
     const strip=row.querySelector('.owned-strip'),more=row.querySelector('.owned-more'),items=[...strip.children];
     items.forEach(item=>item.hidden=false);more.hidden=true;
     const gap=parseFloat(getComputedStyle(strip).gap)||0;
