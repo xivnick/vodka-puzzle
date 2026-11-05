@@ -16,11 +16,11 @@ const base=[
 const firstBlood=[['sword','검',1],['swords','교차한 검',3],['crown','왕관',10]];
 const groupIcons={star:'별',temperature:'온도계','number-123':'숫자 123',galaxy:'나선 은하'};
 const special=[
- ['한가위 스도쿠','토끼','260925_01','/icons/seasonal/rabbit.svg'],
- ['란영 스도쿠','꽃','260928_03','/icons/flower/flower.svg'],
- ['봄버스터즈 스도쿠','폭탄','261003_01','/icons/bomb/bomb-red.svg'],
- ['토마토스 스도쿠','토마토','261005_01','/icons/tomato.svg'],
- ['주루마블 스도쿠','잔','261101_03','/icons/juru-marble/vodka-shot.png'],
+ ['달토끼','한가위 스도쿠','토끼','260925_01','/icons/seasonal/rabbit.svg'],
+ ['꽃길만 걷자','란영 스도쿠','꽃','260928_03','/icons/flower/flower.svg'],
+ ['폭탄 해체반','봄버스터즈 스도쿠','폭탄','261003_01','/icons/bomb/bomb-red.svg'],
+ ['토마토 수확자','토마토스 스도쿠','토마토','261005_01','/icons/tomato.svg'],
+ ['한 잔의 여유','주루마블 스도쿠','잔','261101_03','/icons/juru-marble/vodka-shot.png'],
 ];
 const files=import.meta.glob('../../../../../public/icons/**/*.svg',{query:'?raw',import:'default',eager:true});
 const iconPath=(id)=>`/icons/achievement-preview/${id}.svg`;
@@ -65,9 +65,9 @@ const sections=[['basic','기본',6],['features','기능 체험',3],['first-bloo
     <section id="special" class="mission-section">
       <h2>특수문제 미션 <span>5개 · 각각 한 번</span></h2>
       <p class="section-intro">각 지정 문제 하나를 완료하면 해당 아이콘을 한 번 받습니다. 추가 단계나 반복 코인 보상은 없습니다.</p>
-      <div class="mission-list">{special.map(([name,label,id,src])=><article class="mission">
+      <div class="mission-list">{special.map(([mission,name,label,id,src])=><article class="mission">
         <span class="reward-icon" aria-hidden="true">{src.endsWith('.svg')?<Fragment set:html={svg(src)}/>:<img src={src} alt="" width="40" height="40"/>}</span>
-        <div class="mission-body"><h3>{name}</h3><p class="condition">『{name}』 풀기</p><p class="reward-text">{label} 아이콘</p><div class="nickname-sample"><NicknameBadge src={src} label={label}/></div><a class="target-link" href={`/${id}/`}>대상 문제 보기</a></div>
+        <div class="mission-body"><h3>{mission}</h3><p class="condition">『{name}』 풀기</p><p class="reward-text">{label} 아이콘</p><div class="nickname-sample"><NicknameBadge src={src} label={label}/></div><a class="target-link" href={`/${id}/`}>대상 문제 보기</a></div>
       </article>)}</div>
       <p class="note">실제 퍼즐과 기존 배지의 아이콘을 사용합니다. 주루마블은 퍼즐에서 쓰는 잔 이미지 그대로입니다.</p>
     </section>

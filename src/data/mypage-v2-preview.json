@@ -505,31 +505,31 @@
     {
       "id": "rabbit",
       "name": "토끼",
-      "mission": "한가위 스도쿠",
+      "mission": "달토끼",
       "src": "/icons/seasonal/rabbit.svg"
     },
     {
       "id": "flower",
       "name": "꽃",
-      "mission": "란영 스도쿠",
+      "mission": "꽃길만 걷자",
       "src": "/icons/flower/flower.svg"
     },
     {
       "id": "bomb",
       "name": "폭탄",
-      "mission": "봄버스터즈 스도쿠",
+      "mission": "폭탄 해체반",
       "src": "/icons/bomb/bomb-red.svg"
     },
     {
       "id": "tomato",
       "name": "토마토",
-      "mission": "토마토스 스도쿠",
+      "mission": "토마토 수확자",
       "src": "/icons/tomato.svg"
     },
     {
       "id": "glass",
       "name": "잔",
-      "mission": "주루마블 스도쿠",
+      "mission": "한 잔의 여유",
       "src": "/icons/juru-marble/vodka-shot.png"
     },
     {
@@ -848,7 +848,7 @@
     },
     {
       "id": "chuseok",
-      "name": "한가위 스도쿠",
+      "name": "달토끼",
       "icon": "rabbit",
       "group": "special",
       "text": "『한가위 스도쿠』 풀기",
@@ -866,7 +866,7 @@
     },
     {
       "id": "flower",
-      "name": "란영 스도쿠",
+      "name": "꽃길만 걷자",
       "icon": "flower",
       "group": "special",
       "text": "『란영 스도쿠』 풀기",
@@ -882,7 +882,7 @@
     },
     {
       "id": "bomb",
-      "name": "봄버스터즈 스도쿠",
+      "name": "폭탄 해체반",
       "icon": "bomb",
       "group": "special",
       "text": "『봄버스터즈 스도쿠』 풀기",
@@ -898,7 +898,7 @@
     },
     {
       "id": "tomato",
-      "name": "토마토스 스도쿠",
+      "name": "토마토 수확자",
       "icon": "tomato",
       "group": "special",
       "text": "『토마토스 스도쿠』 풀기",
@@ -914,7 +914,7 @@
     },
     {
       "id": "marble",
-      "name": "주루마블 스도쿠",
+      "name": "한 잔의 여유",
       "icon": "glass",
       "group": "special",
       "text": "『주루마블 스도쿠』 풀기",
