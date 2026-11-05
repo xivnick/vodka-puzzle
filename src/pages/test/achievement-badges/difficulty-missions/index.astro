@@ -16,13 +16,13 @@ const names=['퍼즐러','숫자산책','네모왕','별헤는밤','민트초코
     <p class="intro">난이도별 일반 문제 10개를 완료하면 아이콘을 받습니다.<br />이후 20·30·40개…를 완료할 때마다 코인을 받습니다.</p>
     <div class="icon-grid">{missions.map(m=><article class="icon-card">
       <span class="big" aria-hidden="true"><Fragment set:html={svg(m.icon)}/></span>
-      <h2>{m.name}</h2><p class="condition">{['쉬운 문제','보통 문제','어려운 문제'][m.difficulty-1]}<br />10개 완료</p>
+      <h2>{m.name}</h2><p class="condition">{'◆'.repeat(m.difficulty)} 퍼즐 풀기<br />10개 완료</p>
       <span class="nickname"><NicknameBadge icon={m.icon} label={m.label}/></span>
     </article>)}</div>
     <h2 class="section-heading">미션 진행 예시<span>가상 기록</span></h2>
     <div class="missions">{missions.map(m=>{const unlocked=m.count>=10;const target=unlocked?20:10;return <article class="mission-row">
       <div class="mission-top"><span>{m.name}</span><span class="progress-label">{m.count} / {target}개</span></div>
-      <p>{['쉬운 문제','보통 문제','어려운 문제'][m.difficulty-1]} 풀기</p>
+      <p>{'◆'.repeat(m.difficulty)} 퍼즐 풀기</p>
       <div class="progress" role="progressbar" aria-label={`${m.name} 진행도`} aria-valuemin="0" aria-valuemax={target} aria-valuenow={m.count}><span style={`width:${m.count/target*100}%`}/></div>
       <div class="reward"><span>{unlocked?'아이콘 획득 완료':'다음 보상: '+m.label+' 아이콘'}</span><span>{unlocked?'다음 보상: 코인':'10개 달성 시 지급'}</span></div>
     </article>})}</div>

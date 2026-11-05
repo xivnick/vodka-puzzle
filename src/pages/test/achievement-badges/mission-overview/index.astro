@@ -9,9 +9,9 @@ const base=[
  {name:'반가워요',icon:'leaf',label:'잎사귀',condition:'일반 문제 1개 풀기',reward:'잎사귀 아이콘',after:'한 번만 지급'},
  {name:'퍼즐 수집가',icon:'puzzle',label:'퍼즐 조각',condition:'일반 문제 10개 풀기',reward:'퍼즐 조각 아이콘',after:'20·30·40개… 이후 10개마다 코인'},
  {name:'꺼지지 않는 불',icon:'flame',label:'불꽃',condition:'데일리 스도쿠 7일 연속으로 풀기',reward:'불꽃 아이콘',after:'14·21·28… 이후 7마다 코인'},
- {name:'체리피커',icon:'cherry',label:'체리',condition:'쉬운 문제 10개 풀기',reward:'체리 아이콘',after:'20·30·40개… 이후 10개마다 코인'},
- {name:'두뇌 회전',icon:'brain',label:'두뇌',condition:'보통 문제 10개 풀기',reward:'두뇌 아이콘',after:'20·30·40개… 이후 10개마다 코인'},
- {name:'하드코어',icon:'skull',label:'해골',condition:'어려운 문제 10개 풀기',reward:'해골 아이콘',after:'20·30·40개… 이후 10개마다 코인'},
+ {name:'체리피커',icon:'cherry',label:'체리',difficulty:1,condition:'◆ 퍼즐 풀기',reward:'체리 아이콘',after:'20·30·40개… 이후 10개마다 코인'},
+ {name:'두뇌 회전',icon:'brain',label:'두뇌',difficulty:2,condition:'◆◆ 퍼즐 풀기',reward:'두뇌 아이콘',after:'20·30·40개… 이후 10개마다 코인'},
+ {name:'하드코어',icon:'skull',label:'해골',difficulty:3,condition:'◆◆◆ 퍼즐 풀기',reward:'해골 아이콘',after:'20·30·40개… 이후 10개마다 코인'},
 ];
 const firstBlood=[['sword','검',1],['swords','교차한 검',3],['crown','왕관',10]];
 const groupMissionNames=Object.fromEntries(preview.missions.filter(m=>m.group==='group').map(m=>[m.icon,m.name]));
@@ -37,7 +37,7 @@ const sections=[['basic','기본',6],['features','기능 체험',3],['first-bloo
       <h2>기본 미션 <span>6개 · 확정</span></h2>
       <div class="mission-list">{base.map(m=><article class="mission">
         <span class="reward-icon" aria-hidden="true"><Fragment set:html={svg(iconPath(m.icon))}/></span>
-        <div class="mission-body"><h3>{m.name}</h3><p class="condition">{m.condition}</p><p class="reward-text">{m.reward}</p><div class="nickname-sample"><NicknameBadge icon={m.icon} label={m.label}/></div><p class="after">{m.after}</p></div>
+        <div class="mission-body"><h3>{m.name}</h3><p class="condition" aria-label={m.difficulty?`난이도 ${m.difficulty} 퍼즐 풀기`:undefined}>{m.condition}</p><p class="reward-text">{m.reward}</p><div class="nickname-sample"><NicknameBadge icon={m.icon} label={m.label}/></div><p class="after">{m.after}</p></div>
       </article>)}</div>
       <p class="note">아이콘은 지정 목표에서 한 번 지급하며, 그 단계에는 코인을 주지 않습니다. 같은 과제의 완료 수가 늘어나도 별도 미션으로 나누지 않습니다. 난이도 미표시 문제는 난이도별 미션에서 제외합니다.</p>
     </section>
