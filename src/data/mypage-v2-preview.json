@@ -925,6 +925,57 @@
         }
       ],
       "claimed": []
+    },
+    {
+      "id": "feature-equip-icon",
+      "name": "아이콘 장착하기",
+      "icon": "leaf",
+      "group": "basic",
+      "text": "아이콘 장착 1회",
+      "count": 0,
+      "featureAction": "equip-icon",
+      "stages": [
+        {
+          "at": 1,
+          "kind": "coins",
+          "value": 100
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "feature-draw",
+      "name": "뽑기 하기",
+      "icon": "star",
+      "group": "basic",
+      "text": "뽑기 1회",
+      "count": 0,
+      "featureAction": "draw",
+      "stages": [
+        {
+          "at": 1,
+          "kind": "coins",
+          "value": 100
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "feature-craft",
+      "name": "조합 하기",
+      "icon": "flower",
+      "group": "basic",
+      "text": "커먼 색깔 조합 1회",
+      "count": 0,
+      "featureAction": "craft",
+      "stages": [
+        {
+          "at": 1,
+          "kind": "coins",
+          "value": 100
+        }
+      ],
+      "claimed": []
     }
   ],
   "effects": [

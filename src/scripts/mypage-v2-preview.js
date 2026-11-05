@@ -8,6 +8,8 @@ if(root){
   const $=s=>root.querySelector(s);
   const all=s=>[...root.querySelectorAll(s)];
   const icons=new Map(data.icons.map(i=>[i.id,i]));
+  const iconName=id=>id==='none'?'아이콘 없음':icons.get(id).name;
+  const featureActions=new Set(saved?.featureActions??[]);
   const colors=new Map([...data.common,...data.rare].map(c=>[c.id,c]));
   const base={id:'base',name:'기본',a:'#444444',b:'#444444',rarity:'base'};
   colors.set('base',base);
@@ -34,8 +36,11 @@ if(root){
   for(const [id,count] of saved?.effectCounts??[])if(count>1&&ownedEffects.has(id)&&effects.get(id)?.rarity==='epic')migratedRefund+=(count-1)*500;
   coins+=migratedRefund;
 
-  for(const mission of data.missions)if(saved?.claimed?.[mission.id])mission.claimed=saved.claimed[mission.id];
-  function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({coins,nickname,applied,tickets,dailyDate,dailyClaimed:[...dailyClaimed],inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
+  for(const mission of data.missions){
+    if(saved?.claimed?.[mission.id])mission.claimed=saved.claimed[mission.id];
+    if(mission.featureAction)mission.count=featureActions.has(mission.featureAction)?1:0;
+  }
+  function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({coins,featureActions:[...featureActions],nickname,applied,tickets,dailyDate,dailyClaimed:[...dailyClaimed],inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
   const rarityNames={base:'기본',common:'커먼',uncommon:'언커먼',rare:'레어',epic:'에픽',special:'특수'};
   const visible=new IntersectionObserver(entries=>entries.forEach(e=>e.target.classList.toggle('is-offscreen',!e.isIntersecting)));
   const make=(tag,className,text)=>{const e=document.createElement(tag);if(className)e.className=className;if(text!==undefined)e.textContent=text;return e;};
@@ -43,6 +48,12 @@ if(root){
   const toast=message=>window.showToast(message);
   const goal=m=>m.stages.find(s=>!m.claimed.includes(s.at));
   const effectAllowed=()=>['uncommon','rare'].includes(colors.get(draft.color).rarity);
+  function trackFeature(action){
+    if(featureActions.has(action))return;
+    featureActions.add(action);
+    for(const mission of data.missions)if(mission.featureAction===action)mission.count=1;
+    renderMissions();
+  }
   function setBadgeName(container,nickname){
     const name=container.querySelector('[data-badge-name]');name.textContent=nickname;
     name.closest('[data-nickname-badge]').dispatchEvent(new CustomEvent('nickname-badge:change',{bubbles:true}));
@@ -108,12 +119,12 @@ if(root){
       bar.firstElementChild.style.width=(s?Math.min(m.count/s.at,1)*100:100)+'%';
       const reward=row.querySelector('.mission-reward');
       if(s?.kind==='coins')reward.replaceChildren(coinAmount(s.value));
-      else reward.textContent=s?(s.kind==='effect'?'별빛 반짝임 효과':`${icons.get(s.value).name} 아이콘`):m.id==='all'?'별빛 반짝임 획득 완료':'아이콘 획득 완료';
+      else reward.textContent=s?(s.kind==='effect'?'별빛 반짝임 효과':`${icons.get(s.value).name} 아이콘`):m.featureAction?'보상 수령 완료':m.id==='all'?'별빛 반짝임 획득 완료':'아이콘 획득 완료';
       const button=row.querySelector('[data-claim]');button.disabled=!ready;button.classList.toggle('claim-ready',ready);button.textContent=ready?'받기':s?'진행 중':'획득 완료';
     });
     $('#emptyMissions').hidden=shown>0;
     all('[data-select-icon]').forEach(b=>{
-      const owned=ownedIcons.has(b.dataset.selectIcon);b.disabled=!owned;b.hidden=!owned;
+      const owned=b.dataset.selectIcon==='none'||ownedIcons.has(b.dataset.selectIcon);b.disabled=!owned;b.hidden=!owned;
     });
   }
   all('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;pressed('[data-filter]',x=>x===b);renderMissions();}));
@@ -198,11 +209,13 @@ if(root){
     drawBusy=true;
     coins-=cost;
     const items=grantDrawItems(Array.from({length:count},()=>rollDrawItem()));
-    renderCoins();renderInventory();renderEffects();renderCraft();persist();renderResults(items);
+    trackFeature('draw');renderCoins();renderInventory();renderEffects();renderCraft();persist();renderResults(items);
   }));
   function renderBadge(container,state){
     const badge=container.querySelector('[data-nickname-badge]'),visual=badge.querySelector('.badge-visual');
     visual.querySelectorAll('.custom-badge-effect').forEach(e=>visible.unobserve(e));
+    badge.querySelector('.badge-anchor').hidden=state.icon==='none';
+    if(state.icon==='none'){visual.replaceChildren();badge.dispatchEvent(new CustomEvent('nickname-badge:change',{bubbles:true}));return;}
     const template=$(`[data-icon-template="${state.icon}"]`);
     visual.replaceChildren(template.content.cloneNode(true));
     badge.dispatchEvent(new CustomEvent('nickname-badge:change',{bubbles:true}));
@@ -233,25 +246,28 @@ if(root){
     iconPreview.querySelectorAll('.custom-badge-effect').forEach(effect=>visible.unobserve(effect));
     iconPreview.replaceChildren(...[...$('#profileBadge .badge-visual').childNodes].map(node=>node.cloneNode(true)));
     iconPreview.querySelectorAll('.custom-badge-effect').forEach(effect=>visible.observe(effect));
-    iconPreview.setAttribute('aria-label',`현재 아이콘: ${icons.get(applied.icon).name}`);
-    $('#equippedIconName').textContent=icons.get(applied.icon).name;
+    iconPreview.hidden=applied.icon==='none';
+    $('#equippedColor').hidden=applied.icon==='none';$('#equippedColorSeparator').hidden=applied.icon==='none';
+    iconPreview.setAttribute('aria-label',`현재 아이콘: ${iconName(applied.icon)}`);
+    $('#equippedIconName').textContent=iconName(applied.icon);
     colorPreview.textContent=equippedColor.name;
     pressed('[data-select-icon]',b=>b.dataset.selectIcon===draft.icon);
     pressed('[data-style]',b=>b.dataset.style===draft.mode);pressed('[data-angle]',b=>b.dataset.angle===draft.angle);
-    $('#selectionLabel').textContent=[icons.get(draft.icon).name,colors.get(draft.color).name,draft.effect==='none'?null:effects.get(draft.effect)?.name].filter(Boolean).join(' · ');
+    $('#selectionLabel').textContent=draft.icon==='none'?'아이콘 없음':[iconName(draft.icon),colors.get(draft.color).name,draft.effect==='none'?null:effects.get(draft.effect)?.name].filter(Boolean).join(' · ');
     const color=colors.get(draft.color);
     $('#selectedColorOptions').hidden=!['uncommon','rare'].includes(color.rarity)||color.a===color.b;
-    $('#selectedIconVisual').replaceChildren($(`[data-icon-template="${draft.icon}"]`).content.cloneNode(true));
-    $('#selectedIconLabel').textContent=icons.get(draft.icon).name;
-    $('#selectedIconLabel').title=icons.get(draft.icon).name;
+    const selectedIcon=$('#selectedIconVisual');selectedIcon.hidden=draft.icon==='none';
+    if(draft.icon==='none')selectedIcon.replaceChildren();else selectedIcon.replaceChildren($(`[data-icon-template="${draft.icon}"]`).content.cloneNode(true));
+    $('#selectedIconLabel').textContent=iconName(draft.icon);
+    $('#selectedIconLabel').title=iconName(draft.icon);
     $('#selectedColorLabel').textContent=color.name;$('#selectedColorLabel').title=color.name;
     $('#selectedColorSwatch').style.background=`linear-gradient(${draft.angle},${color.a} ${draft.mode==='split'?'50%':'15%'},${color.b} ${draft.mode==='split'?'50%':'85%'})`;
     $('#pickerEffectName').textContent=draft.effect==='none'?'효과 없음':effects.get(draft.effect).name;
     renderInventory();renderEffects();
   }
   all('[data-select-icon]').forEach(b=>b.addEventListener('click',()=>{
-    if(!ownedIcons.has(b.dataset.selectIcon))return;
-    draft.icon=b.dataset.selectIcon;applyDress();
+    const id=b.dataset.selectIcon;if(id!=='none'&&!ownedIcons.has(id))return;
+    draft.icon=id;if(id!=='none')trackFeature('equip-icon');applyDress();
   }));
   function renderInventory(){
     const panel=$('#colorInventory');panel.replaceChildren();
@@ -345,7 +361,7 @@ if(root){
     const result=rollCraftResult(),needed=new Map();craft.filter(Boolean).forEach(id=>needed.set(id,(needed.get(id)||0)+1));
     needed.forEach((count,id)=>{const left=inventory.get(id)-count;if(left)inventory.set(id,left);else inventory.delete(id);});
     colors.set(result.id,result);const awarded=grantCosmetic(result);draft.color=result.id;
-    craft=[];craftOpen=false;renderCoins();applyDress();renderCraft();appendCraftResult(awarded);
+    craft=[];craftOpen=false;trackFeature('craft');renderCoins();applyDress();renderCraft();appendCraftResult(awarded);
     toast(awarded.refund?`${result.name} 중복 · ${awarded.refund} 코인을 받았어요.`:`${result.name} 언커먼을 만들었어요.`);
   });
   document.addEventListener('visibilitychange',()=>{root.classList.toggle('page-hidden',document.hidden);if(document.hidden)finishDraw?.();});

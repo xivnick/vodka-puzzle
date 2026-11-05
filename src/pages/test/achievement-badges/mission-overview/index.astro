@@ -2,6 +2,9 @@
 import PageLayout from '../../../../layouts/PageLayout.astro';
 import NicknameBadge from '../../../../components/NicknameBadge.astro';
 import snapshot from '../../../../data/achievement-missions-preview.json';
+import preview from '../../../../data/mypage-v2-preview.json';
+import CoinAmount from '../../../../components/CoinAmount.astro';
+const featureMissions=preview.missions.filter(m=>m.featureAction);
 const base=[
  {name:'첫걸음',icon:'leaf',label:'잎사귀',condition:'일반 문제 1개 완료',reward:'잎사귀 아이콘',after:'한 번만 지급'},
  {name:'퍼즐 수집가',icon:'puzzle',label:'퍼즐 조각',condition:'일반 문제 10개 완료',reward:'퍼즐 조각 아이콘',after:'20·30·40개… 이후 10개마다 코인'},
@@ -22,9 +25,9 @@ const special=[
 const files=import.meta.glob('../../../../../public/icons/**/*.svg',{query:'?raw',import:'default',eager:true});
 const iconPath=(id)=>`/icons/achievement-preview/${id}.svg`;
 const svg=(path)=>String(files[`../../../../../public${path}`]??'');
-const sections=[['basic','기본',6],['first-blood','퍼스트 블러드',1],['groups','문제 묶음',4],['special','특수',5],['all-clear','전체 완료',1]];
+const sections=[['basic','기본',6],['features','기능 체험',3],['first-blood','퍼스트 블러드',1],['groups','문제 묶음',4],['special','특수',5],['all-clear','전체 완료',1]];
 ---
-<PageLayout title="업적 미션 전체 정리" subtitle="17개 미션 · 18개 아이콘 · 별빛 반짝임 전용 보상">
+<PageLayout title="업적 미션 전체 정리" subtitle="20개 미션 · 18개 아이콘 · 별빛 반짝임 전용 보상">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="overview" aria-label="업적 미션 전체 예시">
     <p class="intro">지금까지 정한 미션과 보상을 한곳에 모았습니다.<br />색상은 별도로 꾸미며, 여기서는 기본색으로 모양을 비교합니다.</p>
@@ -36,6 +39,10 @@ const sections=[['basic','기본',6],['first-blood','퍼스트 블러드',1],['g
         <div class="mission-body"><h3>{m.name}</h3><p class="condition">{m.condition}</p><p class="reward-text">{m.reward}</p><div class="nickname-sample"><NicknameBadge icon={m.icon} label={m.label}/></div><p class="after">{m.after}</p></div>
       </article>)}</div>
       <p class="note">아이콘은 지정 목표에서 한 번 지급하며, 그 단계에는 코인을 주지 않습니다. 같은 과제의 완료 수가 늘어나도 별도 미션으로 나누지 않습니다. 난이도 미표시 문제는 난이도별 미션에서 제외합니다.</p>
+    </section>
+    <section id="features" class="mission-section">
+      <h2>기능 체험 <span>3개 · 보상량은 예시</span></h2>
+      <div class="mission-list">{featureMissions.map(m=><article class="mission"><span class="reward-icon" aria-hidden="true"><Fragment set:html={svg(iconPath(m.icon))}/></span><div class="mission-body"><h3>{m.name}</h3><p class="condition">{m.text}</p><p class="reward-text"><CoinAmount amount={m.stages[0].value}/></p><p class="after">한 번만 지급</p></div></article>)}</div>
     </section>
     <section id="first-blood" class="mission-section">
       <h2>퍼스트 블러드 <span>1개 미션 · 아이콘 3종</span></h2>

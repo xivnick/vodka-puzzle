@@ -220,3 +220,5 @@
 .mypage-v2 .craft-description{font-size:.73rem;line-height:1.8;color:#888;margin-bottom:var(--space-md)}.mypage-v2 .craft-choice small{line-height:1.5;text-align:center}
 
 .mypage-v2 .craft-result{margin-top:var(--space-lg)}@media(prefers-reduced-motion:reduce){.mypage-v2 .craft-selector{transition:none}}
+
+.mypage-v2 .item-icon.empty-icon{display:flex;align-items:center;justify-content:center;color:#aaa;font-size:16px}
