@@ -541,7 +541,7 @@
     {
       "id": "clover",
       "name": "네잎클로버",
-      "mission": "행운이 깃들길",
+      "mission": "행운을 빌어요",
       "src": "/icons/achievement-preview/clover.svg"
     },
     {
@@ -947,7 +947,7 @@
     },
     {
       "id": "feature-draw",
-      "name": "행운이 깃들길",
+      "name": "행운을 빌어요",
       "icon": "clover",
       "group": "basic",
       "text": "색깔·효과 뽑기",
