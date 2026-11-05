@@ -18,7 +18,7 @@ if(root){
   const effects=new Map(data.effects.map(e=>[e.id,e]));
   const drawHistory=[];
   effects.set('sparkle',{id:'sparkle',name:'별빛 반짝임',rarity:'special'});
-  let coins=saved?.coins??1240,filter='all',craft=[],craftSlot=null;
+  let coins=saved?.coins??1240,filter='all',craft=[],craftOpen=false;
   let drawBusy=false,finishDraw=null;
   const activeDraws=new Set();
   const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date());
@@ -136,7 +136,6 @@ if(root){
     $('#drawResult').hidden=false;
     if(animate){
       panel.setAttribute('aria-busy','true');$('#drawStatus').textContent='열어보는 중…';
-      $('#revealAll').hidden=false;$('#revealAll').textContent=items.length===1?'바로 보기':'모두 보기';
     }
     items.forEach(item=>{
       const card=make('div','result-item is-sealed'),cover=make('span','result-cover','?');
@@ -161,12 +160,11 @@ if(root){
       timers.forEach(clearTimeout);reveals.forEach(reveal=>reveal());
       activeDraws.delete(batch);drawBusy=activeDraws.size>0;
       if(!drawBusy)finishDraw=null;
-      panel.setAttribute('aria-busy',String(drawBusy));$('#revealAll').hidden=!drawBusy;
+      panel.setAttribute('aria-busy',String(drawBusy));
       if(!drawBusy)renderDrawHistoryStatus();
       renderCoins();renderCraft();toast(items.length===1?(items[0].refund?`${items[0].name} 중복 · ${items[0].refund} 코인을 받았어요.`:`${items[0].name} 획득!`):`${items.length}개를 확인했어요.`);
     };
     const batch={complete};activeDraws.add(batch);
-    $('#revealAll').textContent=activeDraws.size===1&&items.length===1?'바로 보기':'모두 보기';
     finishDraw=()=>{for(const pending of [...activeDraws])pending.complete();};
     if(window.matchMedia('(prefers-reduced-motion: reduce)').matches||document.hidden){complete();return;}
     let delay=620;
@@ -175,7 +173,6 @@ if(root){
       delay+=items[index].rarity==='epic'?360:160;
     });
   }
-  $('#revealAll').addEventListener('click',()=>finishDraw?.());
   function drawRarity(){
     const roll=Math.random();let cumulative=0;
     for(const rate of data.drawRates){cumulative+=rate.probability;if(roll<cumulative)return rate.rarity;}
@@ -294,33 +291,36 @@ if(root){
     const unique=[...new Set(craft.filter(Boolean))],a=colors.get(unique[0]),b=colors.get(unique[1]||unique[0]);
     return {id:'u-'+[a.id,b.id].sort().join('-'),name:a.id===b.id?a.name:`${a.name} · ${b.name}`,a:a.a,b:b.a,rarity:'uncommon'};
   }
-  function closeCraftSelector(){craftSlot=null;renderCraft();}
+  function closeCraftSelector(){craftOpen=false;renderCraft();}
   function renderCraft(){
     $('#craftSlots').replaceChildren();
     for(let index=0;index<craftSize();index++){
       const slot=make('button','craft-slot'),item=colors.get(craft[index]);
       slot.type='button';slot.dataset.craftSlot=String(index);slot.disabled=drawBusy;
-      slot.setAttribute('aria-label',`${index+1}번 재료 ${item?item.name+' 변경':'선택'}`);slot.setAttribute('aria-expanded',String(craftSlot===index));slot.setAttribute('aria-controls','craftSelector');
-      slot.title=item?.name??'재료 선택';
+      slot.setAttribute('aria-label',item?`${index+1}번 재료 ${item.name} 빼기`:'재료 선택');slot.setAttribute('aria-controls','craftSelector');
+      if(!item)slot.setAttribute('aria-expanded',String(craftOpen));
+      slot.title=item?`${item.name} 빼기`:'재료 선택';
       if(item?.a)slot.style.background=`linear-gradient(135deg,${item.a},${item.b})`;
-      else if(item){const star=make('img','');star.src='/icons/achievement-preview/star.svg';star.alt='';slot.append(star);}
       else slot.textContent='+';
-      slot.addEventListener('click',()=>{craftSlot=craftSlot===index?null:index;renderCraft();});$('#craftSlots').append(slot);
+      slot.addEventListener('click',()=>{if(drawBusy)return;if(item)craft.splice(index,1);craftOpen=true;renderCraft();});$('#craftSlots').append(slot);
     }
-    $('#craftSelector').hidden=craftSlot===null;
-    $('#clearCraftSlot').hidden=craftSlot===null||!craft[craftSlot];
-    $('#craftSelectorTitle').textContent='커먼 색깔 선택';
+    $('#craftSelector').hidden=!craftOpen;
+    $('#clearCraftSelection').hidden=craft.length===0;
+    $('#craftSelectorTitle').textContent=`커먼 색깔 선택 · ${craft.length}/3`;
     $('#craftChoices').replaceChildren();
     const materials=craftMaterials();$('#emptyCraftChoices').hidden=materials.length>0;
     $('#emptyCraftChoices').textContent='선택할 색깔이 없습니다.';
     materials.forEach(({item,quantity})=>{
-      const used=craft.filter((id,index)=>index!==craftSlot&&id===item.id).length,left=quantity-used,button=make('button','craft-choice');
-      button.type='button';button.dataset.craftMaterial=item.id;button.disabled=left<=0||drawBusy;
-      const dot=make('i','');dot.style.background=item.a?`linear-gradient(135deg,${item.a},${item.b})`:'#8b7b9c';
-      button.append(dot,make('span','',item.name),make('small','',`${left}개`));
+      const selected=craft.filter(id=>id===item.id).length,left=quantity-selected,button=make('button','craft-choice');
+      button.type='button';button.dataset.craftMaterial=item.id;button.disabled=left<=0||craft.length>=craftSize()||drawBusy;
+      button.setAttribute('aria-label',`${item.name} 추가, 남은 수량 ${left}개`);
+      const dot=make('i','');dot.style.background=`linear-gradient(135deg,${item.a},${item.b})`;
+      button.append(dot,make('span','',item.name),make('small','',selected?`${selected}개 선택 · ${left}개 남음`:`${left}개`));
       button.addEventListener('click',()=>{
-        if(craftSlot===null||drawBusy||left<=0)return;
-        const index=craftSlot;craft[index]=item.id;closeCraftSelector();$('#craftSlots').querySelector(`[data-craft-slot="${index}"]`).focus({preventScroll:true});
+        if(drawBusy||craft.length>=craftSize()||left<=0)return;
+        craft.push(item.id);renderCraft();
+        const target=craftReady()?$('#craftConfirm'):$('#craftChoices').querySelector(`[data-craft-material="${item.id}"]:not(:disabled)`);
+        target?.focus({preventScroll:true});
       });$('#craftChoices').append(button);
     });
     const ready=craftReady(),result=craftResult();
@@ -328,13 +328,13 @@ if(root){
     $('#craftConfirm').disabled=drawBusy||!ready;
   }
   $('#closeCraftSelector').addEventListener('click',closeCraftSelector);
-  $('#clearCraftSlot').addEventListener('click',()=>{if(craftSlot===null)return;delete craft[craftSlot];closeCraftSelector();});
+  $('#clearCraftSelection').addEventListener('click',()=>{if(drawBusy)return;craft=[];renderCraft();});
   $('#craftConfirm').addEventListener('click',()=>{
     if(drawBusy||!craftReady())return;
     const result=craftResult(),needed=new Map();craft.filter(Boolean).forEach(id=>needed.set(id,(needed.get(id)||0)+1));
     needed.forEach((count,id)=>{const left=inventory.get(id)-count;if(left)inventory.set(id,left);else inventory.delete(id);});
     colors.set(result.id,result);const awarded=grantCosmetic(result);draft.color=result.id;
-    craft=[];craftSlot=null;renderCoins();applyDress();renderCraft();
+    craft=[];craftOpen=false;renderCoins();applyDress();renderCraft();
     toast(awarded.refund?`${result.name} 중복 · ${awarded.refund} 코인을 받았어요.`:`${result.name} 언커먼을 만들었어요.`);
   });
   document.addEventListener('visibilitychange',()=>{root.classList.toggle('page-hidden',document.hidden);if(document.hidden)finishDraw?.();});
