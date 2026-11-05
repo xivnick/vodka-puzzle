@@ -148,7 +148,7 @@ if(root){
       if(kind==='epic')ownedEffects.add(item.id);else inventory.set(item.id,(inventory.get(item.id)||0)+1);
       return item;
     });
-    renderCoins();renderResults(items);renderInventory();renderEffects();persist();
+    renderCoins();renderResults(items);renderInventory();renderEffects();renderOwnedPreviews();persist();
     toast(count===1?`${items[0].name} 획득!`:`${count}개 색상과 효과를 받았어요.`);
   }));
   function renderBadge(container,state){
@@ -172,6 +172,44 @@ if(root){
       const overlay=make('span','custom-badge-effect effect-'+state.effect);overlay.style.maskImage=mask;overlay.style.webkitMaskImage=mask;overlay.setAttribute('aria-hidden','true');visual.append(overlay);visible.observe(overlay);
     }
   }
+  function fitOwnedPreview(row){
+    const width=row.clientWidth;if(!width)return;
+    const strip=row.querySelector('.owned-strip'),more=row.querySelector('.owned-more'),items=[...strip.children];
+    items.forEach(item=>item.hidden=false);more.hidden=true;
+    const gap=parseFloat(getComputedStyle(strip).gap)||0;
+    const widths=items.map(item=>item.getBoundingClientRect().width);
+    const used=count=>widths.slice(0,count).reduce((sum,value)=>sum+value,0)+Math.max(0,count-1)*gap;
+    let shown=items.length;
+    if(used(shown)>width){
+      more.hidden=false;
+      const rowGap=parseFloat(getComputedStyle(row).gap)||0;
+      do{
+        shown--;more.textContent=`외 ${items.length-shown}개`;
+      }while(shown>0&&used(shown)+rowGap+more.getBoundingClientRect().width>width);
+    }
+    items.forEach((item,index)=>item.hidden=index>=shown);
+  }
+  function renderOwnedPreviews(){
+    const iconRow=$('#ownedIconPreview'),colorRow=$('#ownedColorPreview');
+    const iconStrip=iconRow.querySelector('.owned-strip'),colorStrip=colorRow.querySelector('.owned-strip');
+    iconStrip.replaceChildren();colorStrip.replaceChildren();
+    [...ownedIcons].forEach(id=>{
+      const item=make('span','owned-preview-item');item.title=icons.get(id).name;
+      item.classList.toggle('is-selected',id===draft.icon);
+      item.append($(`[data-icon-template="${id}"]`).content.cloneNode(true));iconStrip.append(item);
+    });
+    [base,...[...inventory.keys()].map(id=>colors.get(id))].forEach(color=>{
+      const item=make('span','owned-preview-item');item.title=color.name;
+      item.classList.toggle('is-selected',color.id===draft.color);
+      const swatch=make('i','picker-swatch');swatch.style.background=`linear-gradient(135deg,${color.a},${color.b})`;
+      item.append(swatch);colorStrip.append(item);
+    });
+    iconRow.parentElement.setAttribute('aria-label',`아이콘 선택, 보유 ${ownedIcons.size}개, 현재 ${icons.get(draft.icon).name}`);
+    colorRow.parentElement.setAttribute('aria-label',`색깔 선택, 보유 ${inventory.size+1}개, 현재 ${colors.get(draft.color).name}`);
+    fitOwnedPreview(iconRow);fitOwnedPreview(colorRow);
+  }
+  const ownedPreviewResize=new ResizeObserver(entries=>entries.forEach(entry=>fitOwnedPreview(entry.target)));
+  all('.owned-preview').forEach(row=>ownedPreviewResize.observe(row));
   function applyDress(){
     if(!effectAllowed())draft.effect='none';
     applied={...draft};renderDress();persist();
@@ -190,13 +228,10 @@ if(root){
     pressed('[data-select-icon]',b=>b.dataset.selectIcon===draft.icon);
     pressed('[data-style]',b=>b.dataset.style===draft.mode);pressed('[data-angle]',b=>b.dataset.angle===draft.angle);
     $('#selectionLabel').textContent=[icons.get(draft.icon).name,colors.get(draft.color).name,draft.effect==='none'?null:effects.get(draft.effect)?.name].filter(Boolean).join(' · ');
-    const pickerIcon=$('#pickerIcon');
-    pickerIcon.querySelectorAll('.custom-badge-effect').forEach(effect=>visible.unobserve(effect));
-    pickerIcon.replaceChildren(...[...iconPreview.childNodes].map(node=>node.cloneNode(true)));
-    pickerIcon.querySelectorAll('.custom-badge-effect').forEach(effect=>visible.observe(effect));
-    $('#pickerIconName').textContent=icons.get(draft.icon).name;
-    $('#pickerColorName').textContent=colors.get(draft.color).name;
-    $('#pickerColorSwatch').style.background=`linear-gradient(135deg,${colors.get(draft.color).a},${colors.get(draft.color).b})`;
+    const color=colors.get(draft.color);
+    $('#selectedColorOptions').hidden=!['uncommon','rare'].includes(color.rarity)||color.a===color.b;
+    $('#selectedColorName').textContent=color.name;
+    renderOwnedPreviews();
     $('#pickerEffectName').textContent=draft.effect==='none'?'효과 없음':effects.get(draft.effect).name;
     renderInventory();renderEffects();
   }
