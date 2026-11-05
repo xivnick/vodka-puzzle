@@ -241,8 +241,7 @@ if(root){
     [base,...[...inventory.keys()].map(id=>colors.get(id))].forEach(color=>{
       const b=make('button','color-item');b.type='button';b.dataset.selectColor=color.id;b.setAttribute('aria-pressed',String(draft.color===color.id));
       const swatch=make('i');swatch.style.background=`linear-gradient(135deg,${color.a},${color.b})`;
-      b.append(swatch,make('b','',color.id==='base'?color.name:`${color.name} × ${inventory.get(color.id)}`));
-      if(color.id!=='base')b.append(make('small','',rarityNames[color.rarity]));
+      b.append(swatch,make('b','',color.name),make('small','',color.id==='base'?'기본':`${rarityNames[color.rarity]} · ${inventory.get(color.id)}개`));
       b.addEventListener('click',()=>{draft.color=color.id;applyDress();});panel.append(b);
     });
   }
