@@ -3,7 +3,6 @@ const root=document.querySelector('.mypage-v2');
 if(root){
   const storageKey='mypage-v2-demo-v1';
   let saved=null;try{saved=JSON.parse(sessionStorage.getItem(storageKey));}catch{}
-  const customize=root.dataset.customize==='true';
   const data=JSON.parse(root.querySelector('#mypagePreviewData').textContent);
   const $=s=>root.querySelector(s);
   const all=s=>[...root.querySelectorAll(s)];
@@ -35,17 +34,6 @@ if(root){
   const toast=message=>window.showToast(message);
   const goal=m=>m.stages.find(s=>!m.claimed.includes(s.at));
   const effectAllowed=()=>['uncommon','rare'].includes(colors.get(draft.color).rarity);
-  function openView(focus=false){
-    const requested=location.hash.slice(1),id=customize?(requested==='draw'?'draw':'dress'):'missions';
-    if(!customize&&id!=='dress')draft={...applied};
-    ['missions','draw','dress'].forEach(k=>$('#panel-'+k).hidden=k!==id);
-    all('[data-toggle-view]').forEach(button=>button.setAttribute('aria-expanded',String(button.dataset.toggleView===id)));
-    setCraftOpen(false);
-    if(id==='dress')renderDress();
-    if(focus){$('#panel-'+id).querySelector('h2').focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}
-  }
-  all('[data-toggle-view]').forEach(button=>button.addEventListener('click',()=>{location.hash=button.getAttribute('aria-expanded')==='true'?'missions':button.dataset.toggleView;}));
-  window.addEventListener('hashchange',()=>openView(true));
   function setBadgeName(container,nickname){
     const name=container.querySelector('[data-badge-name]');name.textContent=nickname;
     name.closest('[data-nickname-badge]').dispatchEvent(new CustomEvent('nickname-badge:change',{bubbles:true}));
@@ -148,7 +136,7 @@ if(root){
       if(kind==='epic')ownedEffects.add(item.id);else inventory.set(item.id,(inventory.get(item.id)||0)+1);
       return item;
     });
-    renderCoins();renderResults(items);renderInventory();renderEffects();renderOwnedPreviews();persist();
+    renderCoins();renderResults(items);renderInventory();renderEffects();persist();
     toast(count===1?`${items[0].name} 획득!`:`${count}개 색상과 효과를 받았어요.`);
   }));
   function renderBadge(container,state){
@@ -172,49 +160,6 @@ if(root){
       const overlay=make('span','custom-badge-effect effect-'+state.effect);overlay.style.maskImage=mask;overlay.style.webkitMaskImage=mask;overlay.setAttribute('aria-hidden','true');visual.append(overlay);visible.observe(overlay);
     }
   }
-  function fitOwnedPreview(row){
-    const style=getComputedStyle(row);
-    const width=row.clientWidth-(parseFloat(style.paddingLeft)||0)-(parseFloat(style.paddingRight)||0);if(width<=0)return;
-    const strip=row.querySelector('.owned-strip'),more=row.querySelector('.owned-more'),items=[...strip.children];
-    items.forEach(item=>item.hidden=false);more.hidden=true;
-    const gap=parseFloat(getComputedStyle(strip).gap)||0;
-    const widths=items.map(item=>item.getBoundingClientRect().width);
-    const used=count=>widths.slice(0,count).reduce((sum,value)=>sum+value,0)+Math.max(0,count-1)*gap;
-    let shown=items.length;
-    if(used(shown)>width){
-      more.hidden=false;
-      const rowGap=parseFloat(getComputedStyle(row).gap)||0;
-      do{
-        shown--;more.textContent=`외 ${items.length-shown}개`;
-      }while(shown>0&&used(shown)+rowGap+more.getBoundingClientRect().width>width);
-    }
-    items.forEach((item,index)=>item.hidden=index>=shown);
-  }
-  function renderOwnedPreviews(){
-    const iconRow=$('#ownedIconPreview'),colorRow=$('#ownedColorPreview');
-    const iconStrip=iconRow.querySelector('.owned-strip'),colorStrip=colorRow.querySelector('.owned-strip');
-    iconStrip.replaceChildren();colorStrip.replaceChildren();
-    $('#selectedIconVisual').replaceChildren($(`[data-icon-template="${draft.icon}"]`).content.cloneNode(true));
-    $('#selectedIconLabel').textContent=icons.get(draft.icon).name;
-    $('#selectedIconLabel').title=icons.get(draft.icon).name;
-    const selectedColor=colors.get(draft.color);
-    $('#selectedColorLabel').textContent=selectedColor.name;$('#selectedColorLabel').title=selectedColor.name;
-    $('#selectedColorSwatch').style.background=`linear-gradient(${draft.angle},${selectedColor.a} ${draft.mode==='split'?'50%':'15%'},${selectedColor.b} ${draft.mode==='split'?'50%':'85%'})`;
-    [...ownedIcons].filter(id=>id!==draft.icon).forEach(id=>{
-      const item=make('span','owned-preview-item');item.title=icons.get(id).name;
-      item.append($(`[data-icon-template="${id}"]`).content.cloneNode(true));iconStrip.append(item);
-    });
-    [base,...[...inventory.keys()].map(id=>colors.get(id))].filter(color=>color.id!==draft.color).forEach(color=>{
-      const item=make('span','owned-preview-item');item.title=color.name;
-      const swatch=make('i','picker-swatch');swatch.style.background=`linear-gradient(135deg,${color.a},${color.b})`;
-      item.append(swatch);colorStrip.append(item);
-    });
-    iconRow.parentElement.setAttribute('aria-label',`아이콘 선택, 보유 ${ownedIcons.size}개, 현재 ${icons.get(draft.icon).name}`);
-    colorRow.parentElement.setAttribute('aria-label',`색깔 선택, 보유 ${inventory.size+1}개, 현재 ${colors.get(draft.color).name}`);
-    fitOwnedPreview(iconRow);fitOwnedPreview(colorRow);
-  }
-  const ownedPreviewResize=new ResizeObserver(entries=>entries.forEach(entry=>fitOwnedPreview(entry.target)));
-  all('.owned-preview').forEach(row=>ownedPreviewResize.observe(row));
   function applyDress(){
     if(!effectAllowed())draft.effect='none';
     applied={...draft};renderDress();persist();
@@ -236,7 +181,11 @@ if(root){
     const color=colors.get(draft.color);
     $('#selectedColorOptions').hidden=!['uncommon','rare'].includes(color.rarity)||color.a===color.b;
     $('#selectedColorName').textContent=color.name;
-    renderOwnedPreviews();
+    $('#selectedIconVisual').replaceChildren($(`[data-icon-template="${draft.icon}"]`).content.cloneNode(true));
+    $('#selectedIconLabel').textContent=icons.get(draft.icon).name;
+    $('#selectedIconLabel').title=icons.get(draft.icon).name;
+    $('#selectedColorLabel').textContent=color.name;$('#selectedColorLabel').title=color.name;
+    $('#selectedColorSwatch').style.background=`linear-gradient(${draft.angle},${color.a} ${draft.mode==='split'?'50%':'15%'},${color.b} ${draft.mode==='split'?'50%':'85%'})`;
     $('#pickerEffectName').textContent=draft.effect==='none'?'효과 없음':effects.get(draft.effect).name;
     renderInventory();renderEffects();
   }
@@ -300,6 +249,6 @@ if(root){
   });
   document.addEventListener('visibilitychange',()=>root.classList.toggle('page-hidden',document.hidden));
   $('#accountName').textContent=nickname;$('#accountNickname').value=nickname;setBadgeName($('#profileBadge'),nickname);
-  initNicknameBadges();renderCoins();renderDailyQuests();sortMissionRows();renderMissions();renderDress();openView();
+  initNicknameBadges();renderCoins();renderDailyQuests();sortMissionRows();renderMissions();renderDress();
   document.fonts.ready.then(()=>{renderBadge($('#profileBadge'),applied);renderBadge($('#dressBadge'),draft);});
 }
