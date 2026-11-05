@@ -15,8 +15,7 @@ if(root){
   const ownedIcons=new Set(saved?.ownedIcons??['leaf','puzzle','flame','sword','rabbit']);
   const ownedEffects=new Set(saved?.ownedEffects??['ribbon','afterglow']);
   const effects=new Map(data.effects.map(e=>[e.id,e]));
-  const drawItems=new Map([...data.common,...data.rare,...data.effects].map(item=>[item.id,item]));
-  const drawHistory=(saved?.drawHistory??[]).map(id=>drawItems.get(id)).filter(Boolean);
+  const drawHistory=[];
   effects.set('sparkle',{id:'sparkle',name:'별빛 반짝임',rarity:'special'});
   let coins=saved?.coins??1240,filter='all',craft=[];
   let drawBusy=false,finishDraw=null;
@@ -26,10 +25,10 @@ if(root){
   let draft={icon:'leaf',color:'base',effect:'none',mode:'gradient',angle:'135deg'};
   let applied=saved?.applied??{...draft};draft={...applied};
   let nickname=saved?.nickname??'퍼즐러';
-  for(const color of saved?.colors??[])colors.set(color.id,color);
+  for(const color of saved?.colors??[])if(!colors.has(color.id))colors.set(color.id,{...color,name:color.name.replaceAll('깊은 민트','청옥').replaceAll('깊은 청록','석유색')});
   colors.set(base.id,base);
   for(const mission of data.missions)if(saved?.claimed?.[mission.id])mission.claimed=saved.claimed[mission.id];
-  function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({coins,drawHistory:drawHistory.map(item=>item.id),nickname,applied,tickets,dailyDate,dailyClaimed:[...dailyClaimed],inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
+  function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({coins,nickname,applied,tickets,dailyDate,dailyClaimed:[...dailyClaimed],inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
   const rarityNames={base:'기본',common:'커먼',uncommon:'언커먼',rare:'레어',epic:'에픽',special:'특수'};
   const visible=new IntersectionObserver(entries=>entries.forEach(e=>e.target.classList.toggle('is-offscreen',!e.isIntersecting)));
   const make=(tag,className,text)=>{const e=document.createElement(tag);if(className)e.className=className;if(text!==undefined)e.textContent=text;return e;};
@@ -287,6 +286,6 @@ if(root){
   });
   document.addEventListener('visibilitychange',()=>{root.classList.toggle('page-hidden',document.hidden);if(document.hidden)finishDraw?.();});
   $('#accountName').textContent=nickname;$('#accountNickname').value=nickname;setBadgeName($('#profileBadge'),nickname);
-  initNicknameBadges();renderCoins();renderDailyQuests();sortMissionRows();renderMissions();renderDress();renderCraft();renderResults(drawHistory,false);
+  initNicknameBadges();renderCoins();renderDailyQuests();sortMissionRows();renderMissions();renderDress();renderCraft();
   document.fonts.ready.then(()=>{renderBadge($('#profileBadge'),applied);renderBadge($('#dressBadge'),draft);});
 }
