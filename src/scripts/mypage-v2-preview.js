@@ -291,7 +291,10 @@ if(root){
     const unique=[...new Set(craft.filter(Boolean))],a=colors.get(unique[0]),b=colors.get(unique[1]||unique[0]);
     return {id:'u-'+[a.id,b.id].sort().join('-'),name:a.id===b.id?a.name:`${a.name} · ${b.name}`,a:a.a,b:b.a,rarity:'uncommon'};
   }
-  function closeCraftSelector(){craftOpen=false;renderCraft();}
+  function closeCraftSelector(){
+    craftOpen=false;renderCraft();
+    const target=craftReady()?$('#craftConfirm'):$('#craftSlots').querySelector('[aria-expanded]');target?.focus({preventScroll:true});
+  }
   function renderCraft(){
     $('#craftSlots').replaceChildren();
     for(let index=0;index<craftSize();index++){
@@ -304,9 +307,7 @@ if(root){
       else slot.textContent='+';
       slot.addEventListener('click',()=>{if(drawBusy)return;if(item)craft.splice(index,1);craftOpen=true;renderCraft();});$('#craftSlots').append(slot);
     }
-    $('#craftSelector').hidden=!craftOpen;
-    $('#clearCraftSelection').hidden=craft.length===0;
-    $('#craftSelectorTitle').textContent=`커먼 색깔 선택 · ${craft.length}/3`;
+    const selector=$('#craftSelector');selector.dataset.open=String(craftOpen);selector.inert=!craftOpen;selector.setAttribute('aria-hidden',String(!craftOpen));
     $('#craftChoices').replaceChildren();
     const materials=craftMaterials();$('#emptyCraftChoices').hidden=materials.length>0;
     $('#emptyCraftChoices').textContent='선택할 색깔이 없습니다.';
@@ -318,7 +319,7 @@ if(root){
       button.append(dot,make('span','',item.name),make('small','',selected?`${selected}개 선택 · ${left}개 남음`:`${left}개`));
       button.addEventListener('click',()=>{
         if(drawBusy||craft.length>=craftSize()||left<=0)return;
-        craft.push(item.id);renderCraft();
+        craft.push(item.id);if(craft.length===craftSize())craftOpen=false;renderCraft();
         const target=craftReady()?$('#craftConfirm'):$('#craftChoices').querySelector(`[data-craft-material="${item.id}"]:not(:disabled)`);
         target?.focus({preventScroll:true});
       });$('#craftChoices').append(button);
@@ -328,13 +329,19 @@ if(root){
     $('#craftConfirm').disabled=drawBusy||!ready;
   }
   $('#closeCraftSelector').addEventListener('click',closeCraftSelector);
-  $('#clearCraftSelection').addEventListener('click',()=>{if(drawBusy)return;craft=[];renderCraft();});
+  function appendCraftResult(item){
+    const card=make('div','result-item is-revealed is-uncommon'),dot=make('i','result-dot'),text=make('div');
+    dot.style.background=`linear-gradient(135deg,${item.a},${item.b})`;
+    text.append(make('b','',item.name),make('small','','언커먼 · 색상'));
+    if(item.refund){const refund=make('span','result-refund');refund.append(make('span','','중복'),coinAmount(item.refund));text.append(refund);}
+    card.append(dot,text);$('#craftResultItems').append(card);$('#craftResult').hidden=false;
+  }
   $('#craftConfirm').addEventListener('click',()=>{
     if(drawBusy||!craftReady())return;
     const result=craftResult(),needed=new Map();craft.filter(Boolean).forEach(id=>needed.set(id,(needed.get(id)||0)+1));
     needed.forEach((count,id)=>{const left=inventory.get(id)-count;if(left)inventory.set(id,left);else inventory.delete(id);});
     colors.set(result.id,result);const awarded=grantCosmetic(result);draft.color=result.id;
-    craft=[];craftOpen=false;renderCoins();applyDress();renderCraft();
+    craft=[];craftOpen=false;renderCoins();applyDress();renderCraft();appendCraftResult(awarded);
     toast(awarded.refund?`${result.name} 중복 · ${awarded.refund} 코인을 받았어요.`:`${result.name} 언커먼을 만들었어요.`);
   });
   document.addEventListener('visibilitychange',()=>{root.classList.toggle('page-hidden',document.hidden);if(document.hidden)finishDraw?.();});

@@ -204,9 +204,9 @@
 .mypage-v2 .craft-slot{display:flex;align-items:center;justify-content:center;color:#aaa;font-size:1rem;padding:0}
 .mypage-v2 .craft-slot img{display:block;width:18px;height:18px}
 .mypage-v2 .craft-slot[aria-expanded=true]{border-color:#999;background-color:var(--soft)}
-.mypage-v2 .craft-selector{padding:var(--space-md) 0;border-block:1px solid var(--line);margin-bottom:var(--space-md)}
+.mypage-v2 .craft-selector{display:grid;grid-template-rows:0fr;opacity:0;padding:0;border:0;margin:0;transition:grid-template-rows .24s ease,opacity .18s ease,margin-bottom .24s ease}.mypage-v2 .craft-selector[data-open=true]{grid-template-rows:1fr;opacity:1;margin-bottom:var(--space-md)}.mypage-v2 .craft-selector-content{min-height:0;overflow:hidden}.mypage-v2 .craft-selector-inner{padding:var(--space-md) 0;border-block:1px solid var(--line)}
 .mypage-v2 .craft-selector-heading{display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-sm);font-size:.7rem;color:#999}
-.mypage-v2 #clearCraftSelection{margin-left:auto}.mypage-v2 #closeCraftSelector{margin-left:auto}
+.mypage-v2 #closeCraftSelector{margin-left:auto}
 .mypage-v2 .empty-craft-choices{padding:var(--space-md) 0;font-size:.7rem;color:#aaa}
 
 @keyframes mypage-lenticular{0%,20%,100%{opacity:0}43%{opacity:.9}62%{opacity:.25}78%{opacity:0}}
@@ -218,3 +218,5 @@
 .mypage-v2 .result-refund .coin-amount{font-size:inherit;color:#777}
 
 .mypage-v2 .craft-description{font-size:.73rem;line-height:1.8;color:#888;margin-bottom:var(--space-md)}.mypage-v2 .craft-choice small{line-height:1.5;text-align:center}
+
+.mypage-v2 .craft-result{margin-top:var(--space-lg)}@media(prefers-reduced-motion:reduce){.mypage-v2 .craft-selector{transition:none}}
