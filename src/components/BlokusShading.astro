@@ -1,0 +1,69 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import { blokus, pieces } from '../lib/blokus-shading.js';
+const { puzzleId = 'test-blokus-shading', preview = true } = Astro.props;
+---
+<PuzzleLayout {preview} showCloud={!preview} showLeaderboard={!preview} showPreviewCloud={false} showPreviewLeaderboard={false} title="261105 블로커스" {puzzleId} subtitle="점에서만 블록의 모서리가 맞닿도록 모든 블록을 놓으세요" description="블록 12개를 회전하거나 뒤집어 점의 접촉 규칙에 맞게 배치하는 퍼즐">
+  {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
+  <div slot="rules">
+    <p>주어진 블록 12개를 각각 한 번씩 격자 안에 겹치지 않게 모두 놓으세요. 블록은 회전하거나 뒤집을 수 있습니다.</p>
+    <ul>
+      <li>점에서는 서로 다른 블록이 대각선으로 맞닿아야 합니다.</li>
+      <li>점이 없는 곳에서는 서로 다른 블록이 대각선으로 맞닿을 수 없습니다.</li>
+      <li>서로 다른 블록은 변끼리 맞닿을 수 없습니다.</li>
+    </ul>
+  </div>
+  <div slot="controls">블록이 차지하는 칸을 눌러 칠하세요. 같은 칸을 다시 누르면 지워집니다.</div>
+  <section id="blokusGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="블로커스">
+    <svg id="blokusBoard" viewBox="0 0 520 360" role="group" aria-label="9행 13열 블로커스 격자. 칸을 눌러 칠하거나 지우세요">
+      <g id="blokusFills" aria-hidden="true" />
+      <g class="blokus-grid" aria-hidden="true">
+        {Array.from({length:12},(_,x)=><path d={`M${(x+1)*40} 0V360`} />)}
+        {Array.from({length:8},(_,y)=><path d={`M0 ${(y+1)*40}H520`} />)}
+      </g>
+      <g class="blokus-input">{Array.from({length:117},(_,index)=><rect data-cell={index} x={index%13*40} y={Math.floor(index/13)*40} width="40" height="40" fill="transparent" role="button" tabindex={index===0 ? '0' : '-1'} aria-label={`${Math.floor(index/13)+1}행 ${index%13+1}열, 빈칸`} aria-pressed="false" />)}</g>
+      <g class="blokus-dots" aria-hidden="true">{blokus.dots.map(([x,y])=><circle cx={x*40} cy={y*40} r="5" />)}</g>
+      <rect class="blokus-border" x="1.5" y="1.5" width="517" height="357" aria-hidden="true" />
+    </svg>
+    <div class="bottom-buttons"><button id="blokusReset" type="button" class="danger">초기화</button></div>
+    <p id="blokusStatus" class="sr-only" role="status" aria-live="polite"></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="blokusComplete" />
+  <details slot="after-cloud" class="shape-reference" open>
+    <summary>블록 모양 보기</summary>
+    <div class="shape-grid">
+      {Object.entries(pieces).map(([name,cells]) => {
+        const width=Math.max(...cells.map(([x])=>x))+1;
+        const height=Math.max(...cells.map(([,y])=>y))+1;
+        return <div class="shape-item" data-piece={name} aria-label={`${name} 블록`}>
+          <span>{name}</span>
+          <svg viewBox={`0 0 ${width*20} ${height*20}`} aria-hidden="true">
+            {cells.map(([x,y]) => <rect x={x*20+1} y={y*20+1} width="18" height="18" rx="2" />)}
+          </svg>
+        </div>;
+      })}
+    </div>
+  </details>
+</PuzzleLayout>
+<script>import '../scripts/blokus-shading.js';</script>
+<style>
+  p { margin:0; }
+  ul { padding-left:20px; margin:8px 0 0; }
+  #blokusBoard { display:block; width:100%; height:auto; background:white; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+  .blokus-grid path { fill:none; stroke:#d2d8df; stroke-width:1; stroke-dasharray:3 4; }
+  .blokus-input rect { cursor:pointer; }
+  .blokus-dots { fill:#222; pointer-events:none; }
+  .blokus-border { fill:none; stroke:#202a36; stroke-width:3; pointer-events:none; }
+  .shape-reference { margin-top:22px; font-size:14px; }
+  .shape-reference summary { color:#333; cursor:pointer; }
+  .shape-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:12px 4px; margin-top:12px; }
+  .shape-item { display:flex; flex-direction:column; align-items:center; gap:4px; min-height:82px; }
+  .shape-item > span { font-weight:700; }
+  .shape-item svg { width:42px; height:58px; fill:#333; }
+  .shape-item.used > span { color:#628568; }
+  .shape-item.used > span:after { content:' ✓'; }
+  .shape-item.duplicate > span { color:#b65c5c; }
+  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+  @media(max-width:420px) { .shape-grid { grid-template-columns:repeat(4,1fr); } }
+</style>
