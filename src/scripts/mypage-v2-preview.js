@@ -288,10 +288,13 @@ if(root){
   }
   function rollCraftResult(){
     if(!craftReady())return null;
-    const candidates=craft.filter(Boolean);
-    const [first]=candidates.splice(Math.floor(Math.random()*candidates.length),1);
-    const second=candidates[Math.floor(Math.random()*candidates.length)];
-    const [a,b]=[first,second].sort().map(id=>colors.get(id));
+    const candidates=[...new Set(craft.filter(Boolean))];
+    let pair;
+    if(candidates.length===3){
+      const [first]=candidates.splice(Math.floor(Math.random()*candidates.length),1);
+      pair=[first,candidates[Math.floor(Math.random()*candidates.length)]];
+    }else pair=[candidates[0],candidates[1]??candidates[0]];
+    const [a,b]=pair.sort().map(id=>colors.get(id));
     return {id:'u-'+[a.id,b.id].join('-'),name:a.id===b.id?a.name:`${a.name} · ${b.name}`,a:a.a,b:b.a,rarity:'uncommon'};
   }
   function closeCraftSelector(){
