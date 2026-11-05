@@ -176,3 +176,9 @@
 .mypage-v2 .draw-rates th,.mypage-v2 .draw-rates td{padding:var(--space-sm) 0;border-bottom:1px solid var(--line);font-weight:400;text-align:right}
 .mypage-v2 .draw-rates th:first-child{text-align:left}.mypage-v2 .draw-rates thead{color:#aaa}
 .mypage-v2 .draw-rates tbody th span{margin-left:var(--space-sm);font-size:.65rem;color:#aaa}
+
+.mypage-v2 #panel-draw{margin-bottom:var(--section-gap)}
+.mypage-v2 #panel-draw .draw-actions{margin-bottom:0;row-gap:var(--space-md)}
+.mypage-v2 .draw-description{grid-column:1 / -1;font-size:.73rem;line-height:1.8;color:#888;margin-bottom:var(--space-xs)}
+.mypage-v2 .draw-actions .draw-guide{grid-column:1 / -1;margin:0;padding-top:var(--space-xs)}
+.mypage-v2 #drawResult{margin-top:var(--space-lg)}
