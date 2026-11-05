@@ -651,7 +651,7 @@
       "name": "체리피커",
       "icon": "cherry",
       "group": "basic",
-      "text": "난이도 1 일반 문제 풀기",
+      "text": "쉬운 문제 풀기",
       "count": 10,
       "stages": [
         {
@@ -687,7 +687,7 @@
       "name": "두뇌 회전",
       "icon": "brain",
       "group": "basic",
-      "text": "난이도 2 일반 문제 풀기",
+      "text": "보통 문제 풀기",
       "count": 7,
       "stages": [
         {
@@ -723,7 +723,7 @@
       "name": "하드코어",
       "icon": "skull",
       "group": "basic",
-      "text": "난이도 3 일반 문제 풀기",
+      "text": "어려운 문제 풀기",
       "count": 4,
       "stages": [
         {
