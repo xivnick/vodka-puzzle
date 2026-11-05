@@ -246,11 +246,14 @@ if(root){
     });
   }
   function renderEffects(){
-    const panel=$('#effectInventory');panel.replaceChildren();
-    [{id:'none',name:'효과 없음'},...effects.values()].forEach(effect=>{
-      const owned=effect.id==='none'||ownedEffects.has(effect.id),allowed=effect.id==='none'||effectAllowed();
-      const b=make('button','effect-item');b.type='button';b.dataset.selectEffect=effect.id;b.disabled=!owned||!allowed;if(owned&&!allowed)b.title='효과는 언커먼·레어 색깔에 적용할 수 있어요.';b.setAttribute('aria-pressed',String(draft.effect===effect.id));
-      b.append(make('i','effect-mark'),make('span','',effect.name),make('small','',effect.id==='none'?'':!owned?(effect.id==='sparkle'?'완전 정복 보상':'미보유'):!allowed?'색 조합 필요':'보유'));
+    const panel=$('#effectInventory'),owned=[...effects.values()].filter(effect=>ownedEffects.has(effect.id));
+    panel.replaceChildren();$('#effectSettings').hidden=owned.length===0;
+    if(!owned.length)$('#effectSettings').open=false;
+    [{id:'none',name:'효과 없음'},...owned].forEach(effect=>{
+      const allowed=effect.id==='none'||effectAllowed();
+      const b=make('button','effect-item');b.type='button';b.dataset.selectEffect=effect.id;b.disabled=!allowed;
+      b.title=allowed?effect.name:'언커먼 이상 필요';b.setAttribute('aria-pressed',String(draft.effect===effect.id));
+      b.append(make('i','effect-mark'),make('span','',effect.name),make('small','',allowed?'':'언커먼 이상 필요'));
       b.addEventListener('click',()=>{draft.effect=effect.id;applyDress();});panel.append(b);
     });
   }
