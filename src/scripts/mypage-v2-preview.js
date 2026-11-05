@@ -286,10 +286,13 @@ if(root){
     selected.forEach(id=>needed.set(id,(needed.get(id)||0)+1));
     return [...needed].every(([id,count])=>(available.get(id)||0)>=count);
   }
-  function craftResult(){
+  function rollCraftResult(){
     if(!craftReady())return null;
-    const unique=[...new Set(craft.filter(Boolean))],a=colors.get(unique[0]),b=colors.get(unique[1]||unique[0]);
-    return {id:'u-'+[a.id,b.id].sort().join('-'),name:a.id===b.id?a.name:`${a.name} · ${b.name}`,a:a.a,b:b.a,rarity:'uncommon'};
+    const candidates=craft.filter(Boolean);
+    const [first]=candidates.splice(Math.floor(Math.random()*candidates.length),1);
+    const second=candidates[Math.floor(Math.random()*candidates.length)];
+    const [a,b]=[first,second].sort().map(id=>colors.get(id));
+    return {id:'u-'+[a.id,b.id].join('-'),name:a.id===b.id?a.name:`${a.name} · ${b.name}`,a:a.a,b:b.a,rarity:'uncommon'};
   }
   function closeCraftSelector(){
     craftOpen=false;renderCraft();
@@ -324,9 +327,7 @@ if(root){
         target?.focus({preventScroll:true});
       });$('#craftChoices').append(button);
     });
-    const ready=craftReady(),result=craftResult();
-    $('#craftOutcome').textContent=ready?(inventory.has(result.id)?`${result.name} 중복 · 100코인`:`${result.name} · 언커먼`):`재료 ${craftSize()}개를 선택해주세요.`;
-    $('#craftConfirm').disabled=drawBusy||!ready;
+    $('#craftConfirm').disabled=drawBusy||!craftReady();
   }
   $('#closeCraftSelector').addEventListener('click',closeCraftSelector);
   function appendCraftResult(item){
@@ -338,7 +339,7 @@ if(root){
   }
   $('#craftConfirm').addEventListener('click',()=>{
     if(drawBusy||!craftReady())return;
-    const result=craftResult(),needed=new Map();craft.filter(Boolean).forEach(id=>needed.set(id,(needed.get(id)||0)+1));
+    const result=rollCraftResult(),needed=new Map();craft.filter(Boolean).forEach(id=>needed.set(id,(needed.get(id)||0)+1));
     needed.forEach((count,id)=>{const left=inventory.get(id)-count;if(left)inventory.set(id,left);else inventory.delete(id);});
     colors.set(result.id,result);const awarded=grantCosmetic(result);draft.color=result.id;
     craft=[];craftOpen=false;renderCoins();applyDress();renderCraft();appendCraftResult(awarded);
