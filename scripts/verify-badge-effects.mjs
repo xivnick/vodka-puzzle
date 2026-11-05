@@ -57,12 +57,19 @@ for(let i=0;i<100;i++)allIds.push(...walk(createBadgeEffect(['ribbon','foil','in
 assert.equal(new Set(allIds).size,allIds.length);
 for(const rule of ['.page-hidden .custom-badge-effect *','.custom-badge-effect.is-offscreen *','prefers-reduced-motion:reduce'])assert(css.includes(rule),rule);
 assert(!css.includes('conic-gradient')&&!css.includes('repeating-radial-gradient'));
-// Dynamically-created stress badges do not receive Astro scope attributes.
-// Their size/position rules must match without an attribute on the badge itself.
+// Mobile gallery must not start a stress test or loop every example forever.
 const performancePage=fs.readFileSync(new URL('../dist/test/achievement-badges/effect-performance/index.html',import.meta.url),'utf8');
-for(const className of ['stress-row','stress-visual']){
- const rule=performancePage.match(new RegExp('\\.'+className+'([^{}]*)\\{([^}]+)\\}'));
- assert(rule&&!rule[1].includes('data-astro-cid'),className+' dynamic selector must not require Astro scope');
- if(className==='stress-visual')for(const property of ['position:relative','width:18px','height:18px'])assert(rule[2].includes(property),property);
-}
+assert(performancePage.includes('effects-check effects-paused'),'gallery must start paused');
+assert.equal([...performancePage.matchAll(/data-play-effect=/g)].length,5,'one manual control per effect');
+assert(!performancePage.includes('effectStressList')&&!performancePage.includes('data-count='),'no stress test on the phone gallery');
+const {createTimedEffectPreview}=await import('../src/scripts/timed-effect-preview.js');
+let nextTimer=0;const timers=new Map(),changes=[];
+const clock={setTimeout(fn,ms){assert.equal(ms,6000);timers.set(++nextTimer,fn);return nextTimer;},clearTimeout(id){timers.delete(id);}};
+const player=createTimedEffectPreview(key=>changes.push(key),clock);
+assert.equal(player.selected,null);assert.equal(timers.size,0);
+player.toggle('foil');assert.equal(player.selected,'foil');assert.equal(timers.size,1);
+player.toggle('interference');assert.equal(player.selected,'interference');assert.equal(timers.size,1);
+[...timers.values()][0]();assert.equal(player.selected,null);assert.equal(timers.size,0);
+player.toggle('ribbon');player.toggle('ribbon');assert.equal(player.selected,null);assert.equal(timers.size,0);
+player.toggle('lenticular');player.stop();assert.equal(player.selected,null);assert.equal(timers.size,0);
 console.log('Approved geometry, all five animation curves, per-element phases, unique gradient IDs, clone isolation and pause/reduced-motion hooks: passed');
