@@ -929,22 +929,6 @@
       "claimed": []
     },
     {
-      "id": "all",
-      "name": "완전 정복",
-      "icon": "galaxy",
-      "group": "special",
-      "text": "해당 학기 일반 문제 모두 풀기",
-      "count": 22,
-      "stages": [
-        {
-          "at": 50,
-          "kind": "effect",
-          "value": "sparkle"
-        }
-      ],
-      "claimed": []
-    },
-    {
       "id": "feature-equip-icon",
       "name": "멋쟁이",
       "icon": "hanger",
@@ -1075,5 +1059,8 @@
       "name": "에픽",
       "probability": 0.04
     }
-  ]
+  ],
+  "allClear": {
+    "completed": 22
+  }
 }

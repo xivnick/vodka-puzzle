@@ -47,19 +47,20 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         sql(ticket[ticket.index('CREATE FUNCTION private.ensure_time_machine_wallet'):ticket.index('CREATE FUNCTION public.time_machine_context')])
         sql("""ALTER TABLE public.puzzle_catalog ADD CONSTRAINT puzzle_catalog_difficulty_check CHECK(difficulty IS NULL OR char_length(difficulty)>0);
         CREATE FUNCTION public.admin_update_puzzle(requested_season text,requested_puzzle text,new_title text,new_summary text,new_type text,new_status text,new_published_at timestamptz,new_sort_order integer,expected_updated_at timestamptz,new_difficulty text) RETURNS public.puzzle_catalog LANGUAGE sql AS $$ SELECT NULL::public.puzzle_catalog $$;""")
-        for name in ['20261105_cosmetic_foundation.sql', '20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql']:
+        for name in ['20261105_cosmetic_foundation.sql', '20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql']:
             sql((ROOT / 'supabase/migrations' / name).read_text())
         sql("UPDATE private.cosmetic_settings SET enabled=true,history_policy='all_records',champion_tickets=1; UPDATE private.cosmetic_draw_configs SET status='active',price_per_draw=100;")
         users = [str(uuid.uuid4()) for _ in range(8)]
         for uid in users:
             sql(f"INSERT INTO auth.users VALUES('{uid}'); INSERT INTO public.semester_nicknames VALUES('2026-2','{uid}','test');")
-        def provision(uid, coins=0, materials=False):
+        def provision(uid, coins=0, materials=False, cosmetics=False):
             claims = json.dumps({'sub': uid, 'role': 'authenticated', 'app_metadata': {'provider': 'google'}})
             sql(f"""BEGIN; SET LOCAL request.jwt.claims='{claims}';
             DO $$ DECLARE op private.account_operations; BEGIN
             op:=private.begin_cosmetic_operation(gen_random_uuid(),'adjustment','{{}}');
             {f"PERFORM private.change_cosmetic_coins(op.id,{coins},'test');" if coins else ''}
             {"PERFORM private.change_cosmetic_inventory(op.id,'common:c0',2,'test'); PERFORM private.change_cosmetic_inventory(op.id,'common:c1',1,'test');" if materials else ''}
+            {"PERFORM private.change_cosmetic_inventory(op.id,'rare:r-berry',1,'test'); PERFORM private.change_cosmetic_inventory(op.id,'effect:ribbon',1,'test');" if cosmetics else ''}
             PERFORM private.finish_cosmetic_operation(op.id,'{{}}'); END $$; COMMIT;""")
         def parallel(commands):
             def call(args):
@@ -94,11 +95,21 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         results = parallel([(g,"SELECT public.claim_achievement(gen_random_uuid(),'first','season:2026-2',1)")]*2)
         assert sorted(r['already_claimed'] for r in results)==[False,True]
         assert sql(f"SELECT count(*) FROM private.mission_claims WHERE user_id='{g}'")=='1'
-        result = json.loads(rpc(g,"SELECT public.claim_achievement(gen_random_uuid(),'all','season:2026-2',1)"))
-        assert result['reward']['item_id']=='effect:sparkle' and result['reward']['puzzle_ids']==['test']
+        context = json.loads(rpc(g,'SELECT public.cosmetic_context()'))
+        assert context['state']['all_clear']['eligible'] and not context['state']['all_clear']['enabled']
+        version=context['state']['equipment']['equipment_version']
+        result=json.loads(rpc(g,f'SELECT public.set_all_clear_effect({version},true)'))
+        assert result['state']['all_clear']['active']
+        provision(g,cosmetics=True)
+        version=result['state']['equipment']['equipment_version']
+        result=json.loads(rpc(g,f"SELECT public.set_cosmetic_equipment({version},'{{\"icon_id\":\"icon:leaf\",\"color_id\":\"rare:r-berry\",\"effect_id\":\"effect:ribbon\"}}')"))
+        assert result['state']['all_clear']['active'] and result['state']['equipment']['effect_id']=='effect:ribbon'
         sql("INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,puzzle_type,status,published_at,difficulty) VALUES('2026-2','later','later','summary','test','published',now(),0)")
         context = json.loads(rpc(g,'SELECT public.achievement_context()'))
-        assert next(r for r in context['achievements'] if r['id']=='all')['state']=='completed'
+        assert not any(r['id']=='all' for r in context['achievements'])
+        assert context['state']['all_clear']['enabled'] and not context['state']['all_clear']['active']
+        sql(f"INSERT INTO public.semester_completions VALUES('2026-2','later','{g}','test',now(),false)")
+        assert json.loads(rpc(g,'SELECT public.cosmetic_context()'))['state']['all_clear']['active']
 
         sql(f"INSERT INTO public.daily_sudoku_completions VALUES((now() AT TIME ZONE 'Asia/Seoul')::date,'{h}','2026-2','test',1,now(),false)")
         results = parallel([(h,"SELECT public.claim_daily_task(gen_random_uuid(),'daily-champion',(now() AT TIME ZONE 'Asia/Seoul')::date)")]*2)

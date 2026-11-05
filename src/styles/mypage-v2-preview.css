@@ -222,3 +222,8 @@
 .mypage-v2 .craft-result{margin-top:var(--space-lg)}@media(prefers-reduced-motion:reduce){.mypage-v2 .craft-selector{transition:none}}
 
 .mypage-v2 .item-icon.empty-icon{display:flex;align-items:center;justify-content:center;color:#aaa;font-size:16px}
+
+.mypage-v2 .badge-sparkle{position:absolute;right:-3px;top:-3px;width:7px;height:7px;background:currentColor;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:mypage-badge-sparkle 2.8s ease-in-out infinite}
+.mypage-v2 .badge-sparkle.is-offscreen{animation-play-state:paused}
+@keyframes mypage-badge-sparkle{0%,100%{opacity:.3;transform:scale(.6) rotate(0deg)}50%{opacity:1;transform:scale(1) rotate(90deg)}}
+@media(prefers-reduced-motion:reduce){.mypage-v2 .badge-sparkle{animation:none}}

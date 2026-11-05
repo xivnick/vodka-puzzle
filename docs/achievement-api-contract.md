@@ -1,6 +1,6 @@
 # 업적·꾸미기 API 계약
 
-2026-11-05 기준. 신규 API 9개를 구현했다. 기존 완료 API와 화면은 호출하지 않으며 기능은 비활성 상태다.
+2026-11-05 기준. 신규 API 10개를 구현했다. 기존 완료 API와 화면은 호출하지 않으며 기능은 비활성 상태다.
 
 ## 공통
 
@@ -20,8 +20,8 @@
 
 `state`, `progress`, `draw`, `catalog`를 반환한다. 조회로 지갑을 생성하지 않는다.
 
-- `state`: coins, state_revision, inventory, equipment, tickets. 아이템별 수량·이름·정의가 포함된다. tickets가 NULL이면 기존 티켓 지갑이 아직 만들어지지 않은 상태다.
-- `equipment`: equipment_version, icon_id, color_id, effect_id, expression, direction. 기본값과 아이콘 해제는 NULL로 표현한다.
+- `state`: coins, state_revision, inventory, equipment, tickets, all_clear. 아이템별 수량·이름·정의가 포함된다. tickets가 NULL이면 기존 티켓 지갑이 아직 만들어지지 않은 상태다.
+- `equipment`: equipment_version, icon_id, color_id, effect_id, expression, direction, all_clear_enabled. 기본값과 아이콘 해제는 NULL로 표현한다.
 - `progress`: draw_count, craft_count. 완료 거래에서 계산한다.
 - `draw`: 활성 설정의 version, price_per_draw, weights, items. 활성 설정이 없으면 NULL이다.
 - `catalog`: 활성 고정 아이템 정의. 조합으로 생성되는 언커먼은 본인 inventory에 정의가 포함된다.
@@ -35,7 +35,7 @@
 - category는 basic/group/special이며 화면에서 일반/유형/특수로 표시한다.
 - state는 claimable/in_progress/completed다. 유형 공개 문제 수가 3개 미만이거나 전체 공개 문제가 0개면 active=false다.
 - current는 실제 현재 수치다. 과거 연속 단계는 기록으로 재구성하므로 current가 낮아도 claimable일 수 있다.
-- threshold는 수령 API에 전달할 고유 단계다. 전체 완료는 threshold=1이고 goal은 현재 공개 문제 수다.
+- threshold는 수령 API에 전달할 고유 단계다. 전체 완료는 업적 목록과 수령 대상에 포함하지 않는다.
 - configured=false면 보상량 또는 기록 소급 정책을 확정해야 한다. 달성했어도 받기를 활성화하지 않는다.
 - 아이콘 단계 reward는 item_id만 가진다. 반복 단계는 coins다. 최초 아이콘에 코인을 함께 주지 않는다.
 - 마지막 정적 단계 뒤에도 repeat_every에 따라 계속 이어진다.
@@ -58,6 +58,14 @@
 
 expression은 gradient/split, direction은 diagonal/horizontal이다. 모든 아이템의 종류·보유·활성 여부와 효과 적용 조건을 검사한다. 현재와 같으면 버전이 오래됐어도 unchanged=true로 반환한다. 다른 선택인데 버전이 다르면 EQUIPMENT_CHANGED다. 장착 이력이나 경제 거래를 만들지 않는다.
 
+### `set_all_clear_effect(expected_equipment_version bigint, enabled boolean)`
+
+현재 공개된 해당 학기 일반 문제를 전부 풀었을 때만 독립 토글을 변경한다. 미달성이면 ALL_CLEAR_REQUIRED다. 일반 장착과 같은 equipment_version으로 충돌을 처리한다. 일반 장착 API는 이 선택을 변경하지 않는다.
+
+`state.all_clear`는 season, total, completed, eligible, enabled, active를 반환한다. enabled는 저장된 선택, active는 현재 자격과 선택을 함께 적용한 결과다. 새 문제가 공개되면 eligible/active는 false가 되지만 enabled는 유지된다. 다시 올클하면 이전 enabled를 적용한다. 기본색·커먼에서도 가능하며 일반 효과와 중첩된다.
+
+별빛 반짝임은 영구 소유 inventory나 업적 수령으로 지급하지 않는다. catalog에도 eligible인 동안만 표시한다. 일반 effect_id에 `effect:sparkle`을 넣으면 USE_ALL_CLEAR_TOGGLE로 거절한다. 아이콘 해제 시 렌더러는 반짝임도 숨긴다.
+
 ### `draw_cosmetics(request_id uuid, expected_draw_config_version integer, count integer)`
 
 count는 1 또는 10이다. 활성 설정과 버전이 다르면 CONFIG_CHANGED, 설정이 없으면 DRAW_NOT_CONFIGURED다. 전체 비용을 먼저 검사한다. 잔액 부족이면 중복 환급을 예상해서 실행하지 않는다.
@@ -78,7 +86,7 @@ count는 1 또는 10이다. 활성 설정과 버전이 다르면 CONFIG_CHANGED,
 
 현재 조회 결과의 scope_key와 threshold를 보낸다. 다음 미수령 단계부터 차례로 받는다. 수령 시 조건을 다시 계산한다. 멋쟁이는 이 시점에 아이콘을 장착 중이어야 한다. 수령 후 해제해도 보상을 회수하지 않는다.
 
-다른 UUID로 이미 받은 단계를 요청해도 already_claimed=true이며 다시 지급하지 않는다. 아이콘·전체 완료 효과를 이미 소유했으면 추가 코인을 주지 않는다. 수령 보상 금액과 아이템은 거래 당시 값으로 보존한다.
+다른 UUID로 이미 받은 단계를 요청해도 already_claimed=true이며 다시 지급하지 않는다. 아이콘을 이미 소유했으면 추가 코인을 주지 않는다. 수령 보상 금액과 아이템은 거래 당시 값으로 보존한다.
 
 ### `record_site_visit(request_id uuid)`
 
@@ -96,7 +104,7 @@ attendance/daily-complete/daily-champion 중 하나다. 해당 한국 날짜에�
 
 입력·수령: INVALID_REQUEST, INVALID_STAGE, UNKNOWN_ACHIEVEMENT, ACHIEVEMENT_NOT_READY, REWARD_NOT_CONFIGURED, DAILY_TASK_NOT_READY, DAILY_TASK_EXPIRED.
 
-장착·조합: ITEM_NOT_OWNED, INVALID_EQUIPMENT, EQUIPMENT_CHANGED, EFFECT_REQUIRES_UNCOMMON, INVALID_MATERIALS, INSUFFICIENT_MATERIALS.
+장착·조합: ITEM_NOT_OWNED, INVALID_EQUIPMENT, EQUIPMENT_CHANGED, ALL_CLEAR_REQUIRED, USE_ALL_CLEAR_TOGGLE, EFFECT_REQUIRES_UNCOMMON, INVALID_MATERIALS, INSUFFICIENT_MATERIALS.
 
 거래: REQUEST_ID_REUSED, INSUFFICIENT_COINS, DRAW_NOT_CONFIGURED, CONFIG_CHANGED, INVALID_DRAW_CONFIG. 관리용 설정 수정의 DRAW_CONFIG_IMMUTABLE은 새 버전 생성이 필요하다는 뜻이다.
 

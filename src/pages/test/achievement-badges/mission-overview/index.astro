@@ -25,9 +25,9 @@ const special=[
 const files=import.meta.glob('../../../../../public/icons/**/*.svg',{query:'?raw',import:'default',eager:true});
 const iconPath=(id)=>`/icons/achievement-preview/${id}.svg`;
 const svg=(path)=>String(files[`../../../../../public${path}`]??'');
-const sections=[['basic','기본',6],['features','기능 체험',3],['first-blood','퍼스트 블러드',1],['groups','문제 묶음',4],['special','특수',5],['all-clear','전체 완료',1]];
+const sections=[['basic','기본',6],['features','기능 체험',3],['first-blood','퍼스트 블러드',1],['groups','문제 묶음',4],['special','특수',5]];
 ---
-<PageLayout title="업적 미션 전체 정리" subtitle="20개 미션 · 21개 아이콘 · 별빛 반짝임 전용 보상">
+<PageLayout title="업적 미션 전체 정리" subtitle="19개 미션 · 21개 아이콘">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="overview" aria-label="업적 미션 전체 예시">
     <p class="intro">지금까지 정한 미션과 보상을 한곳에 모았습니다.<br />색상은 별도로 꾸미며, 여기서는 기본색으로 모양을 비교합니다.</p>
@@ -71,30 +71,12 @@ const sections=[['basic','기본',6],['features','기능 체험',3],['first-bloo
       </article>)}</div>
       <p class="note">실제 퍼즐과 기존 배지의 아이콘을 사용합니다. 주루마블은 퍼즐에서 쓰는 잔 이미지 그대로입니다.</p>
     </section>
-    <section id="all-clear" class="mission-section">
-      <h2>전체 완료 특수 퀘스트 <span>별빛 반짝임</span></h2>
-      <article class="completion">
-        <h3>해당 학기의 일반 문제 모두 풀기</h3><p class="condition">현재 공개 목록 {snapshot.total}개 · 데일리 제외</p>
-        <div class="sparkle-sample"><NicknameBadge name="퍼즐러" icon="star" label="별빛 반짝임 적용 예시" sparkle/></div>
-        <p class="reward-text">아이콘 오른쪽 위에서 작은 십자별이 반짝이며 회전합니다.</p>
-        <p class="note">별 아이콘은 효과를 보여주기 위한 예시입니다. 보상은 별빛 반짝임 효과이며, 뽑기로는 얻을 수 없습니다.</p>
-        <button type="button" id="pauseSparkle" aria-pressed="false">반짝임 일시정지</button>
-      </article>
-    </section>
-    <section class="pending-section" aria-label="추후 결정할 내용"><h2>아직 정하지 않은 내용</h2><ul><li>코인 지급량</li><li>데일리 연속 기록이 끊긴 뒤 재달성했을 때의 보상 처리</li><li>묶음별 미션 이름·후속 보상, 퍼스트 블러드 코인 보상</li><li>새 문제가 추가될 때 전체 완료 보상을 유지하는 기준</li><li>미션 카드 디자인과 실제 달성·지급 기능</li></ul></section>
+    <section class="pending-section" aria-label="추후 결정할 내용"><h2>아직 정하지 않은 내용</h2><ul><li>코인 지급량</li><li>데일리 연속 기록이 끊긴 뒤 재달성했을 때의 보상 처리</li><li>묶음별 미션 이름·후속 보상, 퍼스트 블러드 코인 보상</li><li>미션 카드 디자인과 실제 달성·지급 기능</li></ul></section>
     <p class="caption">닉네임은 예시입니다. 계정 기록과 보상 지급은 연결하지 않은 확인용 페이지입니다.</p>
     <p class="credit">아이콘: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a><br />토끼: <a href="https://lucide.dev/icons/rabbit">Lucide</a> · <a href="/icons/seasonal/LICENSE-lucide">ISC</a><br />토마토: IconPark Outline · <a href="/icons/tomato-LICENSE.md">Apache 2.0</a><br />잔: <a href="https://icons8.com/icons/set/vodka-shot">Vodka Shot</a> · <a href="https://icons8.com/">Icons8</a></p>
   </section>
 </PageLayout>
-<script>
-  const button=document.querySelector('#pauseSparkle');
-  button?.addEventListener('click',()=>{
-    const paused=button.getAttribute('aria-pressed')!=='true';
-    document.querySelector('.overview')?.classList.toggle('paused',paused);
-    button.setAttribute('aria-pressed',String(paused));
-    button.textContent=paused?'반짝임 재생':'반짝임 일시정지';
-  });
-</script>
+
 <style>
 .overview{width:100%;color:#444}.intro,.section-intro{margin:0 0 18px;color:#888;font-size:.75rem;line-height:1.8}
 .sections{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:30px}.sections a{display:flex;gap:6px;padding:6px 9px;border:1px solid #e8e5df;border-radius:4px;color:#777;text-decoration:none;font-size:.68rem}.sections span{color:#aaa}

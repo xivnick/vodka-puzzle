@@ -14,7 +14,7 @@ def claims(uid):
     return json.dumps({'sub': uid, 'role': 'authenticated', 'app_metadata': {'provider': 'google'}})
 sql = 'BEGIN;\nSET LOCAL statement_timeout=\'30s\';\n'
 if '--rehearse' in sys.argv:
-    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql']:
+    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql']:
         migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations' / name).read_text()
         sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 sql += r"""
@@ -52,7 +52,7 @@ SET LOCAL ROLE authenticated;
 DO $$ DECLARE context jsonb; BEGIN
  context:=public.cosmetic_context();
  IF context->'state'->>'coins'<>'0' OR jsonb_array_length(context->'state'->'inventory')<>0 THEN RAISE EXCEPTION 'New account received demo data'; END IF;
- IF jsonb_array_length(public.achievement_context()->'achievements')<>20 THEN RAISE EXCEPTION 'Mission count'; END IF;
+ IF jsonb_array_length(public.achievement_context()->'achievements')<>19 THEN RAISE EXCEPTION 'Mission count'; END IF;
 END $$;
 SELECT pg_temp.expect_error('SELECT public.draw_cosmetics(gen_random_uuid(),1,1)','DRAW_NOT_CONFIGURED');
 SELECT pg_temp.expect_error($q$SELECT public.claim_achievement(gen_random_uuid(),'feature-equip-icon','account',1)$q$,'ACHIEVEMENT_NOT_READY');
