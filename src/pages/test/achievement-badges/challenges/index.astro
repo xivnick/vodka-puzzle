@@ -2,7 +2,7 @@
 import PageLayout from '../../../../layouts/PageLayout.astro';
 const groups=[
   {name:'누적·꾸준함',items:[
-    ['first','첫걸음','첫 퍼즐 완료','plant','새싹'],
+    ['first','뉴비','첫 퍼즐 완료','plant','새싹'],
     ['ten','감 잡았어요','퍼즐 10개 완료','puzzle','퍼즐 조각'],
     ['thirty','차곡차곡','퍼즐 30개 완료','medal','메달'],
     ['hundred','백전백승','퍼즐 100개 완료','trophy','트로피'],
@@ -40,7 +40,7 @@ const palettes=[['기본색','#444444','#444444'],['베리소다','#BB6B98','#52
     </div>
     <div class="selected" aria-live="polite">
       <span class="badge selected-icon" style={`--icon:url('${iconPath('plant')}')`} role="img" aria-label="새싹" />
-      <div><p class="selected-title">첫걸음</p><p class="selected-condition">첫 퍼즐 완료</p><span class="nickname">퍼즐러 <span class="badge selected-small" style={`--icon:url('${iconPath('plant')}')`} aria-hidden="true" /></span></div>
+      <div><p class="selected-title">뉴비</p><p class="selected-condition">첫 퍼즐 완료</p><span class="nickname">퍼즐러 <span class="badge selected-small" style={`--icon:url('${iconPath('plant')}')`} aria-hidden="true" /></span></div>
       <span class="size-label">확대 40px<br />이름 옆 18px</span>
     </div>
     {groups.map(group=><section class="challenge-group" aria-label={group.name}>

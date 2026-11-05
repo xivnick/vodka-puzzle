@@ -427,7 +427,7 @@
     {
       "id": "leaf",
       "name": "잎사귀",
-      "mission": "첫걸음",
+      "mission": "뉴비",
       "src": "/icons/achievement-preview/leaf.svg"
     },
     {
@@ -481,7 +481,7 @@
     {
       "id": "star",
       "name": "별",
-      "mission": "별 수집가",
+      "mission": "별 따다 줄게",
       "src": "/icons/achievement-preview/star.svg"
     },
     {
@@ -493,7 +493,7 @@
     {
       "id": "number-123",
       "name": "숫자 123",
-      "mission": "숫자놀음",
+      "mission": "인간 계산기",
       "src": "/icons/achievement-preview/number-123.svg"
     },
     {
@@ -511,7 +511,7 @@
     {
       "id": "flower",
       "name": "꽃",
-      "mission": "꽃길만 걷자",
+      "mission": "누가 꽃이게",
       "src": "/icons/flower/flower.svg"
     },
     {
@@ -523,13 +523,13 @@
     {
       "id": "tomato",
       "name": "토마토",
-      "mission": "토마토 수확자",
+      "mission": "토마토 축제",
       "src": "/icons/tomato.svg"
     },
     {
       "id": "glass",
       "name": "잔",
-      "mission": "한 잔의 여유",
+      "mission": "흑기사",
       "src": "/icons/juru-marble/vodka-shot.png"
     },
     {
@@ -541,7 +541,7 @@
     {
       "id": "clover",
       "name": "네잎클로버",
-      "mission": "행운의 손",
+      "mission": "행운이 깃들길",
       "src": "/icons/achievement-preview/clover.svg"
     },
     {
@@ -554,7 +554,7 @@
   "missions": [
     {
       "id": "first",
-      "name": "첫걸음",
+      "name": "뉴비",
       "icon": "leaf",
       "group": "basic",
       "text": "일반 문제 풀기",
@@ -784,7 +784,7 @@
     },
     {
       "id": "stars",
-      "name": "별 수집가",
+      "name": "별 따다 줄게",
       "icon": "star",
       "group": "group",
       "text": "스타배틀 계열 문제 풀기",
@@ -816,7 +816,7 @@
     },
     {
       "id": "math",
-      "name": "숫자놀음",
+      "name": "인간 계산기",
       "icon": "number-123",
       "group": "group",
       "text": "수식완성 문제 풀기",
@@ -866,7 +866,7 @@
     },
     {
       "id": "flower",
-      "name": "꽃길만 걷자",
+      "name": "누가 꽃이게",
       "icon": "flower",
       "group": "special",
       "text": "『란영 스도쿠』 풀기",
@@ -898,7 +898,7 @@
     },
     {
       "id": "tomato",
-      "name": "토마토 수확자",
+      "name": "토마토 축제",
       "icon": "tomato",
       "group": "special",
       "text": "『토마토스 스도쿠』 풀기",
@@ -914,7 +914,7 @@
     },
     {
       "id": "marble",
-      "name": "한 잔의 여유",
+      "name": "흑기사",
       "icon": "glass",
       "group": "special",
       "text": "『주루마블 스도쿠』 풀기",
@@ -947,7 +947,7 @@
     },
     {
       "id": "feature-draw",
-      "name": "행운의 손",
+      "name": "행운이 깃들길",
       "icon": "clover",
       "group": "basic",
       "text": "색깔·효과 뽑기",
