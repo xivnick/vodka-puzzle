@@ -17,15 +17,13 @@ function persist() {
 }
 function render() {
   const result=inspect(filled);
-  let html='',blackCells='';
+  let html='';
   for(const block of result.blocks)for(const index of block.cells) {
     const color=block.bad ? '#b65c5c' : block.name ? '#5b8c64' : '#333';
     const cell=`<rect x="${index%blokus.cols*40}" y="${Math.floor(index/blokus.cols)*40}" width="40" height="40" fill="${color}"/>`;
     html+=cell;
-    if(!block.bad && !block.name)blackCells+=cell;
   }
   $('Fills').innerHTML=html;
-  $('BlackCells').innerHTML=blackCells;
   $('Crosses').innerHTML=[...crosses].map(index=>{
     const x=(index%blokus.cols+.5)*40,y=(Math.floor(index/blokus.cols)+.5)*40;
     return `<path d="M${x-6} ${y-6}L${x+6} ${y+6}M${x+6} ${y-6}L${x-6} ${y+6}" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"/>`;
