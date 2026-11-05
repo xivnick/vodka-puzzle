@@ -4,13 +4,13 @@ import NicknameBadge from './NicknameBadge.astro';
 import CoinAmount from './CoinAmount.astro';
 import coin from '../../public/icons/coin-candidates/tabler-coins.svg?raw';
 import data from '../data/mypage-v2-preview.json';
+import {getAchievementGoal as goal} from '../lib/achievement-goals.js';
 import '../styles/nickname.css';
 import '../styles/mypage-v2-preview.css';
 const {customize=false}=Astro.props;
 const files=import.meta.glob('../../public/icons/**/*.svg',{query:'?raw',import:'default',eager:true});
 const raw=(src)=>String(files[`../../public${src}`]??'');
 const initialOwned=new Set(['leaf','puzzle','flame','sword','rabbit']);
-const goal=(m)=>m.stages.find(s=>!m.claimed.includes(s.at));
 const missionPriority=(m)=>{const s=goal(m);return !s?2:m.count>=s.at?0:1;};
 const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionPriority(b));
 ---

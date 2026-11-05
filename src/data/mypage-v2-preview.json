@@ -531,6 +531,24 @@
       "name": "잔",
       "mission": "주루마블 스도쿠",
       "src": "/icons/juru-marble/vodka-shot.png"
+    },
+    {
+      "id": "hanger",
+      "name": "옷걸이",
+      "mission": "멋쟁이",
+      "src": "/icons/achievement-preview/hanger.svg"
+    },
+    {
+      "id": "dice-5",
+      "name": "주사위",
+      "mission": "행운의 손",
+      "src": "/icons/achievement-preview/dice-5.svg"
+    },
+    {
+      "id": "flask",
+      "name": "플라스크",
+      "mission": "연금술사",
+      "src": "/icons/achievement-preview/flask.svg"
     }
   ],
   "missions": [
@@ -928,8 +946,8 @@
     },
     {
       "id": "feature-equip-icon",
-      "name": "아이콘 장착하기",
-      "icon": "leaf",
+      "name": "멋쟁이",
+      "icon": "hanger",
       "group": "basic",
       "text": "아이콘 장착 1회",
       "count": 0,
@@ -937,45 +955,49 @@
       "stages": [
         {
           "at": 1,
-          "kind": "coins",
-          "value": 100
+          "kind": "icon",
+          "value": "hanger"
         }
       ],
       "claimed": []
     },
     {
       "id": "feature-draw",
-      "name": "뽑기 하기",
-      "icon": "star",
+      "name": "행운의 손",
+      "icon": "dice-5",
       "group": "basic",
-      "text": "뽑기 1회",
+      "text": "뽑기 누적 횟수",
       "count": 0,
       "featureAction": "draw",
       "stages": [
         {
-          "at": 1,
-          "kind": "coins",
-          "value": 100
+          "at": 5,
+          "kind": "icon",
+          "value": "dice-5"
         }
       ],
-      "claimed": []
+      "claimed": [],
+      "repeatEvery": 5,
+      "repeatCoins": 100
     },
     {
       "id": "feature-craft",
-      "name": "조합 하기",
-      "icon": "flower",
+      "name": "연금술사",
+      "icon": "flask",
       "group": "basic",
-      "text": "커먼 색깔 조합 1회",
+      "text": "색깔 조합 누적 횟수",
       "count": 0,
       "featureAction": "craft",
       "stages": [
         {
-          "at": 1,
-          "kind": "coins",
-          "value": 100
+          "at": 5,
+          "kind": "icon",
+          "value": "flask"
         }
       ],
-      "claimed": []
+      "claimed": [],
+      "repeatEvery": 5,
+      "repeatCoins": 100
     }
   ],
   "effects": [

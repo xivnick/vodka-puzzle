@@ -1,3 +1,4 @@
+import {getAchievementGoal as goal} from '../lib/achievement-goals.js';
 import {createBadgeEffect} from './nickname-badge-effects.js';
 import {initNicknameBadges} from './nickname-badge-alignment.js';
 const root=document.querySelector('.mypage-v2');
@@ -9,7 +10,8 @@ if(root){
   const all=s=>[...root.querySelectorAll(s)];
   const icons=new Map(data.icons.map(i=>[i.id,i]));
   const iconName=id=>id==='none'?'아이콘 없음':icons.get(id).name;
-  const featureActions=new Set(saved?.featureActions??[]);
+  const featureCounts={...saved?.featureCounts};
+  for(const action of saved?.featureActions??[])if(featureCounts[action]===undefined)featureCounts[action]=1;
   const colors=new Map([...data.common,...data.rare].map(c=>[c.id,c]));
   const base={id:'base',name:'기본',a:'#444444',b:'#444444',rarity:'base'};
   colors.set('base',base);
@@ -37,21 +39,20 @@ if(root){
   coins+=migratedRefund;
 
   for(const mission of data.missions){
-    if(saved?.claimed?.[mission.id])mission.claimed=saved.claimed[mission.id];
-    if(mission.featureAction)mission.count=featureActions.has(mission.featureAction)?1:0;
+    if(saved?.claimed?.[mission.id]&&(!mission.featureAction||saved.featureMissionVersion===2))mission.claimed=saved.claimed[mission.id];
+    if(mission.featureAction)mission.count=featureCounts[mission.featureAction]||0;
   }
-  function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({coins,featureActions:[...featureActions],nickname,applied,tickets,dailyDate,dailyClaimed:[...dailyClaimed],inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
+  function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({coins,featureMissionVersion:2,featureCounts,nickname,applied,tickets,dailyDate,dailyClaimed:[...dailyClaimed],inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
   const rarityNames={base:'기본',common:'커먼',uncommon:'언커먼',rare:'레어',epic:'에픽',special:'특수'};
   const visible=new IntersectionObserver(entries=>entries.forEach(e=>e.target.classList.toggle('is-offscreen',!e.isIntersecting)));
   const make=(tag,className,text)=>{const e=document.createElement(tag);if(className)e.className=className;if(text!==undefined)e.textContent=text;return e;};
   const pressed=(selector,current)=>all(selector).forEach(e=>e.setAttribute('aria-pressed',String(current(e))));
   const toast=message=>window.showToast(message);
-  const goal=m=>m.stages.find(s=>!m.claimed.includes(s.at));
   const effectAllowed=()=>['uncommon','rare'].includes(colors.get(draft.color).rarity);
-  function trackFeature(action){
-    if(featureActions.has(action))return;
-    featureActions.add(action);
-    for(const mission of data.missions)if(mission.featureAction===action)mission.count=1;
+  function trackFeature(action,amount=1){
+    if(action==='equip-icon'&&featureCounts[action])return;
+    featureCounts[action]=action==='equip-icon'?1:(featureCounts[action]||0)+amount;
+    for(const mission of data.missions)if(mission.featureAction===action)mission.count=featureCounts[action];
     renderMissions();
   }
   function setBadgeName(container,nickname){
@@ -209,7 +210,7 @@ if(root){
     drawBusy=true;
     coins-=cost;
     const items=grantDrawItems(Array.from({length:count},()=>rollDrawItem()));
-    trackFeature('draw');renderCoins();renderInventory();renderEffects();renderCraft();persist();renderResults(items);
+    trackFeature('draw',count);renderCoins();renderInventory();renderEffects();renderCraft();persist();renderResults(items);
   }));
   function renderBadge(container,state){
     const badge=container.querySelector('[data-nickname-badge]'),visual=badge.querySelector('.badge-visual');

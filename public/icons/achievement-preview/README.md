@@ -24,3 +24,5 @@ Account setting buttons use the original `palette` from the same pinned Tabler I
 Inline nickname editing uses the original `check` from the same pinned Tabler Icons v3.40.0 outline set (MIT).
 
 Customization navigation uses the original `chevron-right` from the same pinned Tabler Icons v3.40.0 outline set (MIT).
+
+Feature introduction achievements add the original `hanger` and `dice-5` from Tabler Icons v3.40.0 outline (MIT), and reuse the existing `flask`. SVG geometry is unchanged.
