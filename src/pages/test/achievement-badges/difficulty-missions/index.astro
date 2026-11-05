@@ -2,9 +2,9 @@
 import PageLayout from '../../../../layouts/PageLayout.astro';
 import NicknameBadge from '../../../../components/NicknameBadge.astro';
 const missions=[
- {name:'체리피커',difficulty:'하',icon:'cherry',label:'체리',count:6},
- {name:'두뇌 회전',difficulty:'중',icon:'brain',label:'두뇌',count:10},
- {name:'하드코어',difficulty:'상',icon:'skull',label:'해골',count:12},
+ {name:'체리피커',difficulty:1,icon:'cherry',label:'체리',count:6},
+ {name:'두뇌 회전',difficulty:2,icon:'brain',label:'두뇌',count:10},
+ {name:'하드코어',difficulty:3,icon:'skull',label:'해골',count:12},
 ];
 const files=import.meta.glob('../../../../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
 const svg=(icon)=>String(files[`../../../../../public/icons/achievement-preview/${icon}.svg`]);

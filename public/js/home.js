@@ -32,12 +32,13 @@ unsolvedFilter.addEventListener('click', () => {
       '중간': 2, '보통': 2, '중': 2, medium: 2,
       '어려움': 3, '상': 3, hard: 3,
     };
-    const level = labels[typeof value === 'string' ? value.trim().toLowerCase() : ''];
+    const level = Number.isInteger(Number(value)) && Number(value) >= 0 && Number(value) <= 3
+      ? Number(value) : labels[typeof value === 'string' ? value.trim().toLowerCase() : ''];
     if (![1, 2, 3].includes(level)) return null;
     const mark = document.createElement('span');
     mark.className = 'puzzle-difficulty';
     mark.setAttribute('role', 'img');
-    mark.setAttribute('aria-label', `난이도 ${['쉬움', '중간', '어려움'][level - 1]}`);
+    mark.setAttribute('aria-label', `난이도 ${level}`);
     for (let index = 0; index < level; index += 1) {
       const diamond = document.createElement('span');
       diamond.className = 'difficulty-diamond';

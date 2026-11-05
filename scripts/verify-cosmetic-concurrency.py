@@ -35,7 +35,7 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         CREATE TABLE public.semester_settings(id boolean PRIMARY KEY,active_season text);
         INSERT INTO public.semester_settings VALUES(true,'2026-2');
         CREATE TABLE public.semester_nicknames(season_id text,user_id uuid REFERENCES auth.users ON DELETE CASCADE,nickname text,PRIMARY KEY(season_id,user_id));
-        CREATE TABLE public.puzzle_catalog(season_id text,puzzle_id text,title text,summary text,puzzle_type text,status text,published_at timestamptz,difficulty text,PRIMARY KEY(season_id,puzzle_id));
+        CREATE TABLE public.puzzle_catalog(season_id text,puzzle_id text,title text,summary text,puzzle_type text,status text,published_at timestamptz,difficulty text,sort_order integer DEFAULT 0,updated_at timestamptz DEFAULT clock_timestamp(),PRIMARY KEY(season_id,puzzle_id));
         CREATE TABLE public.semester_completions(season_id text,puzzle_id text,user_id uuid REFERENCES auth.users ON DELETE CASCADE,nickname text,completed_at timestamptz,excluded boolean DEFAULT false);
         CREATE TABLE public.daily_sudoku_completions(day date,user_id uuid REFERENCES auth.users ON DELETE CASCADE,season_id text,nickname text,rank bigint,completed_at timestamptz,excluded boolean DEFAULT false);
         CREATE TABLE private.time_machine_wallets(user_id uuid PRIMARY KEY REFERENCES auth.users ON DELETE CASCADE,balance integer CHECK(balance>=0),updated_at timestamptz DEFAULT clock_timestamp());
@@ -45,7 +45,9 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         sql(streak[streak.index('CREATE OR REPLACE FUNCTION private.calculate_daily_streak'):streak.index('CREATE OR REPLACE FUNCTION public.daily_sudoku_context')])
         ticket = (ROOT / 'supabase/migrations/20261011_time_machine.sql').read_text()
         sql(ticket[ticket.index('CREATE FUNCTION private.ensure_time_machine_wallet'):ticket.index('CREATE FUNCTION public.time_machine_context')])
-        for name in ['20261105_cosmetic_foundation.sql', '20261105_cosmetic_service.sql']:
+        sql("""ALTER TABLE public.puzzle_catalog ADD CONSTRAINT puzzle_catalog_difficulty_check CHECK(difficulty IS NULL OR char_length(difficulty)>0);
+        CREATE FUNCTION public.admin_update_puzzle(requested_season text,requested_puzzle text,new_title text,new_summary text,new_type text,new_status text,new_published_at timestamptz,new_sort_order integer,expected_updated_at timestamptz,new_difficulty text) RETURNS public.puzzle_catalog LANGUAGE sql AS $$ SELECT NULL::public.puzzle_catalog $$;""")
+        for name in ['20261105_cosmetic_foundation.sql', '20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql']:
             sql((ROOT / 'supabase/migrations' / name).read_text())
         sql("UPDATE private.cosmetic_settings SET enabled=true,history_policy='all_records',champion_tickets=1; UPDATE private.cosmetic_draw_configs SET status='active',price_per_draw=100;")
         users = [str(uuid.uuid4()) for _ in range(8)]
@@ -87,14 +89,14 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         assert results[0]['results'][0]['item_id']==results[1]['results'][0]['item_id']=='uncommon:common:c0:common:c1'
         results = parallel([(f,"SELECT public.craft_cosmetic(gen_random_uuid(),ARRAY['common:c0','common:c0','common:c1'])")]*2)
         assert sum(isinstance(r,dict) for r in results)==1 and results.count('INSUFFICIENT_MATERIALS')==1, results
-        sql(f"""INSERT INTO public.puzzle_catalog VALUES('2026-2','test','test','summary','test','published',now()-interval '1 day','하');
+        sql(f"""INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,puzzle_type,status,published_at,difficulty) VALUES('2026-2','test','test','summary','test','published',now()-interval '1 day',1);
         INSERT INTO public.semester_completions VALUES('2026-2','test','{g}','test',now(),false);""")
         results = parallel([(g,"SELECT public.claim_achievement(gen_random_uuid(),'first','season:2026-2',1)")]*2)
         assert sorted(r['already_claimed'] for r in results)==[False,True]
         assert sql(f"SELECT count(*) FROM private.mission_claims WHERE user_id='{g}'")=='1'
         result = json.loads(rpc(g,"SELECT public.claim_achievement(gen_random_uuid(),'all','season:2026-2',1)"))
         assert result['reward']['item_id']=='effect:sparkle' and result['reward']['puzzle_ids']==['test']
-        sql("INSERT INTO public.puzzle_catalog VALUES('2026-2','later','later','summary','test','published',now(),NULL)")
+        sql("INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,puzzle_type,status,published_at,difficulty) VALUES('2026-2','later','later','summary','test','published',now(),0)")
         context = json.loads(rpc(g,'SELECT public.achievement_context()'))
         assert next(r for r in context['achievements'] if r['id']=='all')['state']=='completed'
 

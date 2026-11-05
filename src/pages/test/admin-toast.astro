@@ -15,7 +15,7 @@ import '../../styles/admin.css';
   </div>
 </PageLayout>
 <script>
-const row = {puzzle_id:'__ui_preview',title:'난이도 드롭다운 시연',summary:'난이도를 선택한 뒤 변경사항을 저장해 보세요.',puzzle_type:'스도쿠',difficulty:'중간',status:'test',published_at:null,sort_order:0,updated_at:'2026-10-25T00:00:00Z'};
+const row = {puzzle_id:'__ui_preview',title:'난이도 드롭다운 시연',summary:'난이도를 선택한 뒤 변경사항을 저장해 보세요.',puzzle_type:'스도쿠',difficulty:2,status:'test',published_at:null,sort_order:0,updated_at:'2026-10-25T00:00:00Z'};
 await window.puzzleAuthReady;
 window.puzzleAccount = {...window.puzzleAccount, user:{id:'ui-preview'}, client:{rpc:async(name,args)=>{
   if(name==='is_puzzle_admin')return {data:true};

@@ -14,8 +14,9 @@ def claims(uid):
     return json.dumps({'sub': uid, 'role': 'authenticated', 'app_metadata': {'provider': 'google'}})
 sql = 'BEGIN;\nSET LOCAL statement_timeout=\'30s\';\n'
 if '--rehearse' in sys.argv:
-    migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261105_cosmetic_service.sql').read_text()
-    sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
+    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql']:
+        migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations' / name).read_text()
+        sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 sql += r"""
 CREATE FUNCTION pg_temp.expect_error(command text, expected text) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
@@ -150,7 +151,7 @@ RESET ROLE;
 -- Record-derived missions: no solve API calls or existing puzzle records changed.
 INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,puzzle_type,status,published_at,difficulty)
  SELECT active_season,'__cosmetic_'||i,'test','summary','test','published',clock_timestamp()-interval '1 day',
- CASE WHEN i<=10 THEN CASE WHEN i%2=0 THEN '쉬움' ELSE '하' END WHEN i=11 THEN '중간' ELSE '어려움' END
+ CASE WHEN i<=10 THEN 1 WHEN i=11 THEN 2 ELSE 3 END
  FROM public.semester_settings CROSS JOIN generate_series(1,12) i WHERE id;
 INSERT INTO public.semester_completions(season_id,user_id,nickname,puzzle_id,completed_at)
  SELECT active_season,'__USER__','__cosmetic_a','__cosmetic_'||i,clock_timestamp() FROM public.semester_settings CROSS JOIN generate_series(1,12) i WHERE id;
@@ -160,7 +161,7 @@ SET LOCAL ROLE authenticated;
 DO $$ DECLARE row jsonb; ctx jsonb; season text; req uuid:=gen_random_uuid(); today date:=(clock_timestamp() AT TIME ZONE 'Asia/Seoul')::date; BEGIN
  ctx:=public.achievement_context(); season:=ctx->>'season';
  SELECT value INTO row FROM jsonb_array_elements(ctx->'achievements') WHERE value->>'id'='easy';
- IF row->>'current'<>'10' OR row->>'configured'<>'false' THEN RAISE EXCEPTION 'Difficulty aliases or unsettled policy'; END IF;
+ IF row->>'current'<>'10' OR row->>'configured'<>'false' THEN RAISE EXCEPTION 'Numeric difficulty or unsettled policy'; END IF;
  PERFORM pg_temp.expect_error(format('SELECT public.claim_achievement(gen_random_uuid(),%L,%L,1)','first','season:'||season),'REWARD_NOT_CONFIGURED');
  PERFORM public.record_site_visit(gen_random_uuid()); PERFORM public.record_site_visit(gen_random_uuid());
  ctx:=public.claim_daily_task(req,'attendance',today);

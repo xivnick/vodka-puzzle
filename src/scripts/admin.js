@@ -19,14 +19,7 @@ function selectRow(row) {
   $('adminPreview').href = `/${row.puzzle_id}/`;
   $('adminTitle').value = row.title; $('adminSummary').value = row.summary;
   const difficulty = $('adminDifficulty');
-  difficulty.querySelector('[data-custom]')?.remove();
-  const value = row.difficulty || '';
-  if (![...difficulty.options].some(option => option.value === value)) {
-    const option = new Option(value, value);
-    option.dataset.custom = 'true';
-    difficulty.add(option);
-  }
-  difficulty.value = value;
+  difficulty.value = String(row.difficulty ?? 0);
   $('adminType').value = row.puzzle_type; $('adminState').value = row.status;
   $('adminDate').value = koreanInput(row.published_at); $('adminOrder').value = row.sort_order;
   $('adminDate').required = row.status === 'published';
@@ -85,7 +78,7 @@ $('adminForm').addEventListener('submit',async event => {
   const date = $('adminDate').value;
   const args = { requested_season:season, requested_puzzle:selected.puzzle_id,
     new_title:$('adminTitle').value.trim(), new_summary:$('adminSummary').value.trim(),
-    new_type:$('adminType').value.trim(), new_difficulty:$('adminDifficulty').value.trim() || null, new_status:$('adminState').value,
+    new_type:$('adminType').value.trim(), new_difficulty:Number($('adminDifficulty').value), new_status:$('adminState').value,
     new_published_at:date ? new Date(`${date}+09:00`).toISOString() : null,
     new_sort_order:Number($('adminOrder').value), expected_updated_at:selected.updated_at };
   saving = true; $('adminSave').disabled = true; $('adminSelect').disabled = true; message('저장하는 중...');
