@@ -36,7 +36,7 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
 
     <section id="panel-missions" aria-labelledby="missionsTitle" hidden={customize}>
       <section class="daily-quests" aria-labelledby="dailyQuestsTitle">
-        <div class="view-heading"><h2 id="dailyQuestsTitle">데일리 과제</h2><span class="daily-reset">매일 갱신</span></div>
+        <div class="view-heading"><h2 id="dailyQuestsTitle">일일 과제</h2><span class="daily-reset">매일 갱신</span></div>
         <div class="mission-list">{data.dailyQuests.map(q=><article class="mission-row" data-daily-quest={q.id}>
           <span class="mission-icon" aria-hidden="true"><Fragment set:html={raw(`/icons/achievement-preview/${q.icon}.svg`)}/></span>
           <div class="mission-content"><div class="mission-title"><h3>{q.name}</h3><span class="mission-value" data-daily-state>{q.complete?'1/1':'0/1'}</span></div><p class="mission-condition">{q.text}</p><div class="mission-bottom"><span class="mission-reward">{q.kind==='coins'?<CoinAmount amount={q.value}/>:<span class="daily-ticket" aria-label={`타임머신 티켓 ${q.value}장`}><img src="/icons/time-machine/ticket.svg" alt="" width="14" height="14"/><span>{q.value}</span></span>}</span><button type="button" class:list={['claim-button',{'claim-ready':q.complete&&!q.unavailable}]} data-daily-claim={q.id} disabled={!q.complete||q.unavailable} title={q.unavailable?'다른 사용자가 먼저 완료했습니다.':undefined}>{q.unavailable?'기회 종료':q.complete?'받기':'진행 중'}</button></div></div>
