@@ -5,8 +5,8 @@ const puzzleId=game.dataset.puzzleId, preview=game.dataset.preview==='true';
 const $=id=>document.getElementById(`blokus${id}`);
 const board=$('Board'),inputs=[...board.querySelectorAll('[data-cell]')];
 const account=()=>window.puzzleAccount?.user?.id || 'guest';
-let filled=new Set(),ready=false,owner=null,recorded=false,selected=0,press=null;
-const state=()=>({version:3,puzzleId,filled:[...filled].sort((a,b)=>a-b)});
+let filled=new Set(),crosses=new Set(),ready=false,owner=null,recorded=false,press=null;
+const state=()=>({version:4,puzzleId,filled:[...filled].sort((a,b)=>a-b),crosses:[...crosses].sort((a,b)=>a-b)});
 const active=()=>ready && (preview || owner===account());
 function persist() {
   if(!active())return;
@@ -19,15 +19,18 @@ function render() {
   const result=inspect(filled);
   let html='';
   for(const block of result.blocks)for(const index of block.cells) {
-    const color=block.bad ? '#fce8e7' : block.name ? '#e9f4e9' : '#dce5f1';
+    const color=block.bad ? '#f4d5d5' : block.name ? '#dcebdc' : '#dedede';
     html+=`<rect x="${index%blokus.cols*40}" y="${Math.floor(index/blokus.cols)*40}" width="40" height="40" fill="${color}"/>`;
   }
   $('Fills').innerHTML=html;
+  $('Crosses').innerHTML=[...crosses].map(index=>{
+    const x=(index%blokus.cols+.5)*40,y=(Math.floor(index/blokus.cols)+.5)*40;
+    return `<path d="M${x-6} ${y-6}L${x+6} ${y+6}M${x+6} ${y-6}L${x-6} ${y+6}" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"/>`;
+  }).join('');
   inputs.forEach((cell,index)=>{
     cell.setAttribute('aria-pressed',String(filled.has(index)));
-    cell.setAttribute('aria-label',`${Math.floor(index/blokus.cols)+1}행 ${index%blokus.cols+1}열, ${filled.has(index) ? '칠한 칸' : '빈칸'}`);
+    cell.setAttribute('aria-label',`${Math.floor(index/blokus.cols)+1}행 ${index%blokus.cols+1}열, ${filled.has(index) ? '칠한 칸' : crosses.has(index) ? 'X 메모' : '빈칸'}`);
     cell.setAttribute('aria-disabled',String(!active()));
-    cell.tabIndex=selected===index ? 0 : -1;
   });
   document.querySelectorAll('.shape-item[data-piece]').forEach(item=>{
     const count=result.counts[item.dataset.piece] || 0;
@@ -36,7 +39,7 @@ function render() {
     item.setAttribute('aria-label',`${item.dataset.piece} 블록, ${count}개`);
   });
   $('Complete').hidden=!result.complete;
-  $('Reset').disabled=!active() || !filled.size;
+  $('Reset').disabled=!active() || !filled.size && !crosses.size;
   const formed=Object.values(result.counts).filter(count=>count===1).length;
   $('Status').textContent=result.complete ? '퍼즐을 완성했습니다.' : `칠한 칸 ${filled.size}개. 한 번씩 만든 블록 ${formed} / 12개.`;
   if(!result.complete)recorded=false;
@@ -45,44 +48,48 @@ function render() {
     if(window.puzzlePage?.published)window.recordCompletion(puzzleId,state());
   }
 }
-function toggle(index) {
+function toggle(index,mark='fill') {
   if(!active())return;
-  selected=index;
-  if(filled.has(index))filled.delete(index);else filled.add(index);
+  const target=mark==='cross' ? crosses : filled,other=mark==='cross' ? filled : crosses;
+  if(target.has(index))target.delete(index);
+  else {other.delete(index);target.add(index);}
   persist();render();
 }
+function cancelPress() {
+  if(press)clearTimeout(press.timer);
+  press=null;
+}
+board.addEventListener('contextmenu',event=>event.preventDefault());
 board.addEventListener('pointerdown',event=>{
   if(!active() || event.button!==0 || press)return;
   const cell=event.target.closest('[data-cell]');
   if(!cell)return;
-  press={id:event.pointerId,index:Number(cell.dataset.cell),x:event.clientX,y:event.clientY};
+  if(event.pointerType==='mouse')event.preventDefault();
+  const index=Number(cell.dataset.cell);
+  press={id:event.pointerId,index,x:event.clientX,y:event.clientY,long:false,timer:null};
+  press.timer=setTimeout(()=>{
+    if(!press || press.id!==event.pointerId)return;
+    press.long=true;toggle(index,'cross');
+  },550);
 });
 window.addEventListener('pointermove',event=>{
-  if(press?.id===event.pointerId && Math.hypot(event.clientX-press.x,event.clientY-press.y)>10)press=null;
+  if(press?.id===event.pointerId && Math.hypot(event.clientX-press.x,event.clientY-press.y)>10)cancelPress();
 });
 window.addEventListener('pointerup',event=>{
   if(press?.id!==event.pointerId)return;
-  const previous=press;press=null;
-  if(Math.hypot(event.clientX-previous.x,event.clientY-previous.y)<=10)toggle(previous.index);
+  const previous=press;cancelPress();
+  if(!previous.long && Math.hypot(event.clientX-previous.x,event.clientY-previous.y)<=10)toggle(previous.index);
 });
-window.addEventListener('pointercancel',event=>{if(press?.id===event.pointerId)press=null;});
-window.addEventListener('blur',()=>{press=null;});
-board.addEventListener('keydown',event=>{
-  if(!active())return;
-  const cell=event.target.closest('[data-cell]');
-  if(!cell)return;
-  selected=Number(cell.dataset.cell);
-  if(event.key==='Enter' || event.key===' '){event.preventDefault();toggle(selected);return;}
-  const row=Math.floor(selected/blokus.cols),col=selected%blokus.cols;
-  const next={ArrowLeft:col>0 ? selected-1 : selected,ArrowRight:col<blokus.cols-1 ? selected+1 : selected,ArrowUp:row>0 ? selected-blokus.cols : selected,ArrowDown:row<blokus.rows-1 ? selected+blokus.cols : selected}[event.key];
-  if(next!==undefined){event.preventDefault();selected=next;render();inputs[next].focus({preventScroll:true});}
-});
+window.addEventListener('pointercancel',event=>{if(press?.id===event.pointerId)cancelPress();});
+window.addEventListener('blur',cancelPress);
 $('Reset').addEventListener('click',()=>{
-  if(!active() || !filled.size || !confirm('초기화하시겠습니까?'))return;
-  press=null;filled.clear();persist();render();
+  if(!active() || !filled.size && !crosses.size || !confirm('초기화하시겠습니까?'))return;
+  cancelPress();filled.clear();crosses.clear();persist();render();
 });
 function restore(saved) {
-  press=null;filled=parseState(saved,puzzleId) || new Set();recorded=false;
+  cancelPress();
+  const parsed=parseState(saved,puzzleId);
+  filled=parsed?.filled || new Set();crosses=parsed?.crosses || new Set();recorded=false;
 }
 function init() {
   if(ready && (preview || owner===account()))return;

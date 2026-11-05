@@ -3,10 +3,11 @@ import { classifyPentomino } from './pentominous.js';
 export { blokus, pieces };
 
 export function parseState(saved,puzzleId) {
-  if(saved?.version!==3 || saved.puzzleId!==puzzleId || !Array.isArray(saved.filled))return null;
-  const filled=new Set(saved.filled);
-  if(filled.size!==saved.filled.length || [...filled].some(n=>!Number.isInteger(n) || n<0 || n>=blokus.rows*blokus.cols))return null;
-  return filled;
+  if(![3,4].includes(saved?.version) || saved.puzzleId!==puzzleId || !Array.isArray(saved.filled) || saved.version===4 && !Array.isArray(saved.crosses))return null;
+  const filled=new Set(saved.filled),crosses=new Set(saved.version===4 ? saved.crosses : []);
+  const valid=n=>Number.isInteger(n) && n>=0 && n<blokus.rows*blokus.cols;
+  if(filled.size!==saved.filled.length || crosses.size!==(saved.crosses?.length || 0) || [...filled,...crosses].some(n=>!valid(n)) || [...crosses].some(n=>filled.has(n)))return null;
+  return {filled,crosses};
 }
 function neighbors(index) {
   const {cols,rows}=blokus,x=index%cols,y=Math.floor(index/cols);
