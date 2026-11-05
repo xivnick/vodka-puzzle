@@ -19,7 +19,7 @@ function render() {
   const result=inspect(filled);
   let html='';
   for(const block of result.blocks)for(const index of block.cells) {
-    const color=block.bad ? '#df9292' : block.name ? '#91bd91' : '#ababab';
+    const color=block.bad ? '#b65c5c' : block.name ? '#5b8c64' : '#666';
     html+=`<rect x="${index%blokus.cols*40}" y="${Math.floor(index/blokus.cols)*40}" width="40" height="40" fill="${color}"/>`;
   }
   $('Fills').innerHTML=html;
