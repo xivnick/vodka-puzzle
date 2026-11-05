@@ -557,7 +557,7 @@
       "name": "첫걸음",
       "icon": "leaf",
       "group": "basic",
-      "text": "일반 문제 완료",
+      "text": "일반 문제 풀기",
       "count": 22,
       "stages": [
         {
@@ -575,7 +575,7 @@
       "name": "퍼즐 수집가",
       "icon": "puzzle",
       "group": "basic",
-      "text": "일반 문제 완료",
+      "text": "일반 문제 풀기",
       "count": 22,
       "stages": [
         {
@@ -613,7 +613,7 @@
       "name": "꺼지지 않는 불",
       "icon": "flame",
       "group": "basic",
-      "text": "현재 데일리 연속 수치",
+      "text": "데일리 스도쿠 연속으로 풀기",
       "count": 12,
       "stages": [
         {
@@ -651,7 +651,7 @@
       "name": "체리피커",
       "icon": "cherry",
       "group": "basic",
-      "text": "난이도 하 일반 문제 완료",
+      "text": "난이도 하 일반 문제 풀기",
       "count": 10,
       "stages": [
         {
@@ -687,7 +687,7 @@
       "name": "두뇌 회전",
       "icon": "brain",
       "group": "basic",
-      "text": "난이도 중 일반 문제 완료",
+      "text": "난이도 중 일반 문제 풀기",
       "count": 7,
       "stages": [
         {
@@ -723,7 +723,7 @@
       "name": "하드코어",
       "icon": "skull",
       "group": "basic",
-      "text": "난이도 상 일반 문제 완료",
+      "text": "난이도 상 일반 문제 풀기",
       "count": 4,
       "stages": [
         {
@@ -759,7 +759,7 @@
       "name": "퍼스트 블러드",
       "icon": "swords",
       "group": "basic",
-      "text": "일반 문제 1등 완료",
+      "text": "일반 문제를 1등으로 풀기",
       "count": 3,
       "stages": [
         {
@@ -787,7 +787,7 @@
       "name": "별 수집가",
       "icon": "star",
       "group": "group",
-      "text": "스타배틀 계열 문제 완료",
+      "text": "스타배틀 계열 문제 풀기",
       "count": 3,
       "stages": [
         {
@@ -803,7 +803,7 @@
       "name": "온도 체크",
       "icon": "temperature",
       "group": "group",
-      "text": "온도계 스도쿠 완료",
+      "text": "온도계 스도쿠 풀기",
       "count": 2,
       "stages": [
         {
@@ -819,7 +819,7 @@
       "name": "숫자놀음",
       "icon": "number-123",
       "group": "group",
-      "text": "수식완성 문제 완료",
+      "text": "수식완성 문제 풀기",
       "count": 1,
       "stages": [
         {
@@ -835,7 +835,7 @@
       "name": "은하 개척자",
       "icon": "galaxy",
       "group": "group",
-      "text": "Spiral Galaxies 완료",
+      "text": "Spiral Galaxies 문제 풀기",
       "count": 0,
       "stages": [
         {
@@ -851,7 +851,7 @@
       "name": "한가위 스도쿠",
       "icon": "rabbit",
       "group": "special",
-      "text": "지정 문제 완료",
+      "text": "『한가위 스도쿠』 풀기",
       "count": 1,
       "stages": [
         {
@@ -869,7 +869,7 @@
       "name": "란영 스도쿠",
       "icon": "flower",
       "group": "special",
-      "text": "지정 문제 완료",
+      "text": "『란영 스도쿠』 풀기",
       "count": 0,
       "stages": [
         {
@@ -885,7 +885,7 @@
       "name": "봄버스터즈 스도쿠",
       "icon": "bomb",
       "group": "special",
-      "text": "지정 문제 완료",
+      "text": "『봄버스터즈 스도쿠』 풀기",
       "count": 0,
       "stages": [
         {
@@ -901,7 +901,7 @@
       "name": "토마토스 스도쿠",
       "icon": "tomato",
       "group": "special",
-      "text": "지정 문제 완료",
+      "text": "『토마토스 스도쿠』 풀기",
       "count": 0,
       "stages": [
         {
@@ -917,7 +917,7 @@
       "name": "주루마블 스도쿠",
       "icon": "glass",
       "group": "special",
-      "text": "지정 문제 완료",
+      "text": "『주루마블 스도쿠』 풀기",
       "count": 0,
       "stages": [
         {
@@ -933,7 +933,7 @@
       "name": "완전 정복",
       "icon": "galaxy",
       "group": "special",
-      "text": "해당 학기 일반 문제 모두 완료",
+      "text": "해당 학기 일반 문제 모두 풀기",
       "count": 22,
       "stages": [
         {
@@ -949,7 +949,7 @@
       "name": "멋쟁이",
       "icon": "hanger",
       "group": "basic",
-      "text": "아이콘 장착 1회",
+      "text": "아이콘 장착하기",
       "count": 0,
       "featureAction": "equip-icon",
       "stages": [
@@ -966,7 +966,7 @@
       "name": "행운의 손",
       "icon": "dice-5",
       "group": "basic",
-      "text": "뽑기 누적 횟수",
+      "text": "색깔·효과 뽑기",
       "count": 0,
       "featureAction": "draw",
       "stages": [
@@ -985,7 +985,7 @@
       "name": "연금술사",
       "icon": "flask",
       "group": "basic",
-      "text": "색깔 조합 누적 횟수",
+      "text": "커먼 색깔 조합하기",
       "count": 0,
       "featureAction": "craft",
       "stages": [
@@ -1033,7 +1033,7 @@
     {
       "id": "attendance",
       "name": "출석 체크",
-      "text": "사이트 방문",
+      "text": "사이트 방문하기",
       "icon": "calendar-check",
       "kind": "coins",
       "value": 20,
@@ -1042,7 +1042,7 @@
     {
       "id": "daily-complete",
       "name": "하루 한 문제",
-      "text": "일반 퍼즐 또는 데일리 스도쿠 1개 완료",
+      "text": "일반 퍼즐 또는 데일리 스도쿠 풀기",
       "icon": "puzzle",
       "kind": "coins",
       "value": 100,
@@ -1051,7 +1051,7 @@
     {
       "id": "daily-first",
       "name": "데일리 챔피언",
-      "text": "데일리 스도쿠를 1등으로 완료",
+      "text": "데일리 스도쿠를 1등으로 풀기",
       "icon": "trophy",
       "kind": "ticket",
       "value": 1,
