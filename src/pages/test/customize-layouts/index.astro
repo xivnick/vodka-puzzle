@@ -1,0 +1,41 @@
+---
+import PageLayout from '../../../layouts/PageLayout.astro';
+import NicknameBadge from '../../../components/NicknameBadge.astro';
+import CoinAmount from '../../../components/CoinAmount.astro';
+import Picker from '../../../components/CustomizeLayoutPicker.astro';
+import data from '../../../data/mypage-v2-preview.json';
+import '../../../styles/nickname.css';
+import '../../../styles/mypage-v2-preview.css';
+import '../../../styles/customize-layouts.css';
+const icons=data.icons.filter(icon=>['leaf','puzzle','flame','sword','rabbit'].includes(icon.id));
+const colors=[{id:'base',name:'기본',a:'#444444',b:'#444444',rarity:'base'},...data.common.filter(c=>['c0','c6','c15','c25','c30'].includes(c.id)),{id:'u-start',name:'비취 · 갈색',a:'#42977D',b:'#8F6A50',rarity:'uncommon'},...data.rare.slice(0,3)];
+const effects=[{id:'none',name:'효과 없음'},...data.effects.filter(e=>['ribbon','afterglow'].includes(e.id))];
+const variants=[
+  {name:'두 줄 미리보기',description:'현재 선택 아래에 나머지 보유 항목을 표시'},
+  {name:'선택 항목만',description:'평소에는 현재 선택만, 펼치면 세로 목록'},
+  {name:'항상 펼친 바둑판',description:'항목을 바로 비교하고 한 번에 선택'},
+  {name:'가로 목록',description:'이름이 있는 항목을 옆으로 넘겨서 선택'},
+  {name:'통합 설정 목록',description:'현재 설정을 모아두고 한 항목씩 펼치기'},
+];
+---
+<PageLayout title="꾸미기 배치 시안">
+  <meta slot="head" name="robots" content="noindex, nofollow"/>
+  <div class="mypage-v2 cl-comparison">
+    <nav class="cl-navigation" aria-label="시안 바로가기">{variants.map((v,i)=><a href={`#layout-${i+1}`}>{i+1}. {v.name}</a>)}</nav>
+    {variants.map((variant,i)=><section class="cl-example" id={`layout-${i+1}`} data-variant={i+1}>
+      <header class="cl-caption"><h2>{i+1}. {variant.name}</h2><p>{variant.description}</p></header>
+      <div class="cl-demo">
+        <section class="cl-preview"><div class="cl-heading"><h3>미리보기</h3><CoinAmount amount={1240}/></div><div class="cl-preview-row"><span class="cl-rank">3</span><span data-preview><NicknameBadge name="퍼즐러" src={icons[0].src} label="꾸미기 미리보기"/></span><span class="cl-selection-name">잎사귀 · 기본</span></div></section>
+        {i===4&&<div class="cl-heading"><h3>꾸미기</h3><a href="/test/mypage-v2/customize/#draw">뽑기</a></div>}
+        <Picker variant={i+1} kind="icons" label="아이콘" items={icons}/>
+        <Picker variant={i+1} kind="colors" label="색깔" items={colors}/>
+        <Picker variant={i+1} kind="effects" label="효과" items={effects}/>
+      </div>
+    </section>)}
+    <p class="cl-note">각 시안은 독립적으로 선택할 수 있습니다. 실제 계정이나 기존 시안의 설정에는 반영되지 않습니다.</p>
+    <a class="cl-return" href="/test/mypage-v2/customize/">현재 꾸미기 시안</a>
+    <script id="customizeComparisonData" type="application/json" set:html={JSON.stringify({icons,colors,effects})}/>
+    {icons.map(icon=><template data-comparison-icon={icon.id}><img src={icon.src} alt="" width="20" height="20"/></template>)}
+  </div>
+</PageLayout>
+<script>import '../../../scripts/customize-layouts.js';</script>

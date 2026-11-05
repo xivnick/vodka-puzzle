@@ -81,3 +81,5 @@
 - [퍼스트 블러드 아이콘](https://puzzle.xivnick.me/test/achievement-badges/first-blood-icons/): 일반 문제 1등 완료 1·3·10회에 검·교차한 검·왕관 지급으로 확정.
 
 색상·효과와 닉네임 옆 공통 정렬 방식은 [업적 배지 색상·효과 설계](achievement-badge-cosmetics-design.md)를 따른다.
+
+- [꾸미기 배치 5안 비교](https://puzzle.xivnick.me/test/customize-layouts/): 두 줄 미리보기·선택 항목만·항상 펼친 바둑판·가로 목록·통합 설정 목록. 같은 보유 항목과 공통 미리보기로 비교하며, 각 안에서 독립적으로 선택한다. 실제 계정과 기존 시안의 저장 상태는 바꾸지 않는다.

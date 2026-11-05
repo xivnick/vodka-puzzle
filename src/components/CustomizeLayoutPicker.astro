@@ -1,0 +1,22 @@
+---
+const {variant,kind,label,items}=Astro.props;
+const inline=variant===3||variant===4;
+const Container=inline?'div':'details';
+const Heading=inline?'div':'summary';
+const initial=items[0];
+---
+<section class="cl-picker" data-kind={kind}>
+  {variant!==5&&<div class="cl-heading"><h4>{label}</h4>{kind==='colors'&&<a href="/test/mypage-v2/customize/#draw">뽑기</a>}</div>}
+  <Container class="cl-picker-box" name={variant===5?'customize-comparison-accordion':undefined}>
+    <Heading class="cl-picker-summary">
+      {variant===5&&<span class="cl-field-label">{label}</span>}
+      <span class="cl-current"><span class="cl-glyph" data-current-glyph aria-hidden="true">{kind==='icons'?<img src={initial.src} alt="" width="20" height="20"/>:kind==='colors'?<i style={`background:linear-gradient(135deg,${initial.a},${initial.b})`}/>:null}</span><span data-current-name>{initial.name}</span></span>
+      {!inline&&<span class="cl-expand" aria-hidden="true">{variant===2?'변경':<img src="/icons/achievement-preview/chevron-right.svg" alt="" width="14" height="14"/>}</span>}
+      {variant===1&&<span class="cl-owned" aria-hidden="true"><span class="cl-owned-items"></span><span class="cl-more" hidden></span></span>}
+    </Heading>
+    <div class="cl-picker-body">
+      {kind==='colors'&&<div class="cl-color-options" hidden><span class="cl-color-name"></span><div class="cl-option-groups"><div role="group" aria-label="색 표현"><button type="button" data-mode="gradient" aria-pressed="true">그라데이션</button><button type="button" data-mode="split" aria-pressed="false">2분할</button></div><div role="group" aria-label="색 방향"><button type="button" data-angle="135deg" aria-pressed="true">대각선</button><button type="button" data-angle="90deg" aria-pressed="false">좌우</button></div></div></div>}
+      <div class="cl-choices">{items.map((item,index)=><button class="cl-choice" type="button" data-value={item.id} aria-pressed={index===0?'true':'false'} title={item.name}><span class="cl-glyph" aria-hidden="true">{kind==='icons'?<img src={item.src} alt="" width="24" height="24"/>:kind==='colors'?<i style={`background:linear-gradient(135deg,${item.a},${item.b})`}/>:null}</span><span>{item.name}</span><span class="cl-choice-check" aria-hidden="true">✓</span></button>)}</div>
+    </div>
+  </Container>
+</section>
