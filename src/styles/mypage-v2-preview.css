@@ -212,3 +212,7 @@
 @keyframes mypage-lenticular{0%,20%,100%{opacity:0}43%{opacity:.9}62%{opacity:.25}78%{opacity:0}}
 .mypage-v2.page-hidden .effect-lenticular .lenticular-slice,.mypage-v2 .effect-lenticular.is-offscreen .lenticular-slice{animation-play-state:paused}
 @media(prefers-reduced-motion:reduce){.mypage-v2 .effect-lenticular .lenticular-slice{animation:none}}
+
+.mypage-v2 #draw>.balance{display:flex;align-items:center;font-size:.85rem;color:#555;font-variant-numeric:tabular-nums}
+.mypage-v2 .result-refund{display:flex;align-items:center;gap:6px;margin-top:5px;font-size:.61rem;color:#999}
+.mypage-v2 .result-refund .coin-amount{font-size:inherit;color:#777}
