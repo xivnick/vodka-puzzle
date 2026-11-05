@@ -990,17 +990,17 @@
     {
       "rarity": "common",
       "name": "커먼",
-      "probability": 0.7
+      "probability": 0.72
     },
     {
       "rarity": "rare",
       "name": "레어",
-      "probability": 0.2
+      "probability": 0.24
     },
     {
       "rarity": "epic",
       "name": "에픽",
-      "probability": 0.1
+      "probability": 0.04
     }
   ]
 }
