@@ -16,7 +16,7 @@ if(root){
   const ownedEffects=new Set(saved?.ownedEffects??['ribbon','afterglow']);
   const effects=new Map(data.effects.map(e=>[e.id,e]));
   effects.set('sparkle',{id:'sparkle',name:'별빛 반짝임',rarity:'special'});
-  let coins=saved?.coins??1240,filter='all',drawNumber=saved?.drawNumber??0,craft=[];
+  let coins=saved?.coins??1240,filter='all',craft=[];
   const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date());
   let dailyDate=today(),tickets=saved?.tickets??0;
   const dailyClaimed=new Set((saved?.dailyDate===dailyDate?saved.dailyClaimed??[]:[]).filter(id=>data.dailyQuests.some(q=>q.id===id&&q.complete)));
@@ -26,7 +26,7 @@ if(root){
   for(const color of saved?.colors??[])colors.set(color.id,color);
   colors.set(base.id,base);
   for(const mission of data.missions)if(saved?.claimed?.[mission.id])mission.claimed=saved.claimed[mission.id];
-  function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({coins,drawNumber,nickname,applied,tickets,dailyDate,dailyClaimed:[...dailyClaimed],inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
+  function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({coins,nickname,applied,tickets,dailyDate,dailyClaimed:[...dailyClaimed],inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
   const rarityNames={base:'기본',common:'커먼',uncommon:'언커먼',rare:'레어',epic:'에픽',special:'특수'};
   const visible=new IntersectionObserver(entries=>entries.forEach(e=>e.target.classList.toggle('is-offscreen',!e.isIntersecting)));
   const make=(tag,className,text)=>{const e=document.createElement(tag);if(className)e.className=className;if(text!==undefined)e.textContent=text;return e;};
@@ -126,17 +126,22 @@ if(root){
     });
     $('#drawResult').hidden=false;
   }
+  function drawRarity(){
+    const roll=Math.random();let cumulative=0;
+    for(const rate of data.drawRates){cumulative+=rate.probability;if(roll<cumulative)return rate.rarity;}
+    return data.drawRates.at(-1).rarity;
+  }
   all('[data-draw]').forEach(b=>b.addEventListener('click',()=>{
     const count=Number(b.dataset.draw),cost=count*100;if(coins<cost)return;
     coins-=cost;
     const items=Array.from({length:count},()=>{
-      const kind=['common','common','rare','common','epic'][drawNumber++%5];
+      const kind=drawRarity();
       const pool=kind==='epic'?data.effects:kind==='rare'?data.rare:data.common;
       const item=pool[Math.floor(Math.random()*pool.length)];
       if(kind==='epic')ownedEffects.add(item.id);else inventory.set(item.id,(inventory.get(item.id)||0)+1);
       return item;
     });
-    renderCoins();renderResults(items);renderInventory();renderEffects();persist();
+    renderCoins();renderResults(items);renderInventory();renderEffects();renderCraft();persist();
     toast(count===1?`${items[0].name} 획득!`:`${count}개 색상과 효과를 받았어요.`);
   }));
   function renderBadge(container,state){
@@ -180,7 +185,6 @@ if(root){
     $('#selectionLabel').textContent=[icons.get(draft.icon).name,colors.get(draft.color).name,draft.effect==='none'?null:effects.get(draft.effect)?.name].filter(Boolean).join(' · ');
     const color=colors.get(draft.color);
     $('#selectedColorOptions').hidden=!['uncommon','rare'].includes(color.rarity)||color.a===color.b;
-    $('#selectedColorName').textContent=color.name;
     $('#selectedIconVisual').replaceChildren($(`[data-icon-template="${draft.icon}"]`).content.cloneNode(true));
     $('#selectedIconLabel').textContent=icons.get(draft.icon).name;
     $('#selectedIconLabel').title=icons.get(draft.icon).name;
@@ -233,22 +237,16 @@ if(root){
     });
     const result=craftResult();$('#craftOutcome').textContent=result?`${result.name} · 언커먼`:'세 가지 색을 선택해주세요.';$('#craftConfirm').disabled=!result;
   }
-  function setCraftOpen(open){
-    $('#panel-craft').hidden=!open;$('#openCraft').setAttribute('aria-expanded',String(open));
-    $('#openCraft').textContent=open?'색 조합 닫기':'커먼 3개 조합하기 ↗';
-    if(open){craft=[];renderCraft();}
-  }
-  $('#openCraft').addEventListener('click',()=>setCraftOpen($('#panel-craft').hidden));
   $('#craftConfirm').addEventListener('click',()=>{
     const result=craftResult();if(!result)return;
     const needed=new Map();craft.forEach(id=>needed.set(id,(needed.get(id)||0)+1));
     if([...needed].some(([id,n])=>(inventory.get(id)||0)<n))return;
     needed.forEach((n,id)=>{const left=inventory.get(id)-n;if(left)inventory.set(id,left);else inventory.delete(id);});
     colors.set(result.id,result);inventory.set(result.id,(inventory.get(result.id)||0)+1);draft.color=result.id;
-    setCraftOpen(false);applyDress();toast(`${result.name} 언커먼을 만들었어요.`);
+    craft=[];renderCraft();applyDress();toast(`${result.name} 언커먼을 만들었어요.`);
   });
   document.addEventListener('visibilitychange',()=>root.classList.toggle('page-hidden',document.hidden));
   $('#accountName').textContent=nickname;$('#accountNickname').value=nickname;setBadgeName($('#profileBadge'),nickname);
-  initNicknameBadges();renderCoins();renderDailyQuests();sortMissionRows();renderMissions();renderDress();
+  initNicknameBadges();renderCoins();renderDailyQuests();sortMissionRows();renderMissions();renderDress();renderCraft();
   document.fonts.ready.then(()=>{renderBadge($('#profileBadge'),applied);renderBadge($('#dressBadge'),draft);});
 }

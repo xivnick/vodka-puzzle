@@ -148,7 +148,7 @@
 
 .customize-back{text-align:left;margin-bottom:var(--space-md,12px)}.customize-back a{display:inline-flex;align-items:center;gap:4px;font-size:.73rem;color:#999;text-decoration:none}.customize-back a:hover{color:#555}.customize-back span{display:block;width:14px;height:14px;transform:rotate(180deg)}.customize-back svg{display:block;width:100%;height:100%}
 
-.mypage-v2 .selected-color-options{margin-bottom:var(--space-md);padding-bottom:var(--row-padding);border-bottom:1px solid var(--line)}
+.mypage-v2 .selected-color-options{display:flex;align-items:center;justify-content:space-between;gap:var(--space-md);padding:var(--row-padding) var(--row-inset);border-bottom:1px solid var(--line)}
 .mypage-v2 .selected-color-name{display:block;font-size:.73rem;color:#666;margin-bottom:var(--space-sm)}
 .mypage-v2 .color-option-groups{display:flex;flex-wrap:wrap;gap:var(--space-sm) var(--space-lg)}
 .mypage-v2 .color-option-groups>div{display:flex;gap:var(--space-sm)}
@@ -158,7 +158,7 @@
 .mypage-v2 .selected-summary{display:flex;align-items:center;gap:var(--space-sm);min-width:0;min-height:24px}.mypage-v2 .picker-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.78rem;color:#555}
 
 
-.mypage-v2 .unified-settings>.wardrobe-picker+.wardrobe-picker{border-top:0}
+.mypage-v2 .unified-settings{border-top:1px solid var(--line)}.mypage-v2 .unified-settings>.wardrobe-picker{border-top:0}
 .mypage-v2 .unified-settings .selected-summary,.mypage-v2 .unified-settings .picker-current{margin-left:auto}
 .mypage-v2 .settings-field-label{font-size:.78rem;color:#777;flex-shrink:0}
 .mypage-v2 .selected-icon-visual{display:block;flex-shrink:0;width:20px;height:20px}
@@ -166,3 +166,13 @@
 .mypage-v2 .unified-settings .wardrobe-body{background:#fcfbf9}
 
 .mypage-v2 .unified-settings .picker-current{font-size:.78rem}
+
+.mypage-v2 .selected-color-options .color-option-groups{justify-content:flex-end}
+.mypage-v2 #panel-craft{border:0;padding:0;margin-bottom:var(--section-gap)}
+.mypage-v2 .craft-body{padding:var(--row-padding) var(--row-inset);border-block:1px solid var(--line)}
+.mypage-v2 .craft-body .craft-slots{margin:var(--space-sm) 0 var(--space-lg)}
+.mypage-v2 .craft-body #craftConfirm{margin-top:var(--space-md)}
+.mypage-v2 .draw-rates{width:100%;border-collapse:collapse;margin-top:var(--space-md);font-size:.7rem;font-variant-numeric:tabular-nums}
+.mypage-v2 .draw-rates th,.mypage-v2 .draw-rates td{padding:var(--space-sm) 0;border-bottom:1px solid var(--line);font-weight:400;text-align:right}
+.mypage-v2 .draw-rates th:first-child{text-align:left}.mypage-v2 .draw-rates thead{color:#aaa}
+.mypage-v2 .draw-rates tbody th span{margin-left:var(--space-sm);font-size:.65rem;color:#aaa}
