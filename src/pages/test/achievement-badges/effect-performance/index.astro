@@ -2,6 +2,7 @@
 import PageLayout from '../../../../layouts/PageLayout.astro';
 import NicknameBadge from '../../../../components/NicknameBadge.astro';
 import data from '../../../../data/mypage-v2-preview.json';
+import star from '../../../../../public/icons/achievement-preview/star.svg?raw';
 import '../../../../styles/mypage-v2-preview.css';
 import '../../../../styles/nickname-badge-effects.css';
 ---
@@ -9,7 +10,7 @@ import '../../../../styles/nickname-badge-effects.css';
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <div class="mypage-v2 effects-check">
     <div class="view-heading"><h2>효과 5종</h2><button type="button" id="pauseEffects" aria-pressed="false">일시정지</button></div>
-    <div class="effect-examples">{data.effects.map((effect,index)=><section class="effect-example"><h3>{effect.name}</h3><div class="live-effect" data-effect={effect.id} data-icon="star"><NicknameBadge name="퍼즐러" icon="star" size={18}/></div><div class="live-effect large" data-effect={effect.id} data-icon="star"><NicknameBadge name="" icon="star" size={36}/></div></section>)}</div>
+    <div class="effect-examples">{data.effects.map((effect,index)=><section class="effect-example"><h3>{effect.name}</h3><div class="live-effect" data-effect={effect.id} data-icon="star"><NicknameBadge name="퍼즐러" icon="star" size={18}/></div><div class="live-effect large" data-effect={effect.id} data-icon="star"><span class="badge-visual standalone"><Fragment set:html={star}/></span></div></section>)}</div>
     <div class="view-heading stress-heading"><h2>여러 개 표시</h2><div class="counts">{[30,100].map((count,index)=><button type="button" data-count={count} aria-pressed={index===0?'true':'false'}>{count}개</button>)}</div></div>
     <p class="activity" id="activeEffectCount" aria-live="polite"></p>
     <div class="stress-list" id="effectStressList"></div>
@@ -48,8 +49,8 @@ if(root){
 <style>
 .effects-check button{border:0;background:none;padding:4px 0;color:#999;font-size:.7rem;text-decoration:underline;text-underline-offset:3px}
 .effect-examples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 16px;border-top:1px solid #e8e5df;padding-top:18px}
-.effects-check .effect-example h3{font-size:.8rem;font-weight:500;margin-bottom:14px}.live-effect{font-size:.84rem}.live-effect.large{margin-top:16px}.effect-example{padding-bottom:18px;border-bottom:1px solid #e8e5df}
+.effects-check .effect-example h3{font-size:.8rem;font-weight:500;margin-bottom:14px}.live-effect{font-size:.84rem}.live-effect.large{margin-top:16px;height:36px}.standalone{position:relative;display:block;width:36px;height:36px;overflow:hidden}.standalone :global(svg){display:block;width:100%;height:100%}.effect-example{padding-bottom:18px;border-bottom:1px solid #e8e5df}
 .effects-check .stress-heading{margin-top:32px}.counts{display:flex;gap:14px}.counts [aria-pressed=true]{color:#444}.effects-check .activity{font-size:.7rem;color:#999;margin:10px 0 16px}
-.stress-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 12px}.stress-row{display:flex;align-items:center;gap:5px;font-size:.72rem;white-space:nowrap}.stress-visual{position:relative;display:block;flex-shrink:0;width:18px;height:18px}
+.stress-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 12px}.effects-check :global(.stress-row){display:flex;align-items:center;gap:5px;font-size:.72rem;white-space:nowrap}.effects-check :global(.stress-visual){position:relative;overflow:hidden;display:block;flex-shrink:0;width:18px;height:18px}
 .effects-check .reference{font-size:.7rem;margin-top:24px}
 </style>

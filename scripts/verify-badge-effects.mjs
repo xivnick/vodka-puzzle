@@ -57,4 +57,12 @@ for(let i=0;i<100;i++)allIds.push(...walk(createBadgeEffect(['ribbon','foil','in
 assert.equal(new Set(allIds).size,allIds.length);
 for(const rule of ['.page-hidden .custom-badge-effect *','.custom-badge-effect.is-offscreen *','prefers-reduced-motion:reduce'])assert(css.includes(rule),rule);
 assert(!css.includes('conic-gradient')&&!css.includes('repeating-radial-gradient'));
+// Dynamically-created stress badges do not receive Astro scope attributes.
+// Their size/position rules must match without an attribute on the badge itself.
+const performancePage=fs.readFileSync(new URL('../dist/test/achievement-badges/effect-performance/index.html',import.meta.url),'utf8');
+for(const className of ['stress-row','stress-visual']){
+ const rule=performancePage.match(new RegExp('\\.'+className+'([^{}]*)\\{([^}]+)\\}'));
+ assert(rule&&!rule[1].includes('data-astro-cid'),className+' dynamic selector must not require Astro scope');
+ if(className==='stress-visual')for(const property of ['position:relative','width:18px','height:18px'])assert(rule[2].includes(property),property);
+}
 console.log('Approved geometry, all five animation curves, per-element phases, unique gradient IDs, clone isolation and pause/reduced-motion hooks: passed');
