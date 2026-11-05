@@ -14,10 +14,12 @@ if(root){
   const inventory=new Map(saved?.inventory??[['c0',3],['c6',3],['c15',3],['c25',3],['c30',3],['u-start',1],['r-berry',1]]);
   const ownedIcons=new Set(saved?.ownedIcons??['leaf','puzzle','flame','sword','rabbit']);
   const ownedEffects=new Set(saved?.ownedEffects??['ribbon','afterglow']);
+  const effectCounts=new Map(saved?.effectCounts??[]);
+  for(const id of ownedEffects)effectCounts.set(id,Math.max(1,effectCounts.get(id)||0));
   const effects=new Map(data.effects.map(e=>[e.id,e]));
   const drawHistory=[];
   effects.set('sparkle',{id:'sparkle',name:'별빛 반짝임',rarity:'special'});
-  let coins=saved?.coins??1240,filter='all',craft=[];
+  let coins=saved?.coins??1240,filter='all',craft=[],craftRecipe='common',craftSlot=null;
   let drawBusy=false,finishDraw=null;
   const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date());
   let dailyDate=today(),tickets=saved?.tickets??0;
@@ -28,7 +30,7 @@ if(root){
   for(const color of saved?.colors??[])if(!colors.has(color.id))colors.set(color.id,{...color,name:color.name.replaceAll('깊은 민트','청옥').replaceAll('깊은 청록','석유색')});
   colors.set(base.id,base);
   for(const mission of data.missions)if(saved?.claimed?.[mission.id])mission.claimed=saved.claimed[mission.id];
-  function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({coins,nickname,applied,tickets,dailyDate,dailyClaimed:[...dailyClaimed],inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
+  function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({coins,nickname,applied,tickets,dailyDate,dailyClaimed:[...dailyClaimed],inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],effectCounts:[...effectCounts],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
   const rarityNames={base:'기본',common:'커먼',uncommon:'언커먼',rare:'레어',epic:'에픽',special:'특수'};
   const visible=new IntersectionObserver(entries=>entries.forEach(e=>e.target.classList.toggle('is-offscreen',!e.isIntersecting)));
   const make=(tag,className,text)=>{const e=document.createElement(tag);if(className)e.className=className;if(text!==undefined)e.textContent=text;return e;};
@@ -116,7 +118,7 @@ if(root){
     m.claimed.push(s.at);
     if(s.kind==='coins'){coins+=s.value;toast(`${s.value} 코인을 받았어요.`);}
     if(s.kind==='icon'){ownedIcons.add(s.value);toast(`${icons.get(s.value).name} 아이콘을 받았어요.`);}
-    if(s.kind==='effect'){ownedEffects.add(s.value);toast('별빛 반짝임을 받았어요.');}
+    if(s.kind==='effect'){ownedEffects.add(s.value);effectCounts.set(s.value,(effectCounts.get(s.value)||0)+1);toast('별빛 반짝임을 받았어요.');}
     renderCoins();renderMissions();renderDress();persist();
   }));
   function renderDrawHistoryStatus(){
@@ -153,7 +155,7 @@ if(root){
       timers.forEach(clearTimeout);reveals.forEach(reveal=>reveal());
       finishDraw=null;drawBusy=false;panel.setAttribute('aria-busy','false');$('#revealAll').hidden=true;
       renderDrawHistoryStatus();
-      renderCoins();toast(items.length===1?`${items[0].name} 획득!`:`${items.length}개를 받았어요.`);
+      renderCoins();renderCraft();toast(items.length===1?`${items[0].name} 획득!`:`${items.length}개를 받았어요.`);
     };
     finishDraw=complete;
     if(window.matchMedia('(prefers-reduced-motion: reduce)').matches||document.hidden){complete();return;}
@@ -164,23 +166,29 @@ if(root){
     });
   }
   $('#revealAll').addEventListener('click',()=>finishDraw?.());
-  function drawRarity(){
-    const roll=Math.random();let cumulative=0;
-    for(const rate of data.drawRates){cumulative+=rate.probability;if(roll<cumulative)return rate.rarity;}
-    return data.drawRates.at(-1).rarity;
+  function drawRarity(rareOrBetter=false){
+    const rates=data.drawRates.filter(rate=>!rareOrBetter||rate.rarity!=='common');
+    const roll=Math.random()*rates.reduce((sum,rate)=>sum+rate.probability,0);let cumulative=0;
+    for(const rate of rates){cumulative+=rate.probability;if(roll<cumulative)return rate.rarity;}
+    return rates.at(-1).rarity;
+  }
+  function rollDrawItem(rareOrBetter=false){
+    const kind=drawRarity(rareOrBetter),pool=kind==='epic'?data.effects:kind==='rare'?data.rare:data.common;
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
+  function grantDrawItems(items){
+    for(const item of items){
+      if(item.rarity==='epic'){ownedEffects.add(item.id);effectCounts.set(item.id,(effectCounts.get(item.id)||0)+1);}
+      else inventory.set(item.id,(inventory.get(item.id)||0)+1);
+    }
+    drawHistory.push(...items);
   }
   all('[data-draw]').forEach(b=>b.addEventListener('click',()=>{
     const count=Number(b.dataset.draw),cost=count*100;if(drawBusy||coins<cost)return;
     drawBusy=true;
     coins-=cost;
-    const items=Array.from({length:count},()=>{
-      const kind=drawRarity();
-      const pool=kind==='epic'?data.effects:kind==='rare'?data.rare:data.common;
-      const item=pool[Math.floor(Math.random()*pool.length)];
-      if(kind==='epic')ownedEffects.add(item.id);else inventory.set(item.id,(inventory.get(item.id)||0)+1);
-      return item;
-    });
-    drawHistory.push(...items);
+    const items=Array.from({length:count},()=>rollDrawItem());
+    grantDrawItems(items);
     renderCoins();renderInventory();renderEffects();renderCraft();persist();renderResults(items);
   }));
   function renderBadge(container,state){
@@ -259,33 +267,75 @@ if(root){
   }
   all('[data-style]').forEach(b=>b.addEventListener('click',()=>{draft.mode=b.dataset.style;pressed('[data-style]',x=>x===b);applyDress();}));
   all('[data-angle]').forEach(b=>b.addEventListener('click',()=>{draft.angle=b.dataset.angle;pressed('[data-angle]',x=>x===b);applyDress();}));
+  const craftSize=()=>craftRecipe==='epic'?1:3;
+  function craftMaterials(){
+    if(craftRecipe==='epic')return [...effectCounts].filter(([id,count])=>count>1&&effects.get(id)?.rarity==='epic').map(([id,count])=>({item:effects.get(id),quantity:count-1}));
+    return [...inventory].filter(([id,count])=>count>0&&(craftRecipe==='common'?colors.get(id)?.rarity==='common':['uncommon','rare'].includes(colors.get(id)?.rarity))).map(([id,quantity])=>({item:colors.get(id),quantity}));
+  }
+  function craftReady(){
+    const selected=craft.filter(Boolean);if(selected.length!==craftSize())return false;
+    const available=new Map(craftMaterials().map(({item,quantity})=>[item.id,quantity])),needed=new Map();
+    selected.forEach(id=>needed.set(id,(needed.get(id)||0)+1));
+    return [...needed].every(([id,count])=>(available.get(id)||0)>=count);
+  }
   function craftResult(){
-    const unique=[...new Set(craft)];if(craft.length!==3)return null;
-    const a=colors.get(unique[0]),b=colors.get(unique[1]||unique[0]);
+    if(craftRecipe!=='common'||!craftReady())return null;
+    const unique=[...new Set(craft.filter(Boolean))],a=colors.get(unique[0]),b=colors.get(unique[1]||unique[0]);
     return {id:'u-'+[a.id,b.id].sort().join('-'),name:a.id===b.id?a.name:`${a.name} · ${b.name}`,a:a.a,b:b.a,rarity:'uncommon'};
   }
+  function closeCraftSelector(){craftSlot=null;renderCraft();}
   function renderCraft(){
+    pressed('[data-recipe]',button=>button.dataset.recipe===craftRecipe);
+    all('[data-recipe]').forEach(button=>button.disabled=drawBusy);
     $('#craftSlots').replaceChildren();
-    for(let index=0;index<3;index++){
-      const slot=make('button','craft-slot');slot.type='button';const color=colors.get(craft[index]);
-      slot.setAttribute('aria-label',color?`${index+1}번 재료 ${color.name} 빼기`:`${index+1}번 빈 재료`);
-      if(color)slot.style.background=color.a;
-      slot.addEventListener('click',()=>{if(index<craft.length){craft.splice(index,1);renderCraft();}});$('#craftSlots').append(slot);
+    for(let index=0;index<craftSize();index++){
+      const slot=make('button','craft-slot'),item=(craftRecipe==='epic'?effects:colors).get(craft[index]);
+      slot.type='button';slot.dataset.craftSlot=String(index);slot.disabled=drawBusy;
+      slot.setAttribute('aria-label',`${index+1}번 재료 ${item?item.name+' 변경':'선택'}`);slot.setAttribute('aria-expanded',String(craftSlot===index));slot.setAttribute('aria-controls','craftSelector');
+      slot.title=item?.name??'재료 선택';
+      if(item?.a)slot.style.background=`linear-gradient(135deg,${item.a},${item.b})`;
+      else if(item){const star=make('img','');star.src='/icons/achievement-preview/star.svg';star.alt='';slot.append(star);}
+      else slot.textContent='+';
+      slot.addEventListener('click',()=>{craftSlot=craftSlot===index?null:index;renderCraft();});$('#craftSlots').append(slot);
     }
+    $('#craftSelector').hidden=craftSlot===null;
+    $('#clearCraftSlot').hidden=craftSlot===null||!craft[craftSlot];
+    $('#craftSelectorTitle').textContent=craftRecipe==='common'?'커먼 색깔 선택':craftRecipe==='upgrade'?'언커먼·레어 색깔 선택':'중복 에픽 선택';
     $('#craftChoices').replaceChildren();
-    [...inventory.entries()].filter(([id])=>colors.get(id).rarity==='common').forEach(([id,quantity])=>{
-      const color=colors.get(id),left=quantity-craft.filter(c=>c===id).length,b=make('button','craft-choice');b.type='button';b.dataset.craftColor=id;b.disabled=left<=0||craft.length>=3;
-      const dot=make('i');dot.style.background=color.a;b.append(dot,make('span','',color.name),make('small','',`${left}개`));b.addEventListener('click',()=>{craft.push(id);renderCraft();});$('#craftChoices').append(b);
+    const materials=craftMaterials();$('#emptyCraftChoices').hidden=materials.length>0;
+    $('#emptyCraftChoices').textContent=craftRecipe==='epic'?'중복 에픽이 없습니다.':'선택할 색깔이 없습니다.';
+    materials.forEach(({item,quantity})=>{
+      const used=craft.filter((id,index)=>index!==craftSlot&&id===item.id).length,left=quantity-used,button=make('button','craft-choice');
+      button.type='button';button.dataset.craftMaterial=item.id;button.disabled=left<=0||drawBusy;
+      const dot=make('i','');dot.style.background=item.a?`linear-gradient(135deg,${item.a},${item.b})`:'#8b7b9c';
+      button.append(dot,make('span','',item.name),make('small','',`${left}개`));
+      button.addEventListener('click',()=>{
+        if(craftSlot===null||drawBusy||left<=0)return;
+        const index=craftSlot;craft[index]=item.id;closeCraftSelector();$('#craftSlots').querySelector(`[data-craft-slot="${index}"]`).focus({preventScroll:true});
+      });$('#craftChoices').append(button);
     });
-    const result=craftResult();$('#craftOutcome').textContent=result?`${result.name} · 언커먼`:'세 가지 색을 선택해주세요.';$('#craftConfirm').disabled=!result;
+    const ready=craftReady(),result=craftResult();
+    $('#craftOutcome').textContent=ready?(result?`${result.name} · 언커먼`:'레어 이상 1개'):`재료 ${craftSize()}개를 선택해주세요.`;
+    $('#craftConfirm').textContent=craftRecipe==='common'?'조합하기':'레어 이상 뽑기';$('#craftConfirm').disabled=drawBusy||!ready;
   }
+  all('[data-recipe]').forEach(button=>button.addEventListener('click',()=>{if(drawBusy)return;craftRecipe=button.dataset.recipe;craft=[];closeCraftSelector();}));
+  $('#closeCraftSelector').addEventListener('click',closeCraftSelector);
+  $('#clearCraftSlot').addEventListener('click',()=>{if(craftSlot===null)return;delete craft[craftSlot];closeCraftSelector();});
   $('#craftConfirm').addEventListener('click',()=>{
-    const result=craftResult();if(!result)return;
-    const needed=new Map();craft.forEach(id=>needed.set(id,(needed.get(id)||0)+1));
-    if([...needed].some(([id,n])=>(inventory.get(id)||0)<n))return;
-    needed.forEach((n,id)=>{const left=inventory.get(id)-n;if(left)inventory.set(id,left);else inventory.delete(id);});
-    colors.set(result.id,result);inventory.set(result.id,(inventory.get(result.id)||0)+1);draft.color=result.id;
-    craft=[];renderCraft();applyDress();toast(`${result.name} 언커먼을 만들었어요.`);
+    if(drawBusy||!craftReady())return;
+    const result=craftResult(),needed=new Map();craft.filter(Boolean).forEach(id=>needed.set(id,(needed.get(id)||0)+1));
+    if(craftRecipe==='epic')needed.forEach((count,id)=>effectCounts.set(id,effectCounts.get(id)-count));
+    else needed.forEach((count,id)=>{const left=inventory.get(id)-count;if(left)inventory.set(id,left);else inventory.delete(id);});
+    craft=[];craftSlot=null;
+    if(result){
+      colors.set(result.id,result);inventory.set(result.id,(inventory.get(result.id)||0)+1);draft.color=result.id;
+      applyDress();renderCraft();toast(`${result.name} 언커먼을 만들었어요.`);
+    }else{
+      drawBusy=true;const items=[rollDrawItem(true)];grantDrawItems(items);
+      if(draft.color!=='base'&&!inventory.has(draft.color)){draft.color='base';draft.effect='none';}
+      renderCoins();applyDress();renderCraft();renderResults(items);
+      $('#resultItems').lastElementChild.scrollIntoView({block:'nearest',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+    }
   });
   document.addEventListener('visibilitychange',()=>{root.classList.toggle('page-hidden',document.hidden);if(document.hidden)finishDraw?.();});
   $('#accountName').textContent=nickname;$('#accountNickname').value=nickname;setBadgeName($('#profileBadge'),nickname);
