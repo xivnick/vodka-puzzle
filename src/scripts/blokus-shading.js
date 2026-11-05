@@ -7,7 +7,7 @@ const board=$('Board'),mode=$('Mode'),inputs=[...board.querySelectorAll('[data-c
 const account=()=>window.puzzleAccount?.user?.id || 'guest';
 let filled=new Set(),crosses=new Set(),ready=false,owner=null,recorded=false,press=null;
 let longPressMeans='cross';
-const state=()=>({version:4,puzzleId,filled:[...filled].sort((a,b)=>a-b),crosses:[...crosses].sort((a,b)=>a-b)});
+const state=()=>({version:1,puzzleId,filled:[...filled].sort((a,b)=>a-b),crosses:[...crosses].sort((a,b)=>a-b)});
 const active=()=>ready && (preview || owner===account());
 function persist() {
   if(!active())return;
@@ -51,7 +51,7 @@ function render() {
   if(!result.complete)recorded=false;
   else if(!preview && active() && !recorded) {
     recorded=true;
-    if(window.puzzlePage?.published)window.recordCompletion(puzzleId,state());
+    window.recordCompletion(puzzleId,state());
   }
 }
 function toggle(index,mark='fill') {
@@ -106,12 +106,32 @@ function restore(saved) {
 function init() {
   if(ready && (preview || owner===account()))return;
   ready=false;owner=account();
-  let saved=null;
-  try {saved=preview ? JSON.parse(localStorage.getItem(puzzleId) || 'null') : window.loadLocalState(puzzleId);}catch {}
-  restore(saved);ready=true;render();
+  let saved=null,migrated=false;
+  try {
+    saved=preview ? JSON.parse(localStorage.getItem(puzzleId) || 'null') : window.loadLocalState(puzzleId);
+    if(!preview && puzzleId==='261105_01' && !parseState(saved,puzzleId)) {
+      // Preserve outlines without guessing which enclosed regions were empty.
+      const backupKey=`${puzzleId}:before-shading`;
+      if(saved!=null && localStorage.getItem(backupKey)===null)localStorage.setItem(backupKey,JSON.stringify(saved));
+      const testId='test-blokus-shading';
+      const test=JSON.parse(localStorage.getItem(testId) || 'null');
+      const parsed=parseState(test,testId);
+      if(parsed && (parsed.filled.size || parsed.crosses.size)) {
+        saved={...test,version:1,puzzleId};migrated=true;
+      }
+    }
+  }catch {}
+  restore(saved);ready=true;
+  if(migrated)persist();
+  render();
   if(!preview)window.initCloudBtns();
 }
 if(!preview) {
+  window.checkComplete=()=>{
+    if(!ready)return;
+    if(owner!==account()) {cancelPress();owner=account();}
+    recorded=false;render();
+  };
   window.handleCloudSave=()=>{if(active())return window.saveProgressCloud(puzzleId,state());};
   window.handleCloudLoad=async()=>{
     if(!active())return;

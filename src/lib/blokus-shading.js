@@ -3,10 +3,10 @@ import { classifyPentomino } from './pentominous.js';
 export { blokus, pieces };
 
 export function parseState(saved,puzzleId) {
-  if(![3,4].includes(saved?.version) || saved.puzzleId!==puzzleId || !Array.isArray(saved.filled) || saved.version===4 && !Array.isArray(saved.crosses))return null;
-  const filled=new Set(saved.filled),crosses=new Set(saved.version===4 ? saved.crosses : []);
+  if(![1,3,4].includes(saved?.version) || saved.puzzleId!==puzzleId || !Array.isArray(saved.filled) || saved.version!==3 && !Array.isArray(saved.crosses))return null;
+  const filled=new Set(saved.filled),crosses=new Set(saved.version===3 ? [] : saved.crosses);
   const valid=n=>Number.isInteger(n) && n>=0 && n<blokus.rows*blokus.cols;
-  if(filled.size!==saved.filled.length || crosses.size!==(saved.crosses?.length || 0) || [...filled,...crosses].some(n=>!valid(n)) || [...crosses].some(n=>filled.has(n)))return null;
+  if(filled.size!==saved.filled.length || crosses.size!==(saved.version===3 ? 0 : saved.crosses.length) || [...filled,...crosses].some(n=>!valid(n)) || [...crosses].some(n=>filled.has(n)))return null;
   return {filled,crosses};
 }
 function neighbors(index) {
