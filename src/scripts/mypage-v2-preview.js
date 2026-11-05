@@ -21,6 +21,7 @@ if(root){
   effects.set('sparkle',{id:'sparkle',name:'별빛 반짝임',rarity:'special'});
   let coins=saved?.coins??1240,filter='all',craft=[],craftRecipe='common',craftSlot=null;
   let drawBusy=false,finishDraw=null;
+  const activeDraws=new Set();
   const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date());
   let dailyDate=today(),tickets=saved?.tickets??0;
   const dailyClaimed=new Set((saved?.dailyDate===dailyDate?saved.dailyClaimed??[]:[]).filter(id=>data.dailyQuests.some(q=>q.id===id&&q.complete)));
@@ -64,7 +65,7 @@ if(root){
   function renderCoins(){
     $('#coinBalance').textContent=coins.toLocaleString('ko-KR');
     $('#coinBalance').closest('.coin-amount').setAttribute('aria-label',`${coins.toLocaleString('ko-KR')} 코인`);
-    all('[data-draw]').forEach(b=>b.disabled=drawBusy||coins<Number(b.dataset.draw)*100);
+    all('[data-draw]').forEach(b=>b.disabled=(drawBusy&&Number(b.dataset.draw)!==1)||coins<Number(b.dataset.draw)*100);
     $('#ticketBalance').textContent=tickets.toLocaleString('ko-KR');$('#ticketBalanceWrapper').hidden=tickets===0;$('#ticketBalanceWrapper').setAttribute('aria-label',`타임머신 티켓 ${tickets}장`);
   }
   function syncDailyDate(){const current=today();if(current!==dailyDate){dailyDate=current;dailyClaimed.clear();}}
@@ -151,13 +152,17 @@ if(root){
     });
     if(!animate){reveals.forEach(reveal=>reveal());renderDrawHistoryStatus();return;}
     const complete=()=>{
-      if(finishDraw!==complete)return;
+      if(!activeDraws.has(batch))return;
       timers.forEach(clearTimeout);reveals.forEach(reveal=>reveal());
-      finishDraw=null;drawBusy=false;panel.setAttribute('aria-busy','false');$('#revealAll').hidden=true;
-      renderDrawHistoryStatus();
+      activeDraws.delete(batch);drawBusy=activeDraws.size>0;
+      if(!drawBusy)finishDraw=null;
+      panel.setAttribute('aria-busy',String(drawBusy));$('#revealAll').hidden=!drawBusy;
+      if(!drawBusy)renderDrawHistoryStatus();
       renderCoins();renderCraft();toast(items.length===1?`${items[0].name} 획득!`:`${items.length}개를 받았어요.`);
     };
-    finishDraw=complete;
+    const batch={complete};activeDraws.add(batch);
+    $('#revealAll').textContent=activeDraws.size===1&&items.length===1?'바로 보기':'모두 보기';
+    finishDraw=()=>{for(const pending of [...activeDraws])pending.complete();};
     if(window.matchMedia('(prefers-reduced-motion: reduce)').matches||document.hidden){complete();return;}
     let delay=620;
     reveals.forEach((reveal,index)=>{
@@ -184,7 +189,7 @@ if(root){
     drawHistory.push(...items);
   }
   all('[data-draw]').forEach(b=>b.addEventListener('click',()=>{
-    const count=Number(b.dataset.draw),cost=count*100;if(drawBusy||coins<cost)return;
+    const count=Number(b.dataset.draw),cost=count*100;if((drawBusy&&count!==1)||coins<cost)return;
     drawBusy=true;
     coins-=cost;
     const items=Array.from({length:count},()=>rollDrawItem());
