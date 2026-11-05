@@ -1,0 +1,36 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import { blokus, pieces } from '../lib/blokus.js';
+const puzzleId = '261105_01';
+---
+<PuzzleLayout title="261105 블로커스" {puzzleId} subtitle="점에서만 블록의 모서리가 맞닿도록 모든 블록을 놓으세요" description="블록 12개를 회전하거나 뒤집어 점의 접촉 규칙에 맞게 배치하는 퍼즐">
+  <div slot="rules">주어진 블록 12개를 격자 안에 겹치지 않게 모두 놓으세요. 블록은 회전하거나 뒤집을 수 있습니다.<br />점에서는 서로 다른 블록이 대각선으로 맞닿아야 하고, 점이 없는 곳에서는 서로 다른 블록이 대각선으로 맞닿을 수 없습니다. 서로 다른 블록은 변끼리 맞닿을 수 없습니다.</div>
+  <div slot="controls">블록을 선택한 뒤 격자를 눌러 위치를 잡고 ‘놓기’를 누르세요. 누른 칸을 블록 외곽의 왼쪽 위에 맞춥니다. 회전·뒤집기로 방향을 바꾸고, 놓인 블록을 선택해 이동하거나 지울 수 있습니다.</div>
+  <section id="blokusGame" data-puzzle-id={puzzleId} aria-label="블로커스">
+    <div class="blokus-palette" aria-label="블록 선택">
+      {Object.entries(pieces).map(([name,cells]) => <button type="button" class="blokus-piece" data-piece={name} aria-label={`${name} 블록`} aria-pressed="false"><svg viewBox={`${(Math.max(...cells.map(([x]) => x))+1)*10-53} ${(Math.max(...cells.map(([,y]) => y))+1)*10-53} 106 106`} aria-hidden="true">{cells.map(([x,y]) => <rect x={x*20} y={y*20} width="20" height="20" />)}</svg><span>{name}</span></button>)}
+    </div>
+    <p id="blokusSelection" class="blokus-hint" role="status">블록을 선택하세요.</p>
+    <svg id="blokusBoard" viewBox="-8 -8 536 376" role="group" aria-label="13열 9행 블로커스 격자">
+      <rect x="0" y="0" width="520" height="360" fill="white" />
+      <g id="blokusPlaced" aria-hidden="true" />
+      <g class="blokus-grid" aria-hidden="true">
+        {Array.from({length:14},(_,x) => <path d={`M${x*40} 0V360`} />)}
+        {Array.from({length:10},(_,y) => <path d={`M0 ${y*40}H520`} />)}
+      </g>
+      <g id="blokusGhost" aria-hidden="true" />
+      <g class="blokus-input">{Array.from({length:117},(_,i) => <rect x={i%13*40} y={Math.floor(i/13)*40} width="40" height="40" fill="transparent" data-x={i%13} data-y={Math.floor(i/13)} role="button" tabindex="0" aria-label={`${Math.floor(i/13)+1}행 ${i%13+1}열`} />)}</g>
+      <g class="blokus-dots" aria-hidden="true">{blokus.dots.map(([x,y]) => <circle cx={x*40} cy={y*40} r="5" />)}</g>
+    </svg>
+    <div class="blokus-tools"><button id="blokusRotate" type="button">회전</button><button id="blokusFlip" type="button">뒤집기</button><button id="blokusPlace" type="button">놓기</button><button id="blokusRemove" type="button">지우기</button></div>
+    <p id="blokusProgress" class="blokus-hint">놓은 블록 0 / 12</p>
+    <div class="bottom-buttons"><button id="blokusCheck" type="button">완료 확인</button><button id="blokusReset" type="button" class="danger">초기화</button></div>
+    <p id="blokusFeedback" class="blokus-feedback" role="status" hidden></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="blokusComplete" />
+</PuzzleLayout>
+<script>import '../scripts/blokus.js';</script>
+<style is:global>
+.blokus-palette{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.blokus-piece{padding:5px 2px 3px;background:#fff;border:1px solid #ddd;border-radius:4px;position:relative;min-width:0}.blokus-piece svg{width:100%;height:53px;display:block}.blokus-piece rect{fill:#edf0f3;stroke:#555;stroke-width:1.5}.blokus-piece span{font-size:.7rem;color:#666}.blokus-piece[aria-pressed=true]{background:#e8edf5;border-color:#6c829f}.blokus-piece.used{opacity:.45}.blokus-piece.used[aria-pressed=true]{opacity:1}.blokus-piece.used span:after{content:' ✓'}.blokus-hint{text-align:center;font-size:.75rem;color:#888;margin:10px 0;min-height:1.5em}#blokusBoard{display:block;width:100%;height:auto;user-select:none;touch-action:manipulation}.blokus-grid path{fill:none;stroke:#bbb;stroke-width:1;stroke-dasharray:3 4}.blokus-dots{pointer-events:none;fill:#222}.blokus-input rect{cursor:pointer}.blokus-tools{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}.blokus-tools button{padding:8px 0;min-width:0}#blokusGame button:disabled{opacity:.4;cursor:default}#blokusGame .bottom-buttons{gap:8px}#blokusGame .bottom-buttons button{flex:1}.blokus-feedback{text-align:center;font-size:.8rem;color:#a65b51;line-height:1.6;margin:12px 0 0}
+</style>
