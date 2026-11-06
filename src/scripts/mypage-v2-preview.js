@@ -1,4 +1,4 @@
-import {getAchievementGoal as goal} from '../lib/achievement-goals.js';
+import {getAchievementGoal as goal,isAchievementThreshold} from '../lib/achievement-goals.js';
 import {createBadgeEffect,cloneBadgeVisual} from './nickname-badge-effects.js';
 import {initNicknameBadges} from './nickname-badge-alignment.js';
 const root=document.querySelector('.mypage-v2');
@@ -44,7 +44,7 @@ if(root){
   coins+=migratedRefund;
 
   for(const mission of data.missions){
-    if(saved?.claimed?.[mission.id]&&(!mission.featureAction||saved.featureMissionVersion===2))mission.claimed=saved.claimed[mission.id];
+    if(saved?.claimed?.[mission.id]&&(!mission.featureAction||saved.featureMissionVersion===2))mission.claimed=saved.claimed[mission.id].filter(at=>isAchievementThreshold(mission,at));
     if(mission.featureAction)mission.count=featureCounts[mission.featureAction]||0;
   }
   function persist(){try{sessionStorage.setItem(storageKey,JSON.stringify({allClearEnabled,allClearCompleted,coins,featureMissionVersion:2,featureCounts,nickname,applied,tickets,dailyDate,dailyClaimed:[...dailyClaimed],inventory:[...inventory],ownedIcons:[...ownedIcons],ownedEffects:[...ownedEffects],colors:[...colors.values()],claimed:Object.fromEntries(data.missions.map(m=>[m.id,m.claimed]))}));}catch{}}
@@ -125,6 +125,13 @@ if(root){
       bar.firstElementChild.style.width=(s?Math.min(m.count/s.at,1)*100:100)+'%';
       const reward=row.querySelector('.mission-reward');
       if(s?.kind==='coins')reward.replaceChildren(coinAmount(s.value));
+      else if(s?.kind==='random-coins'){
+        const range=make('small','',`${s.options[0]}~${s.options.at(-1)}`),amount=coinAmount('?');
+        amount.setAttribute('aria-label',`${s.options[0]}~${s.options.at(-1)}코인 무작위 보상`);const wrapper=make('span','random-coin-reward');wrapper.append(amount,range);reward.replaceChildren(wrapper);
+      }else if(s?.kind==='tickets'){
+        const amount=make('span','daily-ticket'),icon=make('img');icon.src='/icons/time-machine/ticket.svg';icon.alt='';icon.width=14;icon.height=14;
+        amount.setAttribute('aria-label',`타임머신 티켓 ${s.value}장`);amount.append(icon,make('span','',s.value));reward.replaceChildren(amount);
+      }
       else reward.textContent=s?(s.kind==='effect'?'별빛 반짝임 효과':`${icons.get(s.value).name} 아이콘`):m.featureAction?'보상 수령 완료':m.id==='all'?'별빛 반짝임 획득 완료':'아이콘 획득 완료';
       const button=row.querySelector('[data-claim]');button.disabled=!ready;button.classList.toggle('claim-ready',ready);button.textContent=ready?'받기':s?'진행 중':'획득 완료';
     });
@@ -138,7 +145,10 @@ if(root){
     const m=data.missions.find(m=>m.id===b.dataset.claim),s=goal(m);
     if(!s||m.count<s.at||m.claimed.includes(s.at))return;
     m.claimed.push(s.at);
-    if(s.kind==='coins'){coins+=s.value;toast(`${s.value} 코인을 받았어요.`);}
+    if(s.kind==='coins'||s.kind==='random-coins'){
+      const amount=s.kind==='coins'?s.value:s.options[Math.floor(Math.random()*s.options.length)];coins+=amount;toast(`${amount} 코인을 받았어요.`);
+    }
+    if(s.kind==='tickets'){tickets+=s.value;toast(`타임머신 티켓 ${s.value}장을 받았어요.`);}
     if(s.kind==='icon'){ownedIcons.add(s.value);toast(`${icons.get(s.value).name} 아이콘을 받았어요.`);}
         renderCoins();renderMissions();renderDress();persist();
   }));

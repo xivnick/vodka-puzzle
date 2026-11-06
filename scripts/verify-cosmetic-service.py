@@ -14,9 +14,12 @@ def claims(uid):
     return json.dumps({'sub': uid, 'role': 'authenticated', 'app_metadata': {'provider': 'google'}})
 sql = 'BEGIN;\nSET LOCAL statement_timeout=\'30s\';\n'
 if '--rehearse' in sys.argv:
-    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql']:
+    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql']:
         migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations' / name).read_text()
         sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
+if '--reward-rehearsal' in sys.argv:
+    migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_achievement_repeat_rewards.sql').read_text()
+    sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 sql += r"""
 CREATE FUNCTION pg_temp.expect_error(command text, expected text) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
@@ -95,7 +98,8 @@ DO $$ DECLARE first jsonb; again jsonb; req uuid:=gen_random_uuid(); coins bigin
  first:=public.claim_achievement(gen_random_uuid(),'feature-equip-icon','account',1);
  IF first->>'already_claimed'<>'true' THEN RAISE EXCEPTION 'Claim repeated after unequip'; END IF;
  PERFORM public.claim_achievement(gen_random_uuid(),'feature-craft','account',5);
- PERFORM pg_temp.expect_error($q$SELECT public.claim_achievement(gen_random_uuid(),'feature-craft','account',10)$q$,'REWARD_NOT_CONFIGURED');
+ first:=public.claim_achievement(gen_random_uuid(),'feature-craft','account',10);
+ IF first->'reward'->>'coins'<>'100' THEN RAISE EXCEPTION 'Craft repeat amount'; END IF;
 END $$;
 SELECT pg_temp.expect_error($q$SELECT public.set_cosmetic_equipment(0,'{"icon_id":"icon:crown"}')$q$,'ITEM_NOT_OWNED');
 SELECT pg_temp.expect_error($q$SELECT public.set_cosmetic_equipment(0,'{"color_id":"common:c0","effect_id":"effect:ribbon"}')$q$,'EFFECT_REQUIRES_UNCOMMON');
@@ -106,13 +110,16 @@ UPDATE private.cosmetic_draw_configs SET status='active',price_per_draw=100,
  definition=jsonb_set(definition,'{rare}','["rare:r-berry"]') WHERE version=1;
 SELECT pg_temp.expect_error('UPDATE private.cosmetic_draw_configs SET price_per_draw=101 WHERE version=1','DRAW_CONFIG_IMMUTABLE');
 SET LOCAL ROLE authenticated;
-DO $$ DECLARE req uuid:=gen_random_uuid(); first jsonb; again jsonb; BEGIN
+DO $$ DECLARE req uuid:=gen_random_uuid(); reward_req uuid:=gen_random_uuid(); first jsonb; again jsonb; BEGIN
  first:=public.draw_cosmetics(req,1,10); again:=public.draw_cosmetics(req,1,10);
  IF first<>again OR jsonb_array_length(first->'results')<>10 OR first->'progress'->>'draw_count'<>'10' THEN RAISE EXCEPTION 'Draw idempotency or count'; END IF;
  IF public.cosmetic_operation(req)<>first THEN RAISE EXCEPTION 'Operation lookup changed result'; END IF;
  PERFORM pg_temp.expect_error(format('SELECT public.draw_cosmetics(%L,1,1)',req),'REQUEST_ID_REUSED');
  PERFORM public.claim_achievement(gen_random_uuid(),'feature-draw','account',5);
- PERFORM pg_temp.expect_error($q$SELECT public.claim_achievement(gen_random_uuid(),'feature-draw','account',10)$q$,'REWARD_NOT_CONFIGURED');
+ first:=public.claim_achievement(reward_req,'feature-draw','account',10);
+ IF (first->'reward'->>'coins')::integer NOT IN (10,20,30,40,50,60,70,80,90,100) THEN RAISE EXCEPTION 'Random reward outside choices'; END IF;
+ IF first<>public.claim_achievement(reward_req,'feature-draw','account',10) THEN RAISE EXCEPTION 'Random reward replay changed'; END IF;
+
  PERFORM pg_temp.expect_error('SELECT public.draw_cosmetics(gen_random_uuid(),999,1)','CONFIG_CHANGED');
 END $$;
 RESET ROLE;
@@ -201,6 +208,28 @@ DO $$ DECLARE row jsonb; BEGIN
  SELECT value INTO row FROM jsonb_array_elements(public.achievement_context()->'achievements') WHERE value->>'id'='daily';
  IF row->>'current'<>'0' OR row->>'state'<>'claimable' THEN RAISE EXCEPTION 'Historical streak derivation'; END IF;
  PERFORM public.claim_achievement(gen_random_uuid(),'daily','account',7);
+END $$;
+RESET ROLE;
+-- Ticket repeats start at 30, not first_goal + interval (37).
+INSERT INTO public.daily_sudoku(day,opens_at,givens)
+ SELECT (clock_timestamp() AT TIME ZONE 'Asia/Seoul')::date-i,
+ (((clock_timestamp() AT TIME ZONE 'Asia/Seoul')::date-i)::timestamp AT TIME ZONE 'Asia/Seoul'),repeat('0',81)
+ FROM generate_series(0,29) i ON CONFLICT DO NOTHING;
+INSERT INTO public.daily_sudoku_completions(day,user_id,season_id,nickname,rank,completed_at)
+ SELECT d.day,'__USER__',s.active_season,'__cosmetic_a',
+ (SELECT coalesce(max(rank),0)+1 FROM public.daily_sudoku_completions c WHERE c.day=d.day),clock_timestamp()
+ FROM public.daily_sudoku d CROSS JOIN public.semester_settings s WHERE s.id
+ AND d.day BETWEEN (clock_timestamp() AT TIME ZONE 'Asia/Seoul')::date-29 AND (clock_timestamp() AT TIME ZONE 'Asia/Seoul')::date
+ AND NOT EXISTS(SELECT 1 FROM public.daily_sudoku_completions c WHERE c.day=d.day AND c.user_id='__USER__');
+SET LOCAL ROLE authenticated;
+DO $$ DECLARE row jsonb; req uuid:=gen_random_uuid(); result jsonb; BEGIN
+ SELECT value INTO row FROM jsonb_array_elements(public.achievement_context()->'achievements') WHERE value->>'id'='daily';
+ IF row->>'threshold'<>'30' OR row->'reward'<>'{"tickets":1}'::jsonb THEN RAISE EXCEPTION 'Streak ticket configuration'; END IF;
+ PERFORM pg_temp.expect_error($q$SELECT public.claim_achievement(gen_random_uuid(),'daily','account',14)$q$,'INVALID_STAGE');
+ result:=public.claim_achievement(req,'daily','account',30);
+ IF result->'reward'<>'{"tickets":1}'::jsonb OR public.claim_achievement(req,'daily','account',30)<>result THEN RAISE EXCEPTION 'Streak ticket or replay'; END IF;
+ SELECT value INTO row FROM jsonb_array_elements(public.achievement_context()->'achievements') WHERE value->>'id'='daily';
+ IF row->>'threshold'<>'60' THEN RAISE EXCEPTION 'Streak next threshold'; END IF;
 END $$;
 RESET ROLE;
 -- Frozen first place survives account deletion, no runner-up promotion.

@@ -582,31 +582,13 @@
           "at": 10,
           "kind": "icon",
           "value": "puzzle"
-        },
-        {
-          "at": 20,
-          "kind": "coins",
-          "value": 80
-        },
-        {
-          "at": 30,
-          "kind": "coins",
-          "value": 80
-        },
-        {
-          "at": 40,
-          "kind": "coins",
-          "value": 80
-        },
-        {
-          "at": 50,
-          "kind": "coins",
-          "value": 80
         }
       ],
       "claimed": [
         10
-      ]
+      ],
+      "repeatEvery": 10,
+      "repeatCoins": 100
     },
     {
       "id": "daily",
@@ -620,31 +602,14 @@
           "at": 7,
           "kind": "icon",
           "value": "flame"
-        },
-        {
-          "at": 14,
-          "kind": "coins",
-          "value": 60
-        },
-        {
-          "at": 21,
-          "kind": "coins",
-          "value": 60
-        },
-        {
-          "at": 28,
-          "kind": "coins",
-          "value": 60
-        },
-        {
-          "at": 35,
-          "kind": "coins",
-          "value": 60
         }
       ],
       "claimed": [
         7
-      ]
+      ],
+      "repeatStart": 30,
+      "repeatEvery": 30,
+      "repeatTickets": 1
     },
     {
       "id": "easy",
@@ -658,30 +623,12 @@
           "at": 10,
           "kind": "icon",
           "value": "cherry"
-        },
-        {
-          "at": 20,
-          "kind": "coins",
-          "value": 60
-        },
-        {
-          "at": 30,
-          "kind": "coins",
-          "value": 60
-        },
-        {
-          "at": 40,
-          "kind": "coins",
-          "value": 60
-        },
-        {
-          "at": 50,
-          "kind": "coins",
-          "value": 60
         }
       ],
       "claimed": [],
-      "difficulty": 1
+      "difficulty": 1,
+      "repeatEvery": 10,
+      "repeatCoins": 30
     },
     {
       "id": "medium",
@@ -695,30 +642,12 @@
           "at": 10,
           "kind": "icon",
           "value": "brain"
-        },
-        {
-          "at": 20,
-          "kind": "coins",
-          "value": 90
-        },
-        {
-          "at": 30,
-          "kind": "coins",
-          "value": 90
-        },
-        {
-          "at": 40,
-          "kind": "coins",
-          "value": 90
-        },
-        {
-          "at": 50,
-          "kind": "coins",
-          "value": 90
         }
       ],
       "claimed": [],
-      "difficulty": 2
+      "difficulty": 2,
+      "repeatEvery": 10,
+      "repeatCoins": 60
     },
     {
       "id": "hard",
@@ -732,30 +661,12 @@
           "at": 10,
           "kind": "icon",
           "value": "skull"
-        },
-        {
-          "at": 20,
-          "kind": "coins",
-          "value": 120
-        },
-        {
-          "at": 30,
-          "kind": "coins",
-          "value": 120
-        },
-        {
-          "at": 40,
-          "kind": "coins",
-          "value": 120
-        },
-        {
-          "at": 50,
-          "kind": "coins",
-          "value": 120
         }
       ],
       "claimed": [],
-      "difficulty": 3
+      "difficulty": 3,
+      "repeatEvery": 10,
+      "repeatCoins": 90
     },
     {
       "id": "first-blood",
@@ -965,7 +876,18 @@
       ],
       "claimed": [],
       "repeatEvery": 5,
-      "repeatCoins": 100
+      "repeatCoinOptions": [
+        10,
+        20,
+        30,
+        40,
+        50,
+        60,
+        70,
+        80,
+        90,
+        100
+      ]
     },
     {
       "id": "feature-craft",

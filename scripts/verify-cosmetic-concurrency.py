@@ -47,7 +47,7 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         sql(ticket[ticket.index('CREATE FUNCTION private.ensure_time_machine_wallet'):ticket.index('CREATE FUNCTION public.time_machine_context')])
         sql("""ALTER TABLE public.puzzle_catalog ADD CONSTRAINT puzzle_catalog_difficulty_check CHECK(difficulty IS NULL OR char_length(difficulty)>0);
         CREATE FUNCTION public.admin_update_puzzle(requested_season text,requested_puzzle text,new_title text,new_summary text,new_type text,new_status text,new_published_at timestamptz,new_sort_order integer,expected_updated_at timestamptz,new_difficulty text) RETURNS public.puzzle_catalog LANGUAGE sql AS $$ SELECT NULL::public.puzzle_catalog $$;""")
-        for name in ['20261105_cosmetic_foundation.sql', '20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql']:
+        for name in ['20261105_cosmetic_foundation.sql', '20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql']:
             sql((ROOT / 'supabase/migrations' / name).read_text())
         sql("UPDATE private.cosmetic_settings SET enabled=true,history_policy='all_records',champion_tickets=1; UPDATE private.cosmetic_draw_configs SET status='active',price_per_draw=100;")
         users = [str(uuid.uuid4()) for _ in range(8)]
@@ -115,6 +115,43 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         results = parallel([(h,"SELECT public.claim_daily_task(gen_random_uuid(),'daily-champion',(now() AT TIME ZONE 'Asia/Seoul')::date)")]*2)
         assert sorted(r['already_claimed'] for r in results)==[False,True]
         assert sql(f"SELECT balance FROM private.time_machine_wallets WHERE user_id='{h}'")=='2'
+        # Newly configured fixed/random/ticket repeats use real record-derived progress.
+        fixed, lucky, streak_user = [str(uuid.uuid4()) for _ in range(3)]
+        for uid in [fixed,lucky,streak_user]:
+            sql(f"INSERT INTO auth.users VALUES('{uid}'); INSERT INTO public.semester_nicknames VALUES('2026-2','{uid}','reward_test');")
+        sql(f"""INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,puzzle_type,status,published_at,difficulty)
+          SELECT '2026-2','reward_'||i,'test','summary','test','published',now()-interval '1 day',(i-1)/20+1 FROM generate_series(1,60) i;
+          INSERT INTO public.semester_completions SELECT '2026-2','reward_'||i,'{fixed}','reward_test',now(),false FROM generate_series(1,60) i;""")
+        for mission,amount in [('regular',100),('easy',30),('medium',60),('hard',90)]:
+            icon=json.loads(rpc(fixed,f"SELECT public.claim_achievement(gen_random_uuid(),'{mission}','season:2026-2',10)"))
+            assert 'coins' not in icon['reward']
+            payout=json.loads(rpc(fixed,f"SELECT public.claim_achievement(gen_random_uuid(),'{mission}','season:2026-2',20)"))
+            assert payout['reward']['coins']==amount
+        assert sql(f"SELECT balance FROM private.account_coin_wallets WHERE user_id='{fixed}'")=='280'
+        provision(lucky,coins=10000)
+        rpc(lucky,'SELECT public.draw_cosmetics(gen_random_uuid(),1,10)')
+        rpc(lucky,"SELECT public.claim_achievement(gen_random_uuid(),'feature-draw','account',5)")
+        request=str(uuid.uuid4())
+        command=f"SELECT public.claim_achievement('{request}','feature-draw','account',10)"
+        results=parallel([(lucky,command)]*2)
+        assert results[0]==results[1]
+        assert results[0]['reward']['coins'] in range(10,101,10)
+        stored=json.loads(sql(f"SELECT reward FROM private.mission_claims WHERE user_id='{lucky}' AND mission_id='feature-draw' AND threshold=10"))
+        assert stored==results[0]['reward'] and 'coin_options' not in stored
+        assert json.loads(rpc(lucky,"SELECT public.claim_achievement(gen_random_uuid(),'feature-draw','account',10)"))['already_claimed']
+        sql(f"INSERT INTO public.daily_sudoku_completions SELECT (now() AT TIME ZONE 'Asia/Seoul')::date-i,'{streak_user}','2026-2','reward_test',99,now(),false FROM generate_series(0,29) i")
+        rpc(streak_user,"SELECT public.claim_achievement(gen_random_uuid(),'daily','account',7)")
+        context=json.loads(rpc(streak_user,'SELECT public.achievement_context()'))
+        daily=next(row for row in context['achievements'] if row['id']=='daily')
+        assert daily['threshold']==30 and daily['reward']=={'tickets':1}
+        results=parallel([(streak_user,"SELECT public.claim_achievement(gen_random_uuid(),'daily','account',30)")]*2)
+        assert sorted(r['already_claimed'] for r in results)==[False,True]
+        assert sql(f"SELECT balance FROM private.time_machine_wallets WHERE user_id='{streak_user}'")=='2'
+        context=json.loads(rpc(streak_user,'SELECT public.achievement_context()'))
+        daily=next(row for row in context['achievements'] if row['id']=='daily')
+        assert daily['threshold']==60 and daily['state']=='in_progress'
+        notices=json.loads(sql("SELECT private.achievement_milestone_diff('{\"daily\":7}','{\"daily\":90}')"))
+        assert [n['threshold'] for n in notices if n['id']=='daily']==[30,60,90]
         assert sql("""SELECT count(*) FROM private.account_coin_wallets w WHERE balance<>coalesce((SELECT sum(delta) FROM private.coin_ledger l WHERE l.user_id=w.user_id),0)""")=='0'
         assert sql("""SELECT count(*) FROM (SELECT user_id,item_id,sum(delta) AS quantity FROM private.inventory_ledger GROUP BY user_id,item_id) l WHERE quantity<>coalesce((SELECT quantity FROM private.cosmetic_inventory i WHERE i.user_id=l.user_id AND i.item_id=l.item_id),0)""")=='0'
         assert sql("SELECT count(*) FROM private.account_operations WHERE status<>'completed'")=='0'

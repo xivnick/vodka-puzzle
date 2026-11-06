@@ -1,6 +1,7 @@
 ---
 import coin from '../../public/icons/coin-candidates/tabler-coins.svg?raw';
 const {amount,id}=Astro.props;
-const formatted=Number(amount).toLocaleString('ko-KR');
+const formatted=(typeof amount==='number'?amount.toLocaleString('ko-KR'):String(amount));
+
 ---
 <span class="coin-amount" aria-label={`${formatted} 코인`}><span class="coin-icon" aria-hidden="true"><Fragment set:html={coin}/></span><span id={id}>{formatted}</span></span>
