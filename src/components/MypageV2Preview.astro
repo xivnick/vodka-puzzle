@@ -1,5 +1,4 @@
 ---
-import CosmeticLoading from './CosmeticLoading.astro';
 import PageLayout from '../layouts/PageLayout.astro';
 import NicknameBadge from './NicknameBadge.astro';
 import CoinAmount from './CoinAmount.astro';
@@ -21,8 +20,7 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
   <meta slot="head" name="robots" content="noindex, nofollow" />
   {customize&&<nav slot="above-title" class="customize-back"><a href={basePath}><span aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/chevron-right.svg")}/></span>돌아가기</a></nav>}
   {live&&<p id="cosmeticLiveStatus" class="cosmetic-live-status" data-loading="true" role="status">계정 정보를 불러오는 중입니다.</p>}
-  {live&&<CosmeticLoading customize={customize}/>}
-  <section class="mypage-v2" data-live={String(live)} hidden={live} data-customize={customize?"true":"false"} aria-label="마이페이지 v2 시안">
+  <section class:list={["mypage-v2",{"is-loading":live}]} data-live={String(live)} inert={live} aria-busy={live?"true":undefined} aria-hidden={live?"true":undefined} data-customize={customize?"true":"false"} aria-label="마이페이지 v2 시안">
     <section class="account-section" aria-labelledby="accountTitle" hidden={customize}>
     <div class="view-heading"><h2 id="accountTitle">계정</h2></div>
     <header class="profile">
@@ -49,7 +47,7 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
       </section>
       <div class="view-heading mission-heading"><h2 id="missionsTitle" tabindex="-1">도전 과제</h2>
       <div class="filters" aria-label="도전 과제 분류">{[['all','전체'],['basic','일반'],['group','유형'],['special','특수']].map(([id,label],i)=><button type="button" data-filter={id} aria-pressed={i===0?'true':'false'}>{label}</button>)}</div></div>
-      <div class="mission-list" id="missionList">{orderedMissions.map(m=>{const s=goal(m);const ready=s&&m.count>=s.at;const icon=data.icons.find(i=>i.id===m.icon);return <article class:list={['mission-row',{'is-complete':!s}]} data-mission={m.id} data-group={m.group}>
+      <div class="mission-list" id="missionList">{orderedMissions.map(m=>{const s=live?m.stages[0]:goal(m);const ready=!live&&s&&m.count>=s.at;const icon=data.icons.find(i=>i.id===m.icon);return <article class:list={['mission-row',{'is-complete':!s}]} data-mission={m.id} data-group={m.group}>
         <span class="mission-icon" aria-hidden="true">{icon.src.endsWith('.svg')?<Fragment set:html={raw(icon.src)}/>:<img src={icon.src} alt="" width="28" height="28"/>}</span>
         <div class="mission-content"><div class="mission-title"><h3>{m.name}</h3><span class="mission-value">{s?`${m.repeatEvery?m.count:Math.min(m.count,s.at)} / ${s.at}`:'완료'}</span></div><p class="mission-condition" aria-label={m.difficulty?`난이도 ${m.difficulty} 퍼즐 풀기`:undefined}>{m.text}</p><div class="mission-progress" role="progressbar" aria-label={`${m.name} 진행도`} aria-valuemin="0" aria-valuemax={s?.at??1} aria-valuenow={Math.min(m.count,s?.at??1)}><span style={`width:${s?Math.min(m.count/s.at,1)*100:100}%`}/></div><div class="mission-bottom"><span class="mission-reward">{s?(s.kind==='coins'?<CoinAmount amount={s.value}/>:s.kind==='random-coins'?<span class="random-coin-reward"><CoinAmount amount="?"/><small>{s.options[0]}~{s.options.at(-1)}</small></span>:s.kind==='tickets'?<span class="daily-ticket" aria-label={`타임머신 티켓 ${s.value}장`}><img src="/icons/time-machine/ticket.svg" alt="" width="14" height="14"/><span>{s.value}</span></span>:s.kind==='effect'?'별빛 반짝임 효과':`${data.icons.find(i=>i.id===s.value)?.name} 아이콘`):'아이콘 획득 완료'}</span><button type="button" data-claim={m.id} disabled={!ready} class:list={['claim-button',{'claim-ready':ready}]}>{ready?'받기':s?'진행 중':'획득 완료'}</button></div></div>
       </article>})}</div>
@@ -73,7 +71,7 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
     </section>
     <section id="panel-craft" class="craft-section" aria-labelledby="craftTitle" hidden={!customize}>
       <div class="view-heading"><h2 id="craftTitle">조합</h2></div>
-      <div class="craft-body"><p class="craft-description">색깔 3개를 조합해 새로운 색깔을 만듭니다.</p><div id="craftSlots" class="craft-slots"></div><div id="craftSelector" class="craft-selector" data-open="false" aria-hidden="true" inert><div class="craft-selector-content"><div class="craft-selector-inner"><div class="craft-selector-heading"><button type="button" class="quiet-link" id="closeCraftSelector">닫기</button></div><div id="craftChoices" class="craft-choices"></div><p id="emptyCraftChoices" class="empty-craft-choices" hidden>선택할 재료가 없습니다.</p></div></div></div><button type="button" id="craftConfirm" disabled>조합하기</button></div><div id="craftResult" class="craft-result" hidden><div class="result-heading"><h3>조합 결과</h3></div><div id="craftResultItems" class="result-items" aria-live="polite" aria-relevant="additions"></div></div>
+      <div class="craft-body"><p class="craft-description">색깔 3개를 조합해 새로운 색깔을 만듭니다.</p><div id="craftSlots" class="craft-slots">{live&&Array.from({length:3},()=> <button type="button" class="craft-slot" disabled>+</button>)}</div><div id="craftSelector" class="craft-selector" data-open="false" aria-hidden="true" inert><div class="craft-selector-content"><div class="craft-selector-inner"><div class="craft-selector-heading"><button type="button" class="quiet-link" id="closeCraftSelector">닫기</button></div><div id="craftChoices" class="craft-choices"></div><p id="emptyCraftChoices" class="empty-craft-choices" hidden>선택할 재료가 없습니다.</p></div></div></div><button type="button" id="craftConfirm" disabled>조합하기</button></div><div id="craftResult" class="craft-result" hidden><div class="result-heading"><h3>조합 결과</h3></div><div id="craftResultItems" class="result-items" aria-live="polite" aria-relevant="additions"></div></div>
     </section>
 
     {!live&&<div class="prototype-footer"><div class="preview-links"><a href="/test/achievement-badges/mission-overview/">전체 미션 기준</a><button type="button" id="resetDemo">시안 초기화</button></div><p class="icon-credit">아이콘: <a href="https://tabler.io/icons">Tabler</a> · <a href="https://lucide.dev/">Lucide</a> · <a href="https://github.com/bytedance/IconPark">IconPark</a> · <a href="https://icons8.com/">Icons8</a></p></div>}
