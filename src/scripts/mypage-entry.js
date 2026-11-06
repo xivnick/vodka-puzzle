@@ -8,9 +8,16 @@ if(root){
    if(panel.dataset.production==='true'){
     await window.puzzleAuthReady;
     const release=await window.puzzleCosmeticReleaseReady;
-    if(!release?.active||new URLSearchParams(location.search).has('manage'))return;
+    if(!release?.active)return;
     if(root.dataset.customize!=='true'&&(!window.puzzleAccount.user||!window.puzzleAccount.profile))return;
     const legacy=document.querySelector('#accountLegacyPanel');if(legacy)legacy.hidden=true;
+    if(root.dataset.customize!=='true'){
+     const logout=document.querySelector('#logout'),footer=root.querySelector('.account-footer');
+     logout.className='account-action';root.querySelector('.account-logout').append(logout);
+     const admin=document.querySelector('#adminLink');if(admin)footer.append(admin);
+     footer.append(document.querySelector('#nickStatus'));
+     const deletion=document.querySelector('#deleteAccount');deletion.className='account-action delete-account';footer.append(deletion);
+    }
     panel.hidden=false;
    }
    if(started)return;started=true;
