@@ -549,6 +549,11 @@
       "name": "플라스크",
       "mission": "연금술사",
       "src": "/icons/achievement-preview/flask.svg"
+    },
+    {
+      "id": "time-traveler",
+      "name": "시간 여행",
+      "src": "/icons/achievement-preview/history.svg"
     }
   ],
   "missions": [
@@ -907,6 +912,24 @@
       "claimed": [],
       "repeatEvery": 5,
       "repeatCoins": 100
+    },
+    {
+      "id": "time-traveler",
+      "name": "시간 여행자",
+      "icon": "time-traveler",
+      "group": "basic",
+      "text": "타임머신 이용하기",
+      "count": 2,
+      "stages": [
+        {
+          "at": 3,
+          "kind": "icon",
+          "value": "time-traveler"
+        }
+      ],
+      "claimed": [],
+      "recordMetric": "time_machine",
+      "pendingIcon": true
     }
   ],
   "effects": [

@@ -38,6 +38,7 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         CREATE TABLE public.puzzle_catalog(season_id text,puzzle_id text,title text,summary text,puzzle_type text,status text,published_at timestamptz,difficulty text,sort_order integer DEFAULT 0,updated_at timestamptz DEFAULT clock_timestamp(),PRIMARY KEY(season_id,puzzle_id));
         CREATE TABLE public.semester_completions(season_id text,puzzle_id text,user_id uuid REFERENCES auth.users ON DELETE CASCADE,nickname text,completed_at timestamptz,excluded boolean DEFAULT false);
         CREATE TABLE public.daily_sudoku_completions(day date,user_id uuid REFERENCES auth.users ON DELETE CASCADE,season_id text,nickname text,rank bigint,completed_at timestamptz,excluded boolean DEFAULT false);
+        CREATE TABLE private.time_machine_openings(user_id uuid REFERENCES auth.users ON DELETE CASCADE,day date,opened_at timestamptz DEFAULT clock_timestamp(),PRIMARY KEY(user_id,day));
         CREATE TABLE private.time_machine_wallets(user_id uuid PRIMARY KEY REFERENCES auth.users ON DELETE CASCADE,balance integer CHECK(balance>=0),updated_at timestamptz DEFAULT clock_timestamp());
         CREATE TABLE private.time_machine_ticket_events(user_id uuid REFERENCES auth.users ON DELETE CASCADE,event_key text,delta integer CHECK(delta IN(-1,1)),balance_after integer CHECK(balance_after>=0),day date,created_at timestamptz DEFAULT clock_timestamp(),PRIMARY KEY(user_id,event_key),CHECK((delta=1 AND day IS NULL) OR(delta=-1 AND day IS NOT NULL)));
         """)
@@ -47,7 +48,7 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         sql(ticket[ticket.index('CREATE FUNCTION private.ensure_time_machine_wallet'):ticket.index('CREATE FUNCTION public.time_machine_context')])
         sql("""ALTER TABLE public.puzzle_catalog ADD CONSTRAINT puzzle_catalog_difficulty_check CHECK(difficulty IS NULL OR char_length(difficulty)>0);
         CREATE FUNCTION public.admin_update_puzzle(requested_season text,requested_puzzle text,new_title text,new_summary text,new_type text,new_status text,new_published_at timestamptz,new_sort_order integer,expected_updated_at timestamptz,new_difficulty text) RETURNS public.puzzle_catalog LANGUAGE sql AS $$ SELECT NULL::public.puzzle_catalog $$;""")
-        for name in ['20261105_cosmetic_foundation.sql', '20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql']:
+        for name in ['20261105_cosmetic_foundation.sql', '20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql']:
             sql((ROOT / 'supabase/migrations' / name).read_text())
         sql("UPDATE private.cosmetic_settings SET enabled=true,history_policy='all_records',champion_tickets=1; UPDATE private.cosmetic_draw_configs SET status='active',price_per_draw=100;")
         users = [str(uuid.uuid4()) for _ in range(8)]
@@ -152,6 +153,25 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         assert daily['threshold']==60 and daily['state']=='in_progress'
         notices=json.loads(sql("SELECT private.achievement_milestone_diff('{\"daily\":7}','{\"daily\":90}')"))
         assert [n['threshold'] for n in notices if n['id']=='daily']==[30,60,90]
+        # The mission derives only existing unique openings, not ticket awards or page visits.
+        traveler=str(uuid.uuid4())
+        sql(f"INSERT INTO auth.users VALUES('{traveler}'); INSERT INTO public.semester_nicknames VALUES('2026-2','{traveler}','traveler');")
+        assert not any(r['id']=='time-traveler' for r in json.loads(rpc(traveler,'SELECT public.achievement_context()'))['achievements'])
+        sql("UPDATE private.cosmetic_items SET active=true WHERE id='icon:time-traveler'; UPDATE private.achievement_rules SET active=true WHERE id='time-traveler';")
+        sql(f"INSERT INTO private.time_machine_openings SELECT '{traveler}',current_date-i,now() FROM generate_series(1,2) i")
+        ctx=json.loads(rpc(traveler,'SELECT public.achievement_context()'))
+        row=next(r for r in ctx['achievements'] if r['id']=='time-traveler')
+        assert row['current']==2 and row['threshold']==3 and row['scope_key']=='account' and row['state']=='in_progress'
+        sql(f"INSERT INTO private.time_machine_openings VALUES('{traveler}',current_date-1,now()) ON CONFLICT DO NOTHING")
+        assert json.loads(rpc(traveler,'SELECT public.cosmetic_context()'))['progress']['time_machine_count']==2
+        sql(f"INSERT INTO private.time_machine_openings VALUES('{traveler}',current_date-3,now())")
+        results=parallel([(traveler,"SELECT public.claim_achievement(gen_random_uuid(),'time-traveler','account',3)")]*2)
+        assert sorted(r['already_claimed'] for r in results)==[False,True]
+        assert next(r for r in results if not r['already_claimed'])['reward']=={'item_id':'icon:time-traveler'}
+        ctx=json.loads(rpc(traveler,'SELECT public.achievement_context()'))
+        row=next(r for r in ctx['achievements'] if r['id']=='time-traveler')
+        assert row['state']=='completed' and row['threshold'] is None
+        assert json.loads(rpc(lucky,'SELECT public.cosmetic_context()'))['progress']['time_machine_count']==0
         assert sql("""SELECT count(*) FROM private.account_coin_wallets w WHERE balance<>coalesce((SELECT sum(delta) FROM private.coin_ledger l WHERE l.user_id=w.user_id),0)""")=='0'
         assert sql("""SELECT count(*) FROM (SELECT user_id,item_id,sum(delta) AS quantity FROM private.inventory_ledger GROUP BY user_id,item_id) l WHERE quantity<>coalesce((SELECT quantity FROM private.cosmetic_inventory i WHERE i.user_id=l.user_id AND i.item_id=l.item_id),0)""")=='0'
         assert sql("SELECT count(*) FROM private.account_operations WHERE status<>'completed'")=='0'

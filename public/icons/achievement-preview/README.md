@@ -28,3 +28,5 @@ Customization navigation uses the original `chevron-right` from the same pinned 
 Feature introduction achievements add the original `hanger` and `dice-5` from Tabler Icons v3.40.0 outline (MIT), and reuse the existing `flask`. SVG geometry is unchanged.
 
 The Lucky Hand achievement replaces its dice with the original `clover` from Tabler Icons v3.40.0 outline (MIT). Existing dice owners and equipped previews migrate to `clover`.
+
+Time Traveler candidates reuse `history` and add `hourglass`, `clock-bolt`, `calendar-time`, and `rocket` from the same pinned Tabler Icons v3.40.0 outline set (MIT), without geometry changes.

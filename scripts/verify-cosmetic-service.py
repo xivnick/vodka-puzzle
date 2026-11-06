@@ -14,11 +14,14 @@ def claims(uid):
     return json.dumps({'sub': uid, 'role': 'authenticated', 'app_metadata': {'provider': 'google'}})
 sql = 'BEGIN;\nSET LOCAL statement_timeout=\'30s\';\n'
 if '--rehearse' in sys.argv:
-    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql']:
+    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql']:
         migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations' / name).read_text()
         sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 if '--reward-rehearsal' in sys.argv:
     migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_achievement_repeat_rewards.sql').read_text()
+    sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
+if '--traveler-rehearsal' in sys.argv:
+    migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_time_traveler_mission.sql').read_text()
     sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 sql += r"""
 CREATE FUNCTION pg_temp.expect_error(command text, expected text) RETURNS void LANGUAGE plpgsql AS $$
@@ -230,6 +233,32 @@ DO $$ DECLARE row jsonb; req uuid:=gen_random_uuid(); result jsonb; BEGIN
  IF result->'reward'<>'{"tickets":1}'::jsonb OR public.claim_achievement(req,'daily','account',30)<>result THEN RAISE EXCEPTION 'Streak ticket or replay'; END IF;
  SELECT value INTO row FROM jsonb_array_elements(public.achievement_context()->'achievements') WHERE value->>'id'='daily';
  IF row->>'threshold'<>'60' THEN RAISE EXCEPTION 'Streak next threshold'; END IF;
+END $$;
+RESET ROLE;
+-- The pending mission stays hidden until its icon is selected. Test activation rolls back.
+DO $$ BEGIN
+ IF (SELECT active FROM private.achievement_rules WHERE id='time-traveler') OR (SELECT active FROM private.cosmetic_items WHERE id='icon:time-traveler') THEN RAISE EXCEPTION 'Pending icon already activated'; END IF;
+END $$;
+UPDATE private.achievement_rules SET active=true WHERE id='time-traveler';
+UPDATE private.cosmetic_items SET active=true WHERE id='icon:time-traveler';
+INSERT INTO private.time_machine_openings(user_id,day)
+ SELECT '__USER__',(clock_timestamp() AT TIME ZONE 'Asia/Seoul')::date-i FROM generate_series(1,2) i;
+SET LOCAL ROLE authenticated;
+DO $$ DECLARE row jsonb; BEGIN
+ SELECT value INTO row FROM jsonb_array_elements(public.achievement_context()->'achievements') WHERE value->>'id'='time-traveler';
+ IF row->>'current'<>'2' OR row->>'threshold'<>'3' OR row->>'state'<>'in_progress' OR row->>'scope_key'<>'account' THEN RAISE EXCEPTION 'Time machine source records'; END IF;
+END $$;
+RESET ROLE;
+INSERT INTO private.time_machine_openings(user_id,day) VALUES('__USER__',(clock_timestamp() AT TIME ZONE 'Asia/Seoul')::date-1) ON CONFLICT DO NOTHING;
+INSERT INTO private.time_machine_openings(user_id,day) VALUES('__USER__',(clock_timestamp() AT TIME ZONE 'Asia/Seoul')::date-3);
+SET LOCAL ROLE authenticated;
+DO $$ DECLARE req uuid:=gen_random_uuid(); result jsonb; row jsonb; BEGIN
+ IF public.cosmetic_context()->'progress'->>'time_machine_count'<>'3' THEN RAISE EXCEPTION 'Time machine unique records'; END IF;
+ result:=public.claim_achievement(req,'time-traveler','account',3);
+ IF result->'reward'->>'item_id'<>'icon:time-traveler' OR result->'reward' ? 'coins' THEN RAISE EXCEPTION 'Time traveler reward'; END IF;
+ IF result<>public.claim_achievement(req,'time-traveler','account',3) THEN RAISE EXCEPTION 'Time traveler replay'; END IF;
+ SELECT value INTO row FROM jsonb_array_elements(public.achievement_context()->'achievements') WHERE value->>'id'='time-traveler';
+ IF row->>'state'<>'completed' THEN RAISE EXCEPTION 'Time traveler unexpectedly repeats'; END IF;
 END $$;
 RESET ROLE;
 -- Frozen first place survives account deletion, no runner-up promotion.
