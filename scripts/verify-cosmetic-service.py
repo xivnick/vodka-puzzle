@@ -15,7 +15,7 @@ def claims(uid):
     return json.dumps({'sub': uid, 'role': 'authenticated', 'app_metadata': {'provider': 'google'}})
 sql = 'BEGIN;\nSET LOCAL statement_timeout=\'30s\';\n'
 if '--rehearse' in sys.argv:
-    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql','20261106_achievement_history_champion.sql','20261106_cosmetic_test_accounts.sql','20261106_cosmetic_test_transactions.sql','20261106_cosmetic_color_orientation.sql','20261106_cosmetic_release.sql','20261106_cosmetic_attendance_notice.sql','20261106_cosmetic_notification_claim_filter.sql']:
+    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql','20261106_achievement_history_champion.sql','20261106_cosmetic_test_accounts.sql','20261106_cosmetic_test_transactions.sql','20261106_cosmetic_color_orientation.sql','20261106_cosmetic_release.sql','20261106_cosmetic_attendance_notice.sql','20261106_cosmetic_notification_claim_filter.sql','20261107_achievement_current_streak.sql']:
         migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations' / name).read_text()
         sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 if '--reward-rehearsal' in sys.argv:
@@ -41,6 +41,9 @@ if '--orientation-rehearsal' in sys.argv:
     sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 if '--release-rehearsal' in sys.argv:
     migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_cosmetic_release.sql').read_text()
+    sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
+if '--current-streak-rehearsal' in sys.argv:
+    migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261107_achievement_current_streak.sql').read_text()
     sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 sql += r"""
 UPDATE private.cosmetic_settings SET enabled=false,launched_at=NULL WHERE id;
@@ -250,7 +253,7 @@ DO $$ DECLARE season text:=public.achievement_context()->>'season'; r jsonb; BEG
  PERFORM public.claim_achievement(gen_random_uuid(),'first-blood','season:'||season,10);
 END $$;
 RESET ROLE;
--- A completed historical streak remains claimable after the current streak ends.
+-- An ended historical streak cannot unlock a current-streak reward.
 INSERT INTO public.daily_sudoku(day,opens_at,givens)
  SELECT (clock_timestamp() AT TIME ZONE 'Asia/Seoul')::date-i,
   (((clock_timestamp() AT TIME ZONE 'Asia/Seoul')::date-i)::timestamp AT TIME ZONE 'Asia/Seoul'),repeat('0',81)
@@ -263,8 +266,8 @@ INSERT INTO public.daily_sudoku_completions(day,user_id,season_id,nickname,rank,
 SET LOCAL ROLE authenticated;
 DO $$ DECLARE row jsonb; BEGIN
  SELECT value INTO row FROM jsonb_array_elements(public.achievement_context()->'achievements') WHERE value->>'id'='daily';
- IF row->>'current'<>'0' OR row->>'state'<>'claimable' THEN RAISE EXCEPTION 'Historical streak derivation'; END IF;
- PERFORM public.claim_achievement(gen_random_uuid(),'daily','account',7);
+ IF row->>'current'<>'0' OR row->>'state'<>'in_progress' THEN RAISE EXCEPTION 'Historical streak wrongly eligible'; END IF;
+ PERFORM pg_temp.expect_error($q$SELECT public.claim_achievement(gen_random_uuid(),'daily','account',7)$q$,'ACHIEVEMENT_NOT_READY');
 END $$;
 RESET ROLE;
 -- Ticket repeats start at 30, not first_goal + interval (37).
@@ -280,6 +283,7 @@ INSERT INTO public.daily_sudoku_completions(day,user_id,season_id,nickname,rank,
  AND NOT EXISTS(SELECT 1 FROM public.daily_sudoku_completions c WHERE c.day=d.day AND c.user_id='__USER__');
 SET LOCAL ROLE authenticated;
 DO $$ DECLARE row jsonb; req uuid:=gen_random_uuid(); result jsonb; BEGIN
+ PERFORM public.claim_achievement(gen_random_uuid(),'daily','account',7);
  SELECT value INTO row FROM jsonb_array_elements(public.achievement_context()->'achievements') WHERE value->>'id'='daily';
  IF row->>'threshold'<>'30' OR row->'reward'<>'{"tickets":1}'::jsonb THEN RAISE EXCEPTION 'Streak ticket configuration'; END IF;
  PERFORM pg_temp.expect_error($q$SELECT public.claim_achievement(gen_random_uuid(),'daily','account',14)$q$,'INVALID_STAGE');

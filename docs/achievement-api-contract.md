@@ -35,7 +35,7 @@
 - 난이도별 미션 설명은 난이도 ⬥ 퍼즐 풀기·난이도 ⬥⬥ 퍼즐 풀기·난이도 ⬥⬥⬥ 퍼즐 풀기로 표시한다.
 - category는 basic/group/special이며 화면에서 일반/유형/특수로 표시한다.
 - state는 claimable/in_progress/completed다. 유형 공개 문제 수가 3개 미만이거나 전체 공개 문제가 0개면 active=false다.
-- current는 실제 현재 수치다. 과거 연속 단계는 기록으로 재구성하므로 current가 낮아도 claimable일 수 있다.
+- current와 수령 판정은 같은 현재 수치를 사용한다. 꺼지지 않는 불은 기존 데일리의 현재 연속 수치로 판정하며 과거 최장 기록으로 보상을 열지 않는다.
 - threshold는 수령 API에 전달할 고유 단계다. 전체 완료는 업적 목록과 수령 대상에 포함하지 않는다.
 - configured=false면 보상량 또는 기록 소급 정책을 확정해야 한다. 달성했어도 받기를 활성화하지 않는다.
 - 아이콘 단계 reward는 item_id만 가진다. 반복 단계는 coins다. 최초 아이콘에 코인을 함께 주지 않는다.
