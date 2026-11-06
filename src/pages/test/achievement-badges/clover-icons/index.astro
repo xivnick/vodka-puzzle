@@ -1,0 +1,33 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+import NicknameBadge from '../../../../components/NicknameBadge.astro';
+const candidates=[
+ {name:'현재 · Tabler 외곽선',src:'/icons/achievement-preview/clover.svg',note:'네 방향으로 나뉜 하트 모양'},
+ {name:'Lucide',src:'/icons/clover-candidates/lucide-clover.svg',note:'줄기가 있는 형태'},
+ {name:'Phosphor 외곽선',src:'/icons/clover-candidates/phosphor-clover.svg',note:'연결된 잎과 줄기'},
+ {name:'Phosphor 채움',src:'/icons/clover-candidates/phosphor-clover-fill.svg',note:'작은 크기에서도 선명한 실루엣'},
+ {name:'Tabler 채움',src:'/icons/clover-candidates/tabler-clover-filled.svg',note:'현재 모양의 채움 버전'},
+ {name:'Font Awesome',src:'/icons/clover-candidates/fontawesome-clover.svg',note:'통통한 잎과 긴 줄기'},
+];
+const files=import.meta.glob('../../../../../public/icons/**/*.svg',{query:'?raw',import:'default',eager:true});
+---
+<PageLayout title="네잎클로버 아이콘 후보">
+  <meta slot="head" name="robots" content="noindex, nofollow"/>
+  <section class="clover-icons">
+    <p class="mission-name">행운을 빌어요</p>
+    <div class="candidates">{candidates.map((candidate,index)=><article>
+      <div class="candidate-heading"><span class="candidate-icon" aria-hidden="true"><Fragment set:html={String(files[`../../../../../public${candidate.src}`])}/></span><div><h2>{index+1}. {candidate.name}</h2><p>{candidate.note}</p></div></div>
+      <span class="nickname-example"><NicknameBadge name="퍼즐러" src={candidate.src} size={18}/></span>
+    </article>)}</div>
+    <p class="links"><a href="/test/achievement-badges/ranking/">랭킹 예시</a> · <a href="/test/achievement-badges/mission-overview/">전체 미션 기준</a></p>
+    <p class="credits"><a href="https://github.com/tabler/tabler-icons/tree/v3.40.0">Tabler</a> · <a href="https://github.com/lucide-icons/lucide/tree/0.468.0">Lucide</a> · <a href="https://github.com/phosphor-icons/core/tree/2b75f3ad12b420c9504ef05df8d2564a28f8500e">Phosphor</a> · <a href="https://fontawesome.com/license/free">Font Awesome Free</a> (CC BY 4.0)</p>
+  </section>
+</PageLayout>
+<style is:global>
+.clover-icons{width:100%;color:#555}.clover-icons .mission-name{font-size:.76rem;color:#888;margin:0 0 18px}.clover-icons .candidates{border-top:1px solid #e8e5df}
+.clover-icons article{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 12px;border-bottom:1px solid #eee}.clover-icons .candidate-heading{display:flex;align-items:center;gap:14px;min-width:0}
+.clover-icons .candidate-icon{display:block;width:36px;height:36px;flex-shrink:0;color:#666}.clover-icons .candidate-icon svg{display:block;width:100%;height:100%}
+.clover-icons h2{font-size:.78rem;font-weight:400;margin:0}.clover-icons .candidate-heading p{font-size:.65rem;color:#999;margin:6px 0 0;line-height:1.6}.clover-icons .nickname-example{font-size:.8rem;color:#666;flex-shrink:0}
+.clover-icons .links{font-size:.7rem;margin:20px 0}.clover-icons .credits{font-size:.6rem;color:#aaa;line-height:1.7}
+@media(max-width:380px){.clover-icons article{padding-inline:0;gap:8px}.clover-icons .candidate-heading{gap:10px}}
+</style>
