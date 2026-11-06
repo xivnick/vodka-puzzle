@@ -1,0 +1,16 @@
+---
+import data from '../data/mypage-v2-preview.json';
+const {customize=false}=Astro.props;
+---
+<div id="cosmeticLoading" class="mypage-v2 cosmetic-skeleton" aria-hidden="true">
+  {customize?<>
+    <section class="preview-section"><div class="view-heading"><h2>미리보기</h2></div><div class="dress-preview"><div class="preview-ranking"><span class="sample-rank">3</span><span data-loading-nickname class="skeleton-line skeleton-name"></span><span class="skeleton-line skeleton-short"></span></div></div></section>
+    <section class="wardrobe-section"><div class="view-heading"><h2>꾸미기</h2></div><div class="unified-settings">{['아이콘','색깔'].map(label=><div class="skeleton-setting"><span class="settings-field-label">{label}</span><span class="skeleton-line skeleton-short"></span></div>)}</div></section>
+    <section class="draw-section"><div class="view-heading"><h2>뽑기</h2></div><div class="skeleton-setting"><span class="skeleton-line skeleton-long"></span><span class="skeleton-line skeleton-short"></span></div></section>
+    <section class="craft-section"><div class="view-heading"><h2>조합</h2></div><div class="skeleton-setting"><span class="skeleton-line skeleton-long"></span></div></section>
+  </>:<>
+    <section class="account-section"><div class="view-heading"><h2>계정</h2></div><header class="profile"><div class="profile-identity"><div class="nickname-display"><span data-loading-nickname class="skeleton-line skeleton-name"></span></div><p class="account-email"><span data-loading-email class="skeleton-line skeleton-email"></span></p></div><div class="profile-wallet"><span class="skeleton-line skeleton-short"></span></div></header><div class="icon-overview"><span class="skeleton-line skeleton-name"></span><span class="appearance-link">꾸미기</span></div></section>
+    <section><section class="daily-quests"><div class="view-heading"><h2>일일 과제</h2><span class="daily-reset">매일 갱신</span></div><div class="mission-list">{data.dailyQuests.map(q=><article class="mission-row"><span class="skeleton-block"></span><div class="mission-content"><div class="mission-title"><h3>{q.name}</h3><span class="skeleton-line skeleton-short"></span></div><p class="mission-condition">{q.text}</p><div class="mission-bottom"><span class="skeleton-line skeleton-short"></span></div></div></article>)}</div></section>
+    <div class="view-heading mission-heading"><h2>도전 과제</h2></div><div class="mission-list">{Array.from({length:4},()=> <article class="mission-row"><span class="skeleton-block"></span><div class="mission-content"><div class="skeleton-line skeleton-name"></div><div class="skeleton-line skeleton-long skeleton-description"></div><div class="mission-progress"></div><div class="mission-bottom"><span class="skeleton-line skeleton-short"></span></div></div></article>)}</div></section>
+  </>}
+</div>

@@ -1,4 +1,5 @@
 ---
+import CosmeticLoading from './CosmeticLoading.astro';
 import PageLayout from '../layouts/PageLayout.astro';
 import NicknameBadge from './NicknameBadge.astro';
 import CoinAmount from './CoinAmount.astro';
@@ -19,7 +20,8 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
 <PageLayout title={customize?"꾸미기":"마이페이지"}>
   <meta slot="head" name="robots" content="noindex, nofollow" />
   {customize&&<nav slot="above-title" class="customize-back"><a href={basePath}><span aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/chevron-right.svg")}/></span>돌아가기</a></nav>}
-  {live&&<p id="cosmeticLiveStatus" class="cosmetic-live-status" role="status">계정 정보를 불러오는 중입니다.</p>}
+  {live&&<p id="cosmeticLiveStatus" class="cosmetic-live-status" data-loading="true" role="status">계정 정보를 불러오는 중입니다.</p>}
+  {live&&<CosmeticLoading customize={customize}/>}
   <section class="mypage-v2" data-live={String(live)} hidden={live} data-customize={customize?"true":"false"} aria-label="마이페이지 v2 시안">
     <section class="account-section" aria-labelledby="accountTitle" hidden={customize}>
     <div class="view-heading"><h2 id="accountTitle">계정</h2></div>

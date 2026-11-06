@@ -225,3 +225,13 @@
 @media(prefers-reduced-motion:reduce){.mypage-v2 .badge-sparkle{animation:none}}
 
 .mypage-v2 .random-coin-reward{display:inline-flex;align-items:center;gap:7px}.mypage-v2 .random-coin-reward small,.mypage-v2 .mission-reward .coin-amount small{font-size:.62rem;color:#aaa}
+
+/* Static placeholders keep account data private until each source is ready. */
+.cosmetic-live-status[data-loading=true]{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.cosmetic-skeleton{pointer-events:none}
+.cosmetic-skeleton .skeleton-line{display:inline-block;height:10px;max-width:100%;border-radius:2px;background:var(--line);vertical-align:middle}
+.cosmetic-skeleton .skeleton-name{width:94px}.cosmetic-skeleton .skeleton-short{width:38px}.cosmetic-skeleton .skeleton-long{width:180px}.cosmetic-skeleton .skeleton-email{width:150px;height:8px}
+.cosmetic-skeleton .skeleton-block{width:28px;height:28px;flex-shrink:0;border-radius:3px;background:var(--line)}
+.cosmetic-skeleton .skeleton-description{display:block;margin-top:10px;height:8px}
+.cosmetic-skeleton .skeleton-setting{display:flex;align-items:center;justify-content:space-between;gap:var(--space-lg);padding:var(--row-padding) var(--row-inset);border-bottom:1px solid var(--line)}
+.cosmetic-skeleton .wardrobe-section,.cosmetic-skeleton .draw-section,.cosmetic-skeleton .craft-section{margin-top:var(--section-gap)}
