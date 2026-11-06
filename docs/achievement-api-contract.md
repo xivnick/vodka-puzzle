@@ -113,8 +113,8 @@ attendance/daily-complete/daily-champion 중 하나다. 해당 한국 날짜에�
 
 - 반복 보상은 고정 코인·티켓·무작위 코인 목록으로 확정했으며 rule version을 올려 적용했다. 과거 수령 기록의 보상을 고쳐 계산하지 않는다.
 - 뽑기 가격은 1회 100코인으로 확정했다. 운영 뽑기 설정 1은 100코인의 draft다. 대상 목록 검토와 화면 연동 후 활성화한다. 활성화했던 버전은 가격·확률·목록을 수정할 수 없다. 변경은 새 버전으로 한다.
-- `cosmetic_settings.champion_tickets`는 NULL이다. 확정 전 챔피언 수령은 거절한다.
-- `history_policy`는 NULL이다. all_records 또는 since_launch를 선택해야 문제·연속 업적을 수령할 수 있다. since_launch는 launched_at도 필요하다. 화면 진행도는 미설정 시 전체 기록으로 미리 계산하지만 수령은 막는다.
+- `cosmetic_settings.champion_tickets`는 1이다. 데일리 챔피언 보상은 타임머신 티켓 1장이다.
+- `history_policy`는 all_records다. 일반 문제 도전과제에 출시 전 유효한 풀이 기록을 포함한다. 일일 과제의 과거 날짜 수령은 허용하지 않는다.
 - 기존 완료 API에는 아직 연결하지 않았다. 활성화 전에 일반 문제 공통 잠금과 최초 완료자 확정 호출을 연결하고, 새 달성 알림은 milestone snapshot/diff 함수를 사용한다. 이 연결 전에는 수령 전 탈퇴·동시 완료에 대한 최초 완료 보존을 완성했다고 보지 않는다.
 - 실제 화면의 호출, 계정 전환·응답 버전 처리, 달성 토스트·공개 랭킹 표시를 연결한 뒤 enabled를 켠다.
 

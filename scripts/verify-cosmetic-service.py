@@ -14,7 +14,7 @@ def claims(uid):
     return json.dumps({'sub': uid, 'role': 'authenticated', 'app_metadata': {'provider': 'google'}})
 sql = 'BEGIN;\nSET LOCAL statement_timeout=\'30s\';\n'
 if '--rehearse' in sys.argv:
-    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql']:
+    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql','20261106_achievement_history_champion.sql']:
         migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations' / name).read_text()
         sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 if '--reward-rehearsal' in sys.argv:
@@ -25,6 +25,9 @@ if '--traveler-rehearsal' in sys.argv:
     sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 if '--icon-rehearsal' in sys.argv:
     migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_time_traveler_clock_bolt.sql').read_text()
+    sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
+if '--policy-rehearsal' in sys.argv:
+    migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_achievement_history_champion.sql').read_text()
     sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 sql += r"""
 CREATE FUNCTION pg_temp.expect_error(command text, expected text) RETURNS void LANGUAGE plpgsql AS $$
@@ -56,7 +59,8 @@ RESET ROLE;
 DO $$ BEGIN
  IF EXISTS(SELECT 1 FROM private.account_coin_wallets WHERE user_id='__USER__') THEN RAISE EXCEPTION 'Disabled APIs wrote data'; END IF;
 END $$;
-UPDATE private.cosmetic_settings SET enabled=true WHERE id;
+-- Explicitly exercise missing-policy validation inside this rollback fixture.
+UPDATE private.cosmetic_settings SET enabled=true,history_policy=NULL WHERE id;
 SET LOCAL ROLE authenticated;
 DO $$ DECLARE context jsonb; BEGIN
  context:=public.cosmetic_context();

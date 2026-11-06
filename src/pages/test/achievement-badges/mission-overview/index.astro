@@ -50,7 +50,7 @@ const sections=[['basic','기본',6],['features','기능 체험',4],['first-bloo
       <p class="section-intro">일반 문제의 첫 완료자가 된 횟수입니다. 데일리는 포함하지 않습니다.</p>
       <div class="milestones">{firstBlood.map(([icon,label,count])=><article class="milestone"><span class="milestone-count">{count}회</span><span class="reward-icon" aria-hidden="true"><Fragment set:html={svg(iconPath(icon))}/></span><h3>{label}</h3><span class="nickname-sample"><NicknameBadge icon={icon} label={label}/></span></article>)}</div>
       <p class="note">각 단계에서 새 아이콘을 받고, 이전 아이콘도 계속 선택할 수 있습니다. 아이콘 지급 단계에는 코인을 주지 않습니다. 이후 코인 보상은 미정입니다.</p>
-      <div class="separate-reward"><span>데일리 1등</span><p>별도로 타임머신 티켓 지급 예정 · 수량 미정</p></div>
+      <div class="separate-reward"><span>데일리 1등</span><p>일일 과제 「데일리 챔피언」에서 타임머신 티켓 1장 지급</p></div>
     </section>
     <section id="groups" class="mission-section">
       <h2>문제 묶음별 미션 <span>4개 · 3문제째 아이콘</span></h2>
