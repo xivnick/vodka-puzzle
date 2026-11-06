@@ -15,7 +15,7 @@ def claims(uid):
     return json.dumps({'sub': uid, 'role': 'authenticated', 'app_metadata': {'provider': 'google'}})
 sql = 'BEGIN;\nSET LOCAL statement_timeout=\'30s\';\n'
 if '--rehearse' in sys.argv:
-    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql','20261106_achievement_history_champion.sql','20261106_cosmetic_test_accounts.sql']:
+    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql','20261106_achievement_history_champion.sql','20261106_cosmetic_test_accounts.sql','20261106_cosmetic_test_transactions.sql']:
         migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations' / name).read_text()
         sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 if '--reward-rehearsal' in sys.argv:
@@ -32,6 +32,9 @@ if '--policy-rehearsal' in sys.argv:
     sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 if '--test-access-rehearsal' in sys.argv:
     migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_cosmetic_test_accounts.sql').read_text()
+    sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
+if '--test-transactions-rehearsal' in sys.argv:
+    migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_cosmetic_test_transactions.sql').read_text()
     sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 sql += r"""
 CREATE FUNCTION pg_temp.expect_error(command text, expected text) RETURNS void LANGUAGE plpgsql AS $$
@@ -67,11 +70,29 @@ END $$;
 INSERT INTO private.cosmetic_test_accounts(user_id) VALUES('__USER__');
 SET LOCAL ROLE authenticated;
 SELECT public.cosmetic_context();
+RESET ROLE;
+SAVEPOINT allowlisted_transactions;
+UPDATE private.cosmetic_draw_configs SET status='active' WHERE version=1;
+SET LOCAL ROLE authenticated;
+SELECT public.record_site_visit(gen_random_uuid());
+DO $$ DECLARE result jsonb; BEGIN
+ result:=public.claim_daily_task(gen_random_uuid(),'attendance',(statement_timestamp() AT TIME ZONE 'Asia/Seoul')::date);
+ IF result->'state'->>'coins'<>'20' THEN RAISE EXCEPTION 'Allowlisted reward claim failed'; END IF;
+END $$;
+SELECT pg_temp.expect_error('SELECT public.draw_cosmetics(gen_random_uuid(),1,1)','INSUFFICIENT_COINS');
+SELECT pg_temp.expect_error($q$SELECT public.craft_cosmetic(gen_random_uuid(),ARRAY['common:c0','common:c0','common:c0'])$q$,'INSUFFICIENT_MATERIALS');
+SELECT pg_temp.expect_error($q$SELECT public.claim_achievement(gen_random_uuid(),'feature-equip-icon','account',1)$q$,'ACHIEVEMENT_NOT_READY');
+RESET ROLE;
+ROLLBACK TO SAVEPOINT allowlisted_transactions;
+RELEASE SAVEPOINT allowlisted_transactions;
+SET LOCAL ROLE authenticated;
 SELECT pg_temp.expect_error('SELECT * FROM private.cosmetic_test_accounts','permission denied for schema private');
 RESET ROLE;
 SELECT set_config('request.jwt.claims','__OTHER_CLAIMS__',true);
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.expect_error('SELECT public.cosmetic_context()','COSMETICS_DISABLED');
+SELECT pg_temp.expect_error('SELECT public.draw_cosmetics(gen_random_uuid(),1,1)','COSMETICS_DISABLED');
+SELECT pg_temp.expect_error($q$SELECT public.claim_daily_task(gen_random_uuid(),'attendance',current_date)$q$,'COSMETICS_DISABLED');
 RESET ROLE;
 SELECT set_config('request.jwt.claims','__CLAIMS__',true);
 DELETE FROM private.cosmetic_test_accounts WHERE user_id='__USER__';
