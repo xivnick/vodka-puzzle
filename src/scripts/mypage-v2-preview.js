@@ -132,8 +132,8 @@ export function initMypage(root,{server=null}={}){
       const reward=row.querySelector('.mission-reward');
       if(s?.kind==='coins')reward.replaceChildren(coinAmount(s.value));
       else if(s?.kind==='random-coins'){
-        const range=make('small','',`${s.options[0]}~${s.options.at(-1)}`),amount=coinAmount('?');
-        amount.setAttribute('aria-label',`${s.options[0]}~${s.options.at(-1)}코인 무작위 보상`);const wrapper=make('span','random-coin-reward');wrapper.append(amount,range);reward.replaceChildren(wrapper);
+        const range=`${s.options[0]}~${s.options.at(-1)}`,amount=coinAmount(range);
+        amount.setAttribute('aria-label',`${range}코인 무작위 보상`);reward.replaceChildren(amount);
       }else if(s?.kind==='tickets'){
         const amount=make('span','daily-ticket'),icon=make('img');icon.src='/icons/time-machine/ticket.svg';icon.alt='';icon.width=14;icon.height=14;
         amount.setAttribute('aria-label',`타임머신 티켓 ${s.value}장`);amount.append(icon,make('span','',s.value));reward.replaceChildren(amount);
