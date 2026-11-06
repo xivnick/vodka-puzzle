@@ -2,13 +2,28 @@
 <script is:inline>
 (() => {
   const element = document.getElementById('_toast');
-  let timer;
-  window.showToast = message => {
-    clearTimeout(timer);
-    element.textContent = message;
-    element.classList.add('show');
-    timer = setTimeout(() => element.classList.remove('show'), 2200);
+  let timer,active=false;const pending=[],seen=new Set();
+  function display(message){
+    clearTimeout(timer);active=true;element.textContent=message;element.classList.add('show');
+    timer=setTimeout(()=>{element.classList.remove('show');active=false;if(pending.length)timer=setTimeout(()=>display(pending.shift()),250);},2200);
+  }
+  window.showToast=display;
+  window.showAchievementNotifications=(result,{defer=false}={})=>{
+    if(!result)return;
+    if(defer){
+      const userId=window.puzzleAccount?.user?.id;
+      if(userId&&(result.achievement_notifications?.length||result.daily_task_notifications?.length))try{sessionStorage.setItem('puzzle-mission-notice',JSON.stringify({userId,result}));}catch{}
+      return;
+    }
+    if(result.operation_id){if(seen.has(result.operation_id))return;seen.add(result.operation_id);}
+    const unique=new Map((result.achievement_notifications??[]).map(row=>[row.id,row]));
+    for(const row of unique.values())pending.push(`도전 과제 달성: ${row.name}`);
+    for(const row of result.daily_task_notifications??[])pending.push(`일일 과제 달성: ${row.name}`);
+    if(!active&&pending.length)display(pending.shift());
   };
+  window.puzzleAuthReady.then(()=>{
+    try{const raw=sessionStorage.getItem('puzzle-mission-notice');if(!raw)return;sessionStorage.removeItem('puzzle-mission-notice');const notice=JSON.parse(raw);if(notice.userId===window.puzzleAccount.user?.id)window.showAchievementNotifications(notice.result);}catch{}
+  });
 })();
 </script>
 <style>

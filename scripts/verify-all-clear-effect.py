@@ -13,6 +13,7 @@ if '--rehearse' in sys.argv:
     migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_all_clear_effect.sql').read_text()
     sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 sql += r"""
+UPDATE private.cosmetic_settings SET enabled=false,launched_at=NULL WHERE id;
 INSERT INTO auth.users(id,aud,role,email,raw_app_meta_data)
  VALUES('__USER__','authenticated','authenticated','all-clear-__USER__@example.invalid','{"provider":"google"}');
 INSERT INTO public.semester_nicknames(season_id,user_id,nickname)

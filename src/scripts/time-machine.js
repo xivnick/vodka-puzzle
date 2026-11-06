@@ -113,6 +113,7 @@ $('departButton').addEventListener('click',async()=>{
     if (owner!==window.puzzleAccount.user?.id) return;
     if (error) throw error;
     setHeaderTickets(opened?.tickets);
+    window.showAchievementNotifications?.(opened,{defer:true});
     location.assign(url);
   } catch(error) {
     if (owner!==window.puzzleAccount.user?.id) return;

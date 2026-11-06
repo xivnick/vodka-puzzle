@@ -15,7 +15,7 @@ def claims(uid):
     return json.dumps({'sub': uid, 'role': 'authenticated', 'app_metadata': {'provider': 'google'}})
 sql = 'BEGIN;\nSET LOCAL statement_timeout=\'30s\';\n'
 if '--rehearse' in sys.argv:
-    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql','20261106_achievement_history_champion.sql','20261106_cosmetic_test_accounts.sql','20261106_cosmetic_test_transactions.sql','20261106_cosmetic_color_orientation.sql']:
+    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql','20261106_achievement_history_champion.sql','20261106_cosmetic_test_accounts.sql','20261106_cosmetic_test_transactions.sql','20261106_cosmetic_color_orientation.sql','20261106_cosmetic_release.sql','20261106_cosmetic_attendance_notice.sql','20261106_cosmetic_notification_claim_filter.sql']:
         migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations' / name).read_text()
         sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 if '--reward-rehearsal' in sys.argv:
@@ -39,7 +39,11 @@ if '--test-transactions-rehearsal' in sys.argv:
 if '--orientation-rehearsal' in sys.argv:
     migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_cosmetic_color_orientation.sql').read_text()
     sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
+if '--release-rehearsal' in sys.argv:
+    migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_cosmetic_release.sql').read_text()
+    sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 sql += r"""
+UPDATE private.cosmetic_settings SET enabled=false,launched_at=NULL WHERE id;
 CREATE FUNCTION pg_temp.expect_error(command text, expected text) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
  BEGIN EXECUTE command; EXCEPTION WHEN OTHERS THEN
@@ -165,6 +169,7 @@ SET LOCAL ROLE authenticated;
 DO $$ DECLARE req uuid:=gen_random_uuid(); reward_req uuid:=gen_random_uuid(); first jsonb; again jsonb; BEGIN
  first:=public.draw_cosmetics(req,1,10); again:=public.draw_cosmetics(req,1,10);
  IF first<>again OR jsonb_array_length(first->'results')<>10 OR first->'progress'->>'draw_count'<>'10' THEN RAISE EXCEPTION 'Draw idempotency or count'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(first->'achievement_notifications') n WHERE n->>'id'='feature-draw' AND n->>'threshold'='5') THEN RAISE EXCEPTION 'Draw mission toast missing'; END IF;
  IF public.cosmetic_operation(req)<>first THEN RAISE EXCEPTION 'Operation lookup changed result'; END IF;
  PERFORM pg_temp.expect_error(format('SELECT public.draw_cosmetics(%L,1,1)',req),'REQUEST_ID_REUSED');
  PERFORM public.claim_achievement(gen_random_uuid(),'feature-draw','account',5);
@@ -185,7 +190,7 @@ DO $$ DECLARE op private.account_operations; before_count bigint; i integer; r j
  PERFORM private.finish_cosmetic_operation(op.id,'{}');
  IF (SELECT balance FROM private.time_machine_wallets WHERE user_id='__USER__')<>3 THEN RAISE EXCEPTION 'Existing initial ticket plus reward wrong'; END IF;
  IF private.cosmetic_streak_peak(ARRAY[date '2026-10-01',date '2026-10-03',date '2026-10-05',date '2026-10-08'])<>3 THEN RAISE EXCEPTION 'Streak gap rule'; END IF;
- IF jsonb_array_length(private.achievement_milestone_diff('{"regular":9,"feature-draw":4}','{"regular":20,"feature-draw":10}'))<>4 THEN RAISE EXCEPTION 'Milestone notifications'; END IF;
+ IF jsonb_array_length(private.achievement_milestone_diff('{"regular":9,"feature-draw":4}','{"regular":20,"feature-draw":10}'))<>2 THEN RAISE EXCEPTION 'Milestone notifications or claimed-stage filtering'; END IF;
 END $$;
 -- Force RNG only inside this rolled-back test, to cover batch refund paths
 -- deterministically. The actual RNG was exercised by the earlier draw/recipe calls.

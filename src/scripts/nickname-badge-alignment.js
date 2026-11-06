@@ -1,6 +1,8 @@
 // Center the visible SVG geometry on the measured text ink, relative to the
 // shared baseline. No icon-specific viewBox, width, or vertical offset is used.
+let observeNewBadges;
 export function initNicknameBadges() {
+  if(observeNewBadges){observeNewBadges();return;}
   const badges=[...document.querySelectorAll('[data-nickname-badge]:not([data-alignment-ready])')];
   if(!badges.length)return;
   const context=document.createElement('canvas').getContext('2d');
@@ -40,7 +42,13 @@ export function initNicknameBadges() {
   let frame;
   const refresh=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>badges.forEach(align));};
   const observer=new ResizeObserver(refresh);
-  badges.forEach(badge=>{badge.dataset.alignmentReady='true';observer.observe(badge.querySelector('[data-badge-name]'));align(badge);});
+  const observe=badge=>{badge.dataset.alignmentReady='true';observer.observe(badge.querySelector('[data-badge-name]'));align(badge);};
+  badges.forEach(observe);
+  observeNewBadges=()=>{
+    for(let i=badges.length-1;i>=0;i--)if(!badges[i].isConnected){observer.unobserve(badges[i].querySelector('[data-badge-name]'));badges.splice(i,1);}
+    const fresh=[...document.querySelectorAll('[data-nickname-badge]:not([data-alignment-ready])')];
+    badges.push(...fresh);fresh.forEach(observe);
+  };
   // Re-measure fallback fonts once the actual webfont arrives, and whenever
   // another font is loaded. ResizeObserver handles responsive font sizes.
   document.fonts.ready.then(refresh);

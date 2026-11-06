@@ -5,7 +5,7 @@
 ## 공통
 
 - Supabase의 기존 인증 클라이언트로 호출한다. 사용자 ID는 입력하지 않는다. Google 로그인과 활성 학기 닉네임을 요구한다.
-- 모든 RPC는 먼저 `private.cosmetic_settings.enabled`를 검사한다. false이면 `COSMETICS_DISABLED`로 거절하고 경제·방문 데이터를 만들지 않는다.
+- 계정 RPC는 전역 enabled와 서버 시각 기준 launched_at을 확인한다. 공개 전에는 private 허용 계정만 접근하며, 그 외에는 COSMETICS_DISABLED로 거절하고 경제·방문 데이터를 만들지 않는다.
 - 경제 변경 요청마다 UUID를 만든다. 전송 실패 재시도에는 같은 UUID와 같은 입력을 재사용한다. 같은 UUID로 내용을 바꾸면 `REQUEST_ID_REUSED`다. 실패해서 롤백된 요청은 성공 기록이 남지 않는다.
 - 동일 요청이 완료됐다면 저장된 응답을 그대로 반환한다. 현재 상태를 다시 읽으려면 context API를 호출한다.
 - 경제 응답의 `state_revision`과 `state.state_revision`은 같은 값이다. 계정 전체에서 증가한다. 늦게 도착한 낮은 버전의 상태는 적용하지 않는다. 그 응답의 미표시 결과까지 버리지는 않는다.
@@ -135,3 +135,15 @@ attendance/daily-complete/daily-champion 중 하나다. 해당 한국 날짜에�
 `set_cosmetic_equipment`의 equipment는 direction에 diagonal·horizontal·vertical을 허용한다. vertical은 CSS 180deg(상하), horizontal은 90deg(좌우)다. reversed boolean은 두 색의 순서를 뒤집으며 기본값은 false다. 그라데이션·2분할에 동일하게 적용하고 장착 버전으로 충돌을 처리한다. 현재 장착 응답에도 reversed를 포함하며 미생성 기본 장착에서는 클라이언트가 false로 해석한다.
 
 꾸미기 클라이언트는 장착 저장 중에도 아이콘·색·효과·표현·방향·반전·별빛 토글 입력을 받는다. 미리보기는 즉시 갱신하며 한 요청이 진행 중이면 후속 장착 선택을 마지막 값으로 합친다. 장착과 별빛 토글은 순서대로 전송하고 매번 최신 장착 버전을 사용한다. 저장 중 이전 응답으로 미리보기를 덮지 않으며 최종 응답 후 서버 상태와 동기화한다. 보상 수령·뽑기·조합 같은 경제 동작의 잠금은 유지한다.
+
+## 정식 공개·달성 알림
+
+`cosmetic_release_context()`는 익명 호출이 가능하며 active·launch_at·server_now만 반환한다. enabled=true여도 미래 launched_at 전에는 비활성이다. 출시 예정 시각은 2026-11-07 00:00 Asia/Seoul(2026-11-06 15:00Z)이다. 프런트는 서버 시각으로 전환 타이머를 잡고, 네트워크 실패 시 재시도하며 포커스 복귀에도 확인한다.
+
+`cosmetic_rank_displays(requested_season,nicknames)`는 공개 이후 현재 학기의 장착 아이콘·미션 이름·색 표현·효과만 반환한다. 최대 200명씩 조회하며 소유 목록·잔액·사용자 UUID를 공개하지 않는다. 아이콘 해제 시 항목을 반환하지 않는다. 별빛 반짝임은 조회 시점의 전체 공개 문제 완료 조건을 다시 확인한다.
+
+일반·데일리 `submit_completion`은 기존 입력과 결과 필드를 유지하면서 achievement_notifications·daily_task_notifications를 추가한다. 신규 완료에서만 전후 기록을 비교하고, 중복 제출에는 알림을 만들지 않는다. 일반 최초 완료자는 퍼즐 잠금으로 확정한다. 뽑기·조합의 알림은 경제 요청의 정규 응답에 저장하여 같은 UUID 재전송 시 동일하다. 장착·타임머신 이용도 달성 전후를 비교한다. 클라이언트는 기존 토스트 스타일로 완료 안내 뒤에 알림을 표시한다. 타임머신은 페이지 이동 후 같은 계정에 알림을 전달한다. 알림 전용 진행도·달성 이력 테이블은 만들지 않는다.
+
+정식 마이페이지 경로는 기존 `/nickname/`, 꾸미기는 `/nickname/customize/`다. 공개 전·로그인 전·닉네임 미설정 상태에서는 기존 계정 화면을 유지한다. `/nickname/?manage=1`에서 기존 로그인·탈퇴·관리자 접근 기능을 이용한다. 일반 문제의 출시 전 기록과 기존 데일리 연속 수치는 유지하고, 일일 과제는 당일 수령만 허용한다. 공개 이후 로그인한 사이트 방문은 당일 출석으로 기록한다.
+
+수령 기록이 존재하는 단계는 achievement_notifications에서 제외한다. 알림 순서는 미션 정렬·단계 순서를 유지한다. record_site_visit의 daily_task_notifications는 당일 방문의 첫 INSERT에서만 출석 체크를 반환하므로 동시 초기화·재방문에도 중복하지 않는다.

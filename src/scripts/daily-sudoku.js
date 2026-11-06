@@ -65,7 +65,7 @@ async function submit(){
   const {data:result,error}=await window.puzzleAccount.client.rpc('submit_completion',{requested_puzzle:`daily-sudoku:${data.day}`,submitted_state:{version:1,values:state.values.slice()},state_version:1});
   if(error)throw error;
   if(owner!==window.puzzleAccount.user?.id)return;
-  completedAnswer=answer;complete();window.showToast('🎉 완료 기록을 저장했습니다!');window.refreshRecentBanner?.(true);await refreshRanks();
+  completedAnswer=answer;complete();window.showToast('🎉 완료 기록을 저장했습니다!');window.showAchievementNotifications?.(result);window.refreshRecentBanner?.(true);await refreshRanks();
  }catch(e){
   if(owner!==window.puzzleAccount.user?.id)return;
   message(e.message?.includes('CLOSED')?'순위 집계가 마감되었습니다.':e.message?.includes('PROFILE_REQUIRED')?'닉네임을 설정해 주세요.':'제출하지 못했습니다. 잠시 후 자동으로 다시 시도합니다.');

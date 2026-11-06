@@ -21,6 +21,7 @@ globalThis.rankingUi = (() => {
   function name(nickname, solvers = {}) {
     const element = document.createElement('span');
     element.className = 'lb-name seasonal-rank-name';
+    element.dataset.cosmeticNickname = nickname;
     const label = document.createElement('span');
     label.textContent = nickname;
     element.append(label);
@@ -98,7 +99,9 @@ globalThis.rankingUi = (() => {
         }
         if (showLast && mine !== rows.length - 1) list.append(rowElement(rows.at(-1)));
       }
+      element.dispatchEvent(new Event('ranking:paint',{bubbles:true}));
       element.replaceChildren(list);
+      void globalThis.decorateCosmeticRankings?.(element);
     };
     paint(element.dataset?.expanded === '1');
   }

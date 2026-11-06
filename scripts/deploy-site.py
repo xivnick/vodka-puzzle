@@ -19,6 +19,8 @@ base = '/home/xivnick/vodka-puzzle'
 destination = f'{base}/releases/{release}'
 subprocess.run(ssh + [host, f'mkdir -p {shlex.quote(destination)}'], check=True)
 subprocess.run(['rsync', '-rtp', '--chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r', '-e', shlex.join(ssh), '--', str(build) + '/', host + ':' + destination + '/'], check=True)
+# Keep hashed chunks requested by already-open pages after the atomic switch.
+subprocess.run(ssh + [host, f'if test -d {base}/dist/_astro; then cp -an {base}/dist/_astro/. {destination}/_astro/; fi'], check=True)
 # Each upload gets a new directory; old releases remain available for rollback.
 link = f'{base}/dist-next-{release}'
 subprocess.run(ssh + [host, f'test -s {destination}/index.html && ln -s releases/{release} {link} && mv -Tf {link} {base}/dist'], check=True)

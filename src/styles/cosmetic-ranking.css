@@ -1,0 +1,11 @@
+.cosmetic-rank-wrapper{display:inline-block;max-width:100%}
+.cosmetic-rank{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap;line-height:inherit;color:inherit;max-width:100%}
+.cosmetic-rank .badge-name{display:inline-block;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.cosmetic-rank .badge-anchor{position:relative;display:inline-block;flex:0 0 18px;width:18px;height:0}
+.cosmetic-rank .badge-visual{position:absolute;left:0;top:var(--badge-top,calc(-.5ex - 9px));display:block;width:18px;height:18px}
+.cosmetic-rank .badge-visual>svg,.cosmetic-rank .badge-visual>img{display:block;width:100%;height:100%;overflow:visible}
+.cosmetic-rank-ink{position:absolute;inset:0;display:block;pointer-events:none;mask:center/contain no-repeat;-webkit-mask:center/contain no-repeat}
+.cosmetic-rank-sparkle{position:absolute;right:-3px;top:-3px;width:7px;height:7px;background:#444;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:cosmetic-starlight 4.2s ease-in-out infinite}
+.cosmetic-rank-sparkle.is-offscreen,.cosmetic-page-hidden .cosmetic-rank-sparkle,.cosmetic-page-hidden .custom-badge-effect .badge-light{animation-play-state:paused!important}
+@keyframes cosmetic-starlight{0%{opacity:.3;transform:scale(.6) rotate(0deg)}50%{opacity:1;transform:scale(1) rotate(90deg)}100%{opacity:.3;transform:scale(.6) rotate(180deg)}}
+@media(prefers-reduced-motion:reduce){.cosmetic-rank-sparkle{animation:none}}

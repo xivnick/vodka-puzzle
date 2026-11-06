@@ -428,11 +428,11 @@ export function initMypage(root,{server=null}={}){
     all('[data-claim],[data-daily-claim],[data-draw],.craft-slot,.craft-choice,#craftConfirm,#profileNicknameForm button').forEach(button=>button.disabled=true);
     if(!dressSaving)all('[data-select-icon],[data-select-color],[data-select-effect],[data-style],[data-angle],[data-reverse],[data-toggle-all-clear]').forEach(button=>button.disabled=true);
   }
-  function showRecovered(){for(const entry of server.takeRecovered()){if(entry.name==='draw_cosmetics'){const items=entry.response.results.map(server.resultItem);drawHistory.push(...items);renderResults(items,false);}else if(entry.name==='craft_cosmetic')appendCraftResult(server.resultItem(entry.response.results[0]));}}
+  function showRecovered(){for(const entry of server.takeRecovered()){window.showAchievementNotifications?.(entry.response);if(entry.name==='draw_cosmetics'){const items=entry.response.results.map(server.resultItem);drawHistory.push(...items);renderResults(items,false);}else if(entry.name==='craft_cosmetic')appendCraftResult(server.resultItem(entry.response.results[0]));}}
   async function runServer(action,done){
     if(serverPending)return;
     serverPending++;lockServerControls();
-    try{const response=await action();syncServer();showRecovered();done?.(response);}
+    try{const response=await action();syncServer();showRecovered();done?.(response);window.showAchievementNotifications?.(response);}
     catch(error){toast(server.errorText(error));await server.refresh().catch(()=>{});syncServer();showRecovered();}
     finally{serverPending--;renderCoins();renderDailyQuests();renderMissions();renderDress();renderCraft();$('#profileNicknameForm button').disabled=false;}
   }

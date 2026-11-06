@@ -421,6 +421,7 @@ async function recordCompletion(puzzleId, state) {
 
   if (!state || typeof state !== 'object' || Array.isArray(state)) return;
   const owner = getUserId();
+  let completionResult;
   const snapshot = JSON.parse(JSON.stringify(state));
   _completionInFlight.add(savedKey);
   try {
@@ -442,7 +443,7 @@ async function recordCompletion(puzzleId, state) {
       }
       throw new Error(`recordCompletion: ${res.status}`);
     }
-    await res.json();
+    completionResult=await res.json();
     localStorage.setItem(savedKey, '1');
     clearTimeout(_completionRetries.get(savedKey));
     _completionRetries.delete(savedKey);
@@ -465,6 +466,7 @@ async function recordCompletion(puzzleId, state) {
   if (puzzleId === window.rankingUi.badges[1].puzzleId) _flowerBadgeSolversPromise = null;
   if (puzzleId === window.rankingUi.badges[2].puzzleId) _bombBadgeSolversPromise = null;
   showToast('🎉 완료 기록을 저장했습니다!');
+  window.showAchievementNotifications?.(completionResult);
   _recentBannerIndex = 0;
   refreshRecentBanner(true);
   renderLeaderboard(puzzleId, 'leaderboard');

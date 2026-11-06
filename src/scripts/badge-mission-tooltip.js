@@ -1,9 +1,7 @@
 // One tooltip per ranking, positioned only on interaction; no animation timer.
-const initialized=new WeakSet();let sequence=0;
+const initialized=new WeakMap(),bound=new WeakSet();let sequence=0;
 export function initBadgeMissionTooltips(root){
- if(initialized.has(root))return;initialized.add(root);
- const samples=[...root.querySelectorAll('[data-badge-mission]')];
- if(!samples.length)return;
+ if(initialized.has(root)){initialized.get(root)();return;}
  const tooltip=document.createElement('div');tooltip.className='badge-mission-tooltip';tooltip.id=`badge-mission-tooltip-${++sequence}`;tooltip.setAttribute('role','tooltip');tooltip.hidden=true;document.body.append(tooltip);
  let active=null,pinned=false;
  function hide(){
@@ -19,7 +17,8 @@ export function initBadgeMissionTooltips(root){
   tooltip.style.setProperty('--badge-arrow-x',`${anchor.left+anchor.width/2-left}px`);
   tooltip.style.left=`${left}px`;tooltip.style.top=`${above>=8?above:anchor.bottom+8}px`;
  }
- for(const sample of samples){
+ function bind(){for(const sample of root.querySelectorAll('[data-badge-mission]')){
+  if(bound.has(sample))continue;bound.add(sample);
   const trigger=sample.querySelector('.badge-visual'),name=sample.dataset.badgeMission;if(!trigger||!name)continue;
   trigger.classList.add('badge-mission-trigger');trigger.setAttribute('role','button');trigger.setAttribute('tabindex','0');trigger.setAttribute('aria-label',name);
   const toggle=()=>{if(active===trigger&&pinned)hide();else show(trigger,name,true);};
@@ -30,6 +29,8 @@ export function initBadgeMissionTooltips(root){
   trigger.addEventListener('blur',()=>{if(active===trigger)hide();});
   trigger.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();toggle();}});
  }
+ }
+ bind();initialized.set(root,bind);root.addEventListener('ranking:paint',hide);
  document.addEventListener('pointerdown',event=>{if(active&&!active.contains(event.target)&&!tooltip.contains(event.target))hide();});
  document.addEventListener('keydown',event=>{if(event.key==='Escape')hide();});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)hide();});
