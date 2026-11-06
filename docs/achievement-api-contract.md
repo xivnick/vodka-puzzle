@@ -133,3 +133,5 @@ attendance/daily-complete/daily-champion 중 하나다. 해당 한국 날짜에�
 ## 색 표현 방향·반전
 
 `set_cosmetic_equipment`의 equipment는 direction에 diagonal·horizontal·vertical을 허용한다. vertical은 CSS 180deg(상하), horizontal은 90deg(좌우)다. reversed boolean은 두 색의 순서를 뒤집으며 기본값은 false다. 그라데이션·2분할에 동일하게 적용하고 장착 버전으로 충돌을 처리한다. 현재 장착 응답에도 reversed를 포함하며 미생성 기본 장착에서는 클라이언트가 false로 해석한다.
+
+꾸미기 클라이언트는 장착 저장 중에도 아이콘·색·효과·표현·방향·반전·별빛 토글 입력을 받는다. 미리보기는 즉시 갱신하며 한 요청이 진행 중이면 후속 장착 선택을 마지막 값으로 합친다. 장착과 별빛 토글은 순서대로 전송하고 매번 최신 장착 버전을 사용한다. 저장 중 이전 응답으로 미리보기를 덮지 않으며 최종 응답 후 서버 상태와 동기화한다. 보상 수령·뽑기·조합 같은 경제 동작의 잠금은 유지한다.

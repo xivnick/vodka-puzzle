@@ -9,7 +9,8 @@ export function initMypage(root,{server=null}={}){
   if(server){data.missions=saved.missions;data.dailyQuests=saved.dailyQuests;data.total=saved.total;}
   const $=s=>root.querySelector(s);
   const all=s=>[...root.querySelectorAll(s)];
-  let serverPending=0;
+  let serverPending=0,dressSaving=false,pendingDress=null,pendingAllClear=null;
+  const dressBlocked=()=>serverPending>0&&!dressSaving;
   const icons=new Map(data.icons.map(i=>[i.id,i]));
   const iconName=id=>id==='none'?'아이콘 없음':icons.get(id).name;
   const featureCounts={...saved?.featureCounts};
@@ -259,8 +260,18 @@ export function initMypage(root,{server=null}={}){
   }
   function applyDress(){
     if(!effectAllowed())draft.effect='none';
-    if(server){const desired={...draft};renderDress();void runServer(()=>server.equip(desired));return;}
+    if(server){pendingDress={...draft};renderDress();void saveDress();return;}
     applied={...draft};renderDress();persist();
+  }
+  async function saveDress(){
+    if(dressSaving||serverPending)return;
+    dressSaving=true;
+    try{
+      while(pendingDress||pendingAllClear!==null){
+        if(pendingDress){const desired=pendingDress;pendingDress=null;await runServer(()=>server.equip(desired));}
+        else{const enabled=pendingAllClear;pendingAllClear=null;await runServer(()=>server.toggleAllClear(enabled));}
+      }
+    }finally{dressSaving=false;syncServer();}
   }
   function renderDress(){
     if(!effectAllowed())draft.effect='none';
@@ -290,7 +301,7 @@ export function initMypage(root,{server=null}={}){
     renderInventory();renderEffects();lockServerControls();
   }
   all('[data-select-icon]').forEach(b=>b.addEventListener('click',()=>{
-    if(serverPending)return;const id=b.dataset.selectIcon;if(id!=='none'&&!ownedIcons.has(id))return;
+    if(dressBlocked())return;const id=b.dataset.selectIcon;if(id!=='none'&&!ownedIcons.has(id))return;
     draft.icon=id;if(id!=='none'&&!server)trackFeature('equip-icon');applyDress();
   }));
   function renderInventory(){
@@ -299,7 +310,7 @@ export function initMypage(root,{server=null}={}){
       const b=make('button','color-item');b.type='button';b.dataset.selectColor=color.id;b.setAttribute('aria-pressed',String(draft.color===color.id));
       const swatch=make('i');swatch.style.background=`linear-gradient(135deg,${color.a},${color.b})`;
       b.append(swatch,make('b','',color.name),make('small','',color.id==='base'?'기본':`${rarityNames[color.rarity]} · ${inventory.get(color.id)}개`));
-      b.addEventListener('click',()=>{if(serverPending)return;draft.color=color.id;applyDress();});panel.append(b);
+      b.addEventListener('click',()=>{if(dressBlocked())return;draft.color=color.id;applyDress();});panel.append(b);
     });
   }
   function renderEffects(){
@@ -311,13 +322,13 @@ export function initMypage(root,{server=null}={}){
       const b=make('button','effect-item');b.type='button';b.dataset.selectEffect=effect.id;b.disabled=!allowed;
       b.title=allowed?effect.name:'언커먼 이상 필요';b.setAttribute('aria-pressed',String(draft.effect===effect.id));
       b.append(make('i','effect-mark'),make('span','',effect.name),make('small','',allowed?'':'언커먼 이상 필요'));
-      b.addEventListener('click',()=>{if(serverPending)return;draft.effect=effect.id;applyDress();});panel.append(b);
+      b.addEventListener('click',()=>{if(dressBlocked())return;draft.effect=effect.id;applyDress();});panel.append(b);
     });
-    if(allClearEligible()){const toggle=make('button','effect-item');toggle.type='button';toggle.dataset.toggleAllClear='';toggle.setAttribute('aria-pressed',String(allClearEnabled));toggle.append(make('span','','별빛 반짝임'),make('small','',allClearEnabled?'켜짐':'꺼짐'));toggle.addEventListener('click',()=>{if(serverPending)return;if(server){void runServer(()=>server.toggleAllClear(!allClearEnabled));return;}allClearEnabled=!allClearEnabled;renderDress();persist();});panel.append(toggle);}
+    if(allClearEligible()){const toggle=make('button','effect-item');toggle.type='button';toggle.dataset.toggleAllClear='';toggle.setAttribute('aria-pressed',String(allClearEnabled));toggle.append(make('span','','별빛 반짝임'),make('small','',allClearEnabled?'켜짐':'꺼짐'));toggle.addEventListener('click',()=>{if(dressBlocked())return;if(server){allClearEnabled=!allClearEnabled;pendingAllClear=allClearEnabled;renderDress();void saveDress();return;}allClearEnabled=!allClearEnabled;renderDress();persist();});panel.append(toggle);}
   }
-  all('[data-style]').forEach(b=>b.addEventListener('click',()=>{if(serverPending)return;draft.mode=b.dataset.style;pressed('[data-style]',x=>x===b);applyDress();}));
-  all('[data-reverse]').forEach(b=>b.addEventListener('click',()=>{if(serverPending)return;draft.reversed=!draft.reversed;applyDress();}));
-  all('[data-angle]').forEach(b=>b.addEventListener('click',()=>{if(serverPending)return;draft.angle=b.dataset.angle;pressed('[data-angle]',x=>x===b);applyDress();}));
+  all('[data-style]').forEach(b=>b.addEventListener('click',()=>{if(dressBlocked())return;draft.mode=b.dataset.style;pressed('[data-style]',x=>x===b);applyDress();}));
+  all('[data-reverse]').forEach(b=>b.addEventListener('click',()=>{if(dressBlocked())return;draft.reversed=!draft.reversed;applyDress();}));
+  all('[data-angle]').forEach(b=>b.addEventListener('click',()=>{if(dressBlocked())return;draft.angle=b.dataset.angle;pressed('[data-angle]',x=>x===b);applyDress();}));
   const craftSize=()=>3;
   function craftMaterials(){
     return [...inventory].filter(([id,count])=>count>0&&colors.get(id)?.rarity==='common').map(([id,quantity])=>({item:colors.get(id),quantity}));
@@ -403,8 +414,8 @@ export function initMypage(root,{server=null}={}){
     ownedIcons.clear();for(const id of state.ownedIcons)ownedIcons.add(id);
     ownedEffects.clear();for(const id of state.ownedEffects)ownedEffects.add(id);
     for(const color of state.colors)colors.set(color.id,color);
-    data.total=state.total;allClearCompleted=state.allClearCompleted;allClearEnabled=state.allClearEnabled;
-    applied={...state.applied};draft={...applied};data.missions=state.missions;data.dailyQuests=state.dailyQuests;
+    data.total=state.total;allClearCompleted=state.allClearCompleted;if(!dressSaving)allClearEnabled=state.allClearEnabled;
+    applied={...state.applied};if(!dressSaving)draft={...applied};data.missions=state.missions;data.dailyQuests=state.dailyQuests;
     dailyDate=state.dailyDate;dailyClaimed.clear();for(const id of state.dailyClaimed)dailyClaimed.add(id);
     $('#accountName').textContent=nickname;setBadgeName($('#profileBadge'),nickname);
     const selected=craft.filter(Boolean),needed=new Map();selected.forEach(id=>needed.set(id,(needed.get(id)||0)+1));
@@ -412,9 +423,10 @@ export function initMypage(root,{server=null}={}){
     renderCoins();renderDailyQuests();renderMissions();renderDress();renderCraft();
   }
   function lockServerControls(){
-    all('[data-style],[data-angle],[data-reverse]').forEach(button=>button.disabled=serverPending>0);
+    all('[data-style],[data-angle],[data-reverse]').forEach(button=>button.disabled=dressBlocked());
     if(!serverPending)return;
-    all('[data-claim],[data-daily-claim],[data-draw],[data-select-icon],[data-select-color],[data-select-effect],[data-style],[data-angle],[data-reverse],[data-toggle-all-clear],.craft-slot,.craft-choice,#craftConfirm,#profileNicknameForm button').forEach(button=>button.disabled=true);
+    all('[data-claim],[data-daily-claim],[data-draw],.craft-slot,.craft-choice,#craftConfirm,#profileNicknameForm button').forEach(button=>button.disabled=true);
+    if(!dressSaving)all('[data-select-icon],[data-select-color],[data-select-effect],[data-style],[data-angle],[data-reverse],[data-toggle-all-clear]').forEach(button=>button.disabled=true);
   }
   function showRecovered(){for(const entry of server.takeRecovered()){if(entry.name==='draw_cosmetics'){const items=entry.response.results.map(server.resultItem);drawHistory.push(...items);renderResults(items,false);}else if(entry.name==='craft_cosmetic')appendCraftResult(server.resultItem(entry.response.results[0]));}}
   async function runServer(action,done){
