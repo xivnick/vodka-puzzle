@@ -124,7 +124,7 @@ export function initMypage(root,{server=null}={}){
       if(server){row.querySelector('h3').textContent=m.name;row.querySelector('.mission-condition').textContent=m.text;const icon=row.querySelector('.mission-icon');icon.replaceChildren($(`[data-icon-template="${m.icon}"]`).content.cloneNode(true));}
       if(!row.hidden)shown++;
       row.classList.toggle('is-complete',!s);
-      row.querySelector('.mission-value').textContent=s?`${m.count} / ${s.at}`:'완료';
+      row.querySelector('.mission-value').textContent=s?`${m.repeatEvery?m.count:Math.min(m.count,s.at)} / ${s.at}`:'완료';
       const bar=row.querySelector('.mission-progress');
       bar.setAttribute('aria-valuemax',s?.at??1);bar.setAttribute('aria-valuenow',Math.min(m.count,s?.at??1));
       bar.firstElementChild.style.width=(s?Math.min(m.count/s.at,1)*100:100)+'%';
