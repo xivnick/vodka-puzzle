@@ -411,6 +411,7 @@ export function initMypage(root,{server=null}={}){
     renderCoins();renderDailyQuests();renderMissions();renderDress();renderCraft();
   }
   function lockServerControls(){
+    all('[data-style],[data-angle]').forEach(button=>button.disabled=serverPending>0);
     if(!serverPending)return;
     all('[data-claim],[data-daily-claim],[data-draw],[data-select-icon],[data-select-color],[data-select-effect],[data-style],[data-angle],[data-toggle-all-clear],.craft-slot,.craft-choice,#craftConfirm,#profileNicknameForm button').forEach(button=>button.disabled=true);
   }
