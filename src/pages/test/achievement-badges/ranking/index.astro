@@ -21,7 +21,7 @@ const rows=names.map((name,index)=>{
 <PageLayout title="랭킹 예시">
   <meta slot="head" name="robots" content="noindex, nofollow"/>
   <section class="ranking-example mypage-v2" aria-label="가상 랭킹 30명">
-    <div class="ranking-heading"><div class="lb-title">전체 랭킹</div><button id="rankingEffects" type="button" aria-pressed="false">효과 정지</button></div>
+    <div class="lb-title">전체 랭킹</div>
     <div class="lb-list" role="list">{rows.map(row=><div class:list={['lb-row',{'lb-me':row.index===2}]} role="listitem">
       <span class="lb-rank">{row.index+1}</span>
       <span class="lb-name">{row.icon?<span class="rank-customization" title={row.label} data-ranking-icon={row.icon.id} data-ranking-effect={row.effect??'none'} data-color-a={row.color.a} data-color-b={row.color.b} data-split={String(row.split)}><NicknameBadge name={row.name} src={row.icon.src} size={18} label={row.label} sparkle={row.index===0}/></span>:<span>{row.name}</span>}</span>
@@ -52,16 +52,12 @@ if(root){
  });
  const observer=new IntersectionObserver(entries=>entries.forEach(entry=>entry.target.classList.toggle('is-offscreen',!entry.isIntersecting)));
  root.querySelectorAll('.badge-sparkle').forEach(sparkle=>observer.observe(sparkle));
- document.querySelector('#rankingEffects').addEventListener('click',event=>{
-  const paused=root.classList.toggle('effects-paused');event.currentTarget.setAttribute('aria-pressed',String(paused));event.currentTarget.textContent=paused?'효과 재생':'효과 정지';
- });
  const update=()=>root.classList.toggle('page-hidden',document.hidden);
  document.addEventListener('visibilitychange',update);update();
 }
 </script>
 <style is:global>
-.ranking-example{width:100%}.ranking-example .ranking-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.ranking-example .lb-title{margin:0}
-.ranking-example #rankingEffects{border:0;background:none;padding:3px 0;font-size:.68rem;color:#999;text-decoration:underline;text-underline-offset:3px}
+.ranking-example{width:100%}
 .ranking-example .lb-name{min-width:0}.ranking-example .nickname-badge{max-width:100%}.ranking-example .badge-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .ranking-example .rank-ink{position:absolute;inset:0;display:block;pointer-events:none;mask:center/contain no-repeat;-webkit-mask:center/contain no-repeat}
 .ranking-example .rank-customization{display:inline-block;max-width:100%}
