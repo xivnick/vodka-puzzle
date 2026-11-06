@@ -1,0 +1,8 @@
+---
+import DifficultyFilterDemo from '../../../components/DifficultyFilterDemo.astro';
+export function getStaticPaths() {
+  return [1, 2, 3, 4, 5].map(variant => ({ params: { variant: String(variant) }, props: { variant } }));
+}
+const { variant } = Astro.props;
+---
+<DifficultyFilterDemo variant={variant} />

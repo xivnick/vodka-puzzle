@@ -57,6 +57,7 @@ unsolvedFilter.addEventListener('click', () => {
         const link = document.createElement('a');
         link.href = puzzle.href;
         link.dataset.puzzleId = puzzle.id;
+        if (document.getElementById('difficultyFilterDemo')) link.dataset.difficulty = String(puzzle.difficulty ?? 0);
         const title = document.createElement('span');
         title.className = 'title';
         title.textContent = puzzle.title;
@@ -102,14 +103,20 @@ unsolvedFilter.addEventListener('click', () => {
 
   function renderPagination() {
     const links = [...document.querySelectorAll('.list a[data-puzzle-id]')];
-    const visibleLinks = onlyUnsolved
+    const unsolvedLinks = onlyUnsolved
       ? links.filter(link => !completedPuzzles.has(link.dataset.puzzleId))
       : links;
+    const difficultyDemo = document.getElementById('difficultyFilterDemo');
+    const selectedLevels = difficultyDemo?.dataset.levels;
+    const visibleLinks = selectedLevels && selectedLevels !== 'all'
+      ? unsolvedLinks.filter(link => selectedLevels.split(',').includes(link.dataset.difficulty))
+      : unsolvedLinks;
     if (puzzleListLoaded) {
       document.getElementById('puzzleListTitle').textContent = `문제 (${visibleLinks.length})`;
       const status = document.getElementById('puzzleListStatus');
       status.hidden = visibleLinks.length > 0;
       status.textContent = links.length && onlyUnsolved ? '안 푼 문제가 없습니다.' : '공개된 문제가 없습니다.';
+      if (selectedLevels && selectedLevels !== 'all' && !visibleLinks.length) status.textContent = '선택한 조건에 맞는 문제가 없습니다.';
     }
     const totalPages = Math.max(1, Math.ceil(visibleLinks.length / PAGE_SIZE));
     const currentPage = getCurrentPage(totalPages);
@@ -240,3 +247,6 @@ unsolvedFilter.addEventListener('click', () => {
   });
 
   window.addEventListener('hashchange', renderPagination);
+  if (document.getElementById('difficultyFilterDemo')) {
+    document.addEventListener('difficulty-filter-change', () => changePage(1));
+  }
