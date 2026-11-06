@@ -3,6 +3,7 @@ import PageLayout from '../../../../layouts/PageLayout.astro';
 import NicknameBadge from '../../../../components/NicknameBadge.astro';
 import data from '../../../../data/mypage-v2-preview.json';
 import '../../../../styles/nickname-badge-effects.css';
+import '../../../../styles/badge-mission-tooltip.css';
 const names=['모눈종이','어제의내일','퍼즐러','소금빵','빈칸수집가','은하수','별헤는밤','두뇌풀가동','민트초코','꺼지지않는불','온도차','숫자산책','조각모음','한발먼저','연필한자루','달빛산책','꽃갈피','폭탄해체반','토마토주스','흑기사','옷걸이','체리콕','네모','초록','gridwalker','파란연필','봄바람','꾸준한오후','한칸더','새싹'];
 const icons=['crown','time-traveler','leaf','clover','skull','galaxy','star','brain','flask','flame','temperature','number-123','puzzle','sword','swords','rabbit','flower','bomb','tomato','glass','hanger','cherry',null,'leaf','puzzle','brain','flower',null,'cherry','leaf'];
 const colors=['r-berry','r-sea','c6','base','c2','r-aurora','u-pink-blue','base','r-mint-chocolate','r-autumn','c25','r-black-tea','base','c15','u-solid','r-petal','c0','base','c2','r-black-pearl','base','c0','base','c6','u-pink-blue','c9','r-peach','base','c15','base'];
@@ -13,9 +14,11 @@ palette.set('u-pink-blue',{name:'수박 · 하늘',a:data.common[0].a,b:data.com
 palette.set('u-solid',{name:'비취',a:data.common[16].a,b:data.common[16].a,rarity:'uncommon'});
 const rows=names.map((name,index)=>{
  const icon=data.icons.find(icon=>icon.id===icons[index]),color=palette.get(colors[index]),effect=effects.get(index);
+ const mission=icon&&data.missions.find(m=>m.stages.some(stage=>stage.kind==='icon'&&stage.value===icon.id));
+ if(icon&&!mission)throw new Error('Missing icon mission '+icon.id);
  if(!color)throw new Error('Unknown example color '+colors[index]);
  if(effect&&!['uncommon','rare'].includes(color.rarity))throw new Error('Effect on ineligible color');
- return {name,icon,color,effect,index,count:data.total-index,split:index%3===0,label:icon?[icon.name,color.name,effect&&data.effects.find(e=>e.id===effect).name,index===0&&'별빛 반짝임'].filter(Boolean).join(' · '):''};
+ return {name,icon,missionName:mission?.name,color,effect,index,count:data.total-index,split:index%3===0};
 });
 ---
 <PageLayout title="랭킹 예시">
@@ -24,7 +27,7 @@ const rows=names.map((name,index)=>{
     <div class="lb-title">전체 랭킹</div>
     <div class="lb-list" role="list">{rows.map(row=><div class:list={['lb-row',{'lb-me':row.index===2}]} role="listitem">
       <span class="lb-rank">{row.index+1}</span>
-      <span class="lb-name">{row.icon?<span class="rank-customization" title={row.label} data-ranking-icon={row.icon.id} data-ranking-effect={row.effect??'none'} data-color-a={row.color.a} data-color-b={row.color.b} data-split={String(row.split)}><NicknameBadge name={row.name} src={row.icon.src} size={18} label={row.label} sparkle={row.index===0}/></span>:<span>{row.name}</span>}</span>
+      <span class="lb-name">{row.icon?<span class="rank-customization" data-badge-mission={row.missionName} data-ranking-icon={row.icon.id} data-ranking-effect={row.effect??'none'} data-color-a={row.color.a} data-color-b={row.color.b} data-split={String(row.split)}><NicknameBadge name={row.name} src={row.icon.src} size={18} label={row.missionName} sparkle={row.index===0}/></span>:<span>{row.name}</span>}</span>
       <span class="lb-time" aria-label={`일반 문제 ${row.count}개 완료`}>{row.count}개</span>
     </div>)}</div>
     <p class="ranking-note">닉네임과 기록은 가상입니다.</p>
@@ -34,6 +37,7 @@ const rows=names.map((name,index)=>{
 <script>
 import {createBadgeEffect} from '../../../../scripts/nickname-badge-effects.js';
 import {initNicknameBadges} from '../../../../scripts/nickname-badge-alignment.js';
+import {initBadgeMissionTooltips} from '../../../../scripts/badge-mission-tooltip.js';
 const root=document.querySelector('.ranking-example');
 if(root){
  initNicknameBadges();
@@ -50,6 +54,7 @@ if(root){
    const overlay=createBadgeEffect(sample.dataset.rankingEffect);overlay.style.maskImage=mask;overlay.style.webkitMaskImage=mask;visual.append(overlay);
   }
  });
+ initBadgeMissionTooltips(root);
  const observer=new IntersectionObserver(entries=>entries.forEach(entry=>entry.target.classList.toggle('is-offscreen',!entry.isIntersecting)));
  root.querySelectorAll('.badge-sparkle').forEach(sparkle=>observer.observe(sparkle));
  const update=()=>root.classList.toggle('page-hidden',document.hidden);
