@@ -1,147 +1,143 @@
 ---
-import HomePage from './HomePage.astro';
-const { variant = 1 } = Astro.props;
+import PageLayout from '../layouts/PageLayout.astro';
+import '../styles/home.css';
 const ideas = [
-  ['한 줄 버튼', '추천 · 전체와 난이도 1·2·3을 한 번에 비교하고 바로 선택합니다.'],
-  ['드롭다운', '목록 제목 옆에 배치해 세로 공간을 아낍니다.'],
-  ['여러 난이도', '패널에서 원하는 난이도를 여러 개 골라 함께 봅니다.'],
-  ['난이도 범위', '최소·최대 난이도를 정해 원하는 범위만 봅니다.'],
-  ['마름모 버튼', '목록 오른쪽과 같은 마름모 표기로 난이도를 고릅니다.'],
+  ['한 줄 배치', '목록 제목, 난이도, 미해결을 한 줄에 배치한다.'],
+  ['두 줄 배치', '기존 제목과 미해결을 유지하고, 바로 아래에 난이도를 둔다.'],
+  ['펼침 메뉴', '난이도를 누르면 선택 메뉴가 열린다.'],
+  ['연결형 버튼', '아래쪽 난이도 버튼을 하나의 묶음으로 연결한다.'],
+  ['여러 난이도 선택', '마름모 버튼을 각각 켜고 끈다. 선택을 모두 해제하면 전체를 본다.'],
+];
+const puzzles = [
+  { title: '야지린', difficulty: 1, completed: false },
+  { title: '레고 하우스', difficulty: 2, completed: true },
+  { title: '별의 고리', difficulty: 3, completed: false },
 ];
 const levels = [1, 2, 3];
 ---
-<HomePage difficultyDemo>
-  <div slot="above-title" class="difficulty-demo-intro">
-    <p class="demo-eyebrow">난이도 필터 제안 · {variant} / 5</p>
-    <nav class="demo-navigation" aria-label="난이도 필터 제안">
-      {ideas.map(([title], index) => <a href={`/test/difficulty-filter/${index + 1}/`} aria-current={variant === index + 1 ? 'page' : undefined}>{index + 1}. {title}</a>)}
-    </nav>
-    <p class="demo-description">{ideas[variant - 1][1]}</p>
-    <p class="demo-caption">공개 문제로 체험 · 전체에는 난이도 미지정 문제도 포함</p>
-  </div>
-  {variant === 2 && <div slot="list-actions" class="difficulty-inline">
-    <label for="difficultySelect">난이도</label>
-    <select id="difficultySelect" form="difficultyFilterDemo">
-      <option value="all">전체</option>
-      {levels.map(level => <option value={level}>난이도 {level}</option>)}
-      <option value="0">미지정</option>
-    </select>
-  </div>}
-  <form slot="list-filters" id="difficultyFilterDemo" class:list={['difficulty-filter-demo', `variant-${variant}`]} data-variant={variant} data-levels="all" aria-label="문제 난이도 필터">
-    {variant === 1 && <div class="difficulty-segments" role="group" aria-label="난이도">
-      <button type="button" data-level="all" aria-pressed="true">전체</button>
-      {levels.map(level => <button type="button" data-level={level} aria-pressed="false">난이도 {level}</button>)}
-    </div>}
-    {variant === 3 && <details class="difficulty-details">
-      <summary>난이도 <span id="difficultySummary">전체</span><span class="disclosure-arrow" aria-hidden="true">⌄</span></summary>
-      <fieldset>
-        <legend>여러 난이도 함께 보기</legend>
-        <div class="difficulty-checks">
-          {[...levels, 0].map(level => <label><input type="checkbox" name="levels" value={level} checked />{level ? `난이도 ${level}` : '미지정'}</label>)}
+<PageLayout title="난이도 필터 제안" heading="난이도 필터" subtitle="목록 상단 비교 · 5가지" home>
+  <p class="comparison-note">각 예시에서 버튼을 눌러보실 수 있습니다. 문제와 완료 표시는 비교용 예시입니다.</p>
+  <div class="filter-comparison">
+    {ideas.map(([title, description], index) => <section id={`option-${index + 1}`} class:list={['filter-example', `option-${index + 1}`]} data-example={index + 1} aria-labelledby={`example-title-${index + 1}`}>
+      <h2 id={`example-title-${index + 1}`}>{index + 1}. {title}</h2>
+      <p class="example-description">{description}</p>
+      <div class="list-head">
+        <div class="list-title" data-count>문제 (3)</div>
+        {[0, 2, 4].includes(index) && <div class="head-actions">
+          {index === 2 ? <details class="difficulty-menu">
+            <summary class="rank-tab" aria-label="난이도 선택"><span data-menu-label>난이도</span><span class="menu-arrow" aria-hidden="true">⌄</span></summary>
+            <div class="menu-options" role="group" aria-label="난이도">
+              <button class="rank-tab active" type="button" data-level="all" aria-pressed="true">전체</button>
+              {levels.map(level => <button class="rank-tab" type="button" data-level={level} aria-pressed="false" aria-label={`난이도 ${level}`}><span class="filter-diamonds" aria-hidden="true">{levels.slice(0, level).map(() => <i />)}</span></button>)}
+            </div>
+          </details> : <div class="difficulty-buttons" role="group" aria-label={index === 4 ? '난이도 여러 개 선택' : '난이도'}>
+            {index !== 4 && <button class="rank-tab active" type="button" data-level="all" aria-pressed="true">전체</button>}
+            {levels.map(level => <button class="rank-tab" type="button" data-level={level} aria-pressed="false" aria-label={`난이도 ${level}`}><span class="filter-diamonds" aria-hidden="true">{levels.slice(0, level).map(() => <i />)}</span></button>)}
+          </div>}
+          <button class="rank-tab unsolved-toggle" type="button" aria-pressed="false">미해결</button>
+        </div>}
+        {[1, 3].includes(index) && <button class="rank-tab unsolved-toggle" type="button" aria-pressed="false">미해결</button>}
+      </div>
+      {[1, 3].includes(index) && <div class="second-row">
+        <span class="filter-label">난이도</span>
+        <div class="difficulty-buttons" role="group" aria-label="난이도">
+          <button class="rank-tab active" type="button" data-level="all" aria-pressed="true">전체</button>
+          {levels.map(level => <button class="rank-tab" type="button" data-level={level} aria-pressed="false" aria-label={`난이도 ${level}`}><span class="filter-diamonds" aria-hidden="true">{levels.slice(0, level).map(() => <i />)}</span></button>)}
         </div>
-        <button type="button" data-reset>전체 선택</button>
-      </fieldset>
-    </details>}
-    {variant === 4 && <div class="difficulty-range">
-      <span>난이도</span>
-      <label><span class="sr-only">최소 난이도</span><select id="difficultyMin"><option value="1">1 이상</option><option value="2">2 이상</option><option value="3">3 이상</option></select></label>
-      <span class="range-dash">–</span>
-      <label><span class="sr-only">최대 난이도</span><select id="difficultyMax"><option value="1">1 이하</option><option value="2">2 이하</option><option value="3" selected>3 이하</option></select></label>
-      <button type="button" data-reset aria-pressed="true">전체</button>
-    </div>}
-    {variant === 5 && <div class="difficulty-symbols" role="group" aria-label="난이도">
-      <span class="difficulty-label">난이도</span>
-      <button type="button" data-level="all" aria-pressed="true">전체</button>
-      {levels.map(level => <button type="button" data-level={level} aria-pressed="false" aria-label={`난이도 ${level}`} title={`난이도 ${level}`}><span class="symbol-diamonds" aria-hidden="true">{levels.slice(0, level).map(() => <i />)}</span></button>)}
-    </div>}
-    {variant === 4 && <p id="rangeStatus" class="range-status" aria-live="polite">전체 · 미지정 포함</p>}
-  </form>
-</HomePage>
+      </div>}
+      <div class="list sample-list">
+        <div class="daily-card"><span class="title">Daily Sudoku</span></div>
+        {puzzles.map(puzzle => <div class="sample-puzzle" data-difficulty={puzzle.difficulty} data-completed={String(puzzle.completed)}>
+          <span class="title">{puzzle.title}{puzzle.completed && <span class="check-mark">✓</span>}</span>
+          <span class="puzzle-difficulty" role="img" aria-label={`난이도 ${puzzle.difficulty}`}>{levels.slice(0, puzzle.difficulty).map(() => <span class="difficulty-diamond" aria-hidden="true" />)}</span>
+        </div>)}
+        <p class="sample-empty" role="status" hidden>선택한 조건에 맞는 문제가 없습니다.</p>
+      </div>
+    </section>)}
+  </div>
+</PageLayout>
 <script>
-  const form = document.getElementById('difficultyFilterDemo');
-  if (form instanceof HTMLFormElement) {
-    const variant = Number(form.dataset.variant);
-    const update = (levels: string) => {
-      form.dataset.levels = levels;
-      form.querySelectorAll<HTMLButtonElement>('[data-level]').forEach(button => {
-        button.setAttribute('aria-pressed', String(button.dataset.level === levels));
+  document.querySelectorAll<HTMLElement>('[data-example]').forEach(example => {
+    const multiple = example.dataset.example === '5';
+    const selected = new Set<string>();
+    let unsolved = false;
+    const buttons = [...example.querySelectorAll<HTMLButtonElement>('[data-level]')];
+    const toggle = example.querySelector<HTMLButtonElement>('.unsolved-toggle')!;
+    const update = () => {
+      buttons.forEach(button => {
+        const active = button.dataset.level === 'all' ? selected.size === 0 : selected.has(button.dataset.level!);
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
       });
-      document.dispatchEvent(new Event('difficulty-filter-change'));
+      toggle.classList.toggle('active', unsolved);
+      toggle.setAttribute('aria-pressed', String(unsolved));
+      let count = 0;
+      example.querySelectorAll<HTMLElement>('.sample-puzzle').forEach(row => {
+        const visible = (!selected.size || selected.has(row.dataset.difficulty!)) && (!unsolved || row.dataset.completed !== 'true');
+        row.hidden = !visible;
+        if (visible) count++;
+      });
+      example.querySelector('[data-count]')!.textContent = `문제 (${count})`;
+      (example.querySelector('.sample-empty') as HTMLElement).hidden = count !== 0;
     };
-    form.addEventListener('submit', event => event.preventDefault());
-    form.querySelectorAll<HTMLButtonElement>('[data-level]').forEach(button => {
-      button.addEventListener('click', () => update(button.dataset.level!));
-    });
-    document.getElementById('difficultySelect')?.addEventListener('change', event => update((event.target as HTMLSelectElement).value));
-    if (variant === 3) {
-      const checkboxes = [...form.querySelectorAll<HTMLInputElement>('input[name="levels"]')];
-      const sync = () => {
-        const checked = checkboxes.filter(input => input.checked);
-        const all = checked.length === checkboxes.length;
-        update(all ? 'all' : checked.map(input => input.value).join(',') || 'none');
-        document.getElementById('difficultySummary')!.textContent = all ? '전체' : checked.map(input => input.value === '0' ? '미지정' : input.value).join(' · ') || '선택 없음';
-      };
-      checkboxes.forEach(input => input.addEventListener('change', sync));
-      form.querySelector('[data-reset]')!.addEventListener('click', () => { checkboxes.forEach(input => { input.checked = true; }); sync(); });
-    }
-    if (variant === 4) {
-      const min = document.getElementById('difficultyMin') as HTMLSelectElement;
-      const max = document.getElementById('difficultyMax') as HTMLSelectElement;
-      const reset = form.querySelector('[data-reset]')!;
-      const sync = (source: HTMLSelectElement) => {
-        if (Number(min.value) > Number(max.value)) {
-          if (source === min) max.value = min.value;
-          else min.value = max.value;
-        }
-        update([1, 2, 3].filter(level => level >= Number(min.value) && level <= Number(max.value)).join(','));
-        reset.setAttribute('aria-pressed', 'false');
-        document.getElementById('rangeStatus')!.textContent = `난이도 ${min.value}–${max.value} · 미지정 제외`;
-      };
-      [min, max].forEach(select => select.addEventListener('change', () => sync(select)));
-      reset.addEventListener('click', () => {
-        min.value = '1'; max.value = '3'; update('all');
-        reset.setAttribute('aria-pressed', 'true');
-        document.getElementById('rangeStatus')!.textContent = '전체 · 미지정 포함';
-      });
-    }
-  }
+    buttons.forEach(button => button.addEventListener('click', () => {
+      const level = button.dataset.level!;
+      if (level === 'all') selected.clear();
+      else if (multiple) {
+        if (selected.has(level)) selected.delete(level);
+        else selected.add(level);
+      } else { selected.clear(); selected.add(level); }
+      const label = example.querySelector('[data-menu-label]');
+      if (label) {
+        label.replaceChildren();
+        if (level === 'all') label.textContent = '난이도';
+        else label.append(button.querySelector('.filter-diamonds')!.cloneNode(true));
+        example.querySelector('summary')!.setAttribute('aria-label', level === 'all' ? '난이도 선택: 전체' : `난이도 선택: 난이도 ${level}`);
+        example.querySelector('details')!.open = false;
+      }
+      update();
+    }));
+    toggle.addEventListener('click', () => { unsolved = !unsolved; update(); });
+  });
 </script>
 <style is:global>
-.difficulty-demo-intro { margin:0 0 24px; text-align:left; padding-bottom:18px; border-bottom:1px solid #e8e5df; }
-.demo-eyebrow { margin:0 0 10px; color:#888; font-size:.72rem; }
-.demo-navigation { display:flex; flex-wrap:wrap; gap:5px; }
-.demo-navigation a { padding:6px 8px; color:#888; font-size:.72rem; text-decoration:none; border-radius:3px; background:#faf8f4; }
-.demo-navigation a[aria-current] { background:#e8e4da; color:#444; font-weight:700; }
-.demo-description { margin:12px 0 0; color:#555; font-size:.78rem; line-height:1.7; }
-.demo-caption { margin:4px 0 0; color:#999; font-size:.68rem; line-height:1.6; }
-.difficulty-filter-demo { width:100%; margin:0 0 12px; }
-.difficulty-filter-demo.variant-2 { margin:0; }
-.difficulty-filter-demo button, .difficulty-inline select, .difficulty-range select { border:1px solid #ddd8cf; border-radius:3px; background:white; color:#888; font:inherit; font-size:.74rem; min-height:32px; padding:0 10px; }
-.difficulty-filter-demo button:hover { background:#faf8f4; }
-.difficulty-filter-demo button[aria-pressed="true"] { background:#faf8f4; color:#555; border-color:#cfc8bd; font-weight:700; }
-.difficulty-segments { display:flex; gap:5px; }
-.difficulty-segments button { flex:1; }
-.difficulty-inline { display:flex; align-items:center; gap:7px; margin-left:auto; color:#999; font-size:.74rem; }
-.difficulty-inline select { min-height:28px; }
-.difficulty-details { border:1px solid #ddd8cf; border-radius:3px; font-size:.74rem; color:#777; }
-.difficulty-details summary { padding:9px 11px; display:flex; align-items:center; gap:12px; cursor:pointer; list-style:none; }
-.difficulty-details summary::-webkit-details-marker { display:none; }
-#difficultySummary { color:#444; }
-.disclosure-arrow { margin-left:auto; }
-.difficulty-details[open] .disclosure-arrow { transform:rotate(180deg); }
-.difficulty-details fieldset { margin:0; padding:12px; border:0; border-top:1px solid #e8e5df; }
-.difficulty-details legend { float:left; width:100%; margin-bottom:12px; color:#999; font-size:.7rem; }
-.difficulty-checks { display:flex; flex-wrap:wrap; gap:12px 16px; clear:both; margin-bottom:12px; }
-.difficulty-checks label { display:flex; align-items:center; gap:5px; cursor:pointer; }
-.difficulty-checks input { accent-color:#847d70; margin:0; }
-.difficulty-range { display:flex; gap:7px; align-items:center; color:#888; font-size:.74rem; }
-.difficulty-range > span:first-child { margin-right:auto; }
-.difficulty-range select { padding:0 6px; }
-.range-status { margin:7px 0 0; color:#999; font-size:.68rem; text-align:right; }
-.difficulty-symbols { display:flex; gap:5px; align-items:center; }
-.difficulty-label { margin-right:auto; font-size:.74rem; color:#999; }
-.difficulty-symbols button { min-width:55px; }
-.symbol-diamonds { display:flex; align-items:center; justify-content:center; gap:6px; min-height:28px; }
-.symbol-diamonds i { width:5px; height:5px; background:#888; transform:rotate(45deg); }
-.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+.comparison-note { width:100%; margin:0 0 32px; color:#999; font-size:.75rem; line-height:1.7; }
+.filter-comparison { width:100%; }
+.filter-example { margin-bottom:42px; scroll-margin-top:20px; }
+.filter-example h2 { margin:0 0 6px; font-size:.88rem; font-weight:700; color:#555; }
+.example-description { margin:0 0 18px; font-size:.74rem; color:#999; line-height:1.7; }
+.filter-example .list-head, body.home .filter-example .list { width:100%; }
+.filter-example .list-head { gap:6px; }
+.filter-example .list-title { white-space:nowrap; }
+.head-actions { display:flex; align-items:center; gap:8px; }
+.difficulty-buttons { display:flex; align-items:center; gap:4px; }
+.filter-example .rank-tab { padding:0 8px; }
+.filter-example .unsolved-toggle { padding:0 10px; flex-shrink:0; }
+.filter-diamonds { display:inline-flex; align-items:center; justify-content:center; gap:5px; min-width:23px; height:14px; vertical-align:middle; }
+.filter-diamonds i { width:5px; height:5px; flex-shrink:0; background:currentColor; transform:rotate(45deg); }
+.second-row { display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-bottom:8px; }
+.filter-label { color:#999; font-size:.74rem; }
+.option-4 .second-row { justify-content:space-between; }
+.option-4 .difficulty-buttons { gap:0; }
+.option-4 .difficulty-buttons .rank-tab { border-radius:0; margin-left:-1px; min-width:48px; }
+.option-4 .difficulty-buttons .rank-tab:first-child { border-radius:3px 0 0 3px; margin-left:0; }
+.option-4 .difficulty-buttons .rank-tab:last-child { border-radius:0 3px 3px 0; }
+.option-4 .difficulty-buttons .active { position:relative; }
+.difficulty-menu { position:relative; }
+.difficulty-menu summary { display:flex; align-items:center; gap:8px; list-style:none; cursor:pointer; }
+.difficulty-menu summary::-webkit-details-marker { display:none; }
+.menu-arrow { font-size:.85rem; }
+.menu-options { position:absolute; top:calc(100% + 5px); right:0; display:flex; gap:4px; padding:8px; border:1px solid #ddd8cf; border-radius:3px; background:#fff; z-index:2; }
+.sample-list > .daily-card, .sample-puzzle { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 18px; border-bottom:1px solid #e8e5df; }
+.sample-list > .daily-card { background:#f1f4f0; border-top:1px solid #e8e5df; }
+.sample-list .sample-puzzle .title { font-size:.95rem; font-weight:500; display:flex; align-items:center; gap:6px; }
+.sample-empty { margin:0; padding:16px 18px; color:#999; font-size:.78rem; border-bottom:1px solid #e8e5df; }
+@media(max-width:540px) {
+  .sample-list > .daily-card, .sample-puzzle { padding:12px 14px; }
+}
+@media(max-width:360px) {
+  .filter-example .rank-tab { padding:0 6px; }
+  .filter-example .unsolved-toggle { padding:0 7px; }
+  .head-actions { gap:5px; }
+}
 </style>

@@ -3,17 +3,13 @@ import PageLayout from '../layouts/PageLayout.astro';
 import ArchiveLink from '../components/ArchiveLink.astro';
 import '../styles/home.css';
 import '../styles/daily-streak.css';
-const { difficultyDemo = false } = Astro.props;
 ---
 <PageLayout title="vodka puzzle" heading="퍼즐" subtitle="puzzle.xivnick.me" home>
-<slot name="above-title" slot="above-title" />
 
 <div class="list-head">
   <div id="puzzleListTitle" class="list-title" aria-live="polite">문제</div>
-  <slot name="list-actions" />
   <button id="unsolvedFilter" class="rank-tab" type="button" aria-pressed="false" aria-controls="puzzleList" hidden disabled>미해결</button>
 </div>
-<slot name="list-filters" />
 <div class="list">
   <a id="dailyCard" class="daily-card" href="/daily-sudoku/"><span class="title"><span id="dailyTitle">Daily Sudoku</span></span><span id="dailyStreak" class="daily-streak" hidden></span></a>
   <div id="puzzleListStatus" class="is-loading" role="status">문제를 불러오는 중...</div>
@@ -40,7 +36,7 @@ const { difficultyDemo = false } = Astro.props;
   </div>
 </div>
 <ArchiveLink slot="footer" />
-<script is:inline src={difficultyDemo ? '/js/home.js?v=21' : '/js/home.js?v=20'}></script>
+<script is:inline src="/js/home.js?v=20"></script>
 </PageLayout>
 
 <script>import '../scripts/daily-home.js';</script>

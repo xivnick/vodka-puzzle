@@ -1,8 +1,6 @@
 ---
-import DifficultyFilterDemo from '../../../components/DifficultyFilterDemo.astro';
 export function getStaticPaths() {
-  return [1, 2, 3, 4, 5].map(variant => ({ params: { variant: String(variant) }, props: { variant } }));
+  return [1, 2, 3, 4, 5].map(variant => ({ params: { variant: String(variant) } }));
 }
-const { variant } = Astro.props;
+return Astro.redirect(`/test/difficulty-filter/#option-${Astro.params.variant}`);
 ---
-<DifficultyFilterDemo variant={variant} />
