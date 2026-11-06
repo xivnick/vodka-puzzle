@@ -14,6 +14,8 @@ const dailyKeys=['attendance','daily-complete','daily-champion'];
 assert.deepEqual(template.dailyQuests.map(q=>q.id),dailyKeys);
 const dailyUI=normalizeCosmeticAccount({...model,daily_tasks:dailyKeys.map(id=>({id,name:id,complete:false,state:'in_progress',configured:true,reward:id==='daily-champion'?{tickets:1}:{coins:20}}))},template,{nickname:'실제닉네임'});
 assert(dailyUI.dailyQuests.every(q=>q.icon&&q.text),'every server task has its rendered row and UI metadata');
+const oriented=normalizeCosmeticAccount({...model,state:{...initial,equipment:{...equipment,direction:'vertical',reversed:true}}},template,{nickname:'실제닉네임'});
+assert.equal(oriented.applied.angle,'180deg');assert.equal(oriented.applied.reversed,true);
 let state=structuredClone(initial),calls=[],drawCalls=0,visitCalls=0;const recorded=new Map();
 const store=new Map(),storage={getItem:key=>store.get(key)??null,setItem:(key,value)=>store.set(key,value)};
 const account={user:{id:'test-user'},profile:{nickname:'실제닉네임'},client:{async rpc(name,args){

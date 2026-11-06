@@ -34,7 +34,7 @@ export function initMypage(root,{server=null}={}){
   const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date());
   let dailyDate=today(),tickets=saved?.tickets??0;
   const dailyClaimed=new Set((saved?.dailyDate===dailyDate?saved.dailyClaimed??[]:[]).filter(id=>data.dailyQuests.some(q=>q.id===id&&q.complete)));
-  let draft={icon:'leaf',color:'base',effect:'none',mode:'gradient',angle:'135deg'};
+  let draft={icon:'leaf',color:'base',effect:'none',mode:'gradient',angle:'135deg',reversed:false};
   let applied=saved?.applied??{...draft};if(applied.icon==='dice-5')applied={...applied,icon:'clover'};draft={...applied};
   if(draft.effect==='sparkle'){draft.effect='none';applied.effect='none';}
   let nickname=saved?.nickname??'퍼즐러';
@@ -250,7 +250,7 @@ export function initMypage(root,{server=null}={}){
     }else{mask=`url("${img.getAttribute('src')}")`;img.style.opacity='0';}
     const color=colors.get(state.color),layer=make('span','custom-badge-base');
     layer.style.maskImage=mask;layer.style.webkitMaskImage=mask;
-    layer.style.background=`linear-gradient(${state.angle},${color.a} ${state.mode==='split'?'50%':'15%'},${color.b} ${state.mode==='split'?'50%':'85%'})`;
+    layer.style.background=`linear-gradient(${state.angle},${state.reversed?color.b:color.a} ${state.mode==='split'?'50%':'15%'},${state.reversed?color.a:color.b} ${state.mode==='split'?'50%':'85%'})`;
     layer.setAttribute('aria-hidden','true');visual.append(layer);
     if(state.effect!=='none'&&ownedEffects.has(state.effect)&&['uncommon','rare'].includes(color.rarity)){
       const overlay=createBadgeEffect(state.effect);overlay.style.maskImage=mask;overlay.style.webkitMaskImage=mask;overlay.setAttribute('aria-hidden','true');visual.append(overlay);visible.observe(overlay);
@@ -276,7 +276,7 @@ export function initMypage(root,{server=null}={}){
     $('#equippedIconName').textContent=iconName(applied.icon);
     colorPreview.textContent=equippedColor.name;
     pressed('[data-select-icon]',b=>b.dataset.selectIcon===draft.icon);
-    pressed('[data-style]',b=>b.dataset.style===draft.mode);pressed('[data-angle]',b=>b.dataset.angle===draft.angle);
+    pressed('[data-reverse]',()=>Boolean(draft.reversed));pressed('[data-style]',b=>b.dataset.style===draft.mode);pressed('[data-angle]',b=>b.dataset.angle===draft.angle);
     $('#selectionLabel').textContent=draft.icon==='none'?'아이콘 없음':[iconName(draft.icon),colors.get(draft.color).name,draft.effect==='none'?null:effects.get(draft.effect)?.name,allClearEligible()&&allClearEnabled?'별빛 반짝임':null].filter(Boolean).join(' · ');
     const color=colors.get(draft.color);
     $('#selectedColorOptions').hidden=!['uncommon','rare'].includes(color.rarity)||color.a===color.b;
@@ -285,7 +285,7 @@ export function initMypage(root,{server=null}={}){
     $('#selectedIconLabel').textContent=iconName(draft.icon);
     $('#selectedIconLabel').title=iconName(draft.icon);
     $('#selectedColorLabel').textContent=color.name;$('#selectedColorLabel').title=color.name;
-    $('#selectedColorSwatch').style.background=`linear-gradient(${draft.angle},${color.a} ${draft.mode==='split'?'50%':'15%'},${color.b} ${draft.mode==='split'?'50%':'85%'})`;
+    $('#selectedColorSwatch').style.background=`linear-gradient(${draft.angle},${draft.reversed?color.b:color.a} ${draft.mode==='split'?'50%':'15%'},${draft.reversed?color.a:color.b} ${draft.mode==='split'?'50%':'85%'})`;
     $('#pickerEffectName').textContent=[draft.effect==='none'?null:effects.get(draft.effect).name,allClearEligible()&&allClearEnabled?'별빛 반짝임':null].filter(Boolean).join(' · ')||'효과 없음';
     renderInventory();renderEffects();lockServerControls();
   }
@@ -316,6 +316,7 @@ export function initMypage(root,{server=null}={}){
     if(allClearEligible()){const toggle=make('button','effect-item');toggle.type='button';toggle.dataset.toggleAllClear='';toggle.setAttribute('aria-pressed',String(allClearEnabled));toggle.append(make('span','','별빛 반짝임'),make('small','',allClearEnabled?'켜짐':'꺼짐'));toggle.addEventListener('click',()=>{if(serverPending)return;if(server){void runServer(()=>server.toggleAllClear(!allClearEnabled));return;}allClearEnabled=!allClearEnabled;renderDress();persist();});panel.append(toggle);}
   }
   all('[data-style]').forEach(b=>b.addEventListener('click',()=>{if(serverPending)return;draft.mode=b.dataset.style;pressed('[data-style]',x=>x===b);applyDress();}));
+  all('[data-reverse]').forEach(b=>b.addEventListener('click',()=>{if(serverPending)return;draft.reversed=!draft.reversed;applyDress();}));
   all('[data-angle]').forEach(b=>b.addEventListener('click',()=>{if(serverPending)return;draft.angle=b.dataset.angle;pressed('[data-angle]',x=>x===b);applyDress();}));
   const craftSize=()=>3;
   function craftMaterials(){
@@ -411,9 +412,9 @@ export function initMypage(root,{server=null}={}){
     renderCoins();renderDailyQuests();renderMissions();renderDress();renderCraft();
   }
   function lockServerControls(){
-    all('[data-style],[data-angle]').forEach(button=>button.disabled=serverPending>0);
+    all('[data-style],[data-angle],[data-reverse]').forEach(button=>button.disabled=serverPending>0);
     if(!serverPending)return;
-    all('[data-claim],[data-daily-claim],[data-draw],[data-select-icon],[data-select-color],[data-select-effect],[data-style],[data-angle],[data-toggle-all-clear],.craft-slot,.craft-choice,#craftConfirm,#profileNicknameForm button').forEach(button=>button.disabled=true);
+    all('[data-claim],[data-daily-claim],[data-draw],[data-select-icon],[data-select-color],[data-select-effect],[data-style],[data-angle],[data-reverse],[data-toggle-all-clear],.craft-slot,.craft-choice,#craftConfirm,#profileNicknameForm button').forEach(button=>button.disabled=true);
   }
   function showRecovered(){for(const entry of server.takeRecovered()){if(entry.name==='draw_cosmetics'){const items=entry.response.results.map(server.resultItem);drawHistory.push(...items);renderResults(items,false);}else if(entry.name==='craft_cosmetic')appendCraftResult(server.resultItem(entry.response.results[0]));}}
   async function runServer(action,done){

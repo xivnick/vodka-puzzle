@@ -9,7 +9,7 @@ const rarityByKind={common_color:'common',uncommon_color:'uncommon',rare_color:'
 export function normalizeCosmeticItem(item){return {id:localItemId(item.item_id??item.id),name:item.name,rarity:rarityByKind[item.kind],...item.definition,refund:Number(item.refund_coins??0)};}
 export function normalizeCosmeticAccount(model,template,identity){
  const state=model.state,equipment=state.equipment??{},owned=state.inventory??[];
- const applied={icon:localItemId(equipment.icon_id)??'none',color:localItemId(equipment.color_id)??'base',effect:localItemId(equipment.effect_id)??'none',mode:equipment.expression??'gradient',angle:equipment.direction==='horizontal'?'90deg':'135deg'};
+ const applied={icon:localItemId(equipment.icon_id)??'none',color:localItemId(equipment.color_id)??'base',effect:localItemId(equipment.effect_id)??'none',mode:equipment.expression??'gradient',angle:equipment.direction==='horizontal'?'90deg':equipment.direction==='vertical'?'180deg':'135deg',reversed:Boolean(equipment.reversed)};
  const colors=[...(model.catalog??[]),...owned].filter(i=>rarityByKind[i.kind]&&i.kind!=='effect').map(normalizeCosmeticItem);
  const missions=(model.achievements??[]).map(row=>{
   const original=template.missions.find(m=>m.id===row.id);if(!original)return null;
@@ -100,7 +100,7 @@ export function createCosmeticAccountClient(account,template,storage=globalThis.
   draw:count=>mutation('draw_cosmetics',{expected_draw_config_version:model.draw?.version??0,count}),
   craft:materials=>mutation('craft_cosmetic',{material_ids:materials.map(id=>serverItemId(id,'common'))}),
   equip:value=>enqueue(async()=>{
-   const args={expected_equipment_version:Number(model.state.equipment.equipment_version),equipment:{icon_id:serverItemId(value.icon,'icon'),color_id:serverItemId(value.color,value.color?.startsWith('c')?'common':'rare'),effect_id:serverItemId(value.effect,'effect'),expression:value.mode,direction:value.angle==='90deg'?'horizontal':'diagonal'}};
+   const args={expected_equipment_version:Number(model.state.equipment.equipment_version),equipment:{icon_id:serverItemId(value.icon,'icon'),color_id:serverItemId(value.color,value.color?.startsWith('c')?'common':'rare'),effect_id:serverItemId(value.effect,'effect'),expression:value.mode,direction:value.angle==='90deg'?'horizontal':value.angle==='180deg'?'vertical':'diagonal',reversed:Boolean(value.reversed)}};
    const response=await rpc('set_cosmetic_equipment',args);apply(response);await refresh().catch(()=>{});return response;
   }),
   toggleAllClear:enabled=>enqueue(async()=>{const response=await rpc('set_all_clear_effect',{expected_equipment_version:Number(model.state.equipment.equipment_version),enabled});apply(response);await refresh().catch(()=>{});return response;}),

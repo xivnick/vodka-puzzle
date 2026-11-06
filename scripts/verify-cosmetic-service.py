@@ -15,7 +15,7 @@ def claims(uid):
     return json.dumps({'sub': uid, 'role': 'authenticated', 'app_metadata': {'provider': 'google'}})
 sql = 'BEGIN;\nSET LOCAL statement_timeout=\'30s\';\n'
 if '--rehearse' in sys.argv:
-    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql','20261106_achievement_history_champion.sql','20261106_cosmetic_test_accounts.sql','20261106_cosmetic_test_transactions.sql']:
+    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql','20261106_achievement_history_champion.sql','20261106_cosmetic_test_accounts.sql','20261106_cosmetic_test_transactions.sql','20261106_cosmetic_color_orientation.sql']:
         migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations' / name).read_text()
         sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 if '--reward-rehearsal' in sys.argv:
@@ -35,6 +35,9 @@ if '--test-access-rehearsal' in sys.argv:
     sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 if '--test-transactions-rehearsal' in sys.argv:
     migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_cosmetic_test_transactions.sql').read_text()
+    sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
+if '--orientation-rehearsal' in sys.argv:
+    migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_cosmetic_color_orientation.sql').read_text()
     sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 sql += r"""
 CREATE FUNCTION pg_temp.expect_error(command text, expected text) RETURNS void LANGUAGE plpgsql AS $$
@@ -138,6 +141,9 @@ DO $$ DECLARE first jsonb; again jsonb; req uuid:=gen_random_uuid(); coins bigin
  v:=(first->'state'->'equipment'->>'equipment_version')::bigint;
  PERFORM public.set_cosmetic_equipment(v,jsonb_build_object('icon_id','icon:leaf','color_id',result_id,'effect_id','effect:ribbon'));
  PERFORM public.claim_achievement(gen_random_uuid(),'feature-equip-icon','account',1);
+ first:=public.cosmetic_context(); v:=(first->'state'->'equipment'->>'equipment_version')::bigint;
+ first:=public.set_cosmetic_equipment(v,jsonb_build_object('icon_id','icon:leaf','color_id',result_id,'direction','vertical','reversed',true));
+ IF first->'state'->'equipment'->>'direction'<>'vertical' OR first->'state'->'equipment'->>'reversed'<>'true' THEN RAISE EXCEPTION 'Color orientation not saved'; END IF;
  first:=public.cosmetic_context(); v:=(first->'state'->'equipment'->>'equipment_version')::bigint;
  PERFORM public.set_cosmetic_equipment(v,jsonb_build_object('icon_id',NULL,'color_id',result_id));
  IF public.cosmetic_context()->'state'->'equipment'->>'icon_id' IS NOT NULL THEN RAISE EXCEPTION 'Unequip failed'; END IF;

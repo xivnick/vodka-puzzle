@@ -129,3 +129,7 @@ attendance/daily-complete/daily-champion 중 하나다. 해당 한국 날짜에�
 시간 여행자의 최종 아이콘은 후보 3번 `clock-bolt`(시계와 번개)로 확정했다. `20261106_time_traveler_clock_bolt.sql`로 해당 규칙·아이템의 선택 대기 상태를 해제했다. 활성 규칙은 20개이며 경제 기능 전체의 enabled=false는 유지한다. 테스트 마이페이지·전체 정리에도 같은 아이콘을 적용한다.
 
 출시일 기준은 일일 과제에만 적용한다. 꺼지지 않는 불은 기존 데일리 연속 수치를 그대로 유지하며 출시일에 초기화하거나 출시 이후 기록만으로 다시 계산하지 않는다. 일반 문제 도전과제도 기존 유효한 풀이 기록을 포함한다.
+
+## 색 표현 방향·반전
+
+`set_cosmetic_equipment`의 equipment는 direction에 diagonal·horizontal·vertical을 허용한다. vertical은 CSS 180deg(상하), horizontal은 90deg(좌우)다. reversed boolean은 두 색의 순서를 뒤집으며 기본값은 false다. 그라데이션·2분할에 동일하게 적용하고 장착 버전으로 충돌을 처리한다. 현재 장착 응답에도 reversed를 포함하며 미생성 기본 장착에서는 클라이언트가 false로 해석한다.
