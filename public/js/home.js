@@ -13,6 +13,18 @@
 
 const PAGE_SIZE = 10;
 const unsolvedFilter = document.getElementById('unsolvedFilter');
+const selectedDifficulties = new Set();
+document.querySelectorAll('[data-difficulty-filter]').forEach(button => {
+  button.addEventListener('click', () => {
+    const level = Number(button.dataset.difficultyFilter);
+    if (selectedDifficulties.has(level)) selectedDifficulties.delete(level);
+    else selectedDifficulties.add(level);
+    const active = selectedDifficulties.has(level);
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+    changePage(1);
+  });
+});
 let onlyUnsolved = false;
 let completedPuzzles = new Set();
 let puzzleListLoaded = false;
@@ -26,7 +38,7 @@ unsolvedFilter.addEventListener('click', () => {
   try { localStorage.setItem('puzzle_unsolved_only', String(onlyUnsolved)); } catch {}
   changePage(1);
 });
-  function createDifficultyMark(value) {
+  function getDifficultyLevel(value) {
     const labels = {
       '쉬움': 1, '하': 1, easy: 1,
       '중간': 2, '보통': 2, '중': 2, medium: 2,
@@ -34,7 +46,11 @@ unsolvedFilter.addEventListener('click', () => {
     };
     const level = Number.isInteger(Number(value)) && Number(value) >= 0 && Number(value) <= 3
       ? Number(value) : labels[typeof value === 'string' ? value.trim().toLowerCase() : ''];
-    if (![1, 2, 3].includes(level)) return null;
+    return [1, 2, 3].includes(level) ? level : 0;
+  }
+  function createDifficultyMark(value) {
+    const level = getDifficultyLevel(value);
+    if (!level) return null;
     const mark = document.createElement('span');
     mark.className = 'puzzle-difficulty';
     mark.setAttribute('role', 'img');
@@ -57,6 +73,7 @@ unsolvedFilter.addEventListener('click', () => {
         const link = document.createElement('a');
         link.href = puzzle.href;
         link.dataset.puzzleId = puzzle.id;
+        link.dataset.difficulty = String(getDifficultyLevel(puzzle.difficulty));
         const title = document.createElement('span');
         title.className = 'title';
         title.textContent = puzzle.title;
@@ -102,14 +119,16 @@ unsolvedFilter.addEventListener('click', () => {
 
   function renderPagination() {
     const links = [...document.querySelectorAll('.list a[data-puzzle-id]')];
-    const visibleLinks = onlyUnsolved
-      ? links.filter(link => !completedPuzzles.has(link.dataset.puzzleId))
-      : links;
+    const visibleLinks = links.filter(link =>
+      (!onlyUnsolved || !completedPuzzles.has(link.dataset.puzzleId)) &&
+      (!selectedDifficulties.size || selectedDifficulties.has(Number(link.dataset.difficulty)))
+    );
     if (puzzleListLoaded) {
       document.getElementById('puzzleListTitle').textContent = `문제 (${visibleLinks.length})`;
       const status = document.getElementById('puzzleListStatus');
       status.hidden = visibleLinks.length > 0;
       status.textContent = links.length && onlyUnsolved ? '안 푼 문제가 없습니다.' : '공개된 문제가 없습니다.';
+      if (links.length && selectedDifficulties.size) status.textContent = '선택한 조건에 맞는 문제가 없습니다.';
     }
     const totalPages = Math.max(1, Math.ceil(visibleLinks.length / PAGE_SIZE));
     const currentPage = getCurrentPage(totalPages);
