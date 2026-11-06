@@ -21,7 +21,7 @@ for(const [effect,item] of Object.entries(badgeEffectTextures)){
   }
  }
 }
-assert.equal(Object.keys(badgeEffectTextures).length,5);assert(decodedBytes<6*1024*1024);
+assert.equal(Object.keys(badgeEffectTextures).length,5);assert(decodedBytes<7*1024*1024);
 // Keep the original geometry and phase/opacity landmarks, not simplified patterns.
 assert.equal((frameSvg('foil',0).match(/<path /g)??[]).length,18);
 assert.equal((frameSvg('interference',0).match(/<stop /g)??[]).length,9);
@@ -66,3 +66,10 @@ const gallery=fs.readFileSync(new URL('dist/test/achievement-badges/effect-perfo
 assert(gallery.includes('effects-check')&&!gallery.includes('effects-check effects-paused'));assert(gallery.includes('id="playAllEffects" aria-pressed="true"')); assert.equal([...gallery.matchAll(/data-play-effect=/g)].length,5);assert(!gallery.includes('effectStressList'));
 const gallerySource=fs.readFileSync(new URL('src/pages/test/achievement-badges/effect-performance/index.astro',root),'utf8');assert(!gallerySource.includes('6000')&&!gallerySource.includes('createTimedEffectPreview'));assert(gallerySource.includes('is-paused'));assert(gallerySource.includes("let selected='all';"));assert(!gallerySource.includes('some(overlay=>visible.get(overlay)))player.stop()'));
 console.log(`Five shared PNGs: ${totalBytes} bytes; decoded RGBA estimate ${decodedBytes} bytes. Frame/alpha fidelity, 100-badge shared scheduling, idle stop, child-free overlays and continuous gallery: passed.`);
+
+// Slower interference retains its original phase proportions across a 6.4s loop.
+assert.equal(EFFECTS.interference.duration,6.4);
+const stress=fs.readFileSync(new URL('dist/test/achievement-badges/effect-stress/index.html',root),'utf8');
+assert(stress.includes('effect-stress effects-paused'));
+for(const count of [30,100])assert(stress.includes(`data-count="${count}"`));
+assert(stress.includes('.effect-stress .stress-visual{'));

@@ -1,4 +1,4 @@
-export const EFFECTS={ribbon:{duration:1.9},foil:{duration:5.2},interference:{duration:3.2},lenticular:{duration:2.1},afterglow:{duration:4.2}};
+export const EFFECTS={ribbon:{duration:1.9},foil:{duration:5.2},interference:{duration:6.4},lenticular:{duration:2.1},afterglow:{duration:4.2}};
 export const FPS=20,SIZE=64;
 const curves={foil:[[0,0],[.1,.12],[.16,.85],[.23,.2],[.34,0],[1,0]],interference:[[0,0],[.5,.8],[1,0]],lenticular:[[0,0],[.2,0],[.43,.9],[.62,.25],[.78,0],[1,0]],afterglow:[[0,0],[.1,0],[.15,.78],[.35,.3],[.7,.03],[1,0]]};
 function ease(x,type){
@@ -28,7 +28,7 @@ export function frameSvg(effect,time,size=SIZE){
  }
  if(effect==='interference'){
   body='<defs><radialGradient id="light" cx=".3" cy=".35" r=".9">';
-  for(let i=0;i<9;i++)body+=`<stop offset="${i/8}" stop-color="white" stop-opacity="${n(opacity(effect,time,i*.26))}"/>`;
+  for(let i=0;i<9;i++)body+=`<stop offset="${i/8}" stop-color="white" stop-opacity="${n(opacity(effect,time,i*.52))}"/>`;
   body+='</radialGradient></defs><rect width="24" height="24" fill="url(#light)"/>';
  }
  if(effect==='lenticular'){

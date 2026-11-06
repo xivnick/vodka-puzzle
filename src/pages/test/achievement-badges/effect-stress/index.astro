@@ -1,0 +1,66 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+import '../../../../styles/mypage-v2-preview.css';
+import '../../../../styles/nickname-badge-effects.css';
+---
+<PageLayout title="효과 스트레스 테스트">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <div class="mypage-v2 effect-stress effects-paused">
+    <div class="view-heading"><h2>여러 개 표시</h2><button type="button" id="stressPlay" aria-pressed="false">재생</button></div>
+    <div class="stress-counts">{[30,100].map(count=><button type="button" data-count={count} aria-pressed={String(count===30)}>{count}개</button>)}</div>
+    <p class="stress-status" id="stressStatus" aria-live="polite">정지 상태</p>
+    <div class="stress-list" id="effectStressList"></div>
+    <p class="stress-reference"><a href="/test/achievement-badges/effect-performance/">효과 5종 비교</a></p>
+  </div>
+</PageLayout>
+<script>
+import {createBadgeEffect} from '../../../../scripts/nickname-badge-effects.js';
+const root=document.querySelector('.effect-stress');
+if(root){
+  const types=['ribbon','foil','interference','lenticular','afterglow'];
+  const list=root.querySelector('#effectStressList'),play=root.querySelector('#stressPlay'),status=root.querySelector('#stressStatus');
+  const motion=matchMedia('(prefers-reduced-motion: reduce)'),visible=new Set();
+  let playing=false;
+  function update(){
+    const active=playing&&!document.hidden&&!motion.matches;
+    root.classList.toggle('effects-paused',!active);
+    play.setAttribute('aria-pressed',String(active));play.textContent=active?'정지':'재생';play.disabled=motion.matches;
+    status.textContent=`${motion.matches?'동작 줄이기 설정 · ':''}화면 안에서 재생 중 ${active?visible.size:0}개 · 전체 ${list.childElementCount}개`;
+  }
+  const observer=new IntersectionObserver(entries=>{
+    for(const entry of entries)if(entry.target.isConnected){if(entry.isIntersecting)visible.add(entry.target);else visible.delete(entry.target);}
+    update();
+  });
+  function showCount(count){
+    observer.disconnect();visible.clear();list.replaceChildren();
+    const fragment=document.createDocumentFragment();
+    for(let index=0;index<count;index++){
+      const row=document.createElement('div'),name=document.createElement('span'),visual=document.createElement('span'),base=document.createElement('span');
+      row.className='stress-row';name.textContent=`퍼즐러 ${index+1}`;visual.className='stress-visual';
+      const mask="url('/icons/achievement-preview/star.svg')";
+      base.className='custom-badge-base';base.style.background='linear-gradient(135deg,#BB6B98,#527BC0)';base.style.maskImage=mask;base.style.webkitMaskImage=mask;
+      const overlay=createBadgeEffect(types[index%types.length]);overlay.style.maskImage=mask;overlay.style.webkitMaskImage=mask;
+      visual.append(base,overlay);row.append(name,visual);fragment.append(row);observer.observe(overlay);
+    }
+    list.append(fragment);
+    root.querySelectorAll('[data-count]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.count)===count)));
+    update();
+  }
+  root.querySelectorAll('[data-count]').forEach(button=>button.addEventListener('click',()=>showCount(Number(button.dataset.count))));
+  play.addEventListener('click',()=>{playing=!playing;update();});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)playing=false;update();});
+  window.addEventListener('pagehide',()=>{playing=false;update();});
+  motion.addEventListener('change',()=>{playing=false;update();});
+  showCount(30);
+}
+</script>
+<style is:global>
+.effect-stress button{border:0;background:none;padding:4px 0;color:#999;font-size:.7rem;text-decoration:underline;text-underline-offset:3px}
+.effect-stress .stress-counts{display:flex;gap:16px;border-top:1px solid #e8e5df;padding-top:14px}
+.effect-stress button[aria-pressed=true]{color:#444}
+.effect-stress .stress-status{font-size:.7rem;color:#999;margin:12px 0 20px}
+.effect-stress .stress-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 12px}
+.effect-stress .stress-row{display:flex;align-items:center;gap:5px;font-size:.72rem;white-space:nowrap;min-width:0}
+.effect-stress .stress-visual{position:relative;display:block;flex-shrink:0;width:18px;height:18px}
+.effect-stress .stress-reference{font-size:.7rem;margin-top:24px}
+</style>
