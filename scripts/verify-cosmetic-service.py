@@ -3,6 +3,7 @@ All settings, fixtures, payouts and function changes are rolled back. Existing
 puzzles are neither solved nor validated and existing completions are untouched.
 """
 import json
+import re
 import sys
 import uuid
 from pathlib import Path
@@ -14,7 +15,7 @@ def claims(uid):
     return json.dumps({'sub': uid, 'role': 'authenticated', 'app_metadata': {'provider': 'google'}})
 sql = 'BEGIN;\nSET LOCAL statement_timeout=\'30s\';\n'
 if '--rehearse' in sys.argv:
-    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql','20261106_achievement_history_champion.sql']:
+    for name in ['20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql','20261106_achievement_history_champion.sql','20261106_cosmetic_test_accounts.sql']:
         migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations' / name).read_text()
         sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 if '--reward-rehearsal' in sys.argv:
@@ -28,6 +29,9 @@ if '--icon-rehearsal' in sys.argv:
     sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 if '--policy-rehearsal' in sys.argv:
     migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_achievement_history_champion.sql').read_text()
+    sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
+if '--test-access-rehearsal' in sys.argv:
+    migration = (Path(__file__).resolve().parent.parent / 'supabase/migrations/20261106_cosmetic_test_accounts.sql').read_text()
     sql += migration.removeprefix('BEGIN;').rsplit('COMMIT;', 1)[0]
 sql += r"""
 CREATE FUNCTION pg_temp.expect_error(command text, expected text) RETURNS void LANGUAGE plpgsql AS $$
@@ -60,6 +64,17 @@ DO $$ BEGIN
  IF EXISTS(SELECT 1 FROM private.account_coin_wallets WHERE user_id='__USER__') THEN RAISE EXCEPTION 'Disabled APIs wrote data'; END IF;
 END $$;
 -- Explicitly exercise missing-policy validation inside this rollback fixture.
+INSERT INTO private.cosmetic_test_accounts(user_id) VALUES('__USER__');
+SET LOCAL ROLE authenticated;
+SELECT public.cosmetic_context();
+SELECT pg_temp.expect_error('SELECT * FROM private.cosmetic_test_accounts','permission denied for schema private');
+RESET ROLE;
+SELECT set_config('request.jwt.claims','__OTHER_CLAIMS__',true);
+SET LOCAL ROLE authenticated;
+SELECT pg_temp.expect_error('SELECT public.cosmetic_context()','COSMETICS_DISABLED');
+RESET ROLE;
+SELECT set_config('request.jwt.claims','__CLAIMS__',true);
+DELETE FROM private.cosmetic_test_accounts WHERE user_id='__USER__';
 UPDATE private.cosmetic_settings SET enabled=true,history_policy=NULL WHERE id;
 SET LOCAL ROLE authenticated;
 DO $$ DECLARE context jsonb; BEGIN
@@ -311,6 +326,14 @@ RESET ROLE;
 SELECT 'gating, missions, recipes, duplicate refunds, replay, equipment, tickets, daily tasks, first blood, ledger audit and isolation: passed' AS result;
 ROLLBACK;
 """
+# Retire the real active config only within the rollback; never edit its definition.
+sql = sql.replace('CREATE FUNCTION pg_temp.expect_error', "UPDATE private.cosmetic_draw_configs SET status='retired' WHERE status='active';\nINSERT INTO private.cosmetic_draw_configs(version,status,price_per_draw,definition) SELECT 2000000000,'draft',100,definition FROM private.cosmetic_draw_configs WHERE version=1;\nCREATE FUNCTION pg_temp.expect_error",1)
+# Rewrite the test body's config references, preserving the seed SELECT version=1.
+seed, body = sql.split('CREATE FUNCTION pg_temp.expect_error',1)
+body = re.sub(r'(draw_cosmetics\([^,\n]+,)1,',r'\g<1>2000000000,',body)
+body = re.sub(r'(draw_cosmetics\([^,\n]+,)2,',r'\g<1>2000000001,',body)
+body = body.replace('version=1','version=2000000000').replace('version=2;','version=2000000001;').replace("SELECT 2,'active',120", "SELECT 2000000001,'active',120")
+sql = seed+'CREATE FUNCTION pg_temp.expect_error'+body
 sql = sql.replace('__USER__', user).replace('__OTHER__', other).replace('__CLAIMS__', claims(user)).replace('__OTHER_CLAIMS__', claims(other))
 try:
     print(query(sql))

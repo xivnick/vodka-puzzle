@@ -8,7 +8,8 @@ import {getAchievementGoal as goal} from '../lib/achievement-goals.js';
 import '../styles/nickname.css';
 import '../styles/mypage-v2-preview.css';
 import '../styles/nickname-badge-effects.css';
-const {customize=false}=Astro.props;
+const {customize=false,live=false}=Astro.props;
+const basePath=live?'/test/mypage/':'/test/mypage-v2/';
 const files=import.meta.glob('../../public/icons/**/*.svg',{query:'?raw',import:'default',eager:true});
 const raw=(src)=>String(files[`../../public${src}`]??'');
 const initialOwned=new Set(['leaf','puzzle','flame','sword','rabbit']);
@@ -17,8 +18,9 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
 ---
 <PageLayout title={customize?"꾸미기":"마이페이지"}>
   <meta slot="head" name="robots" content="noindex, nofollow" />
-  {customize&&<nav slot="above-title" class="customize-back"><a href="/test/mypage-v2/"><span aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/chevron-right.svg")}/></span>돌아가기</a></nav>}
-  <section class="mypage-v2" data-customize={customize?"true":"false"} aria-label="마이페이지 v2 시안">
+  {customize&&<nav slot="above-title" class="customize-back"><a href={basePath}><span aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/chevron-right.svg")}/></span>돌아가기</a></nav>}
+  {live&&<p id="cosmeticLiveStatus" class="cosmetic-live-status" role="status">계정 정보를 불러오는 중입니다.</p>}
+  <section class="mypage-v2" data-live={String(live)} hidden={live} data-customize={customize?"true":"false"} aria-label="마이페이지 v2 시안">
     <section class="account-section" aria-labelledby="accountTitle" hidden={customize}>
     <div class="view-heading"><h2 id="accountTitle">계정</h2></div>
     <header class="profile">
@@ -26,7 +28,7 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
 
       <div class="profile-wallet">{!customize&&<span class="balance" aria-label="보유 코인"><CoinAmount amount={1240} id="coinBalance"/></span>}<span class="ticket-amount" id="ticketBalanceWrapper" title="타임머신 티켓" aria-label="타임머신 티켓 0장" hidden><img src="/icons/time-machine/ticket.svg" alt="" width="16" height="16"/><span id="ticketBalance">0</span></span></div>
     </header>
-      <div class="icon-overview"><div class="icon-display"><div id="profileBadge" hidden><NicknameBadge name="퍼즐러" icon="leaf" label="현재 표시 이름"/></div><span id="equippedIcon" class="equipped-icon" role="img" aria-label="현재 아이콘: 잎사귀"></span><div class="equipped-description"><span id="equippedIconName">잎사귀</span><span id="equippedColorSeparator" aria-hidden="true">·</span><span id="equippedColor" class="equipped-color-name">기본</span></div></div><a class="appearance-link" href="/test/mypage-v2/customize/"><span class="appearance-label">꾸미기</span><span class="appearance-chevron" aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/chevron-right.svg")}/></span></a>
+      <div class="icon-overview"><div class="icon-display"><div id="profileBadge" hidden><NicknameBadge name="퍼즐러" icon="leaf" label="현재 표시 이름"/></div><span id="equippedIcon" class="equipped-icon" role="img" aria-label="현재 아이콘: 잎사귀"></span><div class="equipped-description"><span id="equippedIconName">잎사귀</span><span id="equippedColorSeparator" aria-hidden="true">·</span><span id="equippedColor" class="equipped-color-name">기본</span></div></div><a class="appearance-link" href={`${basePath}customize/`}><span class="appearance-label">꾸미기</span><span class="appearance-chevron" aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/chevron-right.svg")}/></span></a>
 
       </div>
     </section>
@@ -72,10 +74,10 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
       <div class="craft-body"><p class="craft-description">색깔 3개를 조합해 새로운 색깔을 만듭니다.</p><div id="craftSlots" class="craft-slots"></div><div id="craftSelector" class="craft-selector" data-open="false" aria-hidden="true" inert><div class="craft-selector-content"><div class="craft-selector-inner"><div class="craft-selector-heading"><button type="button" class="quiet-link" id="closeCraftSelector">닫기</button></div><div id="craftChoices" class="craft-choices"></div><p id="emptyCraftChoices" class="empty-craft-choices" hidden>선택할 재료가 없습니다.</p></div></div></div><button type="button" id="craftConfirm" disabled>조합하기</button></div><div id="craftResult" class="craft-result" hidden><div class="result-heading"><h3>조합 결과</h3></div><div id="craftResultItems" class="result-items" aria-live="polite" aria-relevant="additions"></div></div>
     </section>
 
-    <div class="prototype-footer"><div class="preview-links"><a href="/test/achievement-badges/mission-overview/">전체 미션 기준</a><button type="button" id="resetDemo">시안 초기화</button></div><p class="icon-credit">아이콘: <a href="https://tabler.io/icons">Tabler</a> · <a href="https://lucide.dev/">Lucide</a> · <a href="https://github.com/bytedance/IconPark">IconPark</a> · <a href="https://icons8.com/">Icons8</a></p></div>
+    {!live&&<div class="prototype-footer"><div class="preview-links"><a href="/test/achievement-badges/mission-overview/">전체 미션 기준</a><button type="button" id="resetDemo">시안 초기화</button></div><p class="icon-credit">아이콘: <a href="https://tabler.io/icons">Tabler</a> · <a href="https://lucide.dev/">Lucide</a> · <a href="https://github.com/bytedance/IconPark">IconPark</a> · <a href="https://icons8.com/">Icons8</a></p></div>}
     <template id="coinIconTemplate"><span class="coin-icon" aria-hidden="true"><Fragment set:html={coin}/></span></template>
     <script id="mypagePreviewData" type="application/json" set:html={JSON.stringify(data)}/>
     {data.icons.map(icon=><template data-icon-template={icon.id}>{icon.src.endsWith('.svg')?<Fragment set:html={raw(icon.src)}/>:<img src={icon.src} alt="" width="18" height="18"/>}</template>)}
   </section>
 </PageLayout>
-<script>import '../scripts/mypage-v2-preview.js';</script>
+<script>import '../scripts/mypage-entry.js';</script>

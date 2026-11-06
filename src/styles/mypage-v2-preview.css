@@ -1,5 +1,5 @@
 .mypage-v2{width:100%;color:#555;--line:#e8e5df;--soft:#faf8f4;--space-xs:4px;--space-sm:8px;--space-md:12px;--space-lg:16px;--section-gap:32px;--row-inset:18px;--row-padding:14px}
-.mypage-v2 [hidden]{display:none!important}
+.mypage-v2[hidden],.mypage-v2 [hidden]{display:none!important}
 .mypage-v2 button{font:inherit;cursor:pointer}.mypage-v2 button:disabled{cursor:default}
 .mypage-v2 h2,.mypage-v2 h3,.mypage-v2 p{margin:0}.mypage-v2 a{color:#999}
 .mypage-v2 .profile{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-lg);margin:0}
