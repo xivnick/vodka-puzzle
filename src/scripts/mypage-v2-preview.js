@@ -122,7 +122,7 @@ export function initMypage(root,{server=null}={}){
     data.missions.forEach(m=>{
       const row=$(`[data-mission="${m.id}"]`),s=goal(m),ready=Boolean(s&&(server?m.serverState==='claimable'&&m.configured:m.count>=s.at));
       row.hidden=m.active===false||(filter!=='all'&&m.group!==filter);
-      if(server){row.querySelector('h3').textContent=m.name;row.querySelector('.mission-condition').textContent=m.text;const icon=row.querySelector('.mission-icon');icon.replaceChildren($(`[data-icon-template="${m.icon}"]`).content.cloneNode(true));}
+      if(server){row.querySelector('h3').textContent=m.name;row.querySelector('.mission-condition').textContent=m.text;const icon=row.querySelector('.mission-icon');icon.replaceChildren($(`[data-icon-template="${m.icon}"]`).content.cloneNode(true));const src=icons.get(m.icon).src,raster=!src.endsWith('.svg');icon.classList.toggle('raster-icon',raster);if(raster)icon.style.setProperty('--raster-icon',`url("${src}")`);else icon.style.removeProperty('--raster-icon');}
       if(!row.hidden)shown++;
       row.classList.toggle('is-complete',!s);
       row.querySelector('.mission-value').textContent=s?`${m.repeatEvery?m.count:Math.min(m.count,s.at)} / ${s.at}`:'완료';

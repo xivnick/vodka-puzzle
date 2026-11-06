@@ -246,3 +246,7 @@
 
 .cosmetic-live-panel{width:100%;min-width:0}
 .cosmetic-live-panel[hidden],#accountLegacyPanel[hidden]{display:none!important}.cosmetic-account-link{margin-top:24px;text-align:center;font-size:.73rem}.cosmetic-account-link a{color:#999}
+
+/* Raster and SVG icons use the same inherited state color. */
+.mypage-v2 :is(.mission-icon,.item-icon).raster-icon{background:currentColor;mask:var(--raster-icon) center/contain no-repeat;-webkit-mask:var(--raster-icon) center/contain no-repeat}
+.mypage-v2 .raster-icon>img{opacity:0}
