@@ -125,3 +125,5 @@
 아이콘 후보는 기존 프로젝트와 같은 Tabler Icons v3.40.0 outline의 history·hourglass·clock-bolt·calendar-time·rocket이다. [후보 비교](https://puzzle.xivnick.me/test/achievement-badges/time-traveler-icons/)에서 36px 모양과 닉네임 옆 18px를 비교한다. 선택 전에는 기존 history를 시안의 임시 표시로 쓰며 보상 아이콘으로 확정하지 않는다. 서버 규칙·아이템은 아이콘 선택 전까지 active=false다.
 
 시간 여행자의 최종 아이콘은 후보 3번 `clock-bolt`(시계와 번개)로 확정했다. `20261106_time_traveler_clock_bolt.sql`로 해당 규칙·아이템의 선택 대기 상태를 해제했다. 활성 규칙은 20개이며 경제 기능 전체의 enabled=false는 유지한다. 테스트 마이페이지·전체 정리에도 같은 아이콘을 적용한다.
+
+출시일 기준은 일일 과제에만 적용한다. 꺼지지 않는 불은 기존 데일리 연속 수치를 그대로 유지하며 출시일에 초기화하거나 출시 이후 기록만으로 다시 계산하지 않는다. 일반 문제 도전과제도 기존 유효한 풀이 기록을 포함한다.
