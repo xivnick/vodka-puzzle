@@ -15,7 +15,7 @@ const files=import.meta.glob('../../../../../public/icons/achievement-preview/*.
   <section class="time-traveler-icons">
     <p class="mission-condition">타임머신 3회 이용 · 아이콘 1회 지급</p>
     <div class="candidates">{candidates.map(([icon,name,note],index)=><article>
-      <div class="candidate-heading"><span class="candidate-icon" aria-hidden="true"><Fragment set:html={String(files[`../../../../../public/icons/achievement-preview/${icon}.svg`])}/></span><div><h2>{index+1}. {name}</h2><p>{note}</p></div></div>
+      <div class="candidate-heading"><span class="candidate-icon" aria-hidden="true"><Fragment set:html={String(files[`../../../../../public/icons/achievement-preview/${icon}.svg`])}/></span><div><h2>{index+1}. {name}{icon==='clock-bolt'&&<span class="selected">확정</span>}</h2><p>{note}</p></div></div>
       <div class="nickname-example"><NicknameBadge name="퍼즐러" icon={icon} size={18}/></div>
     </article>)}</div>
     <p class="record-note">이용 기록이 남은 날짜를 셉니다. 같은 날짜에 다시 들어가도 횟수는 늘지 않습니다.</p>
@@ -32,3 +32,5 @@ const files=import.meta.glob('../../../../../public/icons/achievement-preview/*.
 .time-traveler-icons .record-note{font-size:.7rem;color:#999;line-height:1.8;margin:20px 0}.time-traveler-icons .links{font-size:.7rem;margin:18px 0}.time-traveler-icons .credits{font-size:.6rem;color:#aaa}
 @media(max-width:380px){.time-traveler-icons article{padding-inline:0;gap:8px}.time-traveler-icons .candidate-heading{gap:10px}}
 </style>
+
+<style>.selected{margin-left:8px;color:#888;font-size:.65rem}</style>

@@ -48,7 +48,7 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         sql(ticket[ticket.index('CREATE FUNCTION private.ensure_time_machine_wallet'):ticket.index('CREATE FUNCTION public.time_machine_context')])
         sql("""ALTER TABLE public.puzzle_catalog ADD CONSTRAINT puzzle_catalog_difficulty_check CHECK(difficulty IS NULL OR char_length(difficulty)>0);
         CREATE FUNCTION public.admin_update_puzzle(requested_season text,requested_puzzle text,new_title text,new_summary text,new_type text,new_status text,new_published_at timestamptz,new_sort_order integer,expected_updated_at timestamptz,new_difficulty text) RETURNS public.puzzle_catalog LANGUAGE sql AS $$ SELECT NULL::public.puzzle_catalog $$;""")
-        for name in ['20261105_cosmetic_foundation.sql', '20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql']:
+        for name in ['20261105_cosmetic_foundation.sql', '20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql']:
             sql((ROOT / 'supabase/migrations' / name).read_text())
         sql("UPDATE private.cosmetic_settings SET enabled=true,history_policy='all_records',champion_tickets=1; UPDATE private.cosmetic_draw_configs SET status='active',price_per_draw=100;")
         users = [str(uuid.uuid4()) for _ in range(8)]
@@ -156,7 +156,8 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         # The mission derives only existing unique openings, not ticket awards or page visits.
         traveler=str(uuid.uuid4())
         sql(f"INSERT INTO auth.users VALUES('{traveler}'); INSERT INTO public.semester_nicknames VALUES('2026-2','{traveler}','traveler');")
-        assert not any(r['id']=='time-traveler' for r in json.loads(rpc(traveler,'SELECT public.achievement_context()'))['achievements'])
+        assert any(r['id']=='time-traveler' and r['current']==0 for r in json.loads(rpc(traveler,'SELECT public.achievement_context()'))['achievements'])
+        assert sql("SELECT definition->>'src' FROM private.cosmetic_items WHERE id='icon:time-traveler'")=='/icons/achievement-preview/clock-bolt.svg'
         sql("UPDATE private.cosmetic_items SET active=true WHERE id='icon:time-traveler'; UPDATE private.achievement_rules SET active=true WHERE id='time-traveler';")
         sql(f"INSERT INTO private.time_machine_openings SELECT '{traveler}',current_date-i,now() FROM generate_series(1,2) i")
         ctx=json.loads(rpc(traveler,'SELECT public.achievement_context()'))

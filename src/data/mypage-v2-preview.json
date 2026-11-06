@@ -552,8 +552,8 @@
     },
     {
       "id": "time-traveler",
-      "name": "시간 여행",
-      "src": "/icons/achievement-preview/history.svg"
+      "name": "시계와 번개",
+      "src": "/icons/achievement-preview/clock-bolt.svg"
     }
   ],
   "missions": [
@@ -928,8 +928,7 @@
         }
       ],
       "claimed": [],
-      "recordMetric": "time_machine",
-      "pendingIcon": true
+      "recordMetric": "time_machine"
     }
   ],
   "effects": [
