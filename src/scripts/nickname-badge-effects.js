@@ -1,14 +1,16 @@
 import {badgeEffectTextures} from '../data/badge-effect-textures.js';
+import {badgeTransformTextures} from '../data/badge-transform-textures.js';
 import './badge-effect-clock.js';
 
 export function badgeEffectRenderer(){
-  return typeof location!=='undefined'&&new URLSearchParams(location.search).get('renderer')==='png'?'png':'css';
+  const requested=typeof location!=='undefined'?new URLSearchParams(location.search).get('renderer'):null;
+  return ['css','png'].includes(requested)?requested:'optimized';
 }
 
 // The icon mask and base color stay fixed. Only white light layers animate.
 export function createBadgeEffect(effect,{renderer=badgeEffectRenderer()}={}){
   if(!Object.hasOwn(badgeEffectTextures,effect))throw new RangeError('Unknown badge effect');
-  if(!['css','png'].includes(renderer))throw new RangeError('Unknown badge renderer');
+  if(!['optimized','css','png'].includes(renderer))throw new RangeError('Unknown badge renderer');
   const overlay=document.createElement('span');
   overlay.className='custom-badge-effect effect-'+effect+' is-offscreen';
   overlay.dataset.badgeEffect=effect;overlay.dataset.effectRenderer=renderer;overlay.setAttribute('aria-hidden','true');
@@ -17,6 +19,14 @@ export function createBadgeEffect(effect,{renderer=badgeEffectRenderer()}={}){
     overlay.style.backgroundImage=`url('${item.src}')`;
     overlay.style.backgroundSize=`${item.columns*100}% ${item.rows*100}%`;
     return overlay;
+  }
+  if(renderer==='optimized'&&Object.hasOwn(badgeTransformTextures,effect)){
+    const item=badgeTransformTextures[effect],sheet=document.createElement('span');
+    sheet.className='badge-light badge-frame-sheet';
+    sheet.style.backgroundImage=`url('${item.src}')`;
+    sheet.style.width=`${item.columns*100}%`;sheet.style.height=`${item.rows*100}%`;
+    sheet.style.animationName=`badge-frames-${effect}`;
+    overlay.append(sheet);return overlay;
   }
   const count={ribbon:1,foil:18,interference:9,lenticular:12,afterglow:1}[effect];
   for(let i=0;i<count;i++){

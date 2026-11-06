@@ -1,6 +1,8 @@
+@import './badge-effect-transform-frames.css';
 .custom-badge-effect{position:absolute;inset:0;display:block;pointer-events:none;background-repeat:no-repeat;background-position:0 0%;mask-repeat:no-repeat;mask-position:center;mask-size:contain;-webkit-mask-repeat:no-repeat;-webkit-mask-position:center;-webkit-mask-size:contain}
 .page-hidden .custom-badge-effect,.custom-badge-effect.is-offscreen,.custom-badge-effect.is-paused,.effects-paused .custom-badge-effect{background-position:0 0%!important}
-.custom-badge-effect[data-effect-renderer=css]{overflow:hidden;isolation:isolate}
+.custom-badge-effect[data-effect-renderer=css],.custom-badge-effect[data-effect-renderer=optimized]{overflow:hidden}
+.custom-badge-effect[data-effect-renderer=css]{isolation:isolate}
 .custom-badge-effect .badge-light{position:absolute;inset:0;display:block;pointer-events:none;animation-iteration-count:infinite}
 .effect-afterglow .badge-light{background:white;opacity:0;animation:badge-css-afterglow 4.2s ease-out infinite}
 .effect-ribbon .badge-light{width:400%;background-image:url('/images/badge-effect-lights/ribbon.svg');background-size:100% 100%;animation:badge-css-ribbon 1.9s linear infinite}
@@ -25,3 +27,6 @@
 @keyframes badge-css-interference-6{0%,8.125%,58.125%,100%{opacity:0}33.125%{opacity:.8}}
 @keyframes badge-css-interference-7{0%,4.0625%,54.0625%,100%{opacity:0}29.0625%{opacity:.8}}
 @keyframes badge-css-interference-8{0%,50%,100%{opacity:0}25%{opacity:.8}}
+
+/* One fixed atlas, moved by the compositor; never animate background-position. */
+.custom-badge-effect[data-effect-renderer=optimized] .badge-frame-sheet{inset:0 auto auto 0;opacity:1;background-color:transparent;background-size:100% 100%;background-repeat:no-repeat;mix-blend-mode:normal;animation-timing-function:steps(1,end)}

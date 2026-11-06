@@ -23,7 +23,7 @@ export function createSharedEffectClock(writeFrame,clock=globalThis,now=()=>perf
 export function activeBadgeEffectTypes(elements,disabled=false){
   const active=new Set();
   if(disabled)return active;
-  for(const element of elements)if(element.dataset.effectRenderer!=='css'&&element.isConnected&&!element.classList.contains('is-offscreen')&&!element.classList.contains('is-paused')&&!element.closest('.effects-paused,.page-hidden'))active.add(element.dataset.badgeEffect);
+  for(const element of elements)if(!['css','optimized'].includes(element.dataset.effectRenderer)&&element.isConnected&&!element.classList.contains('is-offscreen')&&!element.classList.contains('is-paused')&&!element.closest('.effects-paused,.page-hidden'))active.add(element.dataset.badgeEffect);
   return active;
 }
 

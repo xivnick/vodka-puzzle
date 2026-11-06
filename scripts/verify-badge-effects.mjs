@@ -59,7 +59,7 @@ assert.equal(activeBadgeEffectTypes(visibleBadges,true).size,0,'hidden/reduced-m
 assert.equal(activeBadgeEffectTypes(visibleBadges.map(e=>({...e,closest:()=>({})}))).size,0,'paused roots must stop');
 assert.equal(activeBadgeEffectTypes(visibleBadges.map(e=>({...e,isConnected:false}))).size,0,'removed badges must stop');
 assert.equal(activeBadgeEffectTypes(visibleBadges.map(e=>({...e,classList:{contains:name=>name==='is-paused'}}))).size,0,'manual pause must stop');
-const {createBadgeEffect,cloneBadgeVisual}=await import('../src/scripts/nickname-badge-effects.js');
+const {createBadgeEffect,cloneBadgeVisual,badgeEffectRenderer}=await import('../src/scripts/nickname-badge-effects.js');
 for(const effect of types){const node=createBadgeEffect(effect,{renderer:'png'});assert.equal(node.children.length,0);assert(node.style.backgroundImage.includes(badgeEffectTextures[effect].src));assert(node.classList.contains('is-offscreen'));const copy=cloneBadgeVisual(node);assert.equal(copy.style.cssText,node.style.cssText);}
 const css=fs.readFileSync(new URL('src/styles/nickname-badge-effects.css',root),'utf8');assert(css.includes('@keyframes'));assert(!css.includes('@keyframes badge-css-background'));assert(!css.includes('will-change'));assert(css.includes('is-paused')&&css.includes('prefers-reduced-motion'));
 const gallery=fs.readFileSync(new URL('dist/test/achievement-badges/effect-performance/index.html',root),'utf8');
@@ -105,7 +105,7 @@ assert(css.includes('badge-effects-hidden')&&css.includes('animation-play-state:
 for(const rule of css.matchAll(/@keyframes\s+[^{}]+\{((?:[^{}]*\{[^{}]*\}\s*)+)\}/g)){
  for(const declaration of rule[1].matchAll(/([\w-]+)\s*:/g))assert(['opacity','transform'].includes(declaration[1]),declaration[1]);
 }
-for(const mode of ['css','png'])assert(stress.includes('data-badge-renderer="'+mode+'"')&&gallery.includes('data-badge-renderer="'+mode+'"'));
+for(const mode of ['optimized','css','png'])assert(stress.includes('data-badge-renderer="'+mode+'"')&&gallery.includes('data-badge-renderer="'+mode+'"'));
 console.log('CSS layer counts, unchanged masks, native-only keyframes, no CSS frame timer, clone preservation, pause hooks and CSS/PNG controls: passed.');
 // Static radial bases with additive alpha reconstruct the former animated stops.
 const radial=createBadgeEffect('interference',{renderer:'css'}),bases=[];
@@ -136,9 +136,49 @@ for(let i=0;i<18;i++){
 const comparison=fs.readFileSync(new URL('dist/test/achievement-badges/foil-compare/index.html',root),'utf8');
 assert(comparison.includes('foil-compare effects-paused'));
 for(const icon of ['star','trophy','flower','puzzle'])assert(comparison.includes('data-foil-group="'+icon+'"'));
-assert.equal([...comparison.matchAll(/data-foil-current=/g)].length,16);
+assert.equal([...comparison.matchAll(/data-foil-current=/g)].length,24);
 const compareSource=fs.readFileSync(new URL('src/pages/test/achievement-badges/foil-compare/index.astro',root),'utf8');
 assert(compareSource.includes('animation.currentTime=time'));
 assert(compareSource.includes("'background-position',`${x}% ${y}%`,'important'"));
 assert(!compareSource.includes('setInterval')&&!compareSource.includes('requestAnimationFrame'));
 console.log('Approved/current foil geometry and timing parity; four-icon, two-size synchronized paused comparison: passed.');
+// Optimized complex effects use exactly one immutable atlas and CSS transform.
+const {badgeTransformTextures}=await import('../src/data/badge-transform-textures.js');
+const frameCss=fs.readFileSync(new URL('src/styles/badge-effect-transform-frames.css',root),'utf8');
+for(const effect of types){
+ const node=createBadgeEffect(effect,{renderer:'optimized'});
+ assert.equal(node.children.length,1);
+ assert.equal(cloneBadgeVisual(node).dataset.effectRenderer,'optimized');
+ assert.equal(activeBadgeEffectTypes([{...visibleBadges[0],dataset:node.dataset}]).size,0,'optimized mode must never run the JS frame clock');
+ if(badgeTransformTextures[effect]){
+  assert(node.children[0].style.backgroundImage.includes(badgeTransformTextures[effect].src));
+  assert.equal(node.children[0].style.animationName,'badge-frames-'+effect);
+  assert.equal(node.children[0].style.animationDelay,undefined);
+ }
+}
+let optimizedBytes=0;
+for(const [effect,item] of Object.entries(badgeTransformTextures)){
+ assert.equal(item.fps,30);assert.equal(item.frames,item.duration*30);assert.equal(item.timeline.length,item.frames);
+ const atlas=sharp(fs.readFileSync(new URL('public'+item.src,root))),metadata=await atlas.metadata();
+ assert(metadata.width<=1024&&metadata.height<=1024);optimizedBytes+=metadata.size;
+ const body=frameCss.match(new RegExp('@keyframes badge-frames-'+effect+'\\{(.*)\\}'))[1];
+ const keys=[...body.matchAll(/([\d.]+)%\{transform:translate\(([-\d.]+)%,([-\d.]+)%\)\}/g)].map(([,at,x,y])=>({at:Number(at),x:Number(x),y:Number(y)}));
+ for(let frame=0;frame<item.frames;frame++){
+  const packed=item.timeline[frame],left=packed%item.columns*item.size,top=Math.floor(packed/item.columns)*item.size;
+  const key=keys.filter(key=>key.at<=(frame+.00001)/item.frames*100).at(-1);
+  assert(Math.abs(-key.x/100*metadata.width-left)<1e-7);
+  assert(Math.abs(-key.y/100*metadata.height-top)<1e-7);
+  const actual=await atlas.clone().extract({left,top,width:item.size,height:item.size}).ensureAlpha().raw().toBuffer();
+  const expected=await sharp(Buffer.from(frameSvg(effect,frame/30,item.size))).ensureAlpha().raw().toBuffer();
+  for(let pixel=3;pixel<actual.length;pixel+=4)assert(Math.abs(actual[pixel]-expected[pixel])<=2,effect+' optimized alpha frame '+frame);
+ }
+}
+assert(css.includes('animation-timing-function:steps(1,end)'));
+assert(!frameCss.includes('background-position')&&!frameCss.includes('opacity'));
+console.log(`Optimized: ${optimizedBytes} bytes, every 30fps frame matches original alpha, CSS atlas coordinates, duplicate-frame holds, one animated element per badge and no JS frame clock: passed.`);
+
+assert.equal(badgeEffectRenderer(),'optimized');
+for(const renderer of ['optimized','css','png']){
+ globalThis.location={search:'?renderer='+renderer};assert.equal(badgeEffectRenderer(),renderer);
+}
+delete globalThis.location;
