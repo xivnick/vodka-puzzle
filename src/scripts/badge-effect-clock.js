@@ -23,7 +23,7 @@ export function createSharedEffectClock(writeFrame,clock=globalThis,now=()=>perf
 export function activeBadgeEffectTypes(elements,disabled=false){
   const active=new Set();
   if(disabled)return active;
-  for(const element of elements)if(element.isConnected&&!element.classList.contains('is-offscreen')&&!element.classList.contains('is-paused')&&!element.closest('.effects-paused,.page-hidden'))active.add(element.dataset.badgeEffect);
+  for(const element of elements)if(element.dataset.effectRenderer!=='css'&&element.isConnected&&!element.classList.contains('is-offscreen')&&!element.classList.contains('is-paused')&&!element.closest('.effects-paused,.page-hidden'))active.add(element.dataset.badgeEffect);
   return active;
 }
 
@@ -31,12 +31,13 @@ function initialize(){
   const sheetElement=document.createElement('style');sheetElement.dataset.badgeEffectClock='';document.head.append(sheetElement);
   const rules=new Map();
   for(const effect of Object.keys(badgeEffectTextures)){
-    const index=sheetElement.sheet.insertRule(`.custom-badge-effect.effect-${effect}{background-position:0 0%}`,sheetElement.sheet.cssRules.length);
+    const index=sheetElement.sheet.insertRule(`.custom-badge-effect[data-effect-renderer="png"].effect-${effect}{background-position:0 0%}`,sheetElement.sheet.cssRules.length);
     rules.set(effect,sheetElement.sheet.cssRules[index]);
   }
   const ticker=createSharedEffectClock((effect,frame,x,y)=>{rules.get(effect).style.backgroundPosition=`${x}% ${y}%`;});
   const observed=new Set(),visible=new Set(),motion=matchMedia('(prefers-reduced-motion: reduce)');
   function refresh(){
+    document.documentElement.classList.toggle('badge-effects-hidden',document.hidden);
     for(const element of observed)if(!element.isConnected){intersection.unobserve(element);observed.delete(element);visible.delete(element);}
     ticker.setActive(activeBadgeEffectTypes(visible,document.hidden||motion.matches));
   }

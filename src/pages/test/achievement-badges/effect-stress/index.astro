@@ -1,5 +1,6 @@
 ---
 import PageLayout from '../../../../layouts/PageLayout.astro';
+import BadgeEffectRendererSwitch from '../../../../components/BadgeEffectRendererSwitch.astro';
 import '../../../../styles/mypage-v2-preview.css';
 import '../../../../styles/nickname-badge-effects.css';
 ---
@@ -7,7 +8,8 @@ import '../../../../styles/nickname-badge-effects.css';
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <div class="mypage-v2 effect-stress effects-paused">
     <div class="view-heading"><h2>여러 개 표시</h2><button type="button" id="stressPlay" aria-pressed="false">재생</button></div>
-    <div class="stress-counts">{[30,100].map(count=><button type="button" data-count={count} aria-pressed={String(count===30)}>{count}개</button>)}</div>
+    <BadgeEffectRendererSwitch />
+    <div class="stress-counts">{[10,30,100].map(count=><button type="button" data-count={count} aria-pressed={String(count===30)}>{count}개</button>)}</div>
     <p class="stress-status" id="stressStatus" aria-live="polite">정지 상태</p>
     <div class="stress-list" id="effectStressList"></div>
     <p class="stress-reference"><a href="/test/achievement-badges/effect-performance/">효과 5종 비교</a></p>

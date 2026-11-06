@@ -1,5 +1,6 @@
 ---
 import PageLayout from '../../../../layouts/PageLayout.astro';
+import BadgeEffectRendererSwitch from '../../../../components/BadgeEffectRendererSwitch.astro';
 import NicknameBadge from '../../../../components/NicknameBadge.astro';
 import data from '../../../../data/mypage-v2-preview.json';
 import star from '../../../../../public/icons/achievement-preview/star.svg?raw';
@@ -10,6 +11,7 @@ import '../../../../styles/nickname-badge-effects.css';
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <div class="mypage-v2 effects-check">
     <div class="view-heading"><h2>효과 5종</h2><button type="button" id="playAllEffects" aria-pressed="true">전체 정지</button></div>
+    <BadgeEffectRendererSwitch />
     <div class="effect-examples">{data.effects.map((effect,index)=><section class="effect-example"><div class="effect-title"><h3>{effect.name}</h3><button type="button" data-play-effect={effect.id} aria-pressed="false">재생</button></div><div class="live-effect" data-effect={effect.id} data-icon="star"><NicknameBadge name="퍼즐러" icon="star" size={18}/></div><div class="live-effect large" data-effect={effect.id} data-icon="star"><span class="badge-visual standalone"><Fragment set:html={star}/></span></div></section>)}</div>
     <p class="activity" id="activeEffectCount" aria-live="polite">화면에 보이는 효과를 재생합니다.</p>
     <p class="reference"><a href="/test/achievement-badges/effect-stress/">스트레스 테스트</a> · <a href="/test/mypage-v2/customize/">꾸미기</a></p>

@@ -51,7 +51,7 @@ const before=writes.length;ticker.setActive([]);assert.equal(writes.length,befor
 ticker.setActive(['foil','foil']);assert.equal(timers.size,1);assert.equal(writes.length,before);
 time+=50;const [id,fn]=[...timers.entries()][0];timers.delete(id);fn();assert.equal(writes.length,before+1);ticker.stop();
 // Runtime overlays contain no SVG, gradients, IDs or animated child elements.
-class Element{constructor(){this.nodeType=1;this.className='';this.dataset={};this.style={cssText:''};this.children=[];this.classList={contains:name=>this.className.split(' ').includes(name)};}setAttribute(){}cloneNode(){return this;}}
+class Element{constructor(){this.nodeType=1;this.className='';this.dataset={};this.style={cssText:''};this.children=[];this.classList={contains:name=>this.className.split(' ').includes(name)};}append(node){this.children.push(node);}setAttribute(){}cloneNode(){return this;}}
 globalThis.document={createElement:()=>new Element()};
 const visibleBadges=hundredBadges.map(effect=>({isConnected:true,dataset:{badgeEffect:effect},classList:{contains:()=>false},closest:()=>null}));
 assert.equal(activeBadgeEffectTypes(visibleBadges).size,5);
@@ -60,12 +60,12 @@ assert.equal(activeBadgeEffectTypes(visibleBadges.map(e=>({...e,closest:()=>({})
 assert.equal(activeBadgeEffectTypes(visibleBadges.map(e=>({...e,isConnected:false}))).size,0,'removed badges must stop');
 assert.equal(activeBadgeEffectTypes(visibleBadges.map(e=>({...e,classList:{contains:name=>name==='is-paused'}}))).size,0,'manual pause must stop');
 const {createBadgeEffect,cloneBadgeVisual}=await import('../src/scripts/nickname-badge-effects.js');
-for(const effect of types){const node=createBadgeEffect(effect);assert.equal(node.children.length,0);assert(node.style.backgroundImage.includes(badgeEffectTextures[effect].src));assert(node.classList.contains('is-offscreen'));const copy=cloneBadgeVisual(node);assert.equal(copy.style.cssText,node.style.cssText);}
-const css=fs.readFileSync(new URL('src/styles/nickname-badge-effects.css',root),'utf8');assert(!css.includes('@keyframes'));assert(!css.includes('gradient('));assert(css.includes('is-paused')&&css.includes('prefers-reduced-motion'));
+for(const effect of types){const node=createBadgeEffect(effect,{renderer:'png'});assert.equal(node.children.length,0);assert(node.style.backgroundImage.includes(badgeEffectTextures[effect].src));assert(node.classList.contains('is-offscreen'));const copy=cloneBadgeVisual(node);assert.equal(copy.style.cssText,node.style.cssText);}
+const css=fs.readFileSync(new URL('src/styles/nickname-badge-effects.css',root),'utf8');assert(css.includes('@keyframes'));assert(!css.includes('@keyframes badge-css-background'));assert(!css.includes('will-change'));assert(css.includes('is-paused')&&css.includes('prefers-reduced-motion'));
 const gallery=fs.readFileSync(new URL('dist/test/achievement-badges/effect-performance/index.html',root),'utf8');
 assert(gallery.includes('effects-check')&&!gallery.includes('effects-check effects-paused'));assert(gallery.includes('id="playAllEffects" aria-pressed="true"')); assert.equal([...gallery.matchAll(/data-play-effect=/g)].length,5);assert(!gallery.includes('effectStressList'));
 const gallerySource=fs.readFileSync(new URL('src/pages/test/achievement-badges/effect-performance/index.astro',root),'utf8');assert(!gallerySource.includes('6000')&&!gallerySource.includes('createTimedEffectPreview'));assert(gallerySource.includes('is-paused'));assert(gallerySource.includes("let selected='all';"));assert(!gallerySource.includes('some(overlay=>visible.get(overlay)))player.stop()'));
-console.log(`Five shared PNGs: ${totalBytes} bytes; decoded RGBA estimate ${decodedBytes} bytes. Frame/alpha fidelity, 100-badge shared scheduling, idle stop, child-free overlays and continuous gallery: passed.`);
+console.log(`Legacy PNG comparison: ${totalBytes} bytes; decoded RGBA estimate ${decodedBytes} bytes. Frame/alpha fidelity, 100-badge shared scheduling, idle stop, child-free overlays and continuous gallery: passed.`);
 
 // Original 3.2s light motion, then a fully transparent interval before repeating.
 assert.equal(EFFECTS.interference.duration,6.4);
@@ -85,3 +85,39 @@ const stress=fs.readFileSync(new URL('dist/test/achievement-badges/effect-stress
 assert(stress.includes('effect-stress effects-paused'));
 for(const count of [30,100])assert(stress.includes(`data-count="${count}"`));
 assert(stress.includes('.effect-stress .stress-visual{'));
+
+// CSS mode has fixed white light geometry, no sprite image or JS frame updates.
+const geometryCounts={ribbon:1,foil:18,interference:9,lenticular:12,afterglow:1};
+for(const [effect,count] of Object.entries(geometryCounts)){
+ const overlay=createBadgeEffect(effect,{renderer:'css'});
+ assert.equal(overlay.children.length,count);
+ assert.equal(overlay.dataset.effectRenderer,'css');
+ assert.equal(overlay.style.backgroundImage,undefined);
+ const copy=cloneBadgeVisual(overlay);assert.equal(copy.dataset.effectRenderer,'css');assert.equal(copy.children.length,count);
+ assert.equal(activeBadgeEffectTypes([{...visibleBadges[0],dataset:{badgeEffect:effect,effectRenderer:'css'}}]).size,0,'CSS badges must never start the JS frame timer');
+ for(const light of overlay.children)assert.equal(light.children.length,0);
+}
+assert.equal(css.match(/@keyframes badge-css-interference-/g).length,9);
+for(const name of ['afterglow','ribbon','foil','lenticular'])assert(css.includes('@keyframes badge-css-'+name));
+assert(css.includes('mix-blend-mode:plus-lighter'));
+assert(css.includes('badge-effects-hidden')&&css.includes('animation-play-state:paused!important'));
+// No animated paint properties: declarations inside keyframes are opacity/transform only.
+for(const rule of css.matchAll(/@keyframes\s+[^{}]+\{((?:[^{}]*\{[^{}]*\}\s*)+)\}/g)){
+ for(const declaration of rule[1].matchAll(/([\w-]+)\s*:/g))assert(['opacity','transform'].includes(declaration[1]),declaration[1]);
+}
+for(const mode of ['css','png'])assert(stress.includes('data-badge-renderer="'+mode+'"')&&gallery.includes('data-badge-renderer="'+mode+'"'));
+console.log('CSS layer counts, unchanged masks, native-only keyframes, no CSS frame timer, clone preservation, pause hooks and CSS/PNG controls: passed.');
+// Static radial bases with additive alpha reconstruct the former animated stops.
+const radial=createBadgeEffect('interference',{renderer:'css'}),bases=[];
+for(const light of radial.children){
+ assert(light.style.backgroundImage.startsWith('radial-gradient(ellipse 90% 90% at 30% 35%,'));
+ const stops=[...light.style.backgroundImage.matchAll(/(white|transparent) ([\d.]+)%/g)].map(([,color,offset])=>`<stop offset="${Number(offset)/100}" stop-color="white" stop-opacity="${color==='white'?1:0}"/>`).join('');
+ bases.push(await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24"><defs><radialGradient id="b" cx=".3" cy=".35" r=".9">${stops}</radialGradient></defs><rect width="24" height="24" fill="url(#b)"/></svg>`)).ensureAlpha().raw().toBuffer());
+}
+for(const time of [0,.8,1.6,2.4,3.7,4.8,5.5,6.3]){
+ const expected=await sharp(Buffer.from(frameSvg('interference',time))).ensureAlpha().raw().toBuffer();
+ for(let pixel=3;pixel<expected.length;pixel+=4){
+  const alpha=bases.reduce((sum,base,i)=>sum+base[pixel]*opacity('interference',time,i*.26),0);
+  assert(Math.abs(alpha-expected[pixel])<3,'fixed radial bases must preserve the light pattern');
+ }
+}

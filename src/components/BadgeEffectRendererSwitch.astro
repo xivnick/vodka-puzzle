@@ -1,0 +1,12 @@
+<p class="badge-renderer-switch" aria-label="효과 구현 비교"><span>방식</span><a href="?renderer=css" data-badge-renderer="css">CSS</a><a href="?renderer=png" data-badge-renderer="png">PNG</a></p>
+<script>
+import {badgeEffectRenderer} from '../scripts/nickname-badge-effects.js';
+for(const link of document.querySelectorAll('[data-badge-renderer]')){
+  const url=new URL(location.href);url.searchParams.set('renderer',link.dataset.badgeRenderer);link.href=url.pathname+url.search;
+  if(link.dataset.badgeRenderer===badgeEffectRenderer())link.setAttribute('aria-current','true');
+}
+</script>
+<style>
+.badge-renderer-switch{display:flex;align-items:center;gap:14px;margin:0 0 18px;font-size:.7rem;color:#999}
+.badge-renderer-switch a{color:#999;text-decoration:underline;text-underline-offset:3px}.badge-renderer-switch a[aria-current=true]{color:#444}
+</style>
