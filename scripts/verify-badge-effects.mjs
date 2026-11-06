@@ -121,3 +121,24 @@ for(const time of [0,.8,1.6,2.4,3.7,4.8,5.5,6.3]){
   assert(Math.abs(alpha-expected[pixel])<3,'fixed radial bases must preserve the light pattern');
  }
 }
+
+// Same geometry and phase for the approved SVG and current CSS foil.
+const currentFoil=createBadgeEffect('foil',{renderer:'css'});
+assert(css.includes('badge-css-foil 5.2s linear infinite'));
+assert(css.includes('@keyframes badge-css-foil{0%,34%,100%{opacity:0}10%{opacity:.12}16%{opacity:.85}23%{opacity:.2}}'));
+for(let i=0;i<18;i++){
+ const face=currentFoil.children[i];
+ assert(Math.abs(parseFloat(face.style.left)*24/100-Math.floor(i/2)%3*8)<1e-10);
+ assert(Math.abs(parseFloat(face.style.top)*24/100-Math.floor(i/6)*8)<1e-10);
+ assert.equal(parseFloat(face.style.animationDelay),-(i*7%18)*5.2/18);
+ assert.equal(face.style.clipPath,i%2?'polygon(0 0,100% 0,100% 100%)':'polygon(0 0,0 100%,100% 100%)');
+}
+const comparison=fs.readFileSync(new URL('dist/test/achievement-badges/foil-compare/index.html',root),'utf8');
+assert(comparison.includes('foil-compare effects-paused'));
+for(const icon of ['star','trophy','flower','puzzle'])assert(comparison.includes('data-foil-group="'+icon+'"'));
+assert.equal([...comparison.matchAll(/data-foil-current=/g)].length,16);
+const compareSource=fs.readFileSync(new URL('src/pages/test/achievement-badges/foil-compare/index.astro',root),'utf8');
+assert(compareSource.includes('animation.currentTime=time'));
+assert(compareSource.includes("'background-position',`${x}% ${y}%`,'important'"));
+assert(!compareSource.includes('setInterval')&&!compareSource.includes('requestAnimationFrame'));
+console.log('Approved/current foil geometry and timing parity; four-icon, two-size synchronized paused comparison: passed.');

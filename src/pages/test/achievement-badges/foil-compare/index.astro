@@ -1,0 +1,70 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+import Badge from '../../../../components/BadgeMaterialPreview.astro';
+import '../../../../styles/mypage-v2-preview.css';
+import '../../../../styles/nickname-badge-effects.css';
+const icons=[['star','별'],['trophy','트로피'],['flower','꽃'],['puzzle','퍼즐']];
+---
+<PageLayout title="포일 비교">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <div class="mypage-v2 foil-compare effects-paused" style="--tone-a:#BB6B98;--tone-b:#527BC0">
+    <div class="foil-icon-choices">{icons.map(([id,name],i)=><button type="button" data-foil-icon={id} aria-pressed={String(i===0)}>{name}</button>)}</div>
+    <label class="foil-time">시점 <output id="foilTime">0.00초</output><input id="foilSeek" type="range" min="0" max="5150" step="50" value="0"/></label>
+    <div class="foil-table-heading"><span>크기</span><span>기존 SVG</span><span>현재 CSS</span><span>PNG</span></div>
+    {icons.map(([icon])=><section class="foil-icon-group" data-foil-group={icon} hidden={icon!=='star'}>
+      {[18,36].map(size=><div class="foil-comparison-row"><span>{size}px</span>
+        <span class="foil-sample foil-reference" style={`--foil-size:${size}px`}><Badge icon={icon} effect="foil" id={`foil-reference-${icon}-${size}`}/></span>
+        <span class="foil-sample"><span class="foil-visual" data-foil-current={icon} data-foil-renderer="css" style={`width:${size}px;height:${size}px`}/></span>
+        <span class="foil-sample"><span class="foil-visual" data-foil-current={icon} data-foil-renderer="png" style={`width:${size}px;height:${size}px`}/></span>
+      </div>)}
+    </section>)}
+    <p class="foil-note">슬라이더를 움직이면 세 구현을 같은 시점에서 비교합니다.</p>
+    <p class="foil-links"><a href="/test/achievement-badges/effect-performance/">효과 5종 비교</a> · <a href="/test/achievement-badges/effect-stress/">스트레스 테스트</a></p>
+  </div>
+</PageLayout>
+<script>
+import {createBadgeEffect} from '../../../../scripts/nickname-badge-effects.js';
+import {badgeEffectTextures} from '../../../../data/badge-effect-textures.js';
+const root=document.querySelector('.foil-compare');
+if(root){
+ const seek=root.querySelector('#foilSeek'),output=root.querySelector('#foilTime');
+ root.querySelectorAll('[data-foil-current]').forEach(visual=>{
+  const mask=`url('/icons/achievement-preview/${visual.dataset.foilCurrent}.svg')`,base=document.createElement('span');
+  base.className='custom-badge-base';base.style.background='linear-gradient(135deg,#BB6B98,#527BC0)';
+  const overlay=createBadgeEffect('foil',{renderer:visual.dataset.foilRenderer});overlay.classList.add('is-paused');
+  for(const layer of [base,overlay]){layer.style.maskImage=mask;layer.style.webkitMaskImage=mask;}
+  visual.append(base,overlay);
+ });
+ function showTime(){
+  const time=Number(seek.value);output.value=`${(time/1000).toFixed(2)}초`;
+  for(const animation of root.getAnimations({subtree:true})){animation.pause();animation.currentTime=time;}
+  const item=badgeEffectTextures.foil,frame=Math.floor(time/50)%item.frames;
+  const x=(frame%item.columns)/(item.columns-1)*100,y=Math.floor(frame/item.columns)/(item.rows-1)*100;
+  root.querySelectorAll('[data-effect-renderer="png"]').forEach(overlay=>overlay.style.setProperty('background-position',`${x}% ${y}%`,'important'));
+ }
+ root.querySelectorAll('[data-foil-icon]').forEach(button=>button.addEventListener('click',()=>{
+  root.querySelectorAll('[data-foil-icon]').forEach(choice=>choice.setAttribute('aria-pressed',String(choice===button)));
+  root.querySelectorAll('[data-foil-group]').forEach(group=>group.hidden=group.dataset.foilGroup!==button.dataset.foilIcon);
+  showTime();
+ }));
+ seek.addEventListener('input',showTime);showTime();
+}
+</script>
+<style is:global>
+.foil-compare .foil-icon-choices{display:flex;gap:18px;margin-bottom:20px}
+.foil-compare button{border:0;background:none;padding:4px 0;color:#999;font-size:.72rem;text-decoration:underline;text-underline-offset:3px}
+.foil-compare button[aria-pressed=true]{color:#444}
+.foil-compare .foil-time{display:grid;grid-template-columns:1fr auto;gap:10px;font-size:.72rem;color:#777;margin-bottom:24px}
+.foil-compare .foil-time input{grid-column:1/-1;width:100%;accent-color:#888}
+.foil-compare .foil-table-heading,.foil-compare .foil-comparison-row{display:grid;grid-template-columns:45px repeat(3,minmax(0,1fr));align-items:center;text-align:center;gap:8px}
+.foil-compare .foil-table-heading{border-bottom:1px solid #e8e5df;padding-bottom:12px;font-size:.7rem;color:#888}
+.foil-compare .foil-comparison-row{min-height:90px;border-bottom:1px solid #eee;font-size:.68rem;color:#888}
+.foil-compare .foil-sample{display:flex;align-items:center;justify-content:center}
+.foil-compare .foil-visual{position:relative;display:block}
+.foil-compare .material-badge{display:block;width:var(--foil-size);height:var(--foil-size)}
+.foil-compare .material-badge svg{display:block;width:100%;height:100%;overflow:hidden}
+.foil-compare .foil-face{animation:foil-reference-light 5.2s linear infinite;animation-play-state:paused}
+@keyframes foil-reference-light{0%,34%,100%{opacity:0}10%{opacity:.12}16%{opacity:.85}23%{opacity:.2}}
+.foil-compare .foil-note,.foil-compare .foil-links{font-size:.7rem;color:#999;margin-top:20px;line-height:1.7}
+.foil-compare [hidden]{display:none!important}
+</style>
