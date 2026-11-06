@@ -26,7 +26,7 @@ assert.equal(Object.keys(badgeEffectTextures).length,5);assert(decodedBytes<7*10
 assert.equal((frameSvg('foil',0).match(/<path /g)??[]).length,18);
 assert.equal((frameSvg('interference',0).match(/<stop /g)??[]).length,9);
 assert.equal((frameSvg('lenticular',0).match(/<rect /g)??[]).length,12);
-for(const [effect,progress,expected] of [['foil',.16,.85],['interference',.5,.8],['lenticular',.43,.9],['afterglow',.15,.78],['afterglow',.35,.3]])assert(Math.abs(opacity(effect,progress*EFFECTS[effect].duration)-expected)<1e-6,effect+' original opacity');
+for(const [effect,progress,expected] of [['foil',.16,.85],['lenticular',.43,.9],['afterglow',.15,.78],['afterglow',.35,.3]])assert(Math.abs(opacity(effect,progress*EFFECTS[effect].duration)-expected)<1e-6,effect+' original opacity');
 assert(frameSvg('ribbon',0).includes('matrix(1 0 -.25 1 .125 0)'));
 // 100 badges with five types still use a single timer and only five writes/tick.
 let time=0,sequence=0;const timers=new Map(),writes=[];
@@ -67,8 +67,20 @@ assert(gallery.includes('effects-check')&&!gallery.includes('effects-check effec
 const gallerySource=fs.readFileSync(new URL('src/pages/test/achievement-badges/effect-performance/index.astro',root),'utf8');assert(!gallerySource.includes('6000')&&!gallerySource.includes('createTimedEffectPreview'));assert(gallerySource.includes('is-paused'));assert(gallerySource.includes("let selected='all';"));assert(!gallerySource.includes('some(overlay=>visible.get(overlay)))player.stop()'));
 console.log(`Five shared PNGs: ${totalBytes} bytes; decoded RGBA estimate ${decodedBytes} bytes. Frame/alpha fidelity, 100-badge shared scheduling, idle stop, child-free overlays and continuous gallery: passed.`);
 
-// Slower interference retains its original phase proportions across a 6.4s loop.
+// Original 3.2s light motion, then a fully transparent interval before repeating.
 assert.equal(EFFECTS.interference.duration,6.4);
+assert(Math.abs(opacity('interference',2.08+1.6)-.8)<1e-6);
+for(let i=0;i<9;i++){
+ const phase=i*.26,start=2.08-phase;
+ assert(Math.abs(opacity('interference',start,phase))<1e-10);
+ assert(Math.abs(opacity('interference',start+1.6,phase)-.8)<1e-6);
+ assert.equal(opacity('interference',start+3.2+.001,phase),0);
+}
+for(let time=5.3;time<6.4;time+=.05){
+ const pixels=await sharp(Buffer.from(frameSvg('interference',time))).ensureAlpha().raw().toBuffer();
+ for(let i=3;i<pixels.length;i+=4)assert.equal(pixels[i],0,'interference rest must have no white light');
+}
+
 const stress=fs.readFileSync(new URL('dist/test/achievement-badges/effect-stress/index.html',root),'utf8');
 assert(stress.includes('effect-stress effects-paused'));
 for(const count of [30,100])assert(stress.includes(`data-count="${count}"`));

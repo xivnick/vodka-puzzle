@@ -10,7 +10,13 @@ function ease(x,type){
  return cubic((lo+hi)/2,0,1);
 }
 export function opacity(effect,time,phase=0){
- const duration=EFFECTS[effect].duration,p=((time+phase)%duration+duration)%duration/duration,points=curves[effect];
+ const duration=EFFECTS[effect].duration;
+ // A single wave uses the original 3.2s envelope and .26s phase spacing.
+ // Do not wrap each radial stop: let the wave leave before the next loop.
+ const cycle=((time%duration)+duration)%duration;
+ const pulseTime=cycle+phase-8*.26;
+ if(effect==='interference'&&(pulseTime<0||pulseTime>=3.2))return 0;
+ const p=effect==='interference'?pulseTime/3.2:((time+phase)%duration+duration)%duration/duration,points=curves[effect];
  for(let i=1;i<points.length;i++)if(p<=points[i][0]){
   const [a,v0]=points[i-1],[b,v1]=points[i];
   return v0+(v1-v0)*ease((p-a)/(b-a),effect==='afterglow'?'ease-out':effect==='foil'?'linear':'ease-in-out');
@@ -28,7 +34,7 @@ export function frameSvg(effect,time,size=SIZE){
  }
  if(effect==='interference'){
   body='<defs><radialGradient id="light" cx=".3" cy=".35" r=".9">';
-  for(let i=0;i<9;i++)body+=`<stop offset="${i/8}" stop-color="white" stop-opacity="${n(opacity(effect,time,i*.52))}"/>`;
+  for(let i=0;i<9;i++)body+=`<stop offset="${i/8}" stop-color="white" stop-opacity="${n(opacity(effect,time,i*.26))}"/>`;
   body+='</radialGradient></defs><rect width="24" height="24" fill="url(#light)"/>';
  }
  if(effect==='lenticular'){

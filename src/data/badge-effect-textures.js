@@ -19,13 +19,13 @@ export const badgeEffectTextures={
     "bytes": 39359
   },
   "interference": {
-    "src": "/images/badge-effect-textures/interference.342a94de3efa.png",
+    "src": "/images/badge-effect-textures/interference.9b1a5016299d.png",
     "frames": 128,
     "columns": 8,
     "rows": 16,
     "duration": 6.4,
     "size": 64,
-    "bytes": 215135
+    "bytes": 118573
   },
   "lenticular": {
     "src": "/images/badge-effect-textures/lenticular.12363bc89895.png",
