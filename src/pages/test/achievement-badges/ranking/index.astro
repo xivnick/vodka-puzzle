@@ -1,0 +1,70 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+import NicknameBadge from '../../../../components/NicknameBadge.astro';
+import data from '../../../../data/mypage-v2-preview.json';
+import '../../../../styles/nickname-badge-effects.css';
+const names=['모눈종이','어제의내일','퍼즐러','소금빵','빈칸수집가','은하수','별헤는밤','두뇌풀가동','민트초코','꺼지지않는불','온도차','숫자산책','조각모음','한발먼저','연필한자루','달빛산책','꽃갈피','폭탄해체반','토마토주스','흑기사','옷걸이','체리콕','네모','초록','gridwalker','파란연필','봄바람','꾸준한오후','한칸더','새싹'];
+const icons=['crown','time-traveler','leaf','clover','skull','galaxy','star','brain','flask','flame','temperature','number-123','puzzle','sword','swords','rabbit','flower','bomb','tomato','glass','hanger','cherry',null,'leaf','puzzle','brain','flower',null,'cherry','leaf'];
+const colors=['r-berry','r-sea','c6','base','c2','r-aurora','u-pink-blue','base','r-mint-chocolate','r-autumn','c25','r-black-tea','base','c15','u-solid','r-petal','c0','base','c2','r-black-pearl','base','c0','base','c6','u-pink-blue','c9','r-peach','base','c15','base'];
+const effects=new Map([[0,'ribbon'],[1,'foil'],[5,'interference'],[8,'lenticular'],[14,'afterglow'],[15,'foil'],[19,'ribbon']]);
+const palette=new Map([...data.common,...data.rare].map(color=>[color.id,color]));
+palette.set('base',{name:'기본',a:'#444444',b:'#444444',rarity:'base'});
+palette.set('u-pink-blue',{name:'수박 · 하늘',a:data.common[0].a,b:data.common[21].a,rarity:'uncommon'});
+palette.set('u-solid',{name:'비취',a:data.common[16].a,b:data.common[16].a,rarity:'uncommon'});
+const rows=names.map((name,index)=>{
+ const icon=data.icons.find(icon=>icon.id===icons[index]),color=palette.get(colors[index]),effect=effects.get(index);
+ if(!color)throw new Error('Unknown example color '+colors[index]);
+ if(effect&&!['uncommon','rare'].includes(color.rarity))throw new Error('Effect on ineligible color');
+ return {name,icon,color,effect,index,count:data.total-index,split:index%3===0,label:icon?[icon.name,color.name,effect&&data.effects.find(e=>e.id===effect).name,index===0&&'별빛 반짝임'].filter(Boolean).join(' · '):''};
+});
+---
+<PageLayout title="랭킹 예시">
+  <meta slot="head" name="robots" content="noindex, nofollow"/>
+  <section class="ranking-example mypage-v2" aria-label="가상 랭킹 30명">
+    <div class="ranking-heading"><div class="lb-title">전체 랭킹</div><button id="rankingEffects" type="button" aria-pressed="false">효과 정지</button></div>
+    <div class="lb-list" role="list">{rows.map(row=><div class:list={['lb-row',{'lb-me':row.index===2}]} role="listitem">
+      <span class="lb-rank">{row.index+1}</span>
+      <span class="lb-name">{row.icon?<span class="rank-customization" title={row.label} data-ranking-icon={row.icon.id} data-ranking-effect={row.effect??'none'} data-color-a={row.color.a} data-color-b={row.color.b} data-split={String(row.split)}><NicknameBadge name={row.name} src={row.icon.src} size={18} label={row.label} sparkle={row.index===0}/></span>:<span>{row.name}</span>}</span>
+      <span class="lb-time" aria-label={`일반 문제 ${row.count}개 완료`}>{row.count}개</span>
+    </div>)}</div>
+    <p class="ranking-note">닉네임과 기록은 가상입니다.</p>
+    <p class="ranking-links"><a href="/test/mypage-v2/">마이페이지</a> · <a href="/test/mypage-v2/customize/">꾸미기</a></p>
+  </section>
+</PageLayout>
+<script>
+import {createBadgeEffect} from '../../../../scripts/nickname-badge-effects.js';
+import {initNicknameBadges} from '../../../../scripts/nickname-badge-alignment.js';
+const root=document.querySelector('.ranking-example');
+if(root){
+ initNicknameBadges();
+ root.querySelectorAll('.rank-customization').forEach(sample=>{
+  const visual=sample.querySelector('.badge-visual'),svg=visual.querySelector('svg'),img=visual.querySelector('img');
+  let mask;
+  if(svg){svg.setAttribute('xmlns','http://www.w3.org/2000/svg');mask=`url("data:image/svg+xml,${encodeURIComponent(new XMLSerializer().serializeToString(svg))}")`;svg.style.opacity='0';}
+  else{mask=`url("${img.getAttribute('src')}")`;img.style.opacity='0';}
+  const base=document.createElement('span');base.className='rank-ink';base.setAttribute('aria-hidden','true');
+  const a=sample.dataset.colorA,b=sample.dataset.colorB,split=sample.dataset.split==='true';
+  base.style.background=`linear-gradient(135deg,${a} ${split?'50%':'15%'},${b} ${split?'50%':'85%'})`;
+  base.style.maskImage=mask;base.style.webkitMaskImage=mask;visual.append(base);
+  if(sample.dataset.rankingEffect!=='none'){
+   const overlay=createBadgeEffect(sample.dataset.rankingEffect);overlay.style.maskImage=mask;overlay.style.webkitMaskImage=mask;visual.append(overlay);
+  }
+ });
+ const observer=new IntersectionObserver(entries=>entries.forEach(entry=>entry.target.classList.toggle('is-offscreen',!entry.isIntersecting)));
+ root.querySelectorAll('.badge-sparkle').forEach(sparkle=>observer.observe(sparkle));
+ document.querySelector('#rankingEffects').addEventListener('click',event=>{
+  const paused=root.classList.toggle('effects-paused');event.currentTarget.setAttribute('aria-pressed',String(paused));event.currentTarget.textContent=paused?'효과 재생':'효과 정지';
+ });
+ const update=()=>root.classList.toggle('page-hidden',document.hidden);
+ document.addEventListener('visibilitychange',update);update();
+}
+</script>
+<style is:global>
+.ranking-example{width:100%}.ranking-example .ranking-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.ranking-example .lb-title{margin:0}
+.ranking-example #rankingEffects{border:0;background:none;padding:3px 0;font-size:.68rem;color:#999;text-decoration:underline;text-underline-offset:3px}
+.ranking-example .lb-name{min-width:0}.ranking-example .nickname-badge{max-width:100%}.ranking-example .badge-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.ranking-example .rank-ink{position:absolute;inset:0;display:block;pointer-events:none;mask:center/contain no-repeat;-webkit-mask:center/contain no-repeat}
+.ranking-example .rank-customization{display:inline-block;max-width:100%}
+.ranking-example .badge-sparkle{z-index:1}.ranking-example .badge-sparkle.is-offscreen,.ranking-example.page-hidden .badge-sparkle,.ranking-example.effects-paused .badge-sparkle,.badge-effects-hidden .ranking-example .badge-sparkle{animation-play-state:paused}
+.ranking-example .ranking-note{margin:18px 0 0;font-size:.65rem;color:#aaa}.ranking-example .ranking-links{margin-top:12px;font-size:.7rem;color:#999}
+</style>
