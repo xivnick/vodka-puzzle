@@ -244,4 +244,5 @@
 .mypage-v2.is-loading #editAccountNickname{visibility:hidden}
 .mypage-v2.is-loading :is([data-draw],#craftConfirm){opacity:.4}
 
+.cosmetic-live-panel{width:100%;min-width:0}
 .cosmetic-live-panel[hidden],#accountLegacyPanel[hidden]{display:none!important}.cosmetic-account-link{margin-top:24px;text-align:center;font-size:.73rem}.cosmetic-account-link a{color:#999}
