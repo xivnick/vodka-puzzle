@@ -9,6 +9,11 @@ const achievements=[{id:'feature-draw',name:'행운을 빌어요',description:'�
 const model={state:initial,catalog:[],achievements,daily_tasks:[],day:'2026-11-06',draw:{version:1,price_per_draw:100}};
 const ui=normalizeCosmeticAccount(model,template,{nickname:'실제닉네임'});
 assert.equal(ui.nickname,'실제닉네임');assert.equal(ui.coins,100);assert.deepEqual(ui.ownedEffects,[]);assert.equal(ui.applied.color,'uncommon:common:c0:common:c0');assert.equal(ui.missions[0].serverGoal.kind,'random-coins');assert.equal(serverItemId(ui.applied.color,'rare'),ui.applied.color);assert.equal(serverItemId('none','icon'),null);
+// Server daily task keys must match the rows rendered by the shared page.
+const dailyKeys=['attendance','daily-complete','daily-champion'];
+assert.deepEqual(template.dailyQuests.map(q=>q.id),dailyKeys);
+const dailyUI=normalizeCosmeticAccount({...model,daily_tasks:dailyKeys.map(id=>({id,name:id,complete:false,state:'in_progress',configured:true,reward:id==='daily-champion'?{tickets:1}:{coins:20}}))},template,{nickname:'실제닉네임'});
+assert(dailyUI.dailyQuests.every(q=>q.icon&&q.text),'every server task has its rendered row and UI metadata');
 let state=structuredClone(initial),calls=[],drawCalls=0,visitCalls=0;const recorded=new Map();
 const store=new Map(),storage={getItem:key=>store.get(key)??null,setItem:(key,value)=>store.set(key,value)};
 const account={user:{id:'test-user'},profile:{nickname:'실제닉네임'},client:{async rpc(name,args){

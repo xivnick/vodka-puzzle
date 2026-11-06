@@ -11,10 +11,10 @@ export async function initializeLiveMypage(root){
   }
   const template=JSON.parse(root.querySelector('#mypagePreviewData').textContent),server=createCosmeticAccountClient(account,template);
   server.resultItem=normalizeCosmeticItem;await server.initialize();
-  status.hidden=true;root.hidden=false;initMypage(root,{server});
+  root.hidden=false;initMypage(root,{server});status.hidden=true;
   const refresh=()=>{if(!document.hidden)window.dispatchEvent(new Event('cosmetic-refresh'));};
   window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',refresh);
   function scheduleMidnight(){const day=86400000,delay=day-((Date.now()+9*3600000)%day)+250;setTimeout(()=>{refresh();scheduleMidnight();},delay);}
   scheduleMidnight();
- }catch(error){status.textContent=cosmeticError(error);root.hidden=true;}
+ }catch(error){console.error('Cosmetic page initialization failed',error);status.textContent=cosmeticError(error);status.hidden=false;root.hidden=true;}
 }
