@@ -15,6 +15,8 @@ export function initBadgeMissionTooltips(root){
   const anchor=trigger.getBoundingClientRect(),bounds=tooltip.getBoundingClientRect();
   const left=Math.max(8,Math.min(anchor.left+anchor.width/2-bounds.width/2,window.innerWidth-bounds.width-8));
   const above=anchor.top-bounds.height-8;
+  tooltip.dataset.side=above>=8?'above':'below';
+  tooltip.style.setProperty('--badge-arrow-x',`${anchor.left+anchor.width/2-left}px`);
   tooltip.style.left=`${left}px`;tooltip.style.top=`${above>=8?above:anchor.bottom+8}px`;
  }
  for(const sample of samples){
