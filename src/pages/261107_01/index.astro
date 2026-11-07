@@ -1,0 +1,35 @@
+---
+import PuzzleLayout from '../../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from '../../components/PuzzleCompletion.astro';
+const puzzleId='261107_01';
+---
+<PuzzleLayout title="261107 폴리그래프" {puzzleId}
+  subtitle="루프 안팎의 숫자에 맞춰 점선을 따라 하나의 루프를 그리세요"
+  description="루프 안쪽은 사용한 변, 바깥쪽은 사용하지 않은 변의 수를 맞추는 폴리그래프">
+  <div slot="rules">
+    점선을 따라 서로 교차하거나 갈라지지 않는 하나의 루프를 그리세요.<br />
+    루프 안쪽 칸의 숫자는 그 칸의 네 변 중 루프에서 사용한 변의 개수입니다.<br />
+    루프 바깥쪽 칸의 숫자는 그 칸의 네 변 중 루프에서 사용하지 않은 변의 개수입니다.
+  </div>
+  <div slot="controls">
+    점선을 누르거나 따라 드래그해 선을 그립니다. 같은 선을 다시 누르거나 따라 그리면 지웁니다.<br />
+    길게 누르거나 우클릭하면 × 메모를 넣습니다. 오른쪽 위 버튼이나 M 키로 선과 메모 입력을 바꾸세요.<br />
+    지우기 버튼으로 마지막으로 선택한 변의 표시를 지웁니다.
+  </div>
+  <section id="polygraphGame" data-puzzle-id={puzzleId} aria-label="폴리그래프">
+    <div class="board-tools"><button id="polygraphNotes" type="button" aria-pressed="false">길게 눌러 × 표시</button></div>
+    <svg id="polygraphBoard" viewBox="0 0 396 396" role="application" tabindex="0" aria-label="9행 9열 폴리그래프 격자"></svg>
+    <div class="bottom-buttons"><button id="polygraphErase" type="button">지우기</button><button id="polygraphReset" type="button" class="danger">초기화</button></div>
+    <p id="polygraphStatus" role="status" aria-live="polite" class="sr-only"></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="polygraphComplete" />
+  <script>import '../../scripts/polygraph.js';</script>
+</PuzzleLayout>
+<style>
+.board-tools{display:flex;justify-content:flex-end;margin-bottom:8px}
+.board-tools button{background:none;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:0 0 1px;color:#888;font-size:.82rem;line-height:1.5}
+.board-tools button[aria-pressed=true]{color:#4a6fa5;border-color:#4a6fa5}
+#polygraphBoard{display:block;width:100%;height:auto;background:white;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#polygraphBoard:focus{outline:none}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+</style>
