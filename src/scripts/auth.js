@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const season = document.documentElement.dataset.season;
 const client = createClient('https://hlhrzbylbwebtoytmmpd.supabase.co', 'sb_publishable_YHte_s6VgQOQlU91hdsOoA_sDJ4_03y', {
+  global: { fetch: (...args) => (window.puzzleFetch || window.fetch.bind(window))(...args) },
   auth: { flowType: 'pkce', detectSessionInUrl: false, persistSession: true, autoRefreshToken: true, storageKey: 'vodka_google_session' }
 });
 const account = window.puzzleAccount;

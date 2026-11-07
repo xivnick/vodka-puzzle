@@ -34,6 +34,18 @@ python3 scripts/database.py /비공개/경로/daily-sudoku-YYYY-MM-DD.sql
 
 ## 완료 기록과 DB 검증
 
+### 느린 요청과 실패 진단
+
+공통 요청 래퍼는 Supabase 요청 중 2초 이상 지연된 요청과 실패만 `client-events` Edge Function으로 보낸다. SDK 요청(인증 포함)과 공통 REST 요청을 함께 기록한다. 전송 항목은 API 경로, 시각, 소요 시간, HTTP 상태, 오류 코드, Supabase 요청 ID, 호출 계기, 요청 시작 시 동시 요청 수, 화면 종류와 임시 페이지 ID다. 쿼리 문자열·요청/응답 본문·오류 메시지·토큰·이메일·사용자 ID·답안은 전송하지 않는다. 임시 페이지 ID는 새 페이지마다 바뀌며 저장소에 보관하지 않는다.
+
+같은 종류의 오류는 30초 동안 중복 전송하지 않고, 페이지당 최대 40건을 10건 이하로 묶어 보낸다. 수집기는 출처·크기·항목을 다시 검증하고 허용하지 않은 필드를 버린다. 수집기 제한은 인스턴스별 임시 제한이며 전역 공격 방어를 보장하지 않는다. 로그 전송 실패는 재시도하지 않으며 게임 요청 결과를 바꾸지 않는다.
+
+수집기는 DB·인증 서버를 호출하지 않으며 `function_logs`에 `kind=client_request` JSON 로그를 남긴다. `verify_jwt=false`는 로그인·DB 장애 중에도 진단을 수신하기 위한 설정이다. 로그 보관 기간은 현재 Supabase 요금제의 로그 보관 정책을 따른다. 수집기를 수정하면 `python3 scripts/deploy-client-events.py`로 이 함수만 배포한다. 사이트 정적 배포는 함수를 배포하지 않는다.
+
+`python3 scripts/inspect-request-health.py --minutes 30`은 클라이언트 로그, 같은 시각의 DB·인증 시간 초과 집계, 현재 자원 지표와 연결 수를 읽는다. 지표 출력은 조회 시점의 스냅샷이며 과거 자원 추이가 아니다. 장애 당시의 CPU·메모리·스왑·디스크 I/O 추이는 Supabase Reports와 대조한다. 로그 수집기까지 장애가 나면 클라이언트 이벤트는 유실될 수 있으므로 DB·인증 원본 로그도 함께 확인한다.
+
+데일리 첫 진입은 기존 `daily_sudoku_context`를 사용한다. 홈과 30초 주기 갱신은 보드·저장 내용을 제외한 `daily_sudoku_summary`를 사용하며, 홈에서만 전체 스트릭 순위를 요청한다. 같은 계정·날짜·종류의 동시 요청은 공유한다. `20261107_request_performance.sql` 적용 전 `python3 scripts/verify-request-performance.py`로 현재/과거 날짜, 게스트/계정별 결과·공개 필터·권한을 롤백 검증한다.
+
 `python3 scripts/review-completions.py`는 수집된 완료 보드를 읽기 전용으로 검토한다. 직접 풀었는지는 판정하지 않으며 기록을 자동 변경하지 않는다. `python3 scripts/sync-puzzle-catalog.py`는 빌드에 포함된 새 일반 문제만 테스트 상태로 등록한다.
 
 DB 권한 검증 도구는 관련 DB 작업 때만 적용 범위를 확인하고 사용한다. 각 도구의 테스트 트랜잭션은 롤백한다.

@@ -32,6 +32,8 @@ const account={user:{id:'test-user'},profile:{nickname:'실제닉네임'},client
  throw new Error('Unexpected RPC '+name);
 }}};
 const api=createCosmeticAccountClient(account,template,storage);await api.initialize();assert.equal(visitCalls,1);assert.equal(api.snapshot().coins,100);
+assert.equal(calls.filter(call=>call.name==='cosmetic_context').length,1,'initialize reads cosmetics once');
+assert.equal(calls.filter(call=>call.name==='achievement_context').length,1,'initialize reads achievements once');
 const result=await api.draw(1);assert.equal(result.results[0].name,'수박');assert.equal(drawCalls,1,'recover committed request instead of drawing twice');assert.equal(api.snapshot().coins,0);assert.equal(store.get('cosmetic-pending:test-user'),'{}');
 // Equipment revision wins independently from the economic snapshot revision.
 state={...state,state_revision:3,equipment:{...equipment,equipment_version:1,icon_id:null},coins:9999};await api.refresh();assert.equal(api.snapshot().coins,0);assert.equal(api.snapshot().applied.icon,'leaf');assert(api.snapshot().allClearEnabled);

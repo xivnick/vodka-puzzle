@@ -93,7 +93,7 @@ export function createCosmeticAccountClient(account,template,storage=globalThis.
  }
  const snapshot=()=>normalizeCosmeticAccount(model,template,identity);
  return {snapshot,errorText:cosmeticError,takeRecovered:()=>recovered.splice(0),
-  async initialize(){await refresh();await recover();const visit=await rpc('record_site_visit',{request_id:crypto.randomUUID()});apply(visit);if(visit.daily_task_notifications?.length)recovered.push({name:'record_site_visit',response:visit});await refresh();},
+  async initialize(){await recover();const visit=await rpc('record_site_visit',{request_id:crypto.randomUUID()});apply(visit);if(visit.daily_task_notifications?.length)recovered.push({name:'record_site_visit',response:visit});await refresh();},
   refresh:()=>enqueue(async()=>{await recover();await refresh();}),
   claim:mission=>mutation('claim_achievement',{achievement_id:mission.id,scope_key:mission.serverScope,threshold:mission.serverGoal.at}),
   claimDaily:id=>mutation('claim_daily_task',{task_key:id,target_day:model.day}),

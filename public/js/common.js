@@ -50,14 +50,18 @@ document.addEventListener('gesturestart', event => {
 }, { capture: true, passive: false });
 
 // ── Supabase REST helpers ────────────────────────────────────────────────────
+function sbFetch(...args) {
+  return (window.puzzleFetch || window.fetch.bind(window))(...args);
+}
+
 function publicHeaders() {
   return { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` };
 }
 
-async function sbPublicRpc(name, body) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
+async function sbPublicRpc(name, body, { trigger = 'interaction' } = {}) {
+  const res = await sbFetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
     method: 'POST', headers: { ...publicHeaders(), 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: JSON.stringify(body), puzzleTrigger: trigger,
   });
   if (!res.ok) throw new Error(`${name}: ${res.status}`);
   return res.json();
@@ -127,7 +131,7 @@ async function sbSelect(table, qs = '', { publicRead = false } = {}) {
   for (let offset = 0; ; offset += 500) {
     params.set('offset', String(offset));
     params.set('limit', String(Math.min(500, requestedLimit - rows.length)));
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/semester_${table}?${params}`, {
+    const res = await sbFetch(`${SUPABASE_URL}/rest/v1/semester_${table}?${params}`, {
       headers: publicRead ? publicHeaders() : await accountHeaders()
     });
     if (!res.ok) throw new Error(`sbSelect ${table}: ${res.status}`);
@@ -138,7 +142,7 @@ async function sbSelect(table, qs = '', { publicRead = false } = {}) {
 
 async function sbInsert(table, data) {
   const url = `${SUPABASE_URL}/rest/v1/semester_${table}`;
-  const res = await fetch(url, {
+  const res = await sbFetch(url, {
     method: 'POST',
     headers: {
       ...await accountHeaders(true),
@@ -197,16 +201,16 @@ async function getLatestCompletions() {
   return refreshLatestCompletions();
 }
 
-async function fetchRecentCompletions() {
-  return sbPublicRpc('recent_completions', {});
+async function fetchRecentCompletions(trigger) {
+  return sbPublicRpc('recent_completions', {}, { trigger });
 }
 
-async function refreshLatestCompletions(force = false) {
+async function refreshLatestCompletions(force = false, trigger = 'initial') {
   if (_recentBannerInFlight) return _recentBannerInFlight;
   _recentBannerInFlight = (async () => {
     if (!force && _recentCompletionCache) return _recentCompletionCache;
     try {
-      const rows = await fetchRecentCompletions();
+      const rows = await fetchRecentCompletions(trigger);
       _recentCompletionCache = rows || [];
     } catch (e) {
       if (!_recentCompletionCache) _recentCompletionCache = [];
@@ -366,8 +370,8 @@ function initRecentBanner() {
   return _recentBannerInitPromise;
 }
 
-async function refreshRecentBanner(force = false) {
-  const rows = await refreshLatestCompletions(force);
+async function refreshRecentBanner(force = false, trigger = 'interaction') {
+  const rows = await refreshLatestCompletions(force, trigger);
   await renderRecentBanner(rows);
 }
 
@@ -375,7 +379,7 @@ function startRecentBannerPolling() {
   if (_recentBannerTimer || !document.querySelector('.site-header')) return;
   _recentBannerTimer = setInterval(() => {
     if (document.visibilityState !== 'visible') return;
-    refreshRecentBanner(true);
+    refreshRecentBanner(true, 'poll');
   }, 60000);
 }
 
@@ -427,10 +431,11 @@ async function recordCompletion(puzzleId, state) {
   try {
     const headers = { ...await accountHeaders(true), 'Content-Type': 'application/json' };
     if (getUserId() !== owner) return;
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/submit_completion`, {
+    const res = await sbFetch(`${SUPABASE_URL}/rest/v1/rpc/submit_completion`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ requested_puzzle: puzzleId, submitted_state: snapshot, state_version: snapshot.version || 1 }),
+      puzzleTrigger: 'submit',
     });
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
@@ -479,7 +484,7 @@ function resetCompletion(puzzleId) {
 // ── Cloud progress ────────────────────────────────────────────────────────────
 async function sbUpsert(table, data, onConflict) {
   const url = `${SUPABASE_URL}/rest/v1/semester_${table}?on_conflict=${onConflict}`;
-  const res = await fetch(url, {
+  const res = await sbFetch(url, {
     method: 'POST',
     headers: {
       ...await accountHeaders(true),

@@ -1,9 +1,9 @@
-import {context,title,rankings,rankMessage} from '../lib/daily-sudoku-client.js';
+import {context,summary,title,rankings,rankMessage} from '../lib/daily-sudoku-client.js';
 import {renderStreak} from '../lib/daily-streak.js';
 import {units,dailyDate} from '../lib/sudoku.js';
 import {readPuzzleCache,writePuzzleCache,clearPuzzleCache} from '../lib/daily-sudoku-cache.js';
 const $=id=>document.getElementById(id),message=text=>{$('sudokuMessage').textContent=text;};
-let data,state,selected=0,notesMode=false,key,submitting=false,loading=false,closed=false,rollover,completedAnswer=null,rejectedAnswer=null,ready=false,reinitPending=false;
+let data,state,selected=0,notesMode=false,key,submitting=false,loading=false,closed=false,rollover,completedAnswer=null,rejectedAnswer=null,ready=false,reinitPending=false,rankRefresh=null,contextRevision=0;
 const params=new URLSearchParams(location.search);
 const requested=params.get('day');
 const timeMachine=params.get('time-machine')==='1';
@@ -65,15 +65,33 @@ async function submit(){
   const {data:result,error}=await window.puzzleAccount.client.rpc('submit_completion',{requested_puzzle:`daily-sudoku:${data.day}`,submitted_state:{version:1,values:state.values.slice()},state_version:1});
   if(error)throw error;
   if(owner!==window.puzzleAccount.user?.id)return;
-  completedAnswer=answer;complete();window.showToast('🎉 완료 기록을 저장했습니다!');window.showAchievementNotifications?.(result);window.refreshRecentBanner?.(true);await refreshRanks();
+  completedAnswer=answer;complete();window.showToast('🎉 완료 기록을 저장했습니다!');window.showAchievementNotifications?.(result);window.refreshRecentBanner?.(true);await refreshRanks('submit');
  }catch(e){
   if(owner!==window.puzzleAccount.user?.id)return;
   message(e.message?.includes('CLOSED')?'순위 집계가 마감되었습니다.':e.message?.includes('PROFILE_REQUIRED')?'닉네임을 설정해 주세요.':'제출하지 못했습니다. 잠시 후 자동으로 다시 시도합니다.');
  }finally{submitting=false;if(state?.values.every(Boolean)&&state.values.join('')!==answer)submit();}
 }
-async function refreshRanks(){const requestedDay=data?.day;if(!requestedDay)return;const [result,moonSolvers,flowerSolvers,bombSolvers]=await Promise.all([context(requestedDay),getMoonBadgeSolvers(),getFlowerBadgeSolvers(),getBombBadgeSolvers()]);if(data?.day!==requestedDay)return;updateStreak(result);if(!day&&result.current_day!==data.day){await init();return;}rankings($('sudokuRank'),result.rankings,{moonSolvers,flowerSolvers,bombSolvers});const mine=result.rankings.find(r=>r.is_me);if(mine){completedAnswer=state?.values.every(Boolean)?state.values.join(''):null;if(isSolved())complete();}const previouslyClosed=closed;Object.assign(data,result);closed=data.can_submit===false || data.day!==data.current_day && data.can_submit!==true;
- if(previouslyClosed&&!closed&&!data.my_completed)completedAnswer=null;
- $('dailyStatus').textContent=closed&&!data.my_completed?'마감':'';}
+async function refreshRanks(trigger='poll'){
+ if(rankRefresh){
+  // A poll started before submission cannot include the newly saved completion.
+  if(trigger==='submit'||trigger==='rollover'){await rankRefresh.catch(()=>{});return refreshRanks(trigger);}
+  return rankRefresh;
+ }
+ const requestedDay=data?.day,revision=contextRevision;if(!requestedDay)return;
+ rankRefresh=(async()=>{
+  const [result,moonSolvers,flowerSolvers,bombSolvers]=await Promise.all([summary(requestedDay,{trigger}),getMoonBadgeSolvers(),getFlowerBadgeSolvers(),getBombBadgeSolvers()]);
+  if(data?.day!==requestedDay||revision!==contextRevision)return;
+  updateStreak(result);
+  if(!day&&result.current_day!==data.day){await init('rollover');return;}
+  rankings($('sudokuRank'),result.rankings,{moonSolvers,flowerSolvers,bombSolvers});
+  const mine=result.rankings.find(r=>r.is_me);
+  if(mine){completedAnswer=state?.values.every(Boolean)?state.values.join(''):null;if(isSolved())complete();}
+  const previouslyClosed=closed;Object.assign(data,result);closed=data.can_submit===false||data.day!==data.current_day&&data.can_submit!==true;
+  if(previouslyClosed&&!closed&&!data.my_completed)completedAnswer=null;
+  $('dailyStatus').textContent=closed&&!data.my_completed?'마감':'';
+ })();
+ try{return await rankRefresh;}finally{rankRefresh=null;}
+}
 function showPuzzle(puzzle, preserve=false){
  data=puzzle;updateStreak(puzzle);document.querySelector('h1').textContent=title(data.day);document.title=`${title(data.day)} · vodka puzzle`;
  $('dailyGame').hidden=false;$('dailyUnavailable').hidden=true;
@@ -104,8 +122,8 @@ function showUnavailable(text){
  for(const selector of ['#cloudBtns','.help-toggles','.lb-section'])document.querySelector(selector).hidden=true;
  $('dailyGame').hidden=true;$('dailyUnavailable').hidden=false;$('dailyStatus').textContent='';$('dailyUnavailableTitle').textContent=text;
 }
-async function init(){
- if(loading){reinitPending=true;return;}loading=true;
+async function init(trigger='initial'){
+ if(loading){if(trigger==='auth'||trigger==='rollover')reinitPending=trigger;return;}loading=true;contextRevision++;
  if(window.puzzleAccount.ready&&window.puzzleAccount.user)restoreAccountLocalDay();
  const cached=readPuzzleCache(localStorage,dailyDate(),day);
  if(!ready||data?.day!==(day||dailyDate()))showLoading();
@@ -114,9 +132,9 @@ async function init(){
  }
  if(cached)window.initCloudBtns();
  try{
-  const [result,moonSolvers,flowerSolvers,bombSolvers]=await Promise.all([context(day,{publicOnly:!window.puzzleAccount.ready}),getMoonBadgeSolvers(),getFlowerBadgeSolvers(),getBombBadgeSolvers()]);
+  const [result,moonSolvers,flowerSolvers,bombSolvers]=await Promise.all([context(day,{publicOnly:!window.puzzleAccount.ready,trigger}),getMoonBadgeSolvers(),getFlowerBadgeSolvers(),getBombBadgeSolvers()]);
   document.querySelector('h1').textContent=title(result.day);document.title=`${title(result.day)} · vodka puzzle`;
-  clearTimeout(rollover);rollover=setTimeout(()=>{updateStreak(null);if(!day)init();else if(data?.available)refreshRanks().catch(()=>{});else init();},Math.max(1000,new Date(result.next_opens_at)-new Date(result.server_now)+100));
+  clearTimeout(rollover);rollover=setTimeout(()=>{updateStreak(null);if(!day)init('rollover');else if(data?.available)refreshRanks('rollover').catch(()=>{});else init('rollover');},Math.max(1000,new Date(result.next_opens_at)-new Date(result.server_now)+100));
   if(!result.available){if(result.day===result.current_day)clearPuzzleCache(localStorage);showUnavailable('문제가 준비되지 않았습니다');return;}
   const preserve=ready&&data?.day===result.day&&data?.givens===result.givens;
   showPuzzle(result,preserve);setReady(true);window.initCloudBtns();writePuzzleCache(localStorage,result);
@@ -126,13 +144,13 @@ async function init(){
  }catch{
   if(ready&&data?.available&&data.day===(day||dailyDate())){rankMessage($('sudokuRank'),'기록을 불러오지 못했습니다.');$('dailyStatus').textContent='';}
   else showUnavailable('문제를 불러오지 못했습니다');
- }finally{loading=false;if(reinitPending){reinitPending=false;init();}}
+ }finally{loading=false;if(reinitPending){const next=reinitPending;reinitPending=false;init(next);}}
 }
 function historyReplace(date){window.history.replaceState(null,'',`?day=${date}`);}
-$('dailyRetry').addEventListener('click',init);$('sudokuBoard').addEventListener('click',e=>{const b=e.target.closest('[data-cell]');if(ready&&b){selected=Number(b.dataset.cell);render();focus();}});
+$('dailyRetry').addEventListener('click',()=>init('retry'));$('sudokuBoard').addEventListener('click',e=>{const b=e.target.closest('[data-cell]');if(ready&&b){selected=Number(b.dataset.cell);render();focus();}});
 $('sudokuBoard').addEventListener('keydown',e=>{if(!ready)return;if(/^[1-9]$/.test(e.key)){e.preventDefault();change(Number(e.key));focus();}else if(['Backspace','Delete','0'].includes(e.key)){e.preventDefault();change(0);focus();}else if(e.key.toLowerCase()==='m'){e.preventDefault();toggleNotes();}else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();selected=Math.max(0,Math.min(80,selected+({ArrowLeft:-1,ArrowRight:1,ArrowUp:-9,ArrowDown:9}[e.key])));render();focus();}});
 $('sudokuNumbers').addEventListener('click',e=>{const b=e.target.closest('[data-number]');if(b)change(Number(b.dataset.number));});
 $('sudokuNotes').addEventListener('click',toggleNotes);$('sudokuErase').addEventListener('click',()=>change(0));$('sudokuReset').addEventListener('click',()=>{if(confirm('입력한 숫자와 메모를 초기화할까요?')){state=clean(null);persist();render();}});
 window.handleCloudSave=async()=>{if(!ready||!data?.available||!state)return;try{const {error}=await window.puzzleAccount.client.rpc('save_daily_sudoku_progress',{requested_day:data.day,saved_state:state});if(error)throw error;window.showToast('저장했습니다.');}catch{window.showToast('저장하지 못했습니다. 로그인과 연결을 확인해 주세요.');}};
 window.handleCloudLoad=async()=>{if(!ready||!data?.available||!state)return;if(!window.puzzleAccount.user){message('로그인 후 불러올 수 있습니다.');return;}try{const {data:row,error}=await window.puzzleAccount.client.from('daily_sudoku_progress').select('state').eq('day',data.day).eq('user_id',window.puzzleAccount.user.id).maybeSingle();if(error)throw error;if(!row){message('저장된 기록이 없습니다.');return;}if(confirm('클라우드 기록으로 현재 진행 상황을 바꿀까요?')){state=clean(row.state);persist();render();window.showToast('불러왔습니다.');submit();}}catch{message('불러오지 못했습니다. 다시 시도해 주세요.');}};
-init();window.puzzleAuthReady.then(()=>{if(window.puzzleAccount.user)init();});setInterval(()=>{if(!document.hidden&&data?.available){refreshRanks().catch(()=>{});submit();}else if(!document.hidden&&!loading)init();},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&data?.available)refreshRanks().catch(()=>{});});
+init();window.puzzleAuthReady.then(()=>{if(window.puzzleAccount.user)init('auth');});setInterval(()=>{if(!document.hidden&&data?.available){refreshRanks('poll').catch(()=>{});submit();}else if(!document.hidden&&!loading)init('retry');},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&data?.available)refreshRanks('visible').catch(()=>{});});

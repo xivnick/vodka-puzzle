@@ -1,4 +1,4 @@
-import {context,title,rankMessage} from '../lib/daily-sudoku-client.js';
+import {summary,title,rankMessage} from '../lib/daily-sudoku-client.js';
 import {renderStreak,renderStreakRankings} from '../lib/daily-streak.js';
 import {dailyDate} from '../lib/sudoku.js';
 const card=document.getElementById('dailyCard'),label=document.getElementById('dailyTitle'),panel=document.getElementById('dailyRank');
@@ -23,13 +23,13 @@ function apply(data,moonSolvers=new Set(),flowerSolvers=new Set(),bombSolvers=ne
  renderStreakRankings(panel,data.streak_rankings,{moonSolvers,flowerSolvers,bombSolvers});
 }
 localLabel();
-async function refresh(){
- if(busy){refreshPending=true;return;}busy=true;
- try{const [data,moonSolvers,flowerSolvers,bombSolvers]=await Promise.all([context(null,{publicOnly:!window.puzzleAccount.ready}),getMoonBadgeSolvers(),getFlowerBadgeSolvers(),getBombBadgeSolvers()]);offset=new Date(data.server_now).getTime()-Date.now();clearTimeout(rollover);rollover=setTimeout(refresh,Math.max(1000,new Date(data.next_opens_at)-new Date(data.server_now)+100));apply(data,moonSolvers,flowerSolvers,bombSolvers);}
+async function refresh(trigger='initial'){
+ if(busy){if(trigger==='auth'||trigger==='rollover')refreshPending=trigger;return;}busy=true;
+ try{const [data,moonSolvers,flowerSolvers,bombSolvers]=await Promise.all([summary(null,{includeStreakRankings:true,publicOnly:!window.puzzleAccount.ready,trigger}),getMoonBadgeSolvers(),getFlowerBadgeSolvers(),getBombBadgeSolvers()]);offset=new Date(data.server_now).getTime()-Date.now();clearTimeout(rollover);rollover=setTimeout(()=>refresh('rollover'),Math.max(1000,new Date(data.next_opens_at)-new Date(data.server_now)+100));apply(data,moonSolvers,flowerSolvers,bombSolvers);}
  catch{rankMessage(panel,'기록을 불러오지 못했습니다.');}
- finally{busy=false;if(refreshPending){refreshPending=false;refresh();}}
+ finally{busy=false;if(refreshPending){const next=refreshPending;refreshPending=false;refresh(next);}}
 }
-async function loadRank(){try{const [data,moonSolvers,flowerSolvers,bombSolvers]=await Promise.all([context(),getMoonBadgeSolvers(),getFlowerBadgeSolvers(),getBombBadgeSolvers()]);apply(data,moonSolvers,flowerSolvers,bombSolvers);}catch{rankMessage(panel,'기록을 불러오지 못했습니다.');}}
+async function loadRank(){await refresh('rank-mode');}
 const buttons=[...document.querySelectorAll('[data-rank-mode]')];
 for(const button of buttons)button.addEventListener('click',()=>{
  const daily=button.dataset.rankMode==='daily';
@@ -39,6 +39,6 @@ for(const button of buttons)button.addEventListener('click',()=>{
  document.getElementById('dailyRankPanel').hidden=!daily;
  if(daily)loadRank();
 });
-refresh();setInterval(()=>{if(document.hidden)return;localLabel();if(current!==dailyDate(new Date(Date.now()+offset)))updateCard([]);refresh();},30000);
-window.puzzleAuthReady.then(()=>{if(window.puzzleAccount.user)refresh();});
-window.addEventListener('pageshow',event=>{if(event.persisted)refresh();});document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
+refresh();setInterval(()=>{if(document.hidden)return;localLabel();if(current!==dailyDate(new Date(Date.now()+offset)))updateCard([]);refresh('poll');},30000);
+window.puzzleAuthReady.then(()=>{if(window.puzzleAccount.user)refresh('auth');});
+window.addEventListener('pageshow',event=>{if(event.persisted)refresh('visible');});document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh('visible');});
