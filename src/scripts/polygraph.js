@@ -36,7 +36,7 @@ function render(){
 function hit(event){
   const rect=board.getBoundingClientRect(),x=((event.clientX-rect.left)/rect.width*396-18)/40,y=((event.clientY-rect.top)/rect.height*396-18)/40;
   const c=Math.round(x),r=Math.round(y),dx=Math.abs(x-c),dy=Math.abs(y-r);
-  // Leave a small gap at vertices to avoid turning a drag onto an unintended edge.
+  // Leave a small gap at vertices so taps select an unambiguous edge.
   if(dx<.15&&dy<.15)return null;
   if(dy<=dx&&dy<.28&&r>=0&&r<=9&&x>=0&&x<9)return edgeKey(r*10+Math.floor(x),r*10+Math.floor(x)+1);
   if(dx<dy&&dx<.28&&c>=0&&c<=9&&y>=0&&y<9)return edgeKey(Math.floor(y)*10+c,(Math.floor(y)+1)*10+c);
@@ -51,9 +51,8 @@ function cancel(){if(gesture)clearTimeout(gesture.timer);gesture=null;}
 board.addEventListener('pointerdown',event=>{
   if(!ready||gesture||event.button!==0)return;
   const key=hit(event);if(!key)return;
-  event.preventDefault();board.focus({preventScroll:true});board.setPointerCapture(event.pointerId);
   const value=swapped?2:1;
-  gesture={id:event.pointerId,key,x:event.clientX,y:event.clientY,value:(value===1?edges:notes).has(key)?0:value,visited:new Set([key]),moved:false,long:false,lastX:event.clientX,lastY:event.clientY,timer:null};
+  gesture={id:event.pointerId,key,x:event.clientX,y:event.clientY,value:(value===1?edges:notes).has(key)?0:value,moved:false,long:false,timer:null};
   gesture.timer=setTimeout(()=>{
     if(!gesture||gesture.moved)return;
     gesture.long=true;
@@ -61,26 +60,22 @@ board.addEventListener('pointerdown',event=>{
     apply(key,(secondary===1?edges:notes).has(key)?0:secondary);persist();
   },550);
 });
-board.addEventListener('pointermove',event=>{
-  if(!gesture||gesture.id!==event.pointerId||gesture.long)return;
+window.addEventListener('pointermove',event=>{
+  if(!gesture||gesture.id!==event.pointerId)return;
   if(Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)>8){
-    clearTimeout(gesture.timer);
-    if(!gesture.moved){gesture.moved=true;apply(gesture.key,gesture.value);}
-    const dx=event.clientX-gesture.lastX,dy=event.clientY-gesture.lastY;
-    const steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/(board.getBoundingClientRect().width/80)));
-    for(let n=1;n<=steps;n++){
-      const key=hit({clientX:gesture.lastX+dx*n/steps,clientY:gesture.lastY+dy*n/steps});
-      if(key&&!gesture.visited.has(key)){gesture.visited.add(key);apply(key,gesture.value);}
-    }
-    gesture.lastX=event.clientX;gesture.lastY=event.clientY;
+    clearTimeout(gesture.timer);gesture.moved=true;
   }
-});
+},{passive:true});
 function end(event){
   if(!gesture||gesture.id!==event.pointerId)return;
-  if(event.type==='pointerup'&&!gesture.moved&&!gesture.long)apply(gesture.key,gesture.value);
+  if(event.type==='pointerup'&&!gesture.moved&&!gesture.long
+    &&Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)<=8){
+    board.focus({preventScroll:true});apply(gesture.key,gesture.value);
+  }
   cancel();persist();render();
 }
-board.addEventListener('pointerup',end);board.addEventListener('pointercancel',end);board.addEventListener('lostpointercapture',end);
+window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);
+window.addEventListener('scroll',cancel,{capture:true,passive:true});
 board.addEventListener('contextmenu',event=>{
   event.preventDefault();if(!ready)return;
   const key=hit(event),already=gesture?.long;cancel();

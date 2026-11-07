@@ -12,7 +12,7 @@ const puzzleId='261107_01';
     루프 바깥쪽 칸의 숫자는 그 칸의 네 변 중 루프에서 사용하지 않은 변의 개수입니다.
   </div>
   <div slot="controls">
-    점선을 누르거나 따라 드래그해 선을 그립니다. 같은 선을 다시 누르거나 따라 그리면 지웁니다.<br />
+    점선을 눌러 선을 그립니다. 같은 선을 다시 누르면 지웁니다.<br />
     길게 누르거나 우클릭하면 × 메모를 넣습니다. 오른쪽 위 버튼이나 M 키로 선과 메모 입력을 바꾸세요.<br />
     지우기 버튼으로 마지막으로 선택한 변의 표시를 지웁니다.
   </div>
@@ -29,7 +29,7 @@ const puzzleId='261107_01';
 .board-tools{display:flex;justify-content:flex-end;margin-bottom:8px}
 .board-tools button{background:none;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:0 0 1px;color:#888;font-size:.82rem;line-height:1.5}
 .board-tools button[aria-pressed=true]{color:#4a6fa5;border-color:#4a6fa5}
-#polygraphBoard{display:block;width:100%;height:auto;background:white;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#polygraphBoard{display:block;width:100%;height:auto;background:white;touch-action:auto;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 #polygraphBoard:focus{outline:none}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 </style>
