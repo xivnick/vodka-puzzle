@@ -13,7 +13,7 @@ function neighbors(index,grid) {
   const {cols,rows}=grid,x=index%cols,y=Math.floor(index/cols);
   return [x>0 ? index-1 : null,x<cols-1 ? index+1 : null,y>0 ? index-cols : null,y<rows-1 ? index+cols : null].filter(n=>n!==null);
 }
-export function inspect(filled,grid=blokus) {
+export function inspect(filled,grid=blokus,crosses=new Set()) {
   const {rows,cols}=grid,visited=new Set(),blocks=[],counts={};
   for(const start of filled) {
     if(visited.has(start))continue;
@@ -42,15 +42,19 @@ export function inspect(filled,grid=blokus) {
       else a.bad=b.bad=true;
     }
   }
-  // A used side is on a piece's perimeter, including the edge of the grid.
-  const badCells=new Set();
+  const piecesComplete=blocks.length===12 && blocks.every(b=>b.name && !b.bad) && Object.keys(pieces).every(name=>counts[name]===1);
+  // Inside: perimeter sides. Outside: unused sides. Both equal 4 minus filled neighbors.
+  // Unmarked cells can still be filled; X marks count as the player's excluded cells.
+  const badCells=new Set(),clueErrors=new Set();
   grid.clues?.forEach((row,y)=>row.forEach((clue,x)=>{
     if(clue===null)return;
-    const index=y*cols+x;
-    const adjacent=neighbors(index,grid).filter(next=>filled.has(next)).length;
-    const value=4-adjacent;
-    if(value!==clue)badCells.add(index);
+    const index=y*cols+x,around=neighbors(index,grid);
+    const adjacent=around.filter(next=>filled.has(next)).length;
+    const unknown=piecesComplete ? 0 : around.filter(next=>!filled.has(next) && !crosses.has(next)).length;
+    const required=4-clue;
+    if(adjacent!==required)badCells.add(index);
+    if(adjacent>required || adjacent+unknown<required)clueErrors.add(index);
   }));
-  const complete=badCells.size===0 && blocks.length===12 && blocks.every(b=>b.name && !b.bad) && Object.keys(pieces).every(name=>counts[name]===1) && metDots.size===dots.size;
-  return {blocks,counts,metDots,badCells,complete};
+  const complete=badCells.size===0 && piecesComplete && metDots.size===dots.size;
+  return {blocks,counts,metDots,badCells,clueErrors,complete};
 }

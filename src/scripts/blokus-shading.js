@@ -18,7 +18,7 @@ function persist() {
   }catch {window.showToast('브라우저에 저장하지 못했습니다.');}
 }
 function render() {
-  const result=inspect(filled,blokus);
+  const result=inspect(filled,blokus,crosses);
   let html='';
   for(const block of result.blocks)for(const index of block.cells) {
     const color=block.bad ? '#b65c5c' : block.name ? '#5b8c64' : '#333';
@@ -26,7 +26,13 @@ function render() {
     html+=cell;
   }
   $('Fills').innerHTML=html;
-  board.querySelectorAll('[data-clue]').forEach(text=>{text.style.fill=filled.has(Number(text.dataset.clue)) ? '#fff' : '#222';});
+  board.querySelectorAll('[data-clue]').forEach(text=>{
+    const index=Number(text.dataset.clue),error=result.clueErrors.has(index);
+    text.style.fill=error ? '#c0392b' : filled.has(index) ? '#fff' : '#222';
+    text.style.stroke=error ? '#fff' : 'none';
+    text.style.strokeWidth=error ? '3px' : '0';
+    text.style.paintOrder='stroke';
+  });
   $('Crosses').innerHTML=[...crosses].map(index=>{
     const x=(index%blokus.cols+.5)*40,y=(Math.floor(index/blokus.cols)+.5)*40;
     return `<path d="M${x-6} ${y-6}L${x+6} ${y+6}M${x+6} ${y-6}L${x-6} ${y+6}" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"/>`;
@@ -34,6 +40,7 @@ function render() {
   inputs.forEach((cell,index)=>{
     cell.setAttribute('aria-pressed',String(filled.has(index)));
     cell.setAttribute('aria-label',`${Math.floor(index/blokus.cols)+1}행 ${index%blokus.cols+1}열, ${filled.has(index) ? '칠한 칸' : crosses.has(index) ? 'X 메모' : '빈칸'}${blokus.clues?.[Math.floor(index/blokus.cols)]?.[index%blokus.cols]!=null ? ', 숫자 '+blokus.clues[Math.floor(index/blokus.cols)][index%blokus.cols] : ''}`);
+    if(result.clueErrors.has(index))cell.setAttribute('aria-label',cell.getAttribute('aria-label')+', 숫자 조건 오류');
     cell.setAttribute('aria-disabled',String(!active()));
   });
   document.querySelectorAll('.shape-item[data-piece]').forEach(item=>{
@@ -49,7 +56,7 @@ function render() {
   board.setAttribute('aria-label',`${blokus.rows}행 ${blokus.cols}열 블로커스 격자. ${longPressMeans==='cross' ? '짧게 눌러 칠하고 길게 눌러 X로 메모하세요' : '짧게 눌러 X로 메모하고 길게 눌러 칠하세요'}`);
   $('Reset').disabled=!active() || !filled.size && !crosses.size;
   const formed=Object.values(result.counts).filter(count=>count===1).length;
-  $('Status').textContent=result.complete ? '퍼즐을 완성했습니다.' : `칠한 칸 ${filled.size}개. 한 번씩 만든 블록 ${formed} / 12개.`;
+  $('Status').textContent=result.complete ? '퍼즐을 완성했습니다.' : `칠한 칸 ${filled.size}개. 한 번씩 만든 블록 ${formed} / 12개.${result.clueErrors.size ? ` 숫자 조건 오류 ${result.clueErrors.size}개.` : ''}`;
   if(!result.complete)recorded=false;
   else if(!preview && active() && !recorded) {
     recorded=true;
