@@ -1,0 +1,38 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import '../styles/daily-sudoku.css';
+import '../styles/samsung-sudoku.css';
+import { givens, symbols, label } from '../lib/samsung-sudoku.js';
+const puzzleId = '261108_02';
+---
+<PuzzleLayout title="261108 삼성 라이온즈 스도쿠" {puzzleId}
+  subtitle="12×12 격자에 1~9와 A, B, C를 채우세요"
+  description="각 행, 열과 3행×4열 영역에 1~9와 A, B, C를 한 번씩 넣으세요">
+  <div slot="rules">
+    각 가로줄, 세로줄, 굵은 선으로 구분된 3행×4열 영역에 1~9와 A, B, C를 한 번씩 넣으세요.
+  </div>
+  <div slot="controls">
+    칸을 선택하고 숫자·문자 버튼으로 입력하세요.<br />
+    메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br />
+    다른 칸을 눌러 이동하고 지우기 버튼으로 입력을 지우세요.
+  </div>
+  <section id="samsungGame" data-puzzle-id={puzzleId} data-preview="false" aria-label="삼성 라이온즈 스도쿠">
+    <div class="sudoku-board-tools"><button id="samsungNotes" class="sudoku-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>
+    <div id="samsungBoard" class="sudoku-board" role="group" aria-label="12행 12열 스도쿠">
+      {givens.flat().map((n,i) => <button type="button"
+        class:list={['sudoku-cell', {given:!!n, 'box-right':i%12===3 || i%12===7, 'box-bottom':[2,5,8].includes(Math.floor(i/12))}]}
+        data-cell={i} tabindex={i===0 ? 0 : -1}
+        aria-label={`${Math.floor(i/12)+1}행 ${i%12+1}열, ${label(n) || '빈칸'}${n ? ', 고정 숫자' : ''}`}>{label(n)}</button>)}
+    </div>
+    <div id="samsungNumbers" class="samsung-number-pad" aria-label="숫자·문자 입력">
+      {symbols.map((symbol,i) => <button type="button" data-number={i+1}>{symbol}</button>)}
+    </div>
+    <div class="bottom-buttons">
+      <button id="samsungErase" type="button">지우기</button>
+      <button id="samsungReset" type="button" class="danger">초기화</button>
+    </div>
+  </section>
+  <PuzzleCompletion slot="completion" id="samsungComplete" />
+</PuzzleLayout>
+<script>import '../scripts/samsung-sudoku.js';</script>

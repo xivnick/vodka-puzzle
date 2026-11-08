@@ -1,0 +1,10 @@
+#samsungGame { width:100%; }
+#samsungBoard { grid-template-columns:repeat(12,minmax(0,1fr)); }
+#samsungBoard .sudoku-cell { min-width:0; border-right:1px solid #ddd; border-bottom:1px solid #ddd; font-size:clamp(15px,4vw,24px); -webkit-tap-highlight-color:transparent; }
+#samsungBoard .sudoku-cell:nth-child(12n) { border-right:0; }
+#samsungBoard .sudoku-cell:nth-child(n+133) { border-bottom:0; }
+#samsungBoard .sudoku-cell.box-right { border-right:2px solid #777; }
+#samsungBoard .sudoku-cell.box-bottom { border-bottom:2px solid #777; }
+#samsungBoard .sudoku-cell .notes { inset:1px; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:repeat(3,minmax(0,1fr)); font-size:clamp(6px,1.7vw,10px); }
+.samsung-number-pad { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:4px; width:100%; margin-top:14px; }
+.samsung-number-pad button { min-width:0; padding:8px 0; border:1px solid #d6d4cd; border-radius:3px; background:#faf8f4; color:#555; font:inherit; touch-action:manipulation; }
