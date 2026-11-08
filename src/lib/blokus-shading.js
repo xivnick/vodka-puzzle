@@ -2,26 +2,26 @@ import { blokus, pieces } from './blokus.js';
 import { classifyPentomino } from './pentominous.js';
 export { blokus, pieces };
 
-export function parseState(saved,puzzleId) {
+export function parseState(saved,puzzleId,grid=blokus) {
   if(![1,3,4].includes(saved?.version) || saved.puzzleId!==puzzleId || !Array.isArray(saved.filled) || saved.version!==3 && !Array.isArray(saved.crosses))return null;
   const filled=new Set(saved.filled),crosses=new Set(saved.version===3 ? [] : saved.crosses);
-  const valid=n=>Number.isInteger(n) && n>=0 && n<blokus.rows*blokus.cols;
+  const valid=n=>Number.isInteger(n) && n>=0 && n<grid.rows*grid.cols;
   if(filled.size!==saved.filled.length || crosses.size!==(saved.version===3 ? 0 : saved.crosses.length) || [...filled,...crosses].some(n=>!valid(n)) || [...crosses].some(n=>filled.has(n)))return null;
   return {filled,crosses};
 }
-function neighbors(index) {
-  const {cols,rows}=blokus,x=index%cols,y=Math.floor(index/cols);
+function neighbors(index,grid) {
+  const {cols,rows}=grid,x=index%cols,y=Math.floor(index/cols);
   return [x>0 ? index-1 : null,x<cols-1 ? index+1 : null,y>0 ? index-cols : null,y<rows-1 ? index+cols : null].filter(n=>n!==null);
 }
-export function inspect(filled) {
-  const {rows,cols}=blokus,visited=new Set(),blocks=[],counts={};
+export function inspect(filled,grid=blokus) {
+  const {rows,cols}=grid,visited=new Set(),blocks=[],counts={};
   for(const start of filled) {
     if(visited.has(start))continue;
     const pending=[start],cells=[];
     visited.add(start);
     while(pending.length) {
       const current=pending.pop();cells.push(current);
-      for(const next of neighbors(current))if(filled.has(next) && !visited.has(next)) {
+      for(const next of neighbors(current,grid))if(filled.has(next) && !visited.has(next)) {
         visited.add(next);pending.push(next);
       }
     }
@@ -34,7 +34,7 @@ export function inspect(filled) {
     if(block.name && counts[block.name]>1)block.bad=true;
     for(const cell of block.cells)board[Math.floor(cell/cols)][cell%cols]=block;
   }
-  const at=(x,y)=>board[y]?.[x],dots=new Set(blokus.dots.map(p=>p.join(','))),metDots=new Set();
+  const at=(x,y)=>board[y]?.[x],dots=new Set(grid.dots.map(p=>p.join(','))),metDots=new Set();
   for(let y=1;y<rows;y++)for(let x=1;x<cols;x++) {
     for(const [a,b] of [[at(x-1,y-1),at(x,y)],[at(x,y-1),at(x-1,y)]]) {
       if(!a || !b || a===b)continue;
@@ -42,6 +42,15 @@ export function inspect(filled) {
       else a.bad=b.bad=true;
     }
   }
-  const complete=blocks.length===12 && blocks.every(b=>b.name && !b.bad) && Object.keys(pieces).every(name=>counts[name]===1) && metDots.size===dots.size;
-  return {blocks,counts,metDots,complete};
+  // A used side is on a piece's perimeter, including the edge of the grid.
+  const badCells=new Set();
+  grid.clues?.forEach((row,y)=>row.forEach((clue,x)=>{
+    if(clue===null)return;
+    const index=y*cols+x;
+    const adjacent=neighbors(index,grid).filter(next=>filled.has(next)).length;
+    const value=4-adjacent;
+    if(value!==clue)badCells.add(index);
+  }));
+  const complete=badCells.size===0 && blocks.length===12 && blocks.every(b=>b.name && !b.bad) && Object.keys(pieces).every(name=>counts[name]===1) && metDots.size===dots.size;
+  return {blocks,counts,metDots,badCells,complete};
 }

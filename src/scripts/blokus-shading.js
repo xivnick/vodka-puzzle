@@ -1,6 +1,7 @@
-import {blokus,parseState,inspect} from '../lib/blokus-shading.js';
+import {parseState,inspect} from '../lib/blokus-shading.js';
 
 const game=document.getElementById('blokusGame');
+const blokus=JSON.parse(game.dataset.grid);
 const puzzleId=game.dataset.puzzleId, preview=game.dataset.preview==='true';
 const $=id=>document.getElementById(`blokus${id}`);
 const board=$('Board'),mode=$('Mode'),inputs=[...board.querySelectorAll('[data-cell]')];
@@ -17,7 +18,7 @@ function persist() {
   }catch {window.showToast('브라우저에 저장하지 못했습니다.');}
 }
 function render() {
-  const result=inspect(filled);
+  const result=inspect(filled,blokus);
   let html='';
   for(const block of result.blocks)for(const index of block.cells) {
     const color=block.bad ? '#b65c5c' : block.name ? '#5b8c64' : '#333';
@@ -25,13 +26,14 @@ function render() {
     html+=cell;
   }
   $('Fills').innerHTML=html;
+  board.querySelectorAll('[data-clue]').forEach(text=>{text.style.fill=filled.has(Number(text.dataset.clue)) ? '#fff' : '#222';});
   $('Crosses').innerHTML=[...crosses].map(index=>{
     const x=(index%blokus.cols+.5)*40,y=(Math.floor(index/blokus.cols)+.5)*40;
     return `<path d="M${x-6} ${y-6}L${x+6} ${y+6}M${x+6} ${y-6}L${x-6} ${y+6}" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"/>`;
   }).join('');
   inputs.forEach((cell,index)=>{
     cell.setAttribute('aria-pressed',String(filled.has(index)));
-    cell.setAttribute('aria-label',`${Math.floor(index/blokus.cols)+1}행 ${index%blokus.cols+1}열, ${filled.has(index) ? '칠한 칸' : crosses.has(index) ? 'X 메모' : '빈칸'}`);
+    cell.setAttribute('aria-label',`${Math.floor(index/blokus.cols)+1}행 ${index%blokus.cols+1}열, ${filled.has(index) ? '칠한 칸' : crosses.has(index) ? 'X 메모' : '빈칸'}${blokus.clues?.[Math.floor(index/blokus.cols)]?.[index%blokus.cols]!=null ? ', 숫자 '+blokus.clues[Math.floor(index/blokus.cols)][index%blokus.cols] : ''}`);
     cell.setAttribute('aria-disabled',String(!active()));
   });
   document.querySelectorAll('.shape-item[data-piece]').forEach(item=>{
@@ -44,7 +46,7 @@ function render() {
   mode.disabled=!active();
   mode.textContent=longPressMeans==='cross' ? '길게 눌러 x 표시' : '길게 눌러 칠하기';
   mode.setAttribute('aria-pressed',String(longPressMeans==='fill'));
-  board.setAttribute('aria-label',`9행 13열 블로커스 격자. ${longPressMeans==='cross' ? '짧게 눌러 칠하고 길게 눌러 X로 메모하세요' : '짧게 눌러 X로 메모하고 길게 눌러 칠하세요'}`);
+  board.setAttribute('aria-label',`${blokus.rows}행 ${blokus.cols}열 블로커스 격자. ${longPressMeans==='cross' ? '짧게 눌러 칠하고 길게 눌러 X로 메모하세요' : '짧게 눌러 X로 메모하고 길게 눌러 칠하세요'}`);
   $('Reset').disabled=!active() || !filled.size && !crosses.size;
   const formed=Object.values(result.counts).filter(count=>count===1).length;
   $('Status').textContent=result.complete ? '퍼즐을 완성했습니다.' : `칠한 칸 ${filled.size}개. 한 번씩 만든 블록 ${formed} / 12개.`;
@@ -100,7 +102,7 @@ $('Reset').addEventListener('click',()=>{
 });
 function restore(saved) {
   cancelPress();
-  const parsed=parseState(saved,puzzleId);
+  const parsed=parseState(saved,puzzleId,blokus);
   filled=parsed?.filled || new Set();crosses=parsed?.crosses || new Set();recorded=false;
 }
 function init() {
@@ -109,13 +111,13 @@ function init() {
   let saved=null,migrated=false;
   try {
     saved=preview ? JSON.parse(localStorage.getItem(puzzleId) || 'null') : window.loadLocalState(puzzleId);
-    if(!preview && puzzleId==='261105_01' && !parseState(saved,puzzleId)) {
+    if(!preview && puzzleId==='261105_01' && !parseState(saved,puzzleId,blokus)) {
       // Preserve outlines without guessing which enclosed regions were empty.
       const backupKey=`${puzzleId}:before-shading`;
       if(saved!=null && localStorage.getItem(backupKey)===null)localStorage.setItem(backupKey,JSON.stringify(saved));
       const testId='test-blokus-shading';
       const test=JSON.parse(localStorage.getItem(testId) || 'null');
-      const parsed=parseState(test,testId);
+      const parsed=parseState(test,testId,blokus);
       if(parsed && (parsed.filled.size || parsed.crosses.size)) {
         saved={...test,version:1,puzzleId};migrated=true;
       }
@@ -138,7 +140,7 @@ if(!preview) {
     const requestedOwner=owner,before=JSON.stringify(state());
     const saved=await window.loadProgressCloud(puzzleId);
     if(saved==null || requestedOwner!==account() || before!==JSON.stringify(state()))return;
-    if(!parseState(saved,puzzleId)){window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.');return;}
+    if(!parseState(saved,puzzleId,blokus)){window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.');return;}
     restore(saved);persist();render();
   };
 }
