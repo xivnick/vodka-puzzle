@@ -28,10 +28,8 @@ function render() {
   $('Fills').innerHTML=html;
   board.querySelectorAll('[data-clue]').forEach(text=>{
     const index=Number(text.dataset.clue),error=result.clueErrors.has(index),matched=result.clueMatches.has(index);
-    text.style.fill=error ? '#c0392b' : matched ? '#287a3e' : filled.has(index) ? '#fff' : '#222';
-    text.style.stroke=error || matched ? '#fff' : 'none';
-    text.style.strokeWidth=error || matched ? '3px' : '0';
-    text.style.paintOrder='stroke';
+    const shaded=filled.has(index);
+    text.style.fill=error ? (shaded ? '#ffd0ca' : '#c0392b') : matched ? (shaded ? '#b9f6c7' : '#287a3e') : shaded ? '#fff' : '#222';
   });
   $('Crosses').innerHTML=[...crosses].map(index=>{
     const x=(index%blokus.cols+.5)*40,y=(Math.floor(index/blokus.cols)+.5)*40;
