@@ -45,7 +45,7 @@ export function inspect(filled,grid=blokus,crosses=new Set()) {
   const piecesComplete=blocks.length===12 && blocks.every(b=>b.name && !b.bad) && Object.keys(pieces).every(name=>counts[name]===1);
   // Inside: perimeter sides. Outside: unused sides. Both equal 4 minus filled neighbors.
   // Unmarked cells can still be filled; X marks count as the player's excluded cells.
-  const badCells=new Set(),clueErrors=new Set();
+  const badCells=new Set(),clueErrors=new Set(),clueMatches=new Set();
   grid.clues?.forEach((row,y)=>row.forEach((clue,x)=>{
     if(clue===null)return;
     const index=y*cols+x,around=neighbors(index,grid);
@@ -53,8 +53,9 @@ export function inspect(filled,grid=blokus,crosses=new Set()) {
     const unknown=piecesComplete ? 0 : around.filter(next=>!filled.has(next) && !crosses.has(next)).length;
     const required=4-clue;
     if(adjacent!==required)badCells.add(index);
+    else clueMatches.add(index);
     if(adjacent>required || adjacent+unknown<required)clueErrors.add(index);
   }));
   const complete=badCells.size===0 && piecesComplete && metDots.size===dots.size;
-  return {blocks,counts,metDots,badCells,clueErrors,complete};
+  return {blocks,counts,metDots,badCells,clueErrors,clueMatches,complete};
 }

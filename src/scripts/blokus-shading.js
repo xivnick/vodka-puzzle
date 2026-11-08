@@ -27,10 +27,10 @@ function render() {
   }
   $('Fills').innerHTML=html;
   board.querySelectorAll('[data-clue]').forEach(text=>{
-    const index=Number(text.dataset.clue),error=result.clueErrors.has(index);
-    text.style.fill=error ? '#c0392b' : filled.has(index) ? '#fff' : '#222';
-    text.style.stroke=error ? '#fff' : 'none';
-    text.style.strokeWidth=error ? '3px' : '0';
+    const index=Number(text.dataset.clue),error=result.clueErrors.has(index),matched=result.clueMatches.has(index);
+    text.style.fill=error ? '#c0392b' : matched ? '#287a3e' : filled.has(index) ? '#fff' : '#222';
+    text.style.stroke=error || matched ? '#fff' : 'none';
+    text.style.strokeWidth=error || matched ? '3px' : '0';
     text.style.paintOrder='stroke';
   });
   $('Crosses').innerHTML=[...crosses].map(index=>{
@@ -41,6 +41,7 @@ function render() {
     cell.setAttribute('aria-pressed',String(filled.has(index)));
     cell.setAttribute('aria-label',`${Math.floor(index/blokus.cols)+1}행 ${index%blokus.cols+1}열, ${filled.has(index) ? '칠한 칸' : crosses.has(index) ? 'X 메모' : '빈칸'}${blokus.clues?.[Math.floor(index/blokus.cols)]?.[index%blokus.cols]!=null ? ', 숫자 '+blokus.clues[Math.floor(index/blokus.cols)][index%blokus.cols] : ''}`);
     if(result.clueErrors.has(index))cell.setAttribute('aria-label',cell.getAttribute('aria-label')+', 숫자 조건 오류');
+    else if(result.clueMatches.has(index))cell.setAttribute('aria-label',cell.getAttribute('aria-label')+', 숫자 조건 일치');
     cell.setAttribute('aria-disabled',String(!active()));
   });
   document.querySelectorAll('.shape-item[data-piece]').forEach(item=>{
