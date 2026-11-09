@@ -1,4 +1,4 @@
-import {raids, conflicts as findConflicts, solved as isSolved, skyscraperClueConflicts} from '../lib/raid-sudoku.js';
+import {raids, conflicts as findConflicts, solved as isSolved, skyscraperClueConflicts, weightedArrowStates} from '../lib/raid-sudoku.js';
 
 const $ = id => document.getElementById(id);
 const game = $('raidGame');
@@ -80,6 +80,16 @@ function render() {
     clue.classList.toggle('conflict', invalid);
     if (invalid) clue.setAttribute('aria-label', `${clue.textContent}, 규칙 위반`);
     else clue.removeAttribute('aria-label');
+  });
+  const arrowStates = weightedArrowStates(puzzle, values);
+  game.querySelectorAll('[data-arrow-clue]').forEach(clue => {
+    const status = arrowStates[Number(clue.dataset.arrowClue)];
+    clue.classList.toggle('valid', status === 'valid');
+    clue.classList.toggle('conflict', status === 'invalid');
+    const marker = status === 'valid' ? 'raidArrowValid' : status === 'invalid' ? 'raidArrowInvalid' : 'raidArrowHead';
+    clue.querySelector('line').setAttribute('marker-end', `url(#${marker})`);
+    const description = status === 'valid' ? '합계 일치' : status === 'invalid' ? '합계 불일치' : '입력 중';
+    clue.setAttribute('aria-label', `${clue.querySelector('text').textContent}, ${description}`);
   });
   cells.forEach((cell, i) => {
     cell.classList.toggle('selected', !complete && i === selected);

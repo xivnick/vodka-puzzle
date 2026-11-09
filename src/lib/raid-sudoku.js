@@ -36,7 +36,6 @@ export function conflicts(puzzle,values) {
  const a=values[i],b=values[j],actual=puzzle.name==='XV'?a+b===5||a+b===10:(a+b)%10===0||(a*b)%10===0;
  const expected=puzzle.edges?.some(([x,y])=>x===i&&y===j)||false;if(actual!==expected)mark([i,j]);
  }
- for(const [side,index,clue]of puzzle.arrows||[]){const cells=arrowCells(side,index);const sum=cells.reduce((s,i)=>s+values[i]*(puzzle.shaded.includes(i)?2:1),0);if(sum>clue||(cells.every(i=>values[i])&&sum!==clue))mark(cells);}
  if(puzzle.name==='짝수 샌드위치')for(const [side,index,clue]of puzzle.outside){const cells=sightLine(side,index);if(cells.every(i=>values[i])){const actual=cells.slice(1,-1).filter((i,k)=>values[cells[k]]%2===0&&values[cells[k+2]]%2===0).map(i=>values[i]).sort();if(JSON.stringify(actual)!==JSON.stringify([...clue].sort()))mark(cells);}}
  return bad;
 }
@@ -52,4 +51,12 @@ export function skyscraperClueConflicts(puzzle, values) {
  });
  return bad;
 }
-export function solved(puzzle,values){return values.length===81&&values.every((n,i)=>Number.isInteger(n)&&n>=1&&n<=9&&(!puzzle.givens[i]||puzzle.givens[i]===n))&&conflicts(puzzle,values).size===0&&skyscraperClueConflicts(puzzle,values).size===0;}
+export function weightedArrowStates(puzzle, values) {
+ return (puzzle.arrows || []).map(([side, index, clue]) => {
+  const cells = arrowCells(side, index);
+  if (!cells.every(i => values[i])) return 'pending';
+  const sum = cells.reduce((total, i) => total + values[i] * (puzzle.shaded.includes(i) ? 2 : 1), 0);
+  return sum === clue ? 'valid' : 'invalid';
+ });
+}
+export function solved(puzzle,values){return values.length===81&&values.every((n,i)=>Number.isInteger(n)&&n>=1&&n<=9&&(!puzzle.givens[i]||puzzle.givens[i]===n))&&conflicts(puzzle,values).size===0&&skyscraperClueConflicts(puzzle,values).size===0&&weightedArrowStates(puzzle,values).every(state=>state==='valid');}
