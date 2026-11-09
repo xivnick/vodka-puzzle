@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { raids, arrowCells, weightedArrowGeometry, weightedArrowStates } from '../src/lib/raid-sudoku.js';
 
 const puzzle = raids[7];
+assert.deepEqual(puzzle.shaded, [2,8,11,14,26,27,53,54,66,69,72,78],
+  'gray cells must match all 12 cells in the source photo, including r9c7');
 // Independent cell lists in image order: top, left, right, bottom.
 const targets = [
   [0], [1,9], [2,10,18], [3,11,19,27],
@@ -11,7 +13,7 @@ const targets = [
   [77,69,61,53], [78,70,62], [79,71], [80],
 ];
 // The sum of artificial 1s on each path, counting each pictured gray cell twice.
-const unitSums = [1,2,4,6,7,6,4,2,2,4,6,8,6,3,2,1];
+const unitSums = [1,2,4,6,8,6,4,2,2,4,6,8,6,4,2,1];
 assert.equal(puzzle.arrows.length, targets.length);
 puzzle.arrows.forEach(([side, slot], index) => {
   const expected = targets[index];

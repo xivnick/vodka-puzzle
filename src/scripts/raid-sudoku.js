@@ -12,7 +12,13 @@ const definitionSignature = ({summary, rules, difficulty, ...definition}) => JSO
 const boardSignature = definitionSignature(puzzle);
 function matchesBoardSignature(signature) {
   if (signature === boardSignature) return true;
-  try { return definitionSignature(JSON.parse(signature)) === boardSignature; }
+  try {
+    const stored = JSON.parse(signature);
+    if (definitionSignature(stored) === boardSignature) return true;
+    // Preserve input from the original transcription, which omitted gray r9c7.
+    return puzzleId === '261109_08' && Array.isArray(stored.shaded)
+      && definitionSignature({...stored, shaded:[...stored.shaded, 78]}) === boardSignature;
+  }
   catch { return false; }
 }
 const conflicts = values => findConflicts(puzzle,values);
