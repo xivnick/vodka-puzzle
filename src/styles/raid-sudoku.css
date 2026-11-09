@@ -17,3 +17,9 @@
 .raid-arrow-clue.conflict line { stroke:#c34242; }
 
 .raid-clues text.valid { fill:#328158; }
+
+/* Cell backgrounds share the exact grid geometry, including thick box borders. */
+#raidBoard .sudoku-cell.shaded { background:#c4c4c4; }
+#raidBoard .sudoku-cell.shaded.selected {
+  background:linear-gradient(rgba(169,195,228,.45),rgba(169,195,228,.45)),#c4c4c4;
+}
