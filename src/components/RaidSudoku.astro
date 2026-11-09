@@ -1,0 +1,49 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import '../styles/daily-sudoku.css';
+import '../styles/raid-sudoku.css';
+import {raids} from '../lib/raid-sudoku.js';
+const {number} = Astro.props;
+const puzzle = raids[number-1];
+const puzzleId = `261109_${String(number).padStart(2,'0')}`;
+const title = `스도쿠 레이드 ${number}(${puzzle.name})`;
+const point = i => [i%9+.5,Math.floor(i/9)+.5];
+const points = cells => cells.map(i=>point(i).join(',')).join(' ');
+const arrow = (side,i) => side==='top' ? {a:[i+.95,-.55],b:[i+.1,-.1],t:[i+1.4,-.8]} : side==='left' ? {a:[-.55,i+.45],b:[-.1,i+.9],t:[-.85,i+.2]} : side==='right' ? {a:[9.55,i+.55],b:[9.1,i+.1],t:[9.85,i+.95]} : {a:[i+.5,9.5],b:[i+.95,9.05],t:[i+.15,9.95]};
+---
+<PuzzleLayout {title} {puzzleId} subtitle={puzzle.summary} description={puzzle.summary}>
+ <div slot="rules">
+  <p>각 가로줄, 세로줄, 굵은 선으로 나뉜 3×3 영역에 1~9를 한 번씩 넣으세요.</p>
+  {(puzzle.rules||[]).map(rule=><p>{rule}</p>)}
+ </div>
+ <div slot="controls">칸을 선택하고 숫자 버튼으로 입력하세요.<br/>메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br/>다른 칸을 눌러 이동하고 지우기 버튼으로 입력을 지우세요.</div>
+ <section id="raidGame" data-puzzle-id={puzzleId} data-number={number} aria-label={title}>
+  <div class="sudoku-board-tools"><button id="raidNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
+  <div class:list={['raid-frame',{'has-outside':!!puzzle.outside,'has-arrows':!!puzzle.arrows,'sandwich':number===10}]}>
+   <div class="raid-grid-wrap">
+    <svg class="raid-decoration" viewBox="0 0 9 9" aria-hidden="true">
+     {(puzzle.shaded||[]).map(i=><rect x={i%9} y={Math.floor(i/9)} width="1" height="1" fill="#c4c4c4"/>)}
+     {(puzzle.regions||[]).map(cells=><polyline points={points(cells)} fill="none" stroke="#c4c4c4" stroke-width=".46" stroke-linecap="square"/>)}
+     {(puzzle.lines||[]).map(cells=><g><polyline points={points(cells)} fill="none" stroke="#aaa" stroke-width=".075"/>{[cells[0],cells.at(-1)].map(i=><circle cx={point(i)[0]} cy={point(i)[1]} r=".44" fill="#ededed" stroke="#aaa" stroke-width=".055"/>)}</g>)}
+    </svg>
+    <div id="raidBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
+     {puzzle.givens.map((n,i)=><button type="button" class:list={['sudoku-cell',{given:!!n}]} data-cell={i} tabindex={i===0?0:-1} aria-label={`${Math.floor(i/9)+1}행 ${i%9+1}열, ${n||'빈칸'}${n?', 고정 숫자':''}`}>{n||''}</button>)}
+    </div>
+    <svg class="raid-clues" viewBox="0 0 9 9" role="img" aria-label="변형 스도쿠 단서">
+     <defs><marker id="raidArrowHead" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#555"/></marker></defs>
+     {(puzzle.edges||[]).map(([a,b])=>{const x=(point(a)[0]+point(b)[0])/2,y=(point(a)[1]+point(b)[1])/2;return <g><rect x={x-.16} y={y-.22} width=".32" height=".44" fill="white"/><text x={x} y={y+.02}>0</text></g>;})}
+     {(puzzle.outside||[]).map(([side,i,clue])=>{
+      const labels=Array.isArray(clue)?(clue.length?clue:['-']):[clue];
+      return labels.map((label,k)=><text x={side==='left'?-.26-(labels.length-1-k)*.48:side==='right'?9.45:i+.5} y={side==='top'?-.36-(labels.length-1-k)*.53:side==='bottom'?9.45:i+.53}>{label}</text>);
+     })}
+     {(puzzle.arrows||[]).map(([side,i,clue])=>{const {a,b,t}=arrow(side,i);return <g><line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="#555" stroke-width=".035" marker-end="url(#raidArrowHead)"/><text x={t[0]} y={t[1]}>{clue}</text></g>;})}
+    </svg>
+   </div>
+  </div>
+  <div id="raidNumbers" class="number-pad" aria-label="숫자 입력">{Array.from({length:9},(_,i)=><button type="button" data-number={i+1}>{i+1}</button>)}</div>
+  <div class="bottom-buttons"><button id="raidErase" type="button">지우기</button><button id="raidReset" type="button" class="danger">초기화</button></div>
+ </section>
+ <PuzzleCompletion slot="completion" id="raidComplete" />
+</PuzzleLayout>
+<script>import '../scripts/raid-sudoku.js';</script>
