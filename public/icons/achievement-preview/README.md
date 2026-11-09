@@ -32,3 +32,5 @@ The Lucky Hand achievement replaces its dice with the original `clover` from Tab
 Time Traveler candidates reuse `history` and add `hourglass`, `clock-bolt`, `calendar-time`, and `rocket` from the same pinned Tabler Icons v3.40.0 outline set (MIT), without geometry changes.
 
 Sudoku Raid achievement candidates add `shield-checkered`, `axe`, `building-castle`, `chess-knight`, and `flag-3` from the same pinned Tabler Icons v3.40.0 outline set (MIT). SVG files are downloaded unchanged from the official repository; the comparison page links to each original.
+
+Sudoku-focused raid candidates add `grid-pattern`, `grid-3x3`, `grid-4x4`, `border-inner`, and `number-9` from the same pinned Tabler Icons v3.40.0 outline set (MIT), without geometry changes.

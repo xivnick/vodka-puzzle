@@ -8,36 +8,52 @@ const candidates = [
   {id:'chess-knight', name:'나이트', note:'전략적인 퍼즐 풀이와 기사의 이미지'},
   {id:'flag-3', name:'전투 깃발', note:'레이드 정복과 클리어를 상징'},
 ];
+const sudokuCandidates = [
+  {id:'grid-pattern', name:'격자 보드', note:'바깥 테두리와 안쪽 격자가 스도쿠 판을 연상시킴', recommended:true},
+  {id:'grid-3x3', name:'3×3 격자', note:'스도쿠의 기본 구역을 간결한 선으로 표현'},
+  {id:'grid-4x4', name:'촘촘한 격자', note:'여러 칸으로 구성된 숫자 퍼즐의 인상'},
+  {id:'border-inner', name:'구역 구분선', note:'스도쿠 판의 굵은 구역 경계를 연상시킴'},
+  {id:'number-9', name:'숫자 9', note:'1부터 9까지 채우는 스도쿠의 숫자 상징'},
+];
+const groups = [
+  {id:'raid', title:'레이드 중심', candidates},
+  {id:'sudoku', title:'스도쿠 중심', candidates:sudokuCandidates},
+];
 const sources = import.meta.glob('../../../../../public/icons/achievement-preview/*.svg', {query:'?raw', import:'default', eager:true});
 const svg = (id) => String(sources[`../../../../../public/icons/achievement-preview/${id}.svg`]);
 ---
-<PageLayout title="스도쿠 레이드 업적 아이콘" subtitle="실제 SVG 아이콘 5가지 · 확대 모습과 닉네임 배지 비교">
+<PageLayout title="스도쿠 레이드 업적 아이콘" subtitle="레이드 중심 5가지 + 스도쿠 중심 5가지 · 실제 배지 크기 비교">
   <meta slot="head" name="robots" content="noindex, nofollow" />
-  <section class="raid-icons" aria-label="스도쿠 레이드 업적 아이콘 후보 5가지">
-    <p class="intro">Tabler Icons에서 찾은 새 후보 5가지입니다. 닉네임 옆 배지는 실제 표시 크기인 18px입니다.</p>
+  <section class="raid-icons" aria-label="스도쿠 레이드 업적 아이콘 후보 비교">
+    <p class="intro">Tabler Icons에서 찾은 후보입니다. 아래에 스도쿠 중심 후보 5가지를 추가했습니다. 닉네임 옆 배지는 실제 표시 크기인 18px입니다.</p>
+    <nav class="jump-links" aria-label="후보 분류"><a href="#raid">레이드 중심</a><a href="#sudoku">스도쿠 중심 ↓</a></nav>
+    {groups.map(group => <section id={group.id} class="candidate-group" aria-label={group.title}>
+    <h2 class="group-title">{group.title}</h2>
     <div class="candidates">
-      {candidates.map((candidate, index) => <article>
+      {group.candidates.map((candidate, index) => <article>
         <span class="large-icon" aria-hidden="true"><Fragment set:html={svg(candidate.id)} /></span>
         <div class="candidate-copy">
-          <h2><span class="number">{index + 1}.</span> {candidate.name} {candidate.recommended && <span class="recommendation">추천</span>}</h2>
+          <h3><span class="number">{index + 1}.</span> {candidate.name} {candidate.recommended && <span class="recommendation">추천</span>}</h3>
           <p>{candidate.note}</p>
           <span class="nickname"><NicknameBadge name="보드카" icon={candidate.id} label={candidate.name} /></span>
           <a class="source" href={`https://github.com/tabler/tabler-icons/blob/v3.40.0/icons/outline/${candidate.id}.svg`} target="_blank" rel="noopener noreferrer">{candidate.id} · 원본 보기 ↗</a>
         </div>
       </article>)}
     </div>
+    </section>)}
     <p class="footnote">확대 아이콘 48px · 닉네임 배지 18px</p>
     <p class="credit">아이콘: <a href="https://tabler.io/icons">Tabler Icons</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
   </section>
 </PageLayout>
 <style>
 .raid-icons{width:100%;color:#555}
+.jump-links{display:flex;gap:18px;margin:14px 0 24px;font-size:.73rem}.jump-links a{color:#75839a}.candidate-group{scroll-margin-top:24px}.group-title{font-size:.9rem;font-weight:500;margin:28px 0 0;padding-bottom:10px;border-bottom:1px solid #e8e5df;color:#555}
 .intro{margin:0 0 8px;font-size:.73rem;line-height:1.8;color:#999}
 article{display:flex;align-items:center;gap:24px;padding:22px 8px;border-bottom:1px solid #eee}
 .large-icon{display:block;flex:0 0 48px;width:48px;height:48px;color:#555}
 .large-icon :global(svg){display:block;width:100%;height:100%}
 .candidate-copy{min-width:0}
-h2{display:flex;align-items:center;gap:5px;margin:0;font-size:.84rem;font-weight:500;line-height:1.5}
+h3{display:flex;align-items:center;gap:5px;margin:0;font-size:.84rem;font-weight:500;line-height:1.5}
 .number{color:#999;font-weight:400}
 .recommendation{margin-left:3px;padding:1px 6px;border-radius:3px;background:#f2f4f6;color:#75839a;font-size:.6rem;font-weight:400}
 .candidate-copy p{margin:5px 0 12px;font-size:.7rem;line-height:1.7;color:#999}
