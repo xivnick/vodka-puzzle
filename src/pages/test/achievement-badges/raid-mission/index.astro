@@ -1,0 +1,29 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+import NicknameBadge from '../../../../components/NicknameBadge.astro';
+import CoinAmount from '../../../../components/CoinAmount.astro';
+import grid from '../../../../../public/icons/achievement-preview/grid-3x3.svg?raw';
+import '../../../../styles/mypage-v2-preview.css';
+---
+<PageLayout title="스도쿠 원정대" subtitle="스도쿠 레이드 문제를 완료하세요.">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="raid-mission-preview mypage-v2" aria-label="스도쿠 원정대 보상 단계">
+    <div class="badge-preview"><NicknameBadge name="보드카" icon="grid-3x3" label="3×3 격자" /></div>
+    <div class="mission-list">
+      {[3,10].map(at => <article class="mission-row">
+        <span class="mission-icon" aria-hidden="true"><Fragment set:html={grid} /></span>
+        <div class="mission-content">
+          <div class="mission-title"><h3>스도쿠 원정대</h3><span class="mission-value">{at} / {at}</span></div>
+          <p class="mission-condition">스도쿠 레이드 문제를 완료하세요.</p>
+          <div class="mission-progress" role="progressbar" aria-label={`${at}개 완료`} aria-valuemin="0" aria-valuemax={at} aria-valuenow={at}><span style="width:100%" /></div>
+          <div class="mission-bottom"><span class="mission-reward">{at===3?'3×3 격자 아이콘':<CoinAmount amount={1000} />}</span><span class="stage-label">{at}개 완료 보상</span></div>
+        </div>
+      </article>)}
+    </div>
+    <p class="note">서로 다른 스도쿠 레이드 문제의 완료 기록을 셉니다.<br />기존 완료 기록도 포함하며, 각 보상은 한 번씩 받습니다.</p>
+    <a class="account-link" href="/nickname/">내 도전 과제 보기</a>
+  </section>
+</PageLayout>
+<style>
+.raid-mission-preview{width:100%}.badge-preview{display:flex;justify-content:center;font-size:.85rem;color:#555;margin:0 0 28px}.stage-label{font-size:.66rem;color:#999}.note{margin:20px 0 12px;color:#999;font-size:.72rem;line-height:1.8}.account-link{font-size:.73rem;color:#75839a}
+</style>

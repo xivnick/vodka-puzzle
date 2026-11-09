@@ -554,6 +554,11 @@
       "id": "time-traveler",
       "name": "시계와 번개",
       "src": "/icons/achievement-preview/clock-bolt.svg"
+    },
+    {
+      "id": "raid",
+      "name": "3×3 격자",
+      "src": "/icons/achievement-preview/grid-3x3.svg"
     }
   ],
   "missions": [
@@ -761,6 +766,27 @@
           "at": 3,
           "kind": "icon",
           "value": "galaxy"
+        }
+      ],
+      "claimed": []
+    },
+    {
+      "id": "raid",
+      "name": "스도쿠 원정대",
+      "icon": "raid",
+      "group": "group",
+      "text": "스도쿠 레이드 문제를 완료하세요.",
+      "count": 0,
+      "stages": [
+        {
+          "at": 3,
+          "kind": "icon",
+          "value": "raid"
+        },
+        {
+          "at": 10,
+          "kind": "coins",
+          "value": 1000
         }
       ],
       "claimed": []

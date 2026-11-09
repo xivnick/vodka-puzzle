@@ -138,7 +138,7 @@ export function initMypage(root,{server=null}={}){
         const amount=make('span','daily-ticket'),icon=make('img');icon.src='/icons/time-machine/ticket.svg';icon.alt='';icon.width=14;icon.height=14;
         amount.setAttribute('aria-label',`타임머신 티켓 ${s.value}장`);amount.append(icon,make('span','',s.value));reward.replaceChildren(amount);
       }
-      else reward.textContent=s?(s.kind==='effect'?'별빛 반짝임 효과':`${icons.get(s.value).name} 아이콘`):m.featureAction?'보상 수령 완료':m.id==='all'?'별빛 반짝임 획득 완료':'아이콘 획득 완료';
+      else reward.textContent=s?(s.kind==='effect'?'별빛 반짝임 효과':`${icons.get(s.value).name} 아이콘`):m.featureAction||m.stages.some(stage=>stage.kind==='coins')?'보상 수령 완료':m.id==='all'?'별빛 반짝임 획득 완료':'아이콘 획득 완료';
       const button=row.querySelector('[data-claim]');button.disabled=!ready;button.classList.toggle('claim-ready',ready);button.textContent=ready?'받기':s?'진행 중':'획득 완료';
     });
     $('#emptyMissions').hidden=shown>0;
