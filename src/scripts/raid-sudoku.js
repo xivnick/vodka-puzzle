@@ -16,6 +16,47 @@ function parseRaidSudokuState(saved, id) {
 }
 const fixed = givens.flat();
 const cells = [...$('raidBoard').querySelectorAll('[data-cell]')];
+
+// Native button borders and fractional grid tracks affect the visible cell center.
+// Measure those centers instead of assuming the SVG is nine equal squares.
+if (puzzle.lines) {
+  const artwork = game.querySelector('.raid-decoration');
+  function alignBetweenLines() {
+    const bounds = artwork.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+    artwork.setAttribute('viewBox', `0 0 ${bounds.width} ${bounds.height}`);
+    const geometry = cells.map(cell => {
+      const rect = cell.getBoundingClientRect();
+      const style = getComputedStyle(cell);
+      const left = parseFloat(style.borderLeftWidth) || 0;
+      const right = parseFloat(style.borderRightWidth) || 0;
+      const top = parseFloat(style.borderTopWidth) || 0;
+      const bottom = parseFloat(style.borderBottomWidth) || 0;
+      return {
+        x: rect.left - bounds.left + (rect.width + left - right) / 2,
+        y: rect.top - bounds.top + (rect.height + top - bottom) / 2,
+        size: Math.min(rect.width - left - right, rect.height - top - bottom),
+      };
+    });
+    artwork.querySelectorAll('[data-between-line]').forEach(group => {
+      const line = puzzle.lines[Number(group.dataset.betweenLine)];
+      const thickness = Math.min(...line.map(i => geometry[i].size));
+      const path = group.querySelector('polyline');
+      path.setAttribute('points', line.map(i => `${geometry[i].x},${geometry[i].y}`).join(' '));
+      path.setAttribute('stroke-width', String(thickness * .075));
+      group.querySelectorAll('circle').forEach((circle, index) => {
+        const center = geometry[index === 0 ? line[0] : line.at(-1)];
+        circle.setAttribute('cx', String(center.x));
+        circle.setAttribute('cy', String(center.y));
+        circle.setAttribute('r', String(center.size * .44));
+        circle.setAttribute('stroke-width', String(center.size * .055));
+      });
+    });
+  }
+  alignBetweenLines();
+  new ResizeObserver(alignBetweenLines).observe($('raidBoard'));
+  document.fonts?.ready.then(alignBetweenLines);
+}
 let values = fixed.slice(), selected = 0;
 let notes = Array.from({length:81}, () => []), notesMode = false;
 let ready = preview, completionRecorded = false;

@@ -25,7 +25,7 @@ const arrow = (side,i) => side==='top' ? {a:[i+.95,-.55],b:[i+.1,-.1],t:[i+1.4,-
     <svg class="raid-decoration" viewBox="0 0 9 9" aria-hidden="true">
      {(puzzle.shaded||[]).map(i=><rect x={i%9} y={Math.floor(i/9)} width="1" height="1" fill="#c4c4c4"/>)}
      {(puzzle.regions||[]).map(cells=><polyline points={points(cells)} fill="none" stroke="#c4c4c4" stroke-width=".46" stroke-linecap="square"/>)}
-     {(puzzle.lines||[]).map(cells=><g><polyline points={points(cells)} fill="none" stroke="#aaa" stroke-width=".075"/>{[cells[0],cells.at(-1)].map(i=><circle cx={point(i)[0]} cy={point(i)[1]} r=".44" fill="#ededed" stroke="#aaa" stroke-width=".055"/>)}</g>)}
+     {(puzzle.lines||[]).map((cells,index)=><g data-between-line={index}><polyline points={points(cells)} fill="none" stroke="#aaa" stroke-width=".075"/>{[cells[0],cells.at(-1)].map(i=><circle cx={point(i)[0]} cy={point(i)[1]} r=".44" fill="#ededed" stroke="#aaa" stroke-width=".055"/>)}</g>)}
     </svg>
     <div id="raidBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
      {puzzle.givens.map((n,i)=><button type="button" class:list={['sudoku-cell',{given:!!n}]} data-cell={i} tabindex={i===0?0:-1} aria-label={`${Math.floor(i/9)+1}행 ${i%9+1}열, ${n||'빈칸'}${n?', 고정 숫자':''}`}>{n||''}</button>)}
