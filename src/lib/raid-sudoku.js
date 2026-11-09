@@ -47,17 +47,18 @@ export function conflicts(puzzle,values) {
  }
  return bad;
 }
-export function skyscraperClueConflicts(puzzle, values) {
- const bad = new Set();
- if (puzzle.name !== '스카이스크레이퍼') return bad;
- puzzle.outside.forEach(([side, index, clue], clueIndex) => {
+export function skyscraperClueStates(puzzle, values) {
+ if (puzzle.name !== '스카이스크레이퍼') return [];
+ return puzzle.outside.map(([side, index, clue]) => {
   const cells = sightLine(side, index);
-  if (!cells.every(i => values[i])) return;
+  if (!cells.every(i => values[i])) return 'pending';
   let highest = 0, visible = 0;
   for (const i of cells) if (values[i] > highest) { highest = values[i]; visible++; }
-  if (visible !== clue) bad.add(clueIndex);
+  return visible === clue ? 'valid' : 'invalid';
  });
- return bad;
+}
+export function skyscraperClueConflicts(puzzle, values) {
+ return new Set(skyscraperClueStates(puzzle, values).flatMap((status, index) => status === 'invalid' ? [index] : []));
 }
 export function weightedArrowStates(puzzle, values) {
  return (puzzle.arrows || []).map(([side, index, clue]) => {
