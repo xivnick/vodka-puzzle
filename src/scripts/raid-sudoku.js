@@ -1,4 +1,4 @@
-import {raids, conflicts as findConflicts, solved as isSolved} from '../lib/raid-sudoku.js';
+import {raids, conflicts as findConflicts, solved as isSolved, skyscraperClueConflicts} from '../lib/raid-sudoku.js';
 
 const $ = id => document.getElementById(id);
 const game = $('raidGame');
@@ -74,6 +74,13 @@ function persist() {
 function render() {
   const bad = conflicts(values);
   const complete = solved(values);
+  const badClues = skyscraperClueConflicts(puzzle, values);
+  game.querySelectorAll('[data-outside-clue]').forEach(clue => {
+    const invalid = badClues.has(Number(clue.dataset.outsideClue));
+    clue.classList.toggle('conflict', invalid);
+    if (invalid) clue.setAttribute('aria-label', `${clue.textContent}, 규칙 위반`);
+    else clue.removeAttribute('aria-label');
+  });
   cells.forEach((cell, i) => {
     cell.classList.toggle('selected', !complete && i === selected);
     cell.classList.toggle('conflict', bad.has(i));

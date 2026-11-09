@@ -8,3 +8,5 @@
 }
 
 .raid-clues .raid-zero text { dominant-baseline:central; }
+
+.raid-clues text.conflict { fill:#c34242; }

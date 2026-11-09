@@ -36,9 +36,20 @@ export function conflicts(puzzle,values) {
  const a=values[i],b=values[j],actual=puzzle.name==='XV'?a+b===5||a+b===10:(a+b)%10===0||(a*b)%10===0;
  const expected=puzzle.edges?.some(([x,y])=>x===i&&y===j)||false;if(actual!==expected)mark([i,j]);
  }
- if(puzzle.name==='스카이스크레이퍼')for(const [side,index,clue]of puzzle.outside){const cells=sightLine(side,index);if(cells.every(i=>values[i])){let max=0,count=0;for(const i of cells)if(values[i]>max){max=values[i];count++;}if(count!==clue)mark(cells);}}
  for(const [side,index,clue]of puzzle.arrows||[]){const cells=arrowCells(side,index);const sum=cells.reduce((s,i)=>s+values[i]*(puzzle.shaded.includes(i)?2:1),0);if(sum>clue||(cells.every(i=>values[i])&&sum!==clue))mark(cells);}
  if(puzzle.name==='짝수 샌드위치')for(const [side,index,clue]of puzzle.outside){const cells=sightLine(side,index);if(cells.every(i=>values[i])){const actual=cells.slice(1,-1).filter((i,k)=>values[cells[k]]%2===0&&values[cells[k+2]]%2===0).map(i=>values[i]).sort();if(JSON.stringify(actual)!==JSON.stringify([...clue].sort()))mark(cells);}}
  return bad;
 }
-export function solved(puzzle,values){return values.length===81&&values.every((n,i)=>Number.isInteger(n)&&n>=1&&n<=9&&(!puzzle.givens[i]||puzzle.givens[i]===n))&&conflicts(puzzle,values).size===0;}
+export function skyscraperClueConflicts(puzzle, values) {
+ const bad = new Set();
+ if (puzzle.name !== '스카이스크레이퍼') return bad;
+ puzzle.outside.forEach(([side, index, clue], clueIndex) => {
+  const cells = sightLine(side, index);
+  if (!cells.every(i => values[i])) return;
+  let highest = 0, visible = 0;
+  for (const i of cells) if (values[i] > highest) { highest = values[i]; visible++; }
+  if (visible !== clue) bad.add(clueIndex);
+ });
+ return bad;
+}
+export function solved(puzzle,values){return values.length===81&&values.every((n,i)=>Number.isInteger(n)&&n>=1&&n<=9&&(!puzzle.givens[i]||puzzle.givens[i]===n))&&conflicts(puzzle,values).size===0&&skyscraperClueConflicts(puzzle,values).size===0;}
