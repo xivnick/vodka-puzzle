@@ -24,6 +24,18 @@ export function arrowCells(side,index) {
  while(r>=0&&r<9&&c>=0&&c<9){result.push(r*9+c);r+=dr;c+=dc;}
  return result;
 }
+// Draw the arrow on the same center-to-center diagonal used by the sum check.
+export function weightedArrowGeometry(side, index) {
+ const first = arrowCells(side, index)[0];
+ const center = [first % 9 + .5, Math.floor(first / 9) + .5];
+ const dr = side === 'top' || side === 'left' ? 1 : -1;
+ const dc = side === 'top' || side === 'right' ? -1 : 1;
+ const boundary = [center[0] - dc * .5, center[1] - dr * .5];
+ const a = [boundary[0] - dc * .55, boundary[1] - dr * .55];
+ const b = [boundary[0] - dc * .1, boundary[1] - dr * .1];
+ const t = [a[0] - dc * .3, a[1] - dr * .25];
+ return {a, b, t};
+}
 export function conflicts(puzzle,values) {
  const bad=new Set(), mark=cells=>cells.forEach(i=>bad.add(i));
  for(const unit of units) for(const i of unit) if(values[i]&&unit.some(j=>j!==i&&values[j]===values[i])) bad.add(i);

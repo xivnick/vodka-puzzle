@@ -3,14 +3,13 @@ import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
 import '../styles/daily-sudoku.css';
 import '../styles/raid-sudoku.css';
-import {raids} from '../lib/raid-sudoku.js';
+import {raids, weightedArrowGeometry} from '../lib/raid-sudoku.js';
 const {number} = Astro.props;
 const puzzle = raids[number-1];
 const puzzleId = `261109_${String(number).padStart(2,'0')}`;
 const title = `스도쿠 레이드 ${number}(${puzzle.name})`;
 const point = i => [i%9+.5,Math.floor(i/9)+.5];
 const points = cells => cells.map(i=>point(i).join(',')).join(' ');
-const arrow = (side,i) => side==='top' ? {a:[i+.55,-.55],b:[i+.1,-.1],t:[i+1,-.8]} : side==='left' ? {a:[-.55,i+.45],b:[-.1,i+.9],t:[-.85,i+.2]} : side==='right' ? {a:[9.55,i+.55],b:[9.1,i+.1],t:[9.85,i+.95]} : {a:[i+.5,9.5],b:[i+.95,9.05],t:[i+.15,9.95]};
 ---
 <PuzzleLayout {title} {puzzleId} subtitle={puzzle.summary} description={puzzle.summary}>
  <div slot="rules">
@@ -40,7 +39,7 @@ const arrow = (side,i) => side==='top' ? {a:[i+.55,-.55],b:[i+.1,-.1],t:[i+1,-.8
       const labels=Array.isArray(clue)?(clue.length?clue:['-']):[clue];
       return labels.map((label,k)=><text data-outside-clue={clueIndex} data-outside-digit={k} x={side==='left'?-.26-(labels.length-1-k)*.48:side==='right'?9.45:i+.5} y={side==='top'?-.36-(labels.length-1-k)*.53:side==='bottom'?9.45:i+.53}>{label}</text>);
      })}
-     {(puzzle.arrows||[]).map(([side,i,clue],clueIndex)=>{const {a,b,t}=arrow(side,i);return <g class="raid-arrow-clue" data-arrow-clue={clueIndex}><line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="#555" stroke-width=".035" marker-end="url(#raidArrowHead)"/><text x={t[0]} y={t[1]}>{clue}</text></g>;})}
+     {(puzzle.arrows||[]).map(([side,i,clue],clueIndex)=>{const {a,b,t}=weightedArrowGeometry(side,i);return <g class="raid-arrow-clue" data-arrow-clue={clueIndex}><line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="#555" stroke-width=".035" marker-end="url(#raidArrowHead)"/><text x={t[0]} y={t[1]}>{clue}</text></g>;})}
     </svg>
    </div>
   </div>
