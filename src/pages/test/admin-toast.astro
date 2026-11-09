@@ -28,8 +28,7 @@ window.puzzleAccount = {...window.puzzleAccount, user:{id:'ui-preview'}, client:
   return {error:new Error('시연에서 지원하지 않는 작업입니다.')};
 }}};
 await import('../../scripts/admin.js');
-document.getElementById('adminSelect').value=row.puzzle_id;
-document.getElementById('adminSelect').dispatchEvent(new Event('change'));
+document.querySelector('#adminList button')?.click();
 document.getElementById('previewDailySave').addEventListener('click',()=>window.showToast('저장했습니다.'));
 document.getElementById('previewDailyComplete').addEventListener('click',()=>window.showToast('🎉 완료 기록을 저장했습니다!'));
 </script>

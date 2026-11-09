@@ -28,3 +28,18 @@ body:has(.admin-shell) .page-content { width:min(96vw,640px); }
   .admin-editor form { min-width:0; }
   .admin-editor input,.admin-editor textarea,.admin-editor select { min-width:0; width:100%; box-sizing:border-box; }
 }
+.admin-list { display:flex; flex-direction:column; max-height:360px; overflow-y:auto; border:1px solid #e8e5df; border-radius:8px; }
+.admin-list > .admin-help { padding:16px; }
+.admin-shell .admin-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px 12px; width:100%; text-align:left; border:0; border-bottom:1px solid #eee; border-radius:0; padding:12px; cursor:pointer; }
+.admin-shell .admin-row:last-child { border-bottom:0; }
+.admin-shell .admin-row:hover { background:#f8f7f4; }
+.admin-shell .admin-row[aria-pressed="true"] { background:#edf2f8; }
+.admin-row-title { font-size:.88rem; overflow-wrap:anywhere; }
+.admin-row-state { font-size:.75rem; color:#666; white-space:nowrap; }
+.admin-row-meta { grid-column:1 / -1; color:#888; font-size:.73rem; }
+.admin-editor { scroll-margin-top:20px; }
+.admin-fields { display:flex; flex-direction:column; gap:8px; border:0; margin:0; padding:0; min-width:0; }
+.admin-publication { display:flex; flex-direction:column; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid #eee; }
+#adminSchedule { display:flex; flex-direction:column; gap:8px; }
+.admin-shell .admin-save { margin-top:0; }
+#adminSaveStatus { margin:8px 0 0; }
