@@ -19,7 +19,9 @@ export const raids = [
 export const units = [...Array.from({length:9},(_,r)=>line(r+1,1,0,1,9)),...Array.from({length:9},(_,c)=>line(1,c+1,1,0,9)),...Array.from({length:9},(_,b)=>Array.from({length:9},(_,i)=>(Math.floor(b/3)*3+Math.floor(i/3))*9+(b%3)*3+i%3))];
 export const sightLine = (side,index) => side==='top'?line(1,index+1,1,0,9):side==='bottom'?line(9,index+1,-1,0,9):side==='left'?line(index+1,1,0,1,9):line(index+1,9,0,-1,9);
 export function arrowCells(side,index) {
- let r=side==='top'?0:side==='bottom'?8:index,c=side==='left'?0:side==='right'?8:index;
+ // Top/bottom hint slots sit beside grid vertices, rather than at cell centers.
+ let r=side==='top'?0:side==='bottom'?8:index;
+ let c=side==='left'?0:side==='right'?8:side==='top'?index-1:index+1;
  const dr=side==='top'||side==='left'?1:-1,dc=side==='top'||side==='right'?-1:1,result=[];
  while(r>=0&&r<9&&c>=0&&c<9){result.push(r*9+c);r+=dr;c+=dc;}
  return result;
@@ -60,8 +62,9 @@ export function skyscraperClueConflicts(puzzle, values) {
 export function weightedArrowStates(puzzle, values) {
  return (puzzle.arrows || []).map(([side, index, clue]) => {
   const cells = arrowCells(side, index);
-  if (!cells.every(i => values[i])) return 'pending';
   const sum = cells.reduce((total, i) => total + values[i] * (puzzle.shaded.includes(i) ? 2 : 1), 0);
+  if (sum > clue) return 'invalid';
+  if (!cells.every(i => values[i])) return 'pending';
   return sum === clue ? 'valid' : 'invalid';
  });
 }
