@@ -24,17 +24,12 @@ export function arrowCells(side,index) {
  while(r>=0&&r<9&&c>=0&&c<9){result.push(r*9+c);r+=dr;c+=dc;}
  return result;
 }
-// Draw the arrow on the same center-to-center diagonal used by the sum check.
-export function weightedArrowGeometry(side, index) {
- const first = arrowCells(side, index)[0];
- const center = [first % 9 + .5, Math.floor(first / 9) + .5];
- const dr = side === 'top' || side === 'left' ? 1 : -1;
- const dc = side === 'top' || side === 'right' ? -1 : 1;
- const boundary = [center[0] - dc * .5, center[1] - dr * .5];
- const a = [boundary[0] - dc * .55, boundary[1] - dr * .55];
- const b = [boundary[0] - dc * .1, boundary[1] - dr * .1];
- const t = [a[0] - dc * .3, a[1] - dr * .25];
- return {a, b, t};
+// Preserve the clue positions from the source image.
+export function weightedArrowGeometry(side, i) {
+ if (side === 'top') return {a:[i+.55,-.55], b:[i+.1,-.1], t:[i+1,-.8]};
+ if (side === 'left') return {a:[-.55,i+.45], b:[-.1,i+.9], t:[-.85,i+.2]};
+ if (side === 'right') return {a:[9.55,i+.55], b:[9.1,i+.1], t:[9.85,i+.95]};
+ return {a:[i+.5,9.5], b:[i+.95,9.05], t:[i+.15,9.95]};
 }
 export function conflicts(puzzle,values) {
  const bad=new Set(), mark=cells=>cells.forEach(i=>bad.add(i));
