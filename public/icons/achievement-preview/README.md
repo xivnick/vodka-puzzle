@@ -30,3 +30,5 @@ Feature introduction achievements add the original `hanger` and `dice-5` from Ta
 The Lucky Hand achievement replaces its dice with the original `clover` from Tabler Icons v3.40.0 outline (MIT). Existing dice owners and equipped previews migrate to `clover`.
 
 Time Traveler candidates reuse `history` and add `hourglass`, `clock-bolt`, `calendar-time`, and `rocket` from the same pinned Tabler Icons v3.40.0 outline set (MIT), without geometry changes.
+
+Sudoku Raid achievement candidates add `shield-checkered`, `axe`, `building-castle`, `chess-knight`, and `flag-3` from the same pinned Tabler Icons v3.40.0 outline set (MIT). SVG files are downloaded unchanged from the official repository; the comparison page links to each original.

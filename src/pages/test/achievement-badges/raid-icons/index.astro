@@ -2,11 +2,11 @@
 import PageLayout from '../../../../layouts/PageLayout.astro';
 import NicknameBadge from '../../../../components/NicknameBadge.astro';
 const candidates = [
-  {id:'swords', name:'교차한 검', note:'레이드의 전투와 도전을 직관적으로 표현', recommended:true},
-  {id:'skull', name:'해골', note:'강력한 보스를 격파한 느낌'},
-  {id:'crown', name:'왕관', note:'레이드 전체를 정복한 느낌'},
-  {id:'trophy', name:'트로피', note:'완주와 성취를 가장 명확하게 표현'},
-  {id:'bolt', name:'번개', note:'돌파력과 강렬한 인상'},
+  {id:'shield-checkered', name:'체크 방패', note:'격자 느낌과 레이드의 방패를 함께 표현', recommended:true},
+  {id:'axe', name:'전투 도끼', note:'강한 적을 돌파하는 전투 이미지'},
+  {id:'building-castle', name:'성채', note:'공략할 던전과 최종 관문을 상징'},
+  {id:'chess-knight', name:'나이트', note:'전략적인 퍼즐 풀이와 기사의 이미지'},
+  {id:'flag-3', name:'전투 깃발', note:'레이드 정복과 클리어를 상징'},
 ];
 const sources = import.meta.glob('../../../../../public/icons/achievement-preview/*.svg', {query:'?raw', import:'default', eager:true});
 const svg = (id) => String(sources[`../../../../../public/icons/achievement-preview/${id}.svg`]);
@@ -14,7 +14,7 @@ const svg = (id) => String(sources[`../../../../../public/icons/achievement-prev
 <PageLayout title="스도쿠 레이드 업적 아이콘" subtitle="실제 SVG 아이콘 5가지 · 확대 모습과 닉네임 배지 비교">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section class="raid-icons" aria-label="스도쿠 레이드 업적 아이콘 후보 5가지">
-    <p class="intro">같은 선 스타일과 색상으로 형태를 비교합니다. 닉네임 옆 배지는 실제 표시 크기인 18px입니다.</p>
+    <p class="intro">Tabler Icons에서 찾은 새 후보 5가지입니다. 닉네임 옆 배지는 실제 표시 크기인 18px입니다.</p>
     <div class="candidates">
       {candidates.map((candidate, index) => <article>
         <span class="large-icon" aria-hidden="true"><Fragment set:html={svg(candidate.id)} /></span>
@@ -22,6 +22,7 @@ const svg = (id) => String(sources[`../../../../../public/icons/achievement-prev
           <h2><span class="number">{index + 1}.</span> {candidate.name} {candidate.recommended && <span class="recommendation">추천</span>}</h2>
           <p>{candidate.note}</p>
           <span class="nickname"><NicknameBadge name="보드카" icon={candidate.id} label={candidate.name} /></span>
+          <a class="source" href={`https://github.com/tabler/tabler-icons/blob/v3.40.0/icons/outline/${candidate.id}.svg`} target="_blank" rel="noopener noreferrer">{candidate.id} · 원본 보기 ↗</a>
         </div>
       </article>)}
     </div>
@@ -41,6 +42,7 @@ h2{display:flex;align-items:center;gap:5px;margin:0;font-size:.84rem;font-weight
 .recommendation{margin-left:3px;padding:1px 6px;border-radius:3px;background:#f2f4f6;color:#75839a;font-size:.6rem;font-weight:400}
 .candidate-copy p{margin:5px 0 12px;font-size:.7rem;line-height:1.7;color:#999}
 .nickname{font-size:.82rem;color:#555}
+.source{display:block;width:fit-content;margin-top:10px;font-size:.62rem;color:#999;text-decoration:none}.source:hover{text-decoration:underline}
 .footnote,.credit{font-size:.65rem;color:#999;line-height:1.8;margin:18px 0 0}
 .credit{margin-top:6px}.credit a{color:inherit}
 @media(max-width:360px){article{gap:18px;padding-inline:0}}
