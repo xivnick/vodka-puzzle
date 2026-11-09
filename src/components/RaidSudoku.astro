@@ -32,7 +32,7 @@ const arrow = (side,i) => side==='top' ? {a:[i+.95,-.55],b:[i+.1,-.1],t:[i+1.4,-
     </div>
     <svg class="raid-clues" viewBox="0 0 9 9" role="img" aria-label="변형 스도쿠 단서">
      <defs><marker id="raidArrowHead" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#555"/></marker></defs>
-     {(puzzle.edges||[]).map(([a,b])=>{const x=(point(a)[0]+point(b)[0])/2,y=(point(a)[1]+point(b)[1])/2;return <g><rect x={x-.16} y={y-.22} width=".32" height=".44" fill="white"/><text x={x} y={y+.02}>0</text></g>;})}
+     {(puzzle.edges||[]).map(([a,b])=>{const x=(point(a)[0]+point(b)[0])/2,y=(point(a)[1]+point(b)[1])/2;return <g class="raid-zero"><circle cx={x} cy={y} r=".22" fill="white"/><text x={x} y={y}>0</text></g>;})}
      {(puzzle.outside||[]).map(([side,i,clue])=>{
       const labels=Array.isArray(clue)?(clue.length?clue:['-']):[clue];
       return labels.map((label,k)=><text x={side==='left'?-.26-(labels.length-1-k)*.48:side==='right'?9.45:i+.5} y={side==='top'?-.36-(labels.length-1-k)*.53:side==='bottom'?9.45:i+.53}>{label}</text>);
