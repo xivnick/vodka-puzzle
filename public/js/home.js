@@ -76,7 +76,8 @@ unsolvedFilter.addEventListener('click', () => {
         link.dataset.difficulty = String(getDifficultyLevel(puzzle.difficulty));
         const title = document.createElement('span');
         title.className = 'title';
-        title.textContent = puzzle.title;
+        const previewDate = list.dataset.previewRaidDates === 'true' && /^261109_(0[1-9]|10)$/.test(puzzle.id);
+        title.textContent = previewDate ? `${puzzle.id.slice(0, 6)} ${puzzle.title}` : puzzle.title;
         link.append(title);
         const difficulty = createDifficultyMark(puzzle.difficulty);
         if (difficulty) link.append(difficulty);

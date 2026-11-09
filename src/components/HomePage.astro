@@ -3,8 +3,10 @@ import PageLayout from '../layouts/PageLayout.astro';
 import ArchiveLink from '../components/ArchiveLink.astro';
 import '../styles/home.css';
 import '../styles/daily-streak.css';
+const { previewRaidDates = false } = Astro.props;
 ---
-<PageLayout title="vodka puzzle" heading="퍼즐" subtitle="puzzle.xivnick.me" home>
+<PageLayout title="vodka puzzle" heading="퍼즐" subtitle={previewRaidDates ? '문제 목록 · 날짜 포함 제목 미리보기' : 'puzzle.xivnick.me'} home>
+{previewRaidDates && <meta slot="head" name="robots" content="noindex, nofollow" />}
 
 <div class="list-head">
   <div id="puzzleListTitle" class="list-title" aria-live="polite">문제</div>
@@ -20,7 +22,7 @@ import '../styles/daily-streak.css';
 <div class="list">
   <a id="dailyCard" class="daily-card" href="/daily-sudoku/"><span class="title"><span id="dailyTitle">Daily Sudoku</span></span><span id="dailyStreak" class="daily-streak" hidden></span></a>
   <div id="puzzleListStatus" class="is-loading" role="status">문제를 불러오는 중...</div>
-  <div id="puzzleList" class="puzzle-list" aria-busy="true">
+  <div id="puzzleList" class="puzzle-list" aria-busy="true" data-preview-raid-dates={previewRaidDates || undefined}>
     {Array.from({length:10},(_,index)=><div class="puzzle-skeleton-row" aria-hidden="true">
       <span class="puzzle-skeleton-title" style={`width:${[64,52,58,48,62][index%5]}%`}></span>
       <span class="puzzle-skeleton-count"></span>
@@ -43,7 +45,7 @@ import '../styles/daily-streak.css';
   </div>
 </div>
 <ArchiveLink slot="footer" />
-<script is:inline src="/js/home.js?v=22"></script>
+<script is:inline src="/js/home.js?v=23"></script>
 </PageLayout>
 
 <script>import '../scripts/daily-home.js';</script>
