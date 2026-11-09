@@ -70,6 +70,49 @@ if (puzzle.lines) {
   new ResizeObserver(alignBetweenLines).observe($('raidBoard'));
   document.fonts?.ready.then(alignBetweenLines);
 }
+// Place each termination marker on the painted shared border, then center
+// the visible digit itself, rather than relying on font baseline approximations.
+if (puzzle.edges) {
+  const artwork = game.querySelector('.raid-clues');
+  function alignTerminationClues() {
+    const bounds = artwork.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+    artwork.setAttribute('viewBox', `0 0 ${bounds.width} ${bounds.height}`);
+    const geometry = cells.map(cell => {
+      const rect = cell.getBoundingClientRect();
+      const style = getComputedStyle(cell);
+      const left = parseFloat(style.borderLeftWidth) || 0;
+      const right = parseFloat(style.borderRightWidth) || 0;
+      const top = parseFloat(style.borderTopWidth) || 0;
+      const bottom = parseFloat(style.borderBottomWidth) || 0;
+      return {rect, right, bottom,
+        x: rect.left + (rect.width + left - right) / 2,
+        y: rect.top + (rect.height + top - bottom) / 2,
+        size: Math.min(rect.width - left - right, rect.height - top - bottom)};
+    });
+    artwork.querySelectorAll('[data-zero-edge]').forEach(group => {
+      const [a,b] = puzzle.edges[Number(group.dataset.zeroEdge)];
+      const first = geometry[a], second = geometry[b];
+      const vertical = Math.floor(a / 9) === Math.floor(b / 9);
+      const x = (vertical ? first.rect.right - first.right / 2 : (first.x + second.x) / 2) - bounds.left;
+      const y = (vertical ? (first.y + second.y) / 2 : first.rect.bottom - first.bottom / 2) - bounds.top;
+      const size = Math.min(first.size, second.size);
+      const circle = group.querySelector('circle'), text = group.querySelector('text');
+      circle.setAttribute('cx', String(x));
+      circle.setAttribute('cy', String(y));
+      circle.setAttribute('r', String(size * .22));
+      text.style.fontSize = `${size * .39}px`;
+      text.setAttribute('x', '0');
+      text.setAttribute('y', '0');
+      const ink = text.getBBox();
+      text.setAttribute('x', String(x - ink.x - ink.width / 2));
+      text.setAttribute('y', String(y - ink.y - ink.height / 2));
+    });
+  }
+  alignTerminationClues();
+  new ResizeObserver(alignTerminationClues).observe($('raidBoard'));
+  document.fonts?.ready.then(alignTerminationClues);
+}
 let values = fixed.slice(), selected = 0;
 let notes = Array.from({length:81}, () => []), notesMode = false;
 let ready = preview, completionRecorded = false;

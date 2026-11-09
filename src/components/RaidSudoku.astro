@@ -33,7 +33,7 @@ const points = cells => cells.map(i=>point(i).join(',')).join(' ');
       <marker id="raidArrowValid" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#328158"/></marker>
       <marker id="raidArrowInvalid" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#c34242"/></marker>
      </defs>
-     {(puzzle.edges||[]).map(([a,b])=>{const x=(point(a)[0]+point(b)[0])/2,y=(point(a)[1]+point(b)[1])/2;return <g class="raid-zero"><circle cx={x} cy={y} r=".22" fill="white"/><text x={x} y={y}>0</text></g>;})}
+     {(puzzle.edges||[]).map(([a,b],index)=>{const x=(point(a)[0]+point(b)[0])/2,y=(point(a)[1]+point(b)[1])/2;return <g class="raid-zero" data-zero-edge={index}><circle cx={x} cy={y} r=".22" fill="white"/><text x={x} y={y}>0</text></g>;})}
      {(puzzle.outside||[]).map(([side,i,clue],clueIndex)=>{
       const labels=Array.isArray(clue)?(clue.length?clue:['-']):[clue];
       return labels.map((label,k)=><text data-outside-clue={clueIndex} data-outside-digit={k} x={side==='left'?-.26-(labels.length-1-k)*.48:side==='right'?9.45:i+.5} y={side==='top'?-.36-(labels.length-1-k)*.53:side==='bottom'?9.45:i+.53}>{label}</text>);
