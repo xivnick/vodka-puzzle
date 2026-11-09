@@ -1,4 +1,4 @@
-import {raids, conflicts as findConflicts, solved as isSolved, skyscraperClueConflicts, weightedArrowStates} from '../lib/raid-sudoku.js';
+import {raids, conflicts as findConflicts, solved as isSolved, skyscraperClueConflicts, weightedArrowStates, sandwichClueStates} from '../lib/raid-sudoku.js';
 
 const $ = id => document.getElementById(id);
 const game = $('raidGame');
@@ -82,10 +82,15 @@ function render() {
   const bad = conflicts(values);
   const complete = solved(values);
   const badClues = skyscraperClueConflicts(puzzle, values);
+  const sandwichStates = sandwichClueStates(puzzle, values);
   game.querySelectorAll('[data-outside-clue]').forEach(clue => {
-    const invalid = badClues.has(Number(clue.dataset.outsideClue));
+    const index = Number(clue.dataset.outsideClue);
+    const status = sandwichStates[index]?.[Number(clue.dataset.outsideDigit)];
+    const invalid = badClues.has(index) || status === 'invalid';
     clue.classList.toggle('conflict', invalid);
+    clue.classList.toggle('valid', status === 'valid');
     if (invalid) clue.setAttribute('aria-label', `${clue.textContent}, 규칙 위반`);
+    else if (status === 'valid') clue.setAttribute('aria-label', `${clue.textContent}, 조건 충족`);
     else clue.removeAttribute('aria-label');
   });
   const arrowStates = weightedArrowStates(puzzle, values);

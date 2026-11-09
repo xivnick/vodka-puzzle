@@ -15,3 +15,5 @@
 .raid-arrow-clue.valid line { stroke:#328158; }
 .raid-arrow-clue.conflict text { fill:#c34242; }
 .raid-arrow-clue.conflict line { stroke:#c34242; }
+
+.raid-clues text.valid { fill:#328158; }

@@ -36,7 +36,6 @@ export function conflicts(puzzle,values) {
  const a=values[i],b=values[j],actual=puzzle.name==='XV'?a+b===5||a+b===10:(a+b)%10===0||(a*b)%10===0;
  const expected=puzzle.edges?.some(([x,y])=>x===i&&y===j)||false;if(actual!==expected)mark([i,j]);
  }
- if(puzzle.name==='짝수 샌드위치')for(const [side,index,clue]of puzzle.outside){const cells=sightLine(side,index);if(cells.every(i=>values[i])){const actual=cells.slice(1,-1).filter((i,k)=>values[cells[k]]%2===0&&values[cells[k+2]]%2===0).map(i=>values[i]).sort();if(JSON.stringify(actual)!==JSON.stringify([...clue].sort()))mark(cells);}}
  return bad;
 }
 export function skyscraperClueConflicts(puzzle, values) {
@@ -59,4 +58,26 @@ export function weightedArrowStates(puzzle, values) {
   return sum === clue ? 'valid' : 'invalid';
  });
 }
-export function solved(puzzle,values){return values.length===81&&values.every((n,i)=>Number.isInteger(n)&&n>=1&&n<=9&&(!puzzle.givens[i]||puzzle.givens[i]===n))&&conflicts(puzzle,values).size===0&&skyscraperClueConflicts(puzzle,values).size===0&&weightedArrowStates(puzzle,values).every(state=>state==='valid');}
+export function sandwichClueStates(puzzle, values) {
+ if (puzzle.name !== '짝수 샌드위치') return [];
+ const even = n => n > 0 && n % 2 === 0;
+ return puzzle.outside.map(([side, index, clues]) => {
+  const ns = sightLine(side, index).map(i => values[i]);
+  const full = ns.every(Boolean);
+  const actual = ns.slice(1, -1).filter((n, i) => n && even(ns[i]) && even(ns[i + 2]));
+  if (!clues.length) return [actual.length ? 'invalid' : full ? 'valid' : 'pending'];
+  // Any extra sandwich violates this entire set of outside clues.
+  if (actual.some(n => !clues.includes(n))) return clues.map(() => 'invalid');
+  return clues.map(n => {
+   const positions = ns.flatMap((value, i) => value === n ? [i] : []);
+   if (!positions.length) return full ? 'invalid' : 'pending';
+   if (positions.length > 1) return 'invalid';
+   const i = positions[0];
+   if (i === 0 || i === 8) return 'invalid';
+   const left = ns[i - 1], right = ns[i + 1];
+   if ((left && !even(left)) || (right && !even(right))) return 'invalid';
+   return even(left) && even(right) ? 'valid' : 'pending';
+  });
+ });
+}
+export function solved(puzzle,values){return values.length===81&&values.every((n,i)=>Number.isInteger(n)&&n>=1&&n<=9&&(!puzzle.givens[i]||puzzle.givens[i]===n))&&conflicts(puzzle,values).size===0&&skyscraperClueConflicts(puzzle,values).size===0&&weightedArrowStates(puzzle,values).every(state=>state==='valid')&&sandwichClueStates(puzzle,values).flat().every(state=>state==='valid');}
