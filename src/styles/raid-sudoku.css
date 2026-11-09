@@ -1,1 +1,8 @@
 #raidGame{width:100%}.raid-grid-wrap{position:relative;width:100%;isolation:isolate}.raid-decoration,.raid-clues{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}.raid-decoration{z-index:-1}.raid-clues{z-index:2}.raid-clues text{font: .39px sans-serif;fill:#333;text-anchor:middle;dominant-baseline:middle}.raid-frame.has-outside{padding:6% 6% 7%}.raid-frame.has-arrows{padding:12% 12% 13%}.raid-frame.sandwich{padding:18% 1% 1% 11%}#raidBoard{background:transparent}#raidBoard .sudoku-cell{min-width:0;background:transparent;font-weight:700;-webkit-tap-highlight-color:transparent}#raidBoard .sudoku-cell.given{background:transparent;color:#333;font-weight:700}#raidBoard .sudoku-cell.selected{background:rgba(169,195,228,.45)}#raidBoard .sudoku-cell.conflict{color:#c34242}#raidGame .number-pad{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:4px;margin-top:14px;width:100%}#raidGame .number-pad button{min-width:0;padding:8px 0;border:1px solid #d6d4cd;border-radius:3px;background:#faf8f4;color:#555;font:inherit;touch-action:manipulation}
+
+/* Match the between-line artwork to the cells inside the 2px board border. */
+#raidGame[data-number="4"] .raid-decoration {
+  inset:2px;
+  width:calc(100% - 4px);
+  height:calc(100% - 4px);
+}
