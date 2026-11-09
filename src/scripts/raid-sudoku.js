@@ -7,11 +7,18 @@ const preview = false;
 const puzzle = raids[Number(game.dataset.number)-1];
 const givens = puzzle.givens;
 const label = n => n || '';
-const boardSignature = JSON.stringify(puzzle);
+// Copy edits must not invalidate progress saved against the same puzzle clues.
+const definitionSignature = ({summary, rules, difficulty, ...definition}) => JSON.stringify(definition);
+const boardSignature = definitionSignature(puzzle);
+function matchesBoardSignature(signature) {
+  if (signature === boardSignature) return true;
+  try { return definitionSignature(JSON.parse(signature)) === boardSignature; }
+  catch { return false; }
+}
 const conflicts = values => findConflicts(puzzle,values);
 const solved = values => isSolved(puzzle,values);
 function parseRaidSudokuState(saved, id) {
- if (!saved || saved.version !== 1 || saved.puzzleId !== id || saved.boardSignature !== boardSignature || !Array.isArray(saved.values) || saved.values.length !== 81 || !saved.values.every((n,i) => Number.isInteger(n) && n >= 0 && n <= 9 && (!givens[i] || n === givens[i])) || !Array.isArray(saved.notes) || saved.notes.length !== 81 || !saved.notes.every(a => Array.isArray(a) && a.every(n => Number.isInteger(n) && n >= 1 && n <= 9))) return null;
+ if (!saved || saved.version !== 1 || saved.puzzleId !== id || !matchesBoardSignature(saved.boardSignature) || !Array.isArray(saved.values) || saved.values.length !== 81 || !saved.values.every((n,i) => Number.isInteger(n) && n >= 0 && n <= 9 && (!givens[i] || n === givens[i])) || !Array.isArray(saved.notes) || saved.notes.length !== 81 || !saved.notes.every(a => Array.isArray(a) && a.every(n => Number.isInteger(n) && n >= 1 && n <= 9))) return null;
  return {values:[...saved.values], notes:saved.notes.map((a,i)=>saved.values[i]?[]:[...new Set(a)].sort((a,b)=>a-b))};
 }
 const fixed = givens.flat();
