@@ -107,8 +107,8 @@ if (puzzle.edges) {
       if (glyph) {
         // Use the same exact center and scale for the outline and its ellipse.
         glyph.setAttribute('transform', `translate(${x} ${y}) scale(${size})`);
-        background.setAttribute('rx', String((terminationZero.halfWidth + .028) * size));
-        background.setAttribute('ry', String((terminationZero.halfHeight + .022) * size));
+        background.setAttribute('rx', String((terminationZero.halfWidth + .038) * size));
+        background.setAttribute('ry', String((terminationZero.halfHeight + .032) * size));
         return;
       }
       const text = group.querySelector('text');
