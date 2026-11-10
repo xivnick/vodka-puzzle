@@ -1,5 +1,7 @@
 import {raids, conflicts as findConflicts, solved as isSolved, skyscraperClueStates, weightedArrowStates, sandwichClueStates} from '../lib/raid-sudoku.js';
 
+import {terminationZero} from '../lib/termination-zero.js';
+
 const $ = id => document.getElementById(id);
 const game = $('raidGame');
 const puzzleId = game.dataset.puzzleId;
@@ -98,9 +100,18 @@ if (puzzle.edges) {
       const x = (vertical ? first.rect.right - first.right / 2 : (first.x + second.x) / 2) - bounds.left;
       const y = (vertical ? (first.y + second.y) / 2 : first.rect.bottom - first.bottom / 2) - bounds.top;
       const size = Math.min(first.size, second.size);
-      const background = group.querySelector('[data-zero-background]'), text = group.querySelector('text');
+      const background = group.querySelector('[data-zero-background]');
       background.setAttribute('cx', String(x));
       background.setAttribute('cy', String(y));
+      const glyph = group.querySelector('[data-zero-glyph]');
+      if (glyph) {
+        // Use the same exact center and scale for the outline and its ellipse.
+        glyph.setAttribute('transform', `translate(${x} ${y}) scale(${size})`);
+        background.setAttribute('rx', String((terminationZero.halfWidth + .018) * size));
+        background.setAttribute('ry', String((terminationZero.halfHeight + .012) * size));
+        return;
+      }
+      const text = group.querySelector('text');
       text.style.fontSize = `${size * .39}px`;
       if (group.dataset.zeroMarker === 'outline') text.style.strokeWidth = `${size * .045}px`;
       text.setAttribute('x', '0');
