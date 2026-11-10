@@ -16,12 +16,14 @@ const shapes = sticks.map(cells => {
   const dx = (b[0]-a[0])/(cells.length-1), dy = (b[1]-a[1])/(cells.length-1);
   const start = [a[0]-.12*dx, a[1]-.12*dy];
   const end = [b[0]+.12*dx, b[1]+.12*dy];
-  const chocolate = [a[0]+.5*dx, a[1]+.5*dy];
-  const rectangle = (from,to) => [
-    [from[0]-.12*dy,from[1]+.12*dx], [to[0]-.12*dy,to[1]+.12*dx],
-    [to[0]+.12*dy,to[1]-.12*dx], [from[0]+.12*dy,from[1]-.12*dx],
+  const rectangle = (from,to,halfWidth=.12) => [
+    [from[0]-halfWidth*dy,from[1]+halfWidth*dx], [to[0]-halfWidth*dy,to[1]+halfWidth*dx],
+    [to[0]+halfWidth*dy,to[1]-halfWidth*dx], [from[0]+halfWidth*dy,from[1]-halfWidth*dx],
   ].map(p=>p.join(',')).join(' ');
-  return {body:rectangle(start,end), chocolate:rectangle(chocolate,end)};
+  return {
+    body:rectangle(start,end),
+    biscuit:rectangle([a[0]-.04*dx,a[1]-.04*dy], [a[0]+.38*dx,a[1]+.38*dy], .06),
+  };
 });
 ---
 <PuzzleLayout title="261111 빼빼로 스도쿠" {puzzleId}
@@ -29,7 +31,8 @@ const shapes = sticks.map(cells => {
   description="초코 칸의 합에서 과자 한 칸의 숫자를 빼면 11이 되는 빼빼로 스도쿠">
   <div slot="rules">
     각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9를 한 번씩 넣으세요.<br />
-    각 빼빼로에서 회색으로 채워진 초코 칸의 숫자 합에서 흰 과자 한 칸의 숫자를 빼면 11이 됩니다.
+    회색 막대 안에 흰색 표시가 있는 한 칸은 과자 칸이고, 나머지는 초코 칸입니다.<br />
+    각 빼빼로에서 초코 칸의 숫자 합에서 과자 칸의 숫자를 빼면 11이 됩니다.
   </div>
   <div slot="controls">
     칸을 선택하고 숫자 버튼으로 입력하세요.<br />
@@ -47,9 +50,8 @@ const shapes = sticks.map(cells => {
       </div>
       <svg class="pepero-sticks" viewBox="0 0 9 9" aria-hidden="true">
         {shapes.map(s => <g>
-          <polygon class="biscuit" points={s.body} />
-          <polygon class="chocolate" points={s.chocolate} />
-          <polygon class="stick-outline" points={s.body} />
+          <polygon class="stick-body" points={s.body} />
+          <polygon class="biscuit" points={s.biscuit} />
         </g>)}
       </svg>
     </div>
@@ -66,9 +68,8 @@ const shapes = sticks.map(cells => {
   #peperoGame { width:100%; }
   .pepero-grid { position:relative; }
   .pepero-sticks { position:absolute; inset:2px; width:calc(100% - 4px); height:calc(100% - 4px); pointer-events:none; z-index:1; }
-  .pepero-sticks .stick-outline { fill:none; stroke:#555; stroke-width:.025; stroke-linejoin:miter; }
   .pepero-sticks .biscuit { fill:#fff; }
-  .pepero-sticks .chocolate { fill:#c8c8c8; }
+  .pepero-sticks .stick-body { fill:#c8c8c8; }
   #peperoBoard :global(.cell-value) { position:relative; z-index:2; }
   #peperoBoard :global(.notes) { z-index:2; }
   #peperoBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
