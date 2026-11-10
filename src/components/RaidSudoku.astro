@@ -6,9 +6,9 @@ import '../styles/raid-sudoku.css';
 import {raids, weightedArrowGeometry} from '../lib/raid-sudoku.js';
 import {terminationZero} from '../lib/termination-zero.js';
 const {number, preview = false, sampleNotes = false, terminationMarker = 'compact'} = Astro.props;
-const puzzle = Astro.props.puzzle || raids[number-1];
-const puzzleId = Astro.props.puzzleId || `261109_${String(number).padStart(2,'0')}`;
-const title = Astro.props.title || `스도쿠 레이드 ${number}(${puzzle.name})`;
+const puzzle = raids[number-1];
+const puzzleId = `261109_${String(number).padStart(2,'0')}`;
+const title = `스도쿠 레이드 ${number}(${puzzle.name})`;
 const point = i => [i%9+.5,Math.floor(i/9)+.5];
 const points = cells => cells.map(i=>point(i).join(',')).join(' ');
 ---
@@ -20,7 +20,7 @@ const points = cells => cells.map(i=>point(i).join(',')).join(' ');
   {(puzzle.rules||[]).map(rule=><p>{rule}</p>)}
  </div>
  <div slot="controls">칸을 선택하고 숫자 버튼으로 입력하세요.<br/>메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br/>다른 칸을 눌러 이동하고 지우기 버튼으로 입력을 지우세요.</div>
- <section id="raidGame" data-puzzle-id={puzzleId} data-number={number} data-puzzle-definition={Astro.props.puzzle ? JSON.stringify(puzzle) : undefined} data-preview={preview || undefined} data-sample-notes={preview && sampleNotes || undefined} aria-label={title}>
+ <section id="raidGame" data-puzzle-id={puzzleId} data-number={number} data-preview={preview || undefined} data-sample-notes={preview && sampleNotes || undefined} aria-label={title}>
   <div class="sudoku-board-tools"><button id="raidNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
   <div class:list={['raid-frame',{'has-outside':!!puzzle.outside,'has-arrows':!!puzzle.arrows,'sandwich':number===10}]}>
    <div class="raid-grid-wrap">

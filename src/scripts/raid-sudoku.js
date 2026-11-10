@@ -6,7 +6,7 @@ const $ = id => document.getElementById(id);
 const game = $('raidGame');
 const puzzleId = game.dataset.puzzleId;
 const preview = game.dataset.preview === 'true';
-const puzzle = game.dataset.puzzleDefinition ? JSON.parse(game.dataset.puzzleDefinition) : raids[Number(game.dataset.number)-1];
+const puzzle = raids[Number(game.dataset.number)-1];
 const givens = puzzle.givens;
 const label = n => n || '';
 // Copy edits must not invalidate progress saved against the same puzzle clues.
