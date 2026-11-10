@@ -1,4 +1,4 @@
-import { evaluateFormula, formatFraction, hasExactNumbers } from '../lib/formula-completion.js';
+import { evaluateFormula, formatFraction, isSolvedFormula } from '../lib/formula-completion.js';
 
 const game = document.getElementById('formulaGame');
 const puzzle = JSON.parse(game.dataset.puzzle);
@@ -9,7 +9,7 @@ const numberCounts = puzzle.numbers.reduce((map, value) => {
   map.set(number, (map.get(number) || 0) + 1);
   return map;
 }, new Map());
-const validTokens = new Set([...numberCounts.keys(), '+', '-', '*', '/', '(', ')']);
+const validTokens = new Set([...numberCounts.keys(), '+', '-', '*', '/', '(', ')', ...(puzzle.decimal ? ['.'] : [])]);
 const availableNumbers = [...numberCounts.keys()];
 const expression = document.getElementById('formulaExpression');
 const resultElement = document.getElementById('formulaResult');
@@ -20,6 +20,7 @@ const operatorButtons = [...document.querySelectorAll('#formulaKeypad [data-oper
 const openButton = document.querySelector('#formulaKeypad [data-token="("]');
 const closeButton = document.querySelector('#formulaKeypad [data-token=")"]');
 const backspaceButton = document.querySelector('#formulaKeypad [data-action="backspace"]');
+const decimalButton = document.querySelector('#formulaKeypad [data-token="."]');
 const resetButton = document.getElementById('formulaReset');
 let tokens = [];
 let ready = preview;
@@ -41,9 +42,12 @@ function tokenState() {
   const last = tokens.at(-1) || '';
   const open = tokens.filter(token => token === '(').length;
   const close = tokens.filter(token => token === ')').length;
-  const needsValue = !last || ['+', '-', '*', '/', '('].includes(last);
+  const needsValue = !last || ['+', '-', '*', '/', '(', '.'].includes(last);
+  const numberTail = tokens.join('').match(/[\d.]+$/)?.[0] || '';
+  const canAppend = puzzle.decimal && numberTail.includes('.');
+  const canDecimal = puzzle.decimal && !tokens.includes('.') && (needsValue || numberCounts.has(last));
   const canUseOperator = numberCounts.has(last) || last === ')';
-  return { needsValue, canUseOperator, canClose: canUseOperator && open > close };
+  return { needsValue, canAppend, canDecimal, canUseOperator, canClose: canUseOperator && open > close };
 }
 function flushPersist() {
   if (!persistPending || preview || !ready) return;
@@ -76,20 +80,21 @@ function render() {
     placeholder.textContent = '수식을 완성하세요';
     expression.append(placeholder);
   } else {
-    tokens.forEach(token => {
+    const displayTokens = puzzle.decimal
+      ? tokens.join('').match(/\d*\.\d*|\d+|[()+*/-]/g) || []
+      : tokens;
+    displayTokens.forEach(token => {
       const element = document.createElement('span');
-      element.className = `expression-token${numberCounts.has(token) ? ' number' : ''}`;
+      element.className = `expression-token${(numberCounts.has(token) || (puzzle.decimal && /^[\d.]+$/.test(token))) ? ' number' : ''}`;
       element.textContent = token === '*' ? '×' : token === '/' ? '÷' : token;
       expression.append(element);
     });
   }
   let solved = false;
   try {
-    const result = evaluateFormula(tokens);
+    const result = evaluateFormula(tokens, puzzle.decimal);
     resultElement.textContent = result ? `= ${formatFraction(result.value)}` : '';
-    solved = Boolean(result)
-      && result.value.n === BigInt(puzzle.target) * result.value.d
-      && hasExactNumbers(puzzle.numbers, result.used);
+    solved = isSolvedFormula(puzzle, tokens);
   } catch { resultElement.textContent = ''; }
 
   const used = usedCounts();
@@ -98,10 +103,11 @@ function render() {
     const number = button.dataset.number;
     const exhausted = (used.get(number) || 0) >= numberCounts.get(number);
     button.classList.toggle('used', exhausted);
-    button.disabled = !ready || !current.needsValue || exhausted;
+    button.disabled = !ready || !(current.needsValue || current.canAppend) || exhausted;
   });
   operatorButtons.forEach(button => { button.disabled = !ready || !current.canUseOperator; });
-  openButton.disabled = !ready || !current.needsValue;
+  if (decimalButton) decimalButton.disabled = !ready || !current.canDecimal;
+  openButton.disabled = !ready || !current.needsValue || tokens.at(-1) === '.';
   closeButton.disabled = !ready || !current.canClose;
   backspaceButton.disabled = !ready || tokens.length === 0;
   resetButton.disabled = !ready || tokens.length === 0;
@@ -111,11 +117,13 @@ function insert(token) {
   if (!ready) return;
   const current = tokenState();
   if (numberCounts.has(token)) {
-    if (!current.needsValue || (usedCounts().get(token) || 0) >= numberCounts.get(token)) return;
+    if (!(current.needsValue || current.canAppend) || (usedCounts().get(token) || 0) >= numberCounts.get(token)) return;
+  } else if (token === '.' && puzzle.decimal) {
+    if (!current.canDecimal) return;
   } else if ('+-*/'.includes(token)) {
     if (!current.canUseOperator) return;
   } else if (token === '(') {
-    if (!current.needsValue) return;
+    if (!current.needsValue || tokens.at(-1) === '.') return;
   } else if (token === ')') {
     if (!current.canClose) return;
   } else return;
@@ -160,6 +168,7 @@ function parseState(saved) {
     map.set(number, (map.get(number) || 0) + 1);
     return map;
   }, new Map());
+  if (puzzle.decimal && saved.tokens.filter(token => token === '.').length > 1) return null;
   if ([...counts].some(([number, count]) => count > numberCounts.get(number))) return null;
   return [...saved.tokens];
 }
@@ -194,7 +203,7 @@ document.addEventListener('keydown', event => {
   if (event.target.closest('button') && !game.contains(event.target)) return;
   const key = event.key;
   if (/^\d$/.test(key)) { event.preventDefault(); inputNumberKey(key); }
-  else if ('+-*/()'.includes(key)) { event.preventDefault(); clearKeyboardNumberBuffer(); insert(key); }
+  else if (('+-*/()'.includes(key) || (puzzle.decimal && key === '.'))) { event.preventDefault(); clearKeyboardNumberBuffer(); insert(key); }
   else if (key === 'Backspace' || key === 'Delete') {
     event.preventDefault();
     if (keyboardNumberBuffer) clearKeyboardNumberBuffer();

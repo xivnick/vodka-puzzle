@@ -1,3 +1,12 @@
+export const formulaCompletion261111_02 = {
+  id: 'formula-completion-261111-2',
+  title: '수식완성(빼빼로데이)',
+  summary: '빼빼로데이 수식완성',
+  numbers: [1, 1, 1, 1],
+  target: 10,
+  decimal: true,
+};
+
 export const formulaCompletion260922_01 = {
   id: 'formula-completion-260922-1',
   title: '260922 수식완성 1',
@@ -40,16 +49,22 @@ function subtract(a, b) { return makeFraction(a.n * b.d - b.n * a.d, a.d * b.d);
 function multiply(a, b) { return makeFraction(a.n * b.n, a.d * b.d); }
 function divide(a, b) { return makeFraction(a.n * b.d, a.d * b.n); }
 
-export function tokenizeFormula(text) {
+export function tokenizeFormula(text, decimal = false) {
   const tokens = [];
   let index = 0;
   while (index < text.length) {
     const character = text[index];
     if (/\s/.test(character)) { index += 1; continue; }
-    if (/\d/.test(character)) {
+    if (/\d/.test(character) || (decimal && character === '.')) {
       let value = character;
       index += 1;
       while (index < text.length && /\d/.test(text[index])) value += text[index++];
+      if (decimal && character !== '.' && text[index] === '.') {
+        value += text[index++];
+      }
+      if (decimal && value.includes('.')) {
+        while (index < text.length && /\d/.test(text[index])) value += text[index++];
+      }
       tokens.push(value);
       continue;
     }
@@ -59,8 +74,10 @@ export function tokenizeFormula(text) {
   return tokens;
 }
 
-export function evaluateFormula(formula) {
-  const tokens = Array.isArray(formula) ? [...formula] : tokenizeFormula(String(formula));
+export function evaluateFormula(formula, decimal = false) {
+  const tokens = Array.isArray(formula) && !decimal
+    ? [...formula]
+    : tokenizeFormula(Array.isArray(formula) ? formula.join('') : String(formula), decimal);
   let index = 0;
   const used = [];
   const peek = () => tokens[index];
@@ -71,7 +88,13 @@ export function evaluateFormula(formula) {
 
   function parseFactor() {
     const token = peek();
-    if (/^\d+$/.test(token || '')) {
+    if (decimal && /^(?:\d|\d?\.\d+)$/.test(token || '')) {
+      index += 1;
+      used.push(...token.replace('.', ''));
+      const [integer, fractional = ''] = token.split('.');
+      return makeFraction((integer || '0') + fractional, 10n ** BigInt(fractional.length));
+    }
+    if (!decimal && /^\d+$/.test(token || '')) {
       index += 1;
       used.push(token);
       return makeFraction(token);
@@ -125,7 +148,8 @@ export function hasExactNumbers(numbers, used) {
 
 export function isSolvedFormula(puzzle, formula) {
   try {
-    const result = evaluateFormula(formula);
+    const result = evaluateFormula(formula, puzzle.decimal);
+    if (puzzle.decimal && (Array.isArray(formula) ? formula.join('') : String(formula)).split('.').length !== 2) return false;
     return Boolean(result)
       && result.value.n === BigInt(puzzle.target) * result.value.d
       && hasExactNumbers(puzzle.numbers, result.used);
