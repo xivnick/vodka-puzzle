@@ -1,5 +1,6 @@
 // Difficulty review only: no guessing, backtracking, solution counting or answer comparison.
 import { givens, sticks, units, stickCombinations } from '../src/lib/pepero-sudoku.js';
+import { gradePepero } from './pepero-grading.mjs';
 const peers = Array.from({length:81}, (_,i) => new Set(units.filter(u => u.includes(i)).flat().filter(j => j !== i)));
 const coordinate = i => `r${Math.floor(i/9)+1}c${i%9+1}`;
 function review(mode) {
@@ -49,4 +50,4 @@ const openingSticks = sticks.map(cells => {
     forcedDigits:cells.filter((i,k)=>!initial[i] && new Set(tuples.map(t=>t[k])).size===1).length,
   };
 });
-console.log(JSON.stringify({openingSticks,givens:givens.flat().filter(Boolean).length,sticks:sticks.length,ordinary:review('ordinary'),rangeOnly:review('range'),pepero:review('pepero')},null,2));
+console.log(JSON.stringify({openingSticks,givens:givens.flat().filter(Boolean).length,sticks:sticks.length,ordinary:review('ordinary'),rangeOnly:review('range'),pepero:review('pepero'),dailyLevel:gradePepero(givens,sticks,{maxOptions:6}),withoutAdvanced:gradePepero(givens,sticks,{allowAdvanced:false,maxOptions:6}),withoutSticks:gradePepero(givens,sticks,{allowSticks:false})},null,2));
