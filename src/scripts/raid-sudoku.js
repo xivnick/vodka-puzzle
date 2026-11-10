@@ -3,7 +3,7 @@ import {raids, conflicts as findConflicts, solved as isSolved, skyscraperClueSta
 const $ = id => document.getElementById(id);
 const game = $('raidGame');
 const puzzleId = game.dataset.puzzleId;
-const preview = false;
+const preview = game.dataset.preview === 'true';
 const puzzle = raids[Number(game.dataset.number)-1];
 const givens = puzzle.givens;
 const label = n => n || '';
@@ -74,6 +74,7 @@ if (puzzle.lines) {
 // the visible digit itself, rather than relying on font baseline approximations.
 if (puzzle.edges) {
   const artwork = game.querySelector('.raid-clues');
+  const measure = document.createElement('canvas').getContext('2d');
   function alignTerminationClues() {
     const bounds = artwork.getBoundingClientRect();
     if (!bounds.width || !bounds.height) return;
@@ -97,16 +98,32 @@ if (puzzle.edges) {
       const x = (vertical ? first.rect.right - first.right / 2 : (first.x + second.x) / 2) - bounds.left;
       const y = (vertical ? (first.y + second.y) / 2 : first.rect.bottom - first.bottom / 2) - bounds.top;
       const size = Math.min(first.size, second.size);
-      const circle = group.querySelector('circle'), text = group.querySelector('text');
-      circle.setAttribute('cx', String(x));
-      circle.setAttribute('cy', String(y));
-      circle.setAttribute('r', String(size * .22));
+      const background = group.querySelector('[data-zero-background]'), text = group.querySelector('text');
+      background.setAttribute('cx', String(x));
+      background.setAttribute('cy', String(y));
       text.style.fontSize = `${size * .39}px`;
       text.setAttribute('x', '0');
       text.setAttribute('y', '0');
       const ink = text.getBBox();
-      text.setAttribute('x', String(x - ink.x - ink.width / 2));
-      text.setAttribute('y', String(y - ink.y - ink.height / 2));
+      if (background.dataset.zeroBackground === 'circle' || !measure) {
+        background.setAttribute('rx', String(size * .22));
+        background.setAttribute('ry', String(size * .22));
+        text.setAttribute('x', String(x - ink.x - ink.width / 2));
+        text.setAttribute('y', String(y - ink.y - ink.height / 2));
+      } else {
+        // SVG text bounds include font line space. Measure the painted glyph
+        // instead, so the mask covers only the zero and a tiny rounded margin.
+        text.style.dominantBaseline = 'alphabetic';
+        text.style.textAnchor = 'start';
+        measure.font = getComputedStyle(text).font;
+        const metrics = measure.measureText('0');
+        const {actualBoundingBoxLeft:left, actualBoundingBoxRight:right,
+          actualBoundingBoxAscent:ascent, actualBoundingBoxDescent:descent} = metrics;
+        background.setAttribute('rx', String((left + right) / 2 + size * .018));
+        background.setAttribute('ry', String((ascent + descent) / 2 + size * .012));
+        text.setAttribute('x', String(x + (left - right) / 2));
+        text.setAttribute('y', String(y + (ascent - descent) / 2));
+      }
     });
   }
   alignTerminationClues();
@@ -114,7 +131,7 @@ if (puzzle.edges) {
   document.fonts?.ready.then(alignTerminationClues);
 }
 let values = fixed.slice(), selected = 0;
-let notes = Array.from({length:81}, () => []), notesMode = false;
+let notes = Array.from({length:81}, (_, i) => preview && game.dataset.sampleNotes === 'true' && !fixed[i] ? [1,2,3,4,5,6,7,8,9] : []), notesMode = false;
 let ready = preview, completionRecorded = false;
 
 function state() {

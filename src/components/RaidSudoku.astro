@@ -4,20 +4,22 @@ import PuzzleCompletion from './PuzzleCompletion.astro';
 import '../styles/daily-sudoku.css';
 import '../styles/raid-sudoku.css';
 import {raids, weightedArrowGeometry} from '../lib/raid-sudoku.js';
-const {number} = Astro.props;
+const {number, preview = false, sampleNotes = false, terminationMarker = 'compact'} = Astro.props;
 const puzzle = raids[number-1];
 const puzzleId = `261109_${String(number).padStart(2,'0')}`;
 const title = `스도쿠 레이드 ${number}(${puzzle.name})`;
 const point = i => [i%9+.5,Math.floor(i/9)+.5];
 const points = cells => cells.map(i=>point(i).join(',')).join(' ');
 ---
-<PuzzleLayout {title} {puzzleId} subtitle={puzzle.summary} description={puzzle.summary}>
+<PuzzleLayout {title} {puzzleId} {preview} showPreviewCloud={false} showPreviewLeaderboard={false} subtitle={puzzle.summary} description={puzzle.summary}>
+ {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
+ <slot name="above-title" slot="above-title" />
  <div slot="rules">
   <p>각 가로줄, 세로줄, 굵은 선으로 나뉜 3×3 영역에 1~9를 한 번씩 넣으세요.</p>
   {(puzzle.rules||[]).map(rule=><p>{rule}</p>)}
  </div>
  <div slot="controls">칸을 선택하고 숫자 버튼으로 입력하세요.<br/>메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br/>다른 칸을 눌러 이동하고 지우기 버튼으로 입력을 지우세요.</div>
- <section id="raidGame" data-puzzle-id={puzzleId} data-number={number} aria-label={title}>
+ <section id="raidGame" data-puzzle-id={puzzleId} data-number={number} data-preview={preview || undefined} data-sample-notes={preview && sampleNotes || undefined} aria-label={title}>
   <div class="sudoku-board-tools"><button id="raidNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
   <div class:list={['raid-frame',{'has-outside':!!puzzle.outside,'has-arrows':!!puzzle.arrows,'sandwich':number===10}]}>
    <div class="raid-grid-wrap">
@@ -33,7 +35,7 @@ const points = cells => cells.map(i=>point(i).join(',')).join(' ');
       <marker id="raidArrowValid" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#328158"/></marker>
       <marker id="raidArrowInvalid" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#c34242"/></marker>
      </defs>
-     {(puzzle.edges||[]).map(([a,b],index)=>{const x=(point(a)[0]+point(b)[0])/2,y=(point(a)[1]+point(b)[1])/2;return <g class="raid-zero" data-zero-edge={index}><circle cx={x} cy={y} r=".22" fill="white"/><text x={x} y={y}>0</text></g>;})}
+     {(puzzle.edges||[]).map(([a,b],index)=>{const x=(point(a)[0]+point(b)[0])/2,y=(point(a)[1]+point(b)[1])/2;return <g class="raid-zero" data-zero-edge={index}><ellipse data-zero-background={terminationMarker} cx={x} cy={y} rx={terminationMarker === 'circle' ? .22 : .125} ry={terminationMarker === 'circle' ? .22 : .155} fill="white"/><text x={x} y={y}>0</text></g>;})}
      {(puzzle.outside||[]).map(([side,i,clue],clueIndex)=>{
       const labels=Array.isArray(clue)?(clue.length?clue:['-']):[clue];
       return labels.map((label,k)=><text data-outside-clue={clueIndex} data-outside-digit={k} x={side==='left'?-.26-(labels.length-1-k)*.48:side==='right'?9.45:i+.5} y={side==='top'?-.36-(labels.length-1-k)*.53:side==='bottom'?9.45:i+.53}>{label}</text>);

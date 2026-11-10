@@ -1,0 +1,7 @@
+---
+import RaidSudoku from '../../../components/RaidSudoku.astro';
+---
+<RaidSudoku number={5} preview sampleNotes>
+ <p slot="above-title" class="marker-preview">0에 맞춘 작은 타원 배경 · <a href="/test/termination-notes/before/">기존 원형 배경과 비교</a></p>
+</RaidSudoku>
+<style>.marker-preview{font-size:.82rem;color:#777;line-height:1.6;text-align:center;margin:12px 0}</style>
