@@ -34,3 +34,5 @@ Time Traveler candidates reuse `history` and add `hourglass`, `clock-bolt`, `cal
 Sudoku Raid achievement candidates add `shield-checkered`, `axe`, `building-castle`, `chess-knight`, and `flag-3` from the same pinned Tabler Icons v3.40.0 outline set (MIT). SVG files are downloaded unchanged from the official repository; the comparison page links to each original.
 
 Sudoku-focused raid candidates add `grid-pattern`, `grid-3x3`, `grid-4x4`, `border-inner`, and `number-9` from the same pinned Tabler Icons v3.40.0 outline set (MIT), without geometry changes.
+
+Pepero Sudoku achievement candidates add `number-11`, `baguette`, `candy`, and `cookie` from the same pinned Tabler Icons v3.40.0 outline set (MIT). Original SVG geometry is unchanged. These are preview candidates only.

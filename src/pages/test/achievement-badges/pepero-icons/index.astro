@@ -1,0 +1,42 @@
+---
+import PageLayout from '../../../../layouts/PageLayout.astro';
+import NicknameBadge from '../../../../components/NicknameBadge.astro';
+const candidates = [
+  {id:'number-11',name:'숫자 11',note:'합 11 규칙과 11월 11일을 함께 표현합니다.',recommended:true},
+  {id:'baguette',name:'바게트',note:'길쭉한 먹거리 모양으로 막대과자를 연상시킵니다. 빵의 인상도 있습니다.'},
+  {id:'candy',name:'사탕',note:'달콤한 간식 테마를 간결하게 표현합니다.'},
+  {id:'cookie',name:'쿠키',note:'과자 테마가 분명하고 친근한 모양입니다.'},
+];
+const files=import.meta.glob('../../../../../public/icons/achievement-preview/*.svg',{query:'?raw',import:'default',eager:true});
+---
+<PageLayout title="빼빼로 스도쿠 도전과제 아이콘" subtitle="후보 4가지 · 닉네임 배지 실제 크기 비교">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="pepero-icons" aria-label="빼빼로 스도쿠 도전과제 아이콘 후보">
+    <p class="intro">기존 도전과제와 같은 Tabler Icons의 원본 아이콘 후보입니다. 확대 아이콘과 실제 18px 배지를 함께 비교합니다.</p>
+    <div class="candidates">
+      {candidates.map((candidate,index)=><article>
+        <div class="candidate-heading">
+          <span class="candidate-icon" aria-hidden="true"><Fragment set:html={String(files[`../../../../../public/icons/achievement-preview/${candidate.id}.svg`])}/></span>
+          <div class="candidate-copy">
+            <h2>{index+1}. {candidate.name}{candidate.recommended&&<span class="recommended">추천</span>}</h2>
+            <p>{candidate.note}</p>
+            <a href={`https://github.com/tabler/tabler-icons/blob/v3.40.0/icons/outline/${candidate.id}.svg`} target="_blank" rel="noopener noreferrer">{candidate.id} · 원본 보기 ↗</a>
+          </div>
+        </div>
+        <span class="nickname-example"><NicknameBadge name="퍼즐러" icon={candidate.id} label={candidate.name}/></span>
+      </article>)}
+    </div>
+    <p class="note">제안용 비교 화면입니다. 도전과제와 보상에는 아직 적용하지 않았습니다.</p>
+    <p class="credit"><a href="https://github.com/tabler/tabler-icons/tree/v3.40.0/icons/outline">Tabler Icons v3.40.0</a> · <a href="/icons/achievement-preview/LICENSE">MIT</a></p>
+  </section>
+</PageLayout>
+<style>
+.pepero-icons{width:100%;color:#555}.intro{margin:0 0 18px;color:#999;font-size:.73rem;line-height:1.8}
+.candidates{border-top:1px solid #e8e5df}article{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:24px 8px;border-bottom:1px solid #eee}
+.candidate-heading{display:flex;align-items:center;gap:20px;min-width:0}.candidate-icon{display:block;width:48px;height:48px;flex:0 0 48px}.candidate-icon :global(svg){display:block;width:100%;height:100%}
+.candidate-copy{min-width:0}h2{margin:0;font-size:.84rem;font-weight:500;line-height:1.5}.recommended{display:inline-block;margin-left:8px;padding:1px 6px;border-radius:3px;background:#f2f4f6;color:#75839a;font-size:.6rem;font-weight:400}
+.candidate-copy p{margin:6px 0;font-size:.7rem;line-height:1.7;color:#999}.candidate-copy a{font-size:.62rem;color:#999;text-decoration:none}.candidate-copy a:hover{text-decoration:underline}.nickname-example{flex-shrink:0;color:#666;font-size:.8rem}
+.pepero-icons a:focus{outline:none;box-shadow:none}
+.note{margin:20px 0 0;font-size:.7rem;color:#999;line-height:1.8}.credit{margin:8px 0 0;font-size:.62rem;color:#aaa}.credit a{color:inherit}
+@media(max-width:400px){article{padding-inline:0;gap:10px}.candidate-heading{gap:12px}.candidate-icon{width:36px;height:36px;flex-basis:36px}.candidate-copy p{font-size:.67rem}}
+</style>
