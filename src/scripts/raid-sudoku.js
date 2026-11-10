@@ -6,7 +6,7 @@ const $ = id => document.getElementById(id);
 const game = $('raidGame');
 const puzzleId = game.dataset.puzzleId;
 const preview = game.dataset.preview === 'true';
-const puzzle = raids[Number(game.dataset.number)-1];
+const puzzle = game.dataset.puzzleDefinition ? JSON.parse(game.dataset.puzzleDefinition) : raids[Number(game.dataset.number)-1];
 const givens = puzzle.givens;
 const label = n => n || '';
 // Copy edits must not invalidate progress saved against the same puzzle clues.
@@ -107,8 +107,8 @@ if (puzzle.edges) {
       if (glyph) {
         // Use the same exact center and scale for the outline and its ellipse.
         glyph.setAttribute('transform', `translate(${x} ${y}) scale(${size})`);
-        background.setAttribute('rx', String((terminationZero.halfWidth + .018) * size));
-        background.setAttribute('ry', String((terminationZero.halfHeight + .012) * size));
+        background.setAttribute('rx', String((terminationZero.halfWidth + .028) * size));
+        background.setAttribute('ry', String((terminationZero.halfHeight + .022) * size));
         return;
       }
       const text = group.querySelector('text');

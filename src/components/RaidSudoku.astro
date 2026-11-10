@@ -6,9 +6,9 @@ import '../styles/raid-sudoku.css';
 import {raids, weightedArrowGeometry} from '../lib/raid-sudoku.js';
 import {terminationZero} from '../lib/termination-zero.js';
 const {number, preview = false, sampleNotes = false, terminationMarker = 'compact'} = Astro.props;
-const puzzle = raids[number-1];
-const puzzleId = `261109_${String(number).padStart(2,'0')}`;
-const title = `스도쿠 레이드 ${number}(${puzzle.name})`;
+const puzzle = Astro.props.puzzle || raids[number-1];
+const puzzleId = Astro.props.puzzleId || `261109_${String(number).padStart(2,'0')}`;
+const title = Astro.props.title || `스도쿠 레이드 ${number}(${puzzle.name})`;
 const point = i => [i%9+.5,Math.floor(i/9)+.5];
 const points = cells => cells.map(i=>point(i).join(',')).join(' ');
 ---
@@ -20,7 +20,7 @@ const points = cells => cells.map(i=>point(i).join(',')).join(' ');
   {(puzzle.rules||[]).map(rule=><p>{rule}</p>)}
  </div>
  <div slot="controls">칸을 선택하고 숫자 버튼으로 입력하세요.<br/>메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br/>다른 칸을 눌러 이동하고 지우기 버튼으로 입력을 지우세요.</div>
- <section id="raidGame" data-puzzle-id={puzzleId} data-number={number} data-preview={preview || undefined} data-sample-notes={preview && sampleNotes || undefined} aria-label={title}>
+ <section id="raidGame" data-puzzle-id={puzzleId} data-number={number} data-puzzle-definition={Astro.props.puzzle ? JSON.stringify(puzzle) : undefined} data-preview={preview || undefined} data-sample-notes={preview && sampleNotes || undefined} aria-label={title}>
   <div class="sudoku-board-tools"><button id="raidNotes" class="sudoku-notes-toggle" type="button" aria-pressed="false">메모하기</button></div>
   <div class:list={['raid-frame',{'has-outside':!!puzzle.outside,'has-arrows':!!puzzle.arrows,'sandwich':number===10}]}>
    <div class="raid-grid-wrap">
@@ -36,7 +36,7 @@ const points = cells => cells.map(i=>point(i).join(',')).join(' ');
       <marker id="raidArrowValid" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#328158"/></marker>
       <marker id="raidArrowInvalid" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#c34242"/></marker>
      </defs>
-     {(puzzle.edges||[]).map(([a,b],index)=>{const x=(point(a)[0]+point(b)[0])/2,y=(point(a)[1]+point(b)[1])/2;return <g class="raid-zero" data-zero-edge={index} data-zero-marker={terminationMarker}><ellipse data-zero-background={terminationMarker} cx={x} cy={y} rx={terminationMarker === 'circle' ? .22 : .125} ry={terminationMarker === 'circle' ? .22 : .155} fill={terminationMarker === 'outline' ? 'none' : 'white'}/><Fragment>{terminationMarker === 'compact' ? <path data-zero-glyph d={terminationZero.path} transform={`translate(${x} ${y})`} fill="#333"/> : <text x={x} y={y}>0</text>}</Fragment></g>;})}
+     {(puzzle.edges||[]).map(([a,b],index)=>{const x=(point(a)[0]+point(b)[0])/2,y=(point(a)[1]+point(b)[1])/2;return <g class="raid-zero" data-zero-edge={index} data-zero-marker={terminationMarker}><ellipse data-zero-background={terminationMarker} cx={x} cy={y} rx={terminationMarker === 'circle' ? .22 : terminationZero.halfWidth + .028} ry={terminationMarker === 'circle' ? .22 : terminationZero.halfHeight + .022} fill={terminationMarker === 'outline' ? 'none' : 'white'}/><Fragment>{terminationMarker === 'compact' ? <path data-zero-glyph d={terminationZero.path} transform={`translate(${x} ${y})`} fill="#333"/> : <text x={x} y={y}>0</text>}</Fragment></g>;})}
      {(puzzle.outside||[]).map(([side,i,clue],clueIndex)=>{
       const labels=Array.isArray(clue)?(clue.length?clue:['-']):[clue];
       return labels.map((label,k)=><text data-outside-clue={clueIndex} data-outside-digit={k} x={side==='left'?-.26-(labels.length-1-k)*.48:side==='right'?9.45:i+.5} y={side==='top'?-.36-(labels.length-1-k)*.53:side==='bottom'?9.45:i+.53}>{label}</text>);
