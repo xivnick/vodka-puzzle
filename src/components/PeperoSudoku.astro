@@ -16,13 +16,15 @@ const shapes = sticks.map(cells => {
   const dx = (b[0]-a[0])/(cells.length-1), dy = (b[1]-a[1])/(cells.length-1);
   const start = [a[0]-.12*dx, a[1]-.12*dy];
   const end = [b[0]+.12*dx, b[1]+.12*dy];
-  const rectangle = (from,to,halfWidth=.12) => [
-    [from[0]-halfWidth*dy,from[1]+halfWidth*dx], [to[0]-halfWidth*dy,to[1]+halfWidth*dx],
-    [to[0]+halfWidth*dy,to[1]-halfWidth*dx], [from[0]+halfWidth*dy,from[1]-halfWidth*dx],
-  ].map(p=>p.join(',')).join(' ');
+  const rectangle = (from,to,halfWidth) => ({
+    x:Math.min(from[0],to[0])-Math.abs(dy)*halfWidth,
+    y:Math.min(from[1],to[1])-Math.abs(dx)*halfWidth,
+    width:Math.abs(to[0]-from[0])+Math.abs(dy)*halfWidth*2,
+    height:Math.abs(to[1]-from[1])+Math.abs(dx)*halfWidth*2,
+  });
   return {
-    body:rectangle(start,end),
-    biscuit:rectangle([a[0]-.04*dx,a[1]-.04*dy], [a[0]+.38*dx,a[1]+.38*dy], .06),
+    body:rectangle(start,end,.18),
+    biscuit:rectangle([a[0]-.04*dx,a[1]-.04*dy], [a[0]+.38*dx,a[1]+.38*dy], .09),
   };
 });
 ---
@@ -50,8 +52,8 @@ const shapes = sticks.map(cells => {
       </div>
       <svg class="pepero-sticks" viewBox="0 0 9 9" aria-hidden="true">
         {shapes.map(s => <g>
-          <polygon class="stick-body" points={s.body} />
-          <polygon class="biscuit" points={s.biscuit} />
+          <rect class="stick-body" {...s.body} rx=".12" />
+          <rect class="biscuit" {...s.biscuit} rx=".05" />
         </g>)}
       </svg>
     </div>
@@ -66,12 +68,14 @@ const shapes = sticks.map(cells => {
 <script>import '../scripts/pepero-sudoku.js';</script>
 <style>
   #peperoGame { width:100%; }
-  .pepero-grid { position:relative; }
-  .pepero-sticks { position:absolute; inset:2px; width:calc(100% - 4px); height:calc(100% - 4px); pointer-events:none; z-index:1; }
+  .pepero-grid { position:relative; background:#fff; }
+  .pepero-sticks { position:absolute; inset:2px; width:calc(100% - 4px); height:calc(100% - 4px); pointer-events:none; z-index:0; }
   .pepero-sticks .biscuit { fill:#fff; }
   .pepero-sticks .stick-body { fill:#c8c8c8; }
   #peperoBoard :global(.cell-value) { position:relative; z-index:2; }
   #peperoBoard :global(.notes) { z-index:2; }
-  #peperoBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
+  #peperoBoard { position:relative; z-index:1; }
+  #peperoBoard .sudoku-cell { background:transparent; -webkit-tap-highlight-color:transparent; }
+  #peperoBoard .sudoku-cell.selected { background:rgba(111,155,208,.22); }
   #peperoGame :global(:focus) { outline:none; box-shadow:none; }
 </style>
