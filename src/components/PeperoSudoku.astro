@@ -24,7 +24,7 @@ const shapes = sticks.map(cells => {
   description="초코 두 칸의 합에서 과자 한 칸의 숫자를 빼면 11이 되는 빼빼로 스도쿠">
   <div slot="rules">
     각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9를 한 번씩 넣으세요.<br />
-    각 빼빼로에서 갈색 초코 두 칸의 숫자 합에서 노란 과자 한 칸의 숫자를 빼면 11이 됩니다.
+    각 빼빼로에서 회색으로 채워진 초코 두 칸의 숫자 합에서 흰 과자 한 칸의 숫자를 빼면 11이 됩니다.
   </div>
   <div slot="controls">
     칸을 선택하고 숫자 버튼으로 입력하세요.<br />
@@ -42,6 +42,7 @@ const shapes = sticks.map(cells => {
       </div>
       <svg class="pepero-sticks" viewBox="0 0 9 9" aria-hidden="true">
         {shapes.map(s => <g>
+          <line class="stick-outline" x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} />
           <line class="biscuit" x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} />
           <line class="chocolate" x1={s.chocolateX} y1={s.chocolateY} x2={s.x2} y2={s.y2} />
         </g>)}
@@ -61,15 +62,16 @@ const shapes = sticks.map(cells => {
   #peperoGame { width:100%; }
   .pepero-grid { position:relative; }
   .pepero-sticks { position:absolute; inset:2px; width:calc(100% - 4px); height:calc(100% - 4px); pointer-events:none; z-index:1; }
-  .pepero-sticks line { stroke-width:.34; stroke-linecap:round; }
-  .pepero-sticks .biscuit { stroke:#e1be78; opacity:.65; }
-  .pepero-sticks .chocolate { stroke:#98745d; opacity:.52; }
+  .pepero-sticks line { stroke-width:.30; stroke-linecap:round; }
+  .pepero-sticks .stick-outline { stroke:#555; stroke-width:.36; }
+  .pepero-sticks .biscuit { stroke:#fff; }
+  .pepero-sticks .chocolate { stroke:#c8c8c8; }
   #peperoBoard :global(.cell-value) { position:relative; z-index:2; }
   #peperoBoard :global(.notes) { z-index:2; }
   #peperoBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
   #peperoGame :global(:focus) { outline:none; box-shadow:none; }
   .pepero-legend { display:flex; align-items:center; justify-content:center; gap:.25em; margin:14px 0 0; color:#777; font-size:.82rem; }
-  .swatch { display:inline-block; width:.38em; height:1.1em; border-radius:2px; margin-left:.15em; }
-  .swatch.chocolate { background:#c2ad9e; }
-  .swatch.biscuit { background:#ecd6ae; }
+  .swatch { display:inline-block; width:.38em; height:1.1em; border:1px solid #555; box-sizing:border-box; border-radius:2px; margin-left:.15em; }
+  .swatch.chocolate { background:#c8c8c8; }
+  .swatch.biscuit { background:#fff; }
 </style>

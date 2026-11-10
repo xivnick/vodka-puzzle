@@ -36,4 +36,16 @@ function review(mode) {
   }
   return {remaining:values.filter(n=>!n).length,stages,arithmeticSteps};
 }
-console.log(JSON.stringify({givens:givens.flat().filter(Boolean).length,sticks:sticks.length,ordinary:review('ordinary'),rangeOnly:review('range'),pepero:review('pepero')},null,2));
+const initial = givens.flat();
+const initialCandidates = initial.map((n,i) => n ? [n] : Array.from({length:9},(_,k)=>k+1)
+  .filter(n => ![...peers[i]].some(j=>initial[j]===n)));
+const openingSticks = sticks.map(cells => {
+  const tuples = stickTriples.filter(t => cells.every((i,k) => initialCandidates[i].includes(t[k])));
+  return {
+    handle:coordinate(cells[0]),
+    givenDigits:cells.filter(i=>initial[i]).length,
+    possibleTriples:tuples.length,
+    forcedDigits:cells.filter((i,k)=>!initial[i] && new Set(tuples.map(t=>t[k])).size===1).length,
+  };
+});
+console.log(JSON.stringify({openingSticks,givens:givens.flat().filter(Boolean).length,sticks:sticks.length,ordinary:review('ordinary'),rangeOnly:review('range'),pepero:review('pepero')},null,2));
