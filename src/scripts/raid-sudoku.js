@@ -102,6 +102,7 @@ if (puzzle.edges) {
       background.setAttribute('cx', String(x));
       background.setAttribute('cy', String(y));
       text.style.fontSize = `${size * .39}px`;
+      if (group.dataset.zeroMarker === 'outline') text.style.strokeWidth = `${size * .045}px`;
       text.setAttribute('x', '0');
       text.setAttribute('y', '0');
       const ink = text.getBBox();

@@ -14,3 +14,11 @@
 #raidBoard .sudoku-cell.shaded.selected {
   background:linear-gradient(rgba(169,195,228,.45),rgba(169,195,228,.45)),#c4c4c4;
 }
+
+/* Draw a small halo around the digit itself, leaving its counter transparent. */
+.raid-zero[data-zero-marker="outline"] text {
+  stroke:#fff;
+  stroke-width:.045px;
+  stroke-linejoin:round;
+  paint-order:stroke fill;
+}
