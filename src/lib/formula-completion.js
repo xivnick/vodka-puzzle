@@ -55,11 +55,11 @@ export function tokenizeFormula(text, decimal = false) {
   while (index < text.length) {
     const character = text[index];
     if (/\s/.test(character)) { index += 1; continue; }
-    if (/\d/.test(character) || (decimal && character === '.')) {
+    if (/\d/.test(character)) {
       let value = character;
       index += 1;
       while (index < text.length && /\d/.test(text[index])) value += text[index++];
-      if (decimal && character !== '.' && text[index] === '.') {
+      if (decimal && text[index] === '.') {
         value += text[index++];
       }
       if (decimal && value.includes('.')) {
@@ -88,11 +88,11 @@ export function evaluateFormula(formula, decimal = false) {
 
   function parseFactor() {
     const token = peek();
-    if (decimal && /^(?:\d|\d?\.\d+)$/.test(token || '')) {
+    if (decimal && /^(?:\d|\d\.\d+)$/.test(token || '')) {
       index += 1;
       used.push(...token.replace('.', ''));
       const [integer, fractional = ''] = token.split('.');
-      return makeFraction((integer || '0') + fractional, 10n ** BigInt(fractional.length));
+      return makeFraction(integer + fractional, 10n ** BigInt(fractional.length));
     }
     if (!decimal && /^\d+$/.test(token || '')) {
       index += 1;

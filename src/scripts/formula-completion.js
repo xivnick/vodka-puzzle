@@ -45,7 +45,7 @@ function tokenState() {
   const needsValue = !last || ['+', '-', '*', '/', '(', '.'].includes(last);
   const numberTail = tokens.join('').match(/[\d.]+$/)?.[0] || '';
   const canAppend = puzzle.decimal && numberTail.includes('.');
-  const canDecimal = puzzle.decimal && !tokens.includes('.') && (needsValue || numberCounts.has(last));
+  const canDecimal = puzzle.decimal && !tokens.includes('.') && numberCounts.has(last);
   const canUseOperator = numberCounts.has(last) || last === ')';
   return { needsValue, canAppend, canDecimal, canUseOperator, canClose: canUseOperator && open > close };
 }
@@ -168,7 +168,10 @@ function parseState(saved) {
     map.set(number, (map.get(number) || 0) + 1);
     return map;
   }, new Map());
-  if (puzzle.decimal && saved.tokens.filter(token => token === '.').length > 1) return null;
+  if (puzzle.decimal && (
+    saved.tokens.filter(token => token === '.').length > 1
+    || saved.tokens.some((token, index) => token === '.' && !numberCounts.has(saved.tokens[index - 1]))
+  )) return null;
   if ([...counts].some(([number, count]) => count > numberCounts.get(number))) return null;
   return [...saved.tokens];
 }
