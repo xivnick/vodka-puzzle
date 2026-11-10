@@ -12,19 +12,24 @@ for (const [handle, ...chocolate] of sticks) {
 }
 const point = i => [i % 9 + .5, Math.floor(i / 9) + .5];
 const shapes = sticks.map(cells => {
-  const a = point(cells[0]), b = point(cells[2]);
-  const dx = (b[0] - a[0]) / 2, dy = (b[1] - a[1]) / 2;
-  return { x1:a[0] - .32*dx, y1:a[1] - .32*dy,
-    x2:b[0] + .32*dx, y2:b[1] + .32*dy,
-    chocolateX:a[0] + .5*dx, chocolateY:a[1] + .5*dy };
+  const a = point(cells[0]), b = point(cells.at(-1));
+  const dx = (b[0]-a[0])/(cells.length-1), dy = (b[1]-a[1])/(cells.length-1);
+  const start = [a[0]-.12*dx, a[1]-.12*dy];
+  const end = [b[0]+.12*dx, b[1]+.12*dy];
+  const chocolate = [a[0]+.5*dx, a[1]+.5*dy];
+  const rectangle = (from,to) => [
+    [from[0]-.12*dy,from[1]+.12*dx], [to[0]-.12*dy,to[1]+.12*dx],
+    [to[0]+.12*dy,to[1]-.12*dx], [from[0]+.12*dy,from[1]-.12*dx],
+  ].map(p=>p.join(',')).join(' ');
+  return {body:rectangle(start,end), chocolate:rectangle(chocolate,end)};
 });
 ---
 <PuzzleLayout title="261111 빼빼로 스도쿠" {puzzleId}
   subtitle="초코 칸의 합에서 과자 칸의 숫자를 빼면 11!"
-  description="초코 두 칸의 합에서 과자 한 칸의 숫자를 빼면 11이 되는 빼빼로 스도쿠">
+  description="초코 칸의 합에서 과자 한 칸의 숫자를 빼면 11이 되는 빼빼로 스도쿠">
   <div slot="rules">
     각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9를 한 번씩 넣으세요.<br />
-    각 빼빼로에서 회색으로 채워진 초코 두 칸의 숫자 합에서 흰 과자 한 칸의 숫자를 빼면 11이 됩니다.
+    각 빼빼로에서 회색으로 채워진 초코 칸의 숫자 합에서 흰 과자 한 칸의 숫자를 빼면 11이 됩니다.
   </div>
   <div slot="controls">
     칸을 선택하고 숫자 버튼으로 입력하세요.<br />
@@ -42,13 +47,12 @@ const shapes = sticks.map(cells => {
       </div>
       <svg class="pepero-sticks" viewBox="0 0 9 9" aria-hidden="true">
         {shapes.map(s => <g>
-          <line class="stick-outline" x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} />
-          <line class="biscuit" x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} />
-          <line class="chocolate" x1={s.chocolateX} y1={s.chocolateY} x2={s.x2} y2={s.y2} />
+          <polygon class="biscuit" points={s.body} />
+          <polygon class="chocolate" points={s.chocolate} />
+          <polygon class="stick-outline" points={s.body} />
         </g>)}
       </svg>
     </div>
-    <p class="pepero-legend"><span class="swatch chocolate"></span> 초코 ＋ 초코 − <span class="swatch biscuit"></span> 과자 ＝ 11</p>
     <NumberPad id="peperoNumbers" max={9} />
     <div class="bottom-buttons">
       <button id="peperoErase" type="button">지우기</button>
@@ -62,16 +66,11 @@ const shapes = sticks.map(cells => {
   #peperoGame { width:100%; }
   .pepero-grid { position:relative; }
   .pepero-sticks { position:absolute; inset:2px; width:calc(100% - 4px); height:calc(100% - 4px); pointer-events:none; z-index:1; }
-  .pepero-sticks line { stroke-width:.30; stroke-linecap:round; }
-  .pepero-sticks .stick-outline { stroke:#555; stroke-width:.36; }
-  .pepero-sticks .biscuit { stroke:#fff; }
-  .pepero-sticks .chocolate { stroke:#c8c8c8; }
+  .pepero-sticks .stick-outline { fill:none; stroke:#555; stroke-width:.025; stroke-linejoin:miter; }
+  .pepero-sticks .biscuit { fill:#fff; }
+  .pepero-sticks .chocolate { fill:#c8c8c8; }
   #peperoBoard :global(.cell-value) { position:relative; z-index:2; }
   #peperoBoard :global(.notes) { z-index:2; }
   #peperoBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
   #peperoGame :global(:focus) { outline:none; box-shadow:none; }
-  .pepero-legend { display:flex; align-items:center; justify-content:center; gap:.25em; margin:14px 0 0; color:#777; font-size:.82rem; }
-  .swatch { display:inline-block; width:.38em; height:1.1em; border:1px solid #555; box-sizing:border-box; border-radius:2px; margin-left:.15em; }
-  .swatch.chocolate { background:#c8c8c8; }
-  .swatch.biscuit { background:#fff; }
 </style>

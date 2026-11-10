@@ -1,33 +1,45 @@
-// First playtest: each straight stick has one biscuit handle, then two chocolate cells.
+// Straight sticks have one biscuit handle and either two or three chocolate cells.
 // Only clues and rules are stored; completion never compares against an answer.
 export const givens = [
-  [0,9,0,0,0,7,0,0,3],
-  [0,0,0,0,0,2,0,0,0],
-  [7,8,1,0,0,4,2,9,5],
-  [3,2,0,0,0,0,0,0,0],
-  [1,0,0,0,0,3,5,7,0],
-  [0,7,0,0,0,0,3,2,0],
-  [0,0,0,7,1,9,0,3,0],
-  [0,0,0,2,0,0,0,0,0],
-  [0,1,7,0,0,0,0,0,0],
+  [0,0,0,0,8,0,2,0,0],
+  [0,0,0,0,0,0,0,0,0],
+  [0,0,5,0,0,4,8,0,3],
+  [0,0,0,0,7,0,0,0,4],
+  [7,0,0,4,0,1,0,8,0],
+  [0,0,4,6,0,8,0,0,0],
+  [0,3,0,8,0,0,0,7,2],
+  [9,5,8,0,0,7,6,0,0],
+  [0,7,2,1,6,0,0,0,8],
 ];
 export const sticks = [
-  [22,13,4],
-  [29,38,47],
-  [33,34,35],
-  [54,63,72],
-  [50,49,48],
-  [62,53,44],
-  [32,31,30],
-  [76,77,78],
+  [22,23,24],
+  [66,65,64],
+  [47,38,29],
+  [3,4,5],
+  [1,10,19],
+  [40,49,58],
+  [45,36,27,18],
+  [76,77,78,79],
 ];
 export const boardSignature = JSON.stringify([givens, sticks]);
-export const stickTriples = [];
-for (let biscuit = 1; biscuit <= 9; biscuit++)
-  for (let a = 1; a <= 9; a++)
-    for (let b = 1; b <= 9; b++)
-      if (new Set([biscuit, a, b]).size === 3 && a + b - biscuit === 11)
-        stickTriples.push([biscuit, a, b]);
+const combinationCache = new Map();
+export function stickCombinations(length) {
+  if (![3, 4].includes(length)) throw new RangeError('Expected a three- or four-cell stick.');
+  if (!combinationCache.has(length)) {
+    const combinations = [];
+    function extend(digits) {
+      if (digits.length === length) {
+        if (digits.slice(1).reduce((sum,n) => sum+n,0) - digits[0] === 11)
+          combinations.push(digits);
+        return;
+      }
+      for (let n=1; n<=9; n++) if (!digits.includes(n)) extend([...digits,n]);
+    }
+    extend([]);
+    combinationCache.set(length, combinations);
+  }
+  return combinationCache.get(length);
+}
 const fixed = givens.flat();
 export const units = [
   ...Array.from({length:9}, (_,r) => Array.from({length:9}, (_,c) => r*9+c)),
@@ -41,7 +53,7 @@ export function conflicts(values) {
     if (values[i] && unit.some(j => j !== i && values[j] === values[i])) bad.add(i);
   for (const cells of sticks) {
     // Partial input is invalid only when this stick's own arithmetic cannot hold.
-    const possible = stickTriples.some(t => cells.every((i,k) => !values[i] || values[i] === t[k]));
+    const possible = stickCombinations(cells.length).some(t => cells.every((i,k) => !values[i] || values[i] === t[k]));
     if (!possible) cells.filter(i => values[i]).forEach(i => bad.add(i));
   }
   return bad;
