@@ -36,6 +36,9 @@ export function weightedArrowGeometry(side, i) {
 export function conflicts(puzzle,values) {
  const bad=new Set(), mark=cells=>cells.forEach(i=>bad.add(i));
  for(const unit of units) for(const i of unit) if(values[i]&&unit.some(j=>j!==i&&values[j]===values[i])) bad.add(i);
+ if(puzzle.nonConsecutive)for(let i=0;i<81;i++)for(const j of [i%9<8?i+1:-1,i<72?i+9:-1]){
+  if(j>=0&&values[i]&&values[j]&&Math.abs(values[i]-values[j])===1)mark([i,j]);
+ }
  if(puzzle.name==='안티-나이트') for(let i=0;i<81;i++) for(const [dr,dc] of [[1,2],[1,-2],[2,1],[2,-1]]){
   const r=Math.floor(i/9)+dr,c=i%9+dc,j=r*9+c;if(r<9&&c>=0&&c<9&&values[i]&&values[i]===values[j])mark([i,j]);
  }
