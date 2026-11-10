@@ -35,4 +35,4 @@ Sudoku Raid achievement candidates add `shield-checkered`, `axe`, `building-cast
 
 Sudoku-focused raid candidates add `grid-pattern`, `grid-3x3`, `grid-4x4`, `border-inner`, and `number-9` from the same pinned Tabler Icons v3.40.0 outline set (MIT), without geometry changes.
 
-Pepero Sudoku achievement candidates add `number-11`, `baguette`, `candy`, and `cookie` from the same pinned Tabler Icons v3.40.0 outline set (MIT). Original SVG geometry is unchanged. These are preview candidates only.
+Pepero Sudoku achievement candidates add `number-11`, `baguette`, `candy`, and `cookie` from the same pinned Tabler Icons v3.40.0 outline set (MIT). Original SVG geometry is unchanged. The number-11 icon is now used by the Pepero Day special achievement; baguette, candy, and cookie remain preview candidates.

@@ -559,6 +559,12 @@
       "id": "raid",
       "name": "3×3 격자",
       "src": "/icons/achievement-preview/grid-3x3.svg"
+    },
+    {
+      "id": "pepero",
+      "name": "숫자 11",
+      "mission": "빼빼로데이",
+      "src": "/icons/achievement-preview/number-11.svg"
     }
   ],
   "missions": [
@@ -955,6 +961,22 @@
       ],
       "claimed": [],
       "recordMetric": "time_machine"
+    },
+    {
+      "id": "pepero",
+      "name": "빼빼로데이",
+      "icon": "pepero",
+      "group": "special",
+      "text": "『빼빼로 스도쿠』 풀기",
+      "count": 0,
+      "stages": [
+        {
+          "at": 1,
+          "kind": "icon",
+          "value": "pepero"
+        }
+      ],
+      "claimed": []
     }
   ],
   "effects": [
