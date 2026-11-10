@@ -1,6 +1,6 @@
 export const formulaCompletion261111_02 = {
   id: 'formula-completion-261111-2',
-  title: '수식완성(빼빼로데이)',
+  title: '261111 수식완성(빼빼로데이)',
   summary: '빼빼로데이 수식완성',
   numbers: [1, 1, 1, 1],
   target: 10,
