@@ -9,7 +9,9 @@ root = Path(__file__).resolve().parent.parent
 sql = "BEGIN; SET LOCAL lock_timeout='3s'; SET LOCAL statement_timeout='30s';\n"
 names = []
 if '--rehearse' in sys.argv:
-    names = ['20261111_pepero_kuji.sql', '20261111_pepero_kuji_cutoff.sql', '20261111_kuji_ticket_wallets.sql']
+    names = ['20261111_pepero_kuji.sql', '20261111_pepero_kuji_cutoff.sql', '20261111_kuji_ticket_wallets.sql', '20261111_pepero_kuji_cutoff_minute.sql']
+elif '--rehearse-minute' in sys.argv:
+    names = ['20261111_pepero_kuji_cutoff_minute.sql']
 elif '--rehearse-wallets' in sys.argv:
     names = ['20261111_kuji_ticket_wallets.sql']
 for name in names:
@@ -24,7 +26,7 @@ INSERT INTO auth.users(id,aud,role,email,raw_app_meta_data)
  VALUES('{uid}','authenticated','authenticated','kuji-{uid}@example.invalid','{{"provider":"google"}}');
 INSERT INTO public.semester_nicknames(season_id,user_id,nickname) VALUES('2026-2','{uid}','__kuji_{index}');
 INSERT INTO public.semester_completions(season_id,user_id,nickname,puzzle_id,completed_at)
- VALUES('2026-2','{uid}','__kuji_{index}','261111_01',timestamptz '2026-11-11 11:11:00+09'+interval '1 microsecond');
+ VALUES('2026-2','{uid}','__kuji_{index}','261111_01',timestamptz '2026-11-11 11:11:59.999999+09'+interval '1 microsecond');
 """
 sql += """
 CREATE FUNCTION pg_temp.expect_error(command text, expected text) RETURNS void LANGUAGE plpgsql AS $$
@@ -50,7 +52,7 @@ END $$;
 """
 sql += f"""
 INSERT INTO private.kuji_events(id,title,season_id,puzzle_id,status,eligibility_cutoff) VALUES
- ('{event}','wallet check','2026-2','261111_01','active',timestamptz '2026-11-11 11:11:00+09'),
+ ('{event}','wallet check','2026-2','261111_01','active',timestamptz '2026-11-11 11:11:59.999999+09'),
  ('{other}','other event','2026-2','261111_01','active',NULL);
 INSERT INTO private.kuji_prizes(event_id,id,name,grade,sort_order) VALUES('{event}','test','test prize','B',1);
 INSERT INTO private.kuji_tickets(event_id,number,prize_id) SELECT '{event}',n,'test' FROM generate_series(1,5) n;
@@ -72,7 +74,7 @@ def expect(command, error):
 
 sql += login(0)
 sql += expect(f"SELECT public.open_kuji_ticket('{event}',1)", 'COMPLETION_REQUIRED')
-sql += f"UPDATE public.semester_completions SET completed_at=timestamptz '2026-11-11 11:11:00+09' WHERE user_id='{uids[0]}' AND puzzle_id='261111_01';\n"
+sql += f"UPDATE public.semester_completions SET completed_at=timestamptz '2026-11-11 11:11:59.999999+09' WHERE user_id='{uids[0]}' AND puzzle_id='261111_01';\n"
 sql += expect(f"SELECT public.open_kuji_ticket('{event}',1)", 'NO_TICKETS')
 sql += f"SELECT private.credit_kuji_tickets('{event}','{uids[0]}',1,'completion','cutoff');\n" * 2
 sql += f"SELECT pg_temp.check_balance('{event}',1);\n"
