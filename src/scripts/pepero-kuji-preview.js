@@ -31,7 +31,7 @@ if (root) {
   const prizeFor = id => prizes.find(p => p.id === id);
   const remaining = prize => prize.total - draws.filter(d => d.prizeId === prize.id).length;
   const save = () => { try { localStorage.setItem(key, JSON.stringify(draws)); } catch { /* Keep the current page usable. */ } };
-  const couponFrame = '<svg class="coupon-frame" viewBox="0 0 120 72" preserveAspectRatio="none" aria-hidden="true"><path class="coupon-paper" d="M4 .5h112a3.5 3.5 0 0 1 3.5 3.5v39a5 5 0 0 0 0 10v15a3.5 3.5 0 0 1-3.5 3.5H4A3.5 3.5 0 0 1 .5 68V53a5 5 0 0 0 0-10V4A3.5 3.5 0 0 1 4 .5Z"/><path class="coupon-perforation" d="M9 48h102"/></svg>';
+  const couponFrame = '<svg class="coupon-frame" viewBox="-1 -1 122 74" preserveAspectRatio="none" aria-hidden="true"><path class="coupon-paper" d="M4 .5h112a3.5 3.5 0 0 1 3.5 3.5v39a5 5 0 0 0 0 10v15a3.5 3.5 0 0 1-3.5 3.5H4A3.5 3.5 0 0 1 .5 68V53a5 5 0 0 0 0-10V4A3.5 3.5 0 0 1 4 .5Z"/><path class="coupon-perforation" d="M9 48h102"/></svg>';
   const couponMarkup = (ticket, drawn) => couponFrame + (drawn
     ? `<span class="coupon-prize">${prizeFor(drawn.prizeId).name}</span><span class="coupon-label">${drawn.person}</span>`
     : `<span class="coupon-number">${String(ticket).padStart(2, '0')}</span>`);

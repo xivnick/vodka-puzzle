@@ -8,7 +8,7 @@
 .draw-actions{padding:12px;border-top:1px solid #e8e5df;border-bottom:1px solid #e8e5df}
 .coupon-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .coupon{--ticket-paper:#faf9f6;--ticket-edge:#d8d3c9;position:relative;overflow:hidden;min-width:0;height:72px;padding:0;box-sizing:border-box;border:0;border-radius:0;background:none;color:#666}
-.coupon-frame{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none}
+.coupon-frame{position:absolute;inset:0;display:block;width:100%;height:100%;overflow:visible;pointer-events:none}
 .coupon-paper{fill:var(--ticket-paper);stroke:var(--ticket-edge);stroke-width:1}
 .coupon-perforation{fill:none;stroke:var(--ticket-edge);stroke-width:1;stroke-dasharray:2 3}
 .ticket-wallet{display:inline-flex;align-items:center;gap:6px;color:#888;font-size:.8rem;line-height:18px;font-variant-numeric:tabular-nums}
