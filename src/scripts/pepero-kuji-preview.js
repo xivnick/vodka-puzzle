@@ -36,23 +36,32 @@ if (root) {
     const own = draws.find(d => d.person === name);
     const eligible = $('demoPlayer').value !== 'locked';
     $('eligibility').textContent = own ? `${name} · 참여 완료` : eligible ? `${name} · 스도쿠 완료 · 뽑기 1회 가능` : `${name} · 빼빼로 스도쿠를 완료하면 참여할 수 있습니다.`;
-    $('drawButton').disabled = busy || !!own || !eligible;
-    $('drawButton').textContent = busy ? '뽑는 중…' : own ? '참여 완료' : '1회 뽑기';
+    $('couponHint').textContent = own ? '뽑기가 완료되었습니다.' : eligible ? '원하는 쿠폰을 한 장 골라 주세요.' : '스도쿠 완료 후 쿠폰을 고를 수 있습니다.';
+    $('couponGrid').replaceChildren(...Array.from({ length: totalPrizes }, (_, i) => {
+      const ticket = i + 1;
+      const drawn = draws.find(d => d.ticket === ticket);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `coupon${drawn ? ' is-used' : ''}`;
+      button.disabled = busy || !!own || !eligible || !!drawn;
+      button.setAttribute('aria-label', `${ticket}번 쿠폰${drawn ? `, ${drawn.person}님 추첨 완료` : ', 뽑기'}`);
+      button.innerHTML = `<span class="coupon-number">${String(ticket).padStart(2, '0')}</span><span class="coupon-label">${drawn ? drawn.person : '미개봉'}</span>`;
+      button.addEventListener('click', () => draw(ticket, button));
+      return button;
+    }));
     $('remainingCount').textContent = `남은 상품 ${totalPrizes - draws.length}개`;
     $('drawResult').hidden = !own && !busy;
     if (own && !busy) {
       $('drawStatus').textContent = '당첨 결과가 기록되었습니다.';
       $('resultItem').className = 'result-item';
-      $('resultItem').innerHTML = `<span class="result-grade">${prizeFor(own.prizeId).grade}상</span><div><strong>${prizeFor(own.prizeId).name}</strong><small>${name}</small></div>`;
+      $('resultItem').innerHTML = `<span class="result-grade">${prizeFor(own.prizeId).grade}상</span><div><strong>${prizeFor(own.prizeId).name}</strong><small>${name} · ${String(own.ticket).padStart(2, '0')}번 쿠폰</small></div>`;
     }
     $('prizeList').innerHTML = prizes.map(p => `<article class="prize-row"><span class="prize-grade">${p.grade}상</span><h3>${p.name}</h3><span class="prize-stock">${remaining(p)} / ${p.total}</span></article>`).join('');
     $('winnerCount').textContent = `${draws.length}명`;
     $('winnerList').innerHTML = [...draws].reverse().map(d => `<li><span>${d.person}${d.person === name ? ' (나)' : ''}</span><span class="winner-prize">${prizeFor(d.prizeId).grade}상 · ${prizeFor(d.prizeId).name}</span></li>`).join('');
   }
   const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
-  async function draw() {
-    const tickets = Array.from({ length: totalPrizes }, (_, i) => i + 1).filter(n => !draws.some(d => d.ticket === n));
-    const ticket = tickets[Math.floor(Math.random() * tickets.length)];
+  async function draw(ticket, button) {
     if (busy || player() !== '퍼즐러' || draws.some(d => d.person === player() || d.ticket === ticket)) return;
     busy = true;
     const pool = prizes.flatMap(p => Array(remaining(p)).fill(p));
@@ -62,8 +71,9 @@ if (root) {
     save();
     $('demoPlayer').disabled = true;
     $('resetDemo').disabled = true;
-    $('drawButton').disabled = true;
-    $('drawButton').textContent = '뽑는 중…';
+    root.querySelectorAll('.coupon').forEach(coupon => { coupon.disabled = true; });
+    button.classList.add('is-selected');
+    $('couponHint').textContent = `${String(ticket).padStart(2, '0')}번 쿠폰을 확인하고 있습니다.`;
     $('drawResult').hidden = false;
     $('drawResult').setAttribute('aria-busy', 'true');
     $('drawStatus').textContent = '열어보는 중…';
@@ -78,7 +88,6 @@ if (root) {
     $('drawResult').setAttribute('aria-busy', 'false');
     $('resultItem').classList.add('is-revealed');
   }
-  $('drawButton').addEventListener('click', draw);
   $('demoPlayer').addEventListener('change', () => { $('drawStatus').textContent = ''; render(); });
   $('resetDemo').addEventListener('click', () => {
     if (busy) return;

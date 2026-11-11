@@ -6,9 +6,16 @@
 .draw-heading>span,.section-heading>span{font-size:.65rem;color:#999}
 .draw-actions{padding:16px 18px;border-top:1px solid #e8e5df;border-bottom:1px solid #e8e5df}
 .draw-actions p{font-size:.73rem;line-height:1.8;color:#888;margin:0 0 12px}
-.draw-actions button{display:block;width:100%;padding:11px;border:1px solid #c8c3b8;border-radius:2px;background:#f4f1eb;color:#444;font-size:.8rem}
-.draw-actions button:hover:not(:disabled){background:#ede9e1}
-.draw-actions button:disabled{opacity:.4;cursor:default}
+.draw-actions .coupon-hint{font-size:.65rem;color:#999;margin-bottom:14px}
+.coupon-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.coupon{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-width:0;padding:14px 4px 10px;border:1px solid #d8d3c9;border-radius:2px;background:#faf9f6;color:#666}
+.coupon-number{font-size:1rem;font-variant-numeric:tabular-nums}
+.coupon-label{display:block;width:100%;padding-top:7px;border-top:1px dashed #e3dfd6;font-size:.58rem;color:#aaa;overflow-wrap:anywhere}
+.coupon:hover:not(:disabled){background:#f0ede6;border-color:#bcb5a8}
+.coupon:disabled{cursor:default}
+.coupon.is-used{background:#fff;border-color:#eeeae3;color:#c4bfb5}
+.coupon.is-used .coupon-label{color:#bbb}
+.coupon.is-selected{background:#ede9e1;border-color:#bcb5a8}
 .draw-result{margin-top:24px}
 .draw-status{font-size:.65rem;color:#999;margin:8px 0;line-height:1.5}
 .result-item{position:relative;display:flex;align-items:center;gap:12px;min-height:64px;box-sizing:border-box;padding:14px 18px;border-radius:3px;background:#f5f3ef;overflow:hidden}
