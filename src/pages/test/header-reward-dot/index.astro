@@ -1,0 +1,53 @@
+---
+import HomePage from '../../../components/HomePage.astro';
+---
+<HomePage />
+<script>
+const robots = document.createElement('meta');
+robots.name = 'robots';
+robots.content = 'noindex, nofollow';
+document.head.append(robots);
+await window.puzzleAuthReady;
+const link = document.getElementById('nicknameLink');
+const wrapper = document.createElement('span');
+wrapper.className = 'reward-dot-preview-name';
+link.before(wrapper);
+wrapper.append(link);
+link.textContent = '보드카';
+const dot = document.createElement('span');
+dot.className = 'reward-dot-preview';
+dot.setAttribute('aria-hidden', 'true');
+wrapper.append(dot);
+const controls = document.createElement('aside');
+controls.className = 'reward-dot-preview-controls';
+controls.setAttribute('aria-label', '보상 알림 시안 조작');
+controls.innerHTML = '<span>보상 알림 시안</span><div role="group" aria-label="수령 가능한 보상"><button type="button" data-ready="true" aria-pressed="true">보상 있음</button><button type="button" data-ready="false" aria-pressed="false">보상 없음</button></div>';
+document.querySelector('main').append(controls);
+function update(ready) {
+  dot.hidden = !ready;
+  link.setAttribute('aria-label', ready ? '보드카, 받을 수 있는 보상 있음 · 마이페이지' : '보드카 · 마이페이지');
+  link.title = ready ? '받을 수 있는 보상이 있어요' : '마이페이지';
+  controls.querySelectorAll('button').forEach(button => {
+    button.setAttribute('aria-pressed', String((button.dataset.ready === 'true') === ready));
+  });
+}
+controls.addEventListener('click', event => {
+  const button = event.target.closest('button[data-ready]');
+  if (button) update(button.dataset.ready === 'true');
+});
+update(true);
+</script>
+<style is:global>
+.reward-dot-preview-name { display:inline-flex; position:relative; padding-right:10px; }
+.reward-dot-preview { position:absolute; top:5px; right:0; width:6px; height:6px; border-radius:50%; background:#df8a48; pointer-events:none; }
+.reward-dot-preview[hidden] { display:none; }
+.reward-dot-preview-controls {
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  z-index:101; display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap;
+  width:max-content; max-width:calc(100vw - 32px); padding:10px 14px;
+  border:1px solid #e8e5df; border-radius:10px; background:#fff; color:#888; font-size:.75rem;
+}
+.reward-dot-preview-controls div { display:flex; gap:4px; }
+.reward-dot-preview-controls button { margin:0; padding:5px 10px; border:1px solid #e8e5df; border-radius:5px; background:#fff; color:#888; font:inherit; }
+.reward-dot-preview-controls button[aria-pressed="true"] { background:#f4f1eb; border-color:#c8c3b8; color:#555; }
+</style>
