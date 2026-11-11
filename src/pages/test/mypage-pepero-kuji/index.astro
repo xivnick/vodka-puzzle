@@ -2,17 +2,67 @@
 import MypageV2Preview from '../../../components/MypageV2Preview.astro';
 ---
 <MypageV2Preview>
-  <a slot="account-links" class="pepero-kuji-link" href="/test/pepero-kuji/">
+  <div slot="account-links" class="kuji-entry-preview">
+  <a id="peperoKujiLink" class="pepero-kuji-link" href="/test/pepero-kuji/">
     <span>빼빼로 쿠지</span>
-    <span class="kuji-link-end"><span class="kuji-link-tickets" aria-label="남은 빼빼로 쿠지 티켓 1장"><span>1</span><img src="/icons/time-machine/ticket.svg" width="18" height="18" alt="" /></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg></span>
+    <span class="kuji-link-end"><span id="kujiLinkTickets" class="kuji-link-tickets" aria-label="남은 빼빼로 쿠지 티켓 1장"><span id="kujiLinkBalance">1</span><img src="/icons/time-machine/ticket.svg" width="18" height="18" alt="" /></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg></span>
   </a>
+  <details class="kuji-state-tools"><summary>예시</summary><select id="kujiPreviewState" aria-label="쿠지 참여 상태"><option value="ready">티켓 있음</option><option value="drawn">참여 완료 · 티켓 없음</option><option value="none">티켓·참여 기록 없음</option></select></details>
+  </div>
 </MypageV2Preview>
+<script>
+import {kujiEntryState} from '../../../lib/kuji-entry-state.js';
+const fixtures = {
+  ready: {remaining_tickets: 1, tickets: []},
+  drawn: {remaining_tickets: 0, tickets: [{is_me: true}]},
+  none: {remaining_tickets: 0, tickets: []},
+};
+const picker = document.getElementById('kujiPreviewState');
+const name = document.getElementById('nicknameLink');
+const dot = document.createElement('span');
+dot.className = 'kuji-header-dot';
+dot.setAttribute('role', 'img');
+dot.setAttribute('aria-label', '사용할 수 있는 빼빼로 쿠지 티켓이 있어요');
+dot.id = 'kujiHeaderPreviewDot';
+dot.hidden = true;
+name.parentElement.append(dot);
+function renderKujiPreview() {
+  const state = kujiEntryState(fixtures[picker.value]);
+  document.getElementById('peperoKujiLink').hidden = !state.visible;
+  document.getElementById('kujiLinkBalance').textContent = String(state.balance);
+  document.getElementById('kujiLinkTickets').setAttribute('aria-label', `남은 빼빼로 쿠지 티켓 ${state.balance}장`);
+  dot.hidden = !state.notify;
+  name.textContent = '퍼즐러';
+  name.href = '/test/mypage-pepero-kuji/';
+  if (state.notify) {
+    name.setAttribute('aria-describedby', dot.id);
+    name.title = '사용할 수 있는 빼빼로 쿠지 티켓이 있어요';
+  } else {
+    name.removeAttribute('aria-describedby');
+    name.removeAttribute('title');
+  }
+}
+picker.addEventListener('change', renderKujiPreview);
+await window.puzzleAuthReady;
+renderKujiPreview();
+</script>
 <style>
 .pepero-kuji-link{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:11px var(--row-inset);border:1px solid #ddd8cf;border-radius:3px;background:#fff;color:#777;font-size:.78rem;line-height:20px;text-decoration:none}
+.pepero-kuji-link[hidden]{display:none}
+.kuji-state-tools{margin-top:12px;color:#aaa;font-size:.65rem}
+.kuji-state-tools summary{cursor:pointer}
+.kuji-state-tools select{margin-top:10px;padding:5px 8px;border:1px solid #e8e5df;border-radius:2px;background:#fff;color:#888;font:inherit;max-width:100%}
+.kuji-state-tools select:focus{outline:none;box-shadow:none}
 .pepero-kuji-link:hover{background:#faf8f4;color:#555}
 .pepero-kuji-link:focus{outline:none;box-shadow:none}
 .kuji-link-end{display:flex;align-items:center;gap:12px;color:#999}
 .kuji-link-tickets{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;line-height:18px;font-variant-numeric:tabular-nums}
 .kuji-link-tickets>span{display:flex;align-items:center;height:18px;font-weight:700}
 .kuji-link-tickets img,.kuji-link-end>svg{display:block;flex-shrink:0}
+</style>
+
+<style is:global>
+body:has(.kuji-entry-preview) #headerRewardDot{display:none}
+.kuji-header-dot{position:absolute;top:1px;right:-8px;width:6px;height:6px;border-radius:50%;background:#df8a48;pointer-events:none}
+.kuji-header-dot[hidden]{display:none}
 </style>
