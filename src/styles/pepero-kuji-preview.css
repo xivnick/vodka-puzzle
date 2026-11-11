@@ -17,14 +17,15 @@
 .coupon.is-used{background:#fff;border-color:#e8e5df;color:#aaa}
 .coupon.is-used .coupon-prize{color:#777}
 .coupon.is-used .coupon-label{color:#bbb}
-.coupon.is-selected{background:#f5f3ef;border-color:#c8c3b8}
-.coupon.is-selected::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 25%,#ffffffd0 50%,transparent 75%);transform:translateX(-100%);animation:kuji-waiting .8s ease-in-out both}
-.coupon.is-revealed{animation:kuji-reveal .32s ease-out both}
-.draw-result{margin-top:24px}
-.result-item{position:relative;display:flex;align-items:center;gap:12px;min-height:64px;box-sizing:border-box;padding:14px 18px;border-radius:3px;background:#f5f3ef;overflow:hidden}
+.coupon.is-selected{z-index:1;background:#f5f1e9;border-color:#c8bda9;animation:kuji-pick .7s ease-in-out both}
+.coupon.is-selected::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 20%,#fff 50%,transparent 80%);transform:translateX(-100%);animation:kuji-waiting .7s ease-in-out both}
+.coupon.is-opening{z-index:1;backface-visibility:hidden;animation:kuji-open .52s ease-in-out both}
+.draw-result{display:grid;gap:12px;margin-top:24px}
+.result-item{display:flex;align-items:center;gap:12px;box-sizing:border-box;padding:12px 18px;border-radius:3px;background:#f5f3ef;line-height:1.6}
+.result-item>div{min-width:0}
 .result-item.is-revealed{animation:kuji-reveal .32s ease-out both}
 .result-grade{font-size:.8rem;color:#888;flex-shrink:0}
-.result-item strong{display:block;font-size:.8rem;font-weight:400;color:#444}
+.result-item strong{display:block;overflow-wrap:anywhere;font-size:.8rem;font-weight:400;color:#444}
 .result-item small{display:block;font-size:.65rem;color:#999;margin-top:4px}
 .section-heading{margin-top:28px}
 .prize-row{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid #e8e5df;font-size:.75rem}
@@ -38,6 +39,8 @@
 .demo-tools summary{cursor:pointer;margin-bottom:12px}
 .demo-tools select{max-width:100%;padding:6px;background:#fff;border:1px solid #ddd7ce;border-radius:2px;color:#777;font-size:.65rem}
 .demo-tools button{border:0;background:none;color:#888;font-size:.65rem;margin:10px 0 0 10px;padding:0;text-decoration:underline}
+@keyframes kuji-pick{0%{transform:none}45%,100%{transform:translateY(-3px)}}
+@keyframes kuji-open{0%{transform:perspective(500px) translateY(-3px) rotateY(0)}42%{transform:perspective(500px) translateY(-3px) rotateY(90deg)}43%{transform:perspective(500px) translateY(-3px) rotateY(-90deg)}100%{transform:perspective(500px) rotateY(0)}}
 @keyframes kuji-waiting{to{transform:translateX(100%)}}
 @keyframes kuji-reveal{from{opacity:.4;transform:translateY(5px) scale(.97)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.coupon.is-selected::after,.coupon.is-revealed,.result-item.is-revealed{animation:none}}
+@media(prefers-reduced-motion:reduce){.coupon.is-selected,.coupon.is-selected::after,.coupon.is-opening,.result-item.is-revealed{animation:none}}

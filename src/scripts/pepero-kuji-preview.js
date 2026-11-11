@@ -31,6 +31,7 @@ if (root) {
   const prizeFor = id => prizes.find(p => p.id === id);
   const remaining = prize => prize.total - draws.filter(d => d.prizeId === prize.id).length;
   const save = () => { try { localStorage.setItem(key, JSON.stringify(draws)); } catch { /* Keep the current page usable. */ } };
+  const couponMarkup = (ticket, drawn) => `<span class="coupon-number">${String(ticket).padStart(2, '0')}</span><span class="coupon-prize">${drawn ? prizeFor(drawn.prizeId).name : ''}</span><span class="coupon-label">${drawn ? drawn.person : ''}</span>`;
   function render() {
     const name = player();
     const own = draws.find(d => d.person === name);
@@ -43,14 +44,14 @@ if (root) {
       button.className = `coupon${drawn ? ' is-used' : ''}`;
       button.disabled = busy || !!own || !eligible || !!drawn;
       button.setAttribute('aria-label', `${ticket}번 쿠폰${drawn ? `, ${drawn.person}님 추첨 완료` : ', 뽑기'}`);
-      button.innerHTML = `<span class="coupon-number">${String(ticket).padStart(2, '0')}</span><span class="coupon-prize">${drawn ? prizeFor(drawn.prizeId).name : ''}</span><span class="coupon-label">${drawn ? drawn.person : ''}</span>`;
+      button.innerHTML = couponMarkup(ticket, drawn);
       button.addEventListener('click', () => draw(ticket, button));
       return button;
     }));
     const balance = eligible && !own ? 1 : 0;
     $('ticketBalance').textContent = String(balance);
     $('ticketWallet').setAttribute('aria-label', `내 남은 티켓 ${balance}장`);
-    $('drawResult').hidden = !own && !busy;
+    $('drawResult').hidden = !own || busy;
     if (own && !busy) {
       $('resultItem').className = 'result-item';
       $('resultItem').innerHTML = `<span class="result-grade">${prizeFor(own.prizeId).grade}상</span><div><strong>${prizeFor(own.prizeId).name}</strong><small>${name} · ${String(own.ticket).padStart(2, '0')}번 쿠폰</small></div>`;
@@ -76,20 +77,22 @@ if (root) {
     button.classList.add('is-selected');
     button.setAttribute('aria-busy', 'true');
     button.setAttribute('aria-label', `${ticket}번 쿠폰 확인 중`);
-    $('drawResult').hidden = false;
-    $('drawResult').setAttribute('aria-busy', 'true');
-    $('resultItem').className = 'result-item';
-    $('resultItem').innerHTML = '';
+    // Keep the result area out of the layout until the ticket has fully opened.
+    $('drawResult').hidden = true;
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    await pause(reduced ? 0 : 800);
+    await pause(reduced ? 0 : 700);
+    button.classList.remove('is-selected');
+    button.classList.add('is-opening');
+    await pause(reduced ? 0 : 220);
+    button.innerHTML = couponMarkup(ticket, draws.find(d => d.ticket === ticket));
+    button.classList.add('is-used');
+    button.setAttribute('aria-label', `${ticket}번 쿠폰, ${prize.name}, ${player()}님`);
+    await pause(reduced ? 0 : 300);
     busy = false;
     $('demoPlayer').disabled = false;
     $('resetDemo').disabled = false;
     render();
-    $('drawResult').setAttribute('aria-busy', 'false');
     $('resultItem').classList.add('is-revealed');
-    const revealed = $('couponGrid').children[ticket - 1];
-    revealed.classList.add('is-revealed');
   }
   $('demoPlayer').addEventListener('change', render);
   $('resetDemo').addEventListener('click', () => {
