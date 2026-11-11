@@ -7,19 +7,23 @@
 .draw-heading{margin:0 0 10px}
 .draw-actions{padding:12px;border-top:1px solid #e8e5df;border-bottom:1px solid #e8e5df}
 .coupon-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.coupon{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;height:72px;padding:9px 6px;box-sizing:border-box;border:1px solid #d8d3c9;border-radius:2px;background:#faf9f6;color:#666}
+.coupon{--ticket-paper:#faf9f6;--ticket-edge:#d8d3c9;position:relative;overflow:hidden;min-width:0;height:72px;padding:0;box-sizing:border-box;border:0;border-radius:0;background:none;color:#666}
+.coupon-frame{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none}
+.coupon-paper{fill:var(--ticket-paper);stroke:var(--ticket-edge);stroke-width:1}
+.coupon-perforation{fill:none;stroke:var(--ticket-edge);stroke-width:1;stroke-dasharray:2 3}
 .ticket-wallet{display:inline-flex;align-items:center;gap:6px;color:#888;font-size:.8rem;line-height:18px;font-variant-numeric:tabular-nums}
 .ticket-wallet img{display:block;flex-shrink:0}
 .ticket-wallet>span{display:flex;align-items:center;height:18px;font-weight:700}
-.coupon-prize{display:flex;align-items:center;justify-content:center;font-size:.65rem;line-height:1.45;overflow-wrap:anywhere}
+.coupon-prize,.coupon-number{position:absolute;inset:0 8px 24px;display:flex;align-items:center;justify-content:center}
+.coupon-prize{font-size:.65rem;line-height:1.45;overflow-wrap:anywhere}
 .coupon-number{font-size:.9rem;font-variant-numeric:tabular-nums}
-.coupon-label{display:block;width:100%;padding-top:5px;border-top:1px dashed #e3dfd6;font-size:.58rem;color:#aaa;overflow-wrap:anywhere}
-.coupon:hover:not(:disabled){background:#f0ede6;border-color:#bcb5a8}
+.coupon-label{position:absolute;inset:auto 8px 0;display:grid;place-items:center;height:24px;font-size:.58rem;color:#aaa;overflow-wrap:anywhere}
+.coupon:hover:not(:disabled){--ticket-paper:#f0ede6;--ticket-edge:#bcb5a8}
 .coupon:disabled{cursor:default}
-.coupon.is-used{background:#fff;border-color:#e8e5df;color:#aaa}
+.coupon.is-used{--ticket-paper:#fff;--ticket-edge:#e0dbd2;color:#aaa}
 .coupon.is-used .coupon-prize{color:#777}
-.coupon.is-used .coupon-label{color:#bbb}
-.coupon.is-selected{z-index:1;background:#f5f1e9;border-color:#c8bda9;animation:kuji-pick .7s ease-in-out both}
+.coupon.is-used .coupon-label{color:#aaa}
+.coupon.is-selected{--ticket-paper:#f5f1e9;--ticket-edge:#c8bda9;z-index:1;animation:kuji-pick .7s ease-in-out both}
 .coupon.is-selected::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 20%,#fff 50%,transparent 80%);transform:translateX(-100%);animation:kuji-waiting .7s ease-in-out both}
 .coupon.is-opening{z-index:1;backface-visibility:hidden;animation:kuji-open .52s ease-in-out both}
 .draw-result{display:grid;gap:10px;margin-top:24px}
