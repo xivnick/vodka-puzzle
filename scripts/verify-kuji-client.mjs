@@ -27,7 +27,7 @@ async function boot({balance = 2, restored = false, anonymous = false} = {}) {
   elements = new Map();
   if (!restored) {
     storage.clear(); drawCalls = 0; transportFailure = false; readFailure = false;
-    server = {remaining_tickets: balance, can_draw: balance > 0, status: 'active', prizes: [{grade:'A',name:'서버 상품',remaining:3,total:3}], tickets: [1,2,3].map(number => ({number, claimed_at:null, is_me:false}))};
+    server = {id:'fixture-event', title:'fixture', remaining_tickets: balance, can_draw: balance > 0, status: 'active', prizes: [{grade:'A',name:'서버 상품',remaining:3,total:3}], tickets: [1,2,3].map(number => ({number, claimed_at:null, is_me:false}))};
   }
   window.puzzleAccount = {user: anonymous ? null : {id:'fixture'}, profile: anonymous ? null : {nickname:'<퍼즐러>'}, client: {
     rpc(name, args) {

@@ -9,7 +9,9 @@ root = Path(__file__).resolve().parent.parent
 sql = "BEGIN; SET LOCAL lock_timeout='3s'; SET LOCAL statement_timeout='30s';\n"
 names = []
 if '--rehearse' in sys.argv:
-    names = ['20261111_pepero_kuji.sql', '20261111_pepero_kuji_cutoff.sql', '20261111_kuji_ticket_wallets.sql', '20261111_pepero_kuji_cutoff_minute.sql']
+    names = ['20261111_pepero_kuji.sql', '20261111_pepero_kuji_cutoff.sql', '20261111_kuji_ticket_wallets.sql', '20261111_pepero_kuji_cutoff_minute.sql', '20261111_kuji_account_summary.sql']
+elif '--rehearse-entry' in sys.argv:
+    names = ['20261111_kuji_account_summary.sql']
 elif '--rehearse-minute' in sys.argv:
     names = ['20261111_pepero_kuji_cutoff_minute.sql']
 elif '--rehearse-wallets' in sys.argv:
@@ -40,6 +42,10 @@ END $$;
 CREATE FUNCTION pg_temp.check_balance(event text,expected integer) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
  IF (public.kuji_context(event)->>'remaining_tickets')::integer<>expected THEN RAISE EXCEPTION 'Wrong balance, expected %',expected; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(public.kuji_account_summary()->'events') e WHERE e->>'id'=event AND (e->>'remaining_tickets')::integer<>expected) THEN RAISE EXCEPTION 'Entry summary balance mismatch'; END IF;
+ IF expected>0 AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(public.kuji_account_summary()->'events') e WHERE e->>'id'=event) THEN RAISE EXCEPTION 'Owned-ticket entry missing'; END IF;
+ IF expected=0 AND EXISTS(SELECT 1 FROM jsonb_array_elements(public.kuji_context(event)->'tickets') t WHERE (t->>'is_me')::boolean)
+  AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(public.kuji_account_summary()->'events') e WHERE e->>'id'=event AND (e->>'participated')::boolean) THEN RAISE EXCEPTION 'Past participant entry missing'; END IF;
 END $$;
 DO $$ BEGIN
  IF has_table_privilege('authenticated','private.kuji_ticket_wallets','UPDATE')
@@ -73,6 +79,7 @@ def expect(command, error):
     return f"SELECT pg_temp.expect_error($q${command}$q$,'{error}');\n"
 
 sql += login(0)
+sql += f"DO $$ BEGIN IF EXISTS(SELECT 1 FROM jsonb_array_elements(public.kuji_account_summary()->'events') e WHERE e->>'id'='{event}') THEN RAISE EXCEPTION 'Unrelated entry leaked'; END IF; END $$;\n"
 sql += expect(f"SELECT public.open_kuji_ticket('{event}',1)", 'COMPLETION_REQUIRED')
 sql += f"UPDATE public.semester_completions SET completed_at=timestamptz '2026-11-11 11:11:59.999999+09' WHERE user_id='{uids[0]}' AND puzzle_id='261111_01';\n"
 sql += expect(f"SELECT public.open_kuji_ticket('{event}',1)", 'NO_TICKETS')

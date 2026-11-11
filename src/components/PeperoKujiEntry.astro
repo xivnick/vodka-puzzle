@@ -1,0 +1,27 @@
+<a data-pepero-kuji-entry class="pepero-kuji-link" href="/kuji/pepero-2026/" hidden>
+  <span>빼빼로 쿠지</span>
+  <span class="kuji-link-end"><span data-kuji-tickets class="kuji-link-tickets" aria-label="남은 빼빼로 쿠지 티켓"><span data-kuji-balance>0</span><img src="/icons/time-machine/ticket.svg" width="18" height="18" alt="" /></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg></span>
+</a>
+<script>
+import {subscribeKujiAccount} from '../scripts/kuji-account.js';
+import {kujiEntryState} from '../lib/kuji-entry-state.js';
+const entry = document.querySelector('[data-pepero-kuji-entry]');
+subscribeKujiAccount(summary => {
+  if (!entry) return;
+  const event = summary.owner === window.puzzleAccount.user?.id ? summary.events.find(event => event.id === 'pepero-2026') : null;
+  const state = kujiEntryState(event);
+  entry.hidden = !state.visible;
+  entry.querySelector('[data-kuji-balance]').textContent = String(state.balance);
+  entry.querySelector('[data-kuji-tickets]').setAttribute('aria-label', `남은 빼빼로 쿠지 티켓 ${state.balance}장`);
+});
+</script>
+<style>
+.pepero-kuji-link{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:11px var(--row-inset);border:1px solid #ddd8cf;border-radius:3px;background:#fff;color:#777;font-size:.78rem;line-height:20px;text-decoration:none}
+.pepero-kuji-link[hidden]{display:none}
+.pepero-kuji-link:hover{background:#faf8f4;color:#555}
+.pepero-kuji-link:focus{outline:none;box-shadow:none}
+.kuji-link-end{display:flex;align-items:center;gap:12px;color:#999}
+.kuji-link-tickets{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;line-height:18px;font-variant-numeric:tabular-nums}
+.kuji-link-tickets>span{display:flex;align-items:center;height:18px;font-weight:700}
+.kuji-link-tickets img,.kuji-link-end>svg{display:block;flex-shrink:0}
+</style>

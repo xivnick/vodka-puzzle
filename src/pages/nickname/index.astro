@@ -1,9 +1,11 @@
 ---
 import MypageV2Preview from '../../components/MypageV2Preview.astro';
 import '../../styles/nickname.css';
+import PeperoKujiEntry from '../../components/PeperoKujiEntry.astro';
 import PolicyLinks from '../../components/PolicyLinks.astro';
 ---
 <MypageV2Preview live production>
+ <PeperoKujiEntry slot="account-links" />
  <div id="accountLegacyPanel">
   <div class="form-wrap">
     <p id="accountLoading" class="nick-status">불러오는 중...</p>

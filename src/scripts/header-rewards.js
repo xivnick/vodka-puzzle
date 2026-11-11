@@ -1,22 +1,38 @@
+import {subscribeKujiAccount} from './kuji-account.js';
 let revision = 0;
 let scheduled = false;
+let rewardReady = false;
+let kujiSummary = {owner: null, events: []};
 
-export function setHeaderRewardReady(ready) {
-  revision++;
+function renderHeaderNotifications() {
   const dot = document.getElementById('headerRewardDot');
   const link = document.getElementById('nicknameLink');
   if (!dot || !link) return;
   const account = window.puzzleAccount;
-  const visible = Boolean(ready && account.user && account.profile && !account.error && window.puzzleCosmeticRelease?.active);
+  const signedIn = Boolean(account.user && account.profile && !account.error);
+  const rewards = signedIn && rewardReady && window.puzzleCosmeticRelease?.active;
+  const kuji = signedIn && kujiSummary.owner === account.user.id && kujiSummary.events.some(event => event.status === 'active' && event.remaining_tickets > 0);
+  const visible = rewards || kuji;
   dot.hidden = !visible;
   if (visible) {
+    const text = rewards && kuji ? '받을 수 있는 보상과 사용할 수 있는 쿠지 티켓이 있어요' : kuji ? '사용할 수 있는 쿠지 티켓이 있어요' : '받을 수 있는 보상이 있어요';
+    dot.setAttribute('aria-label', text);
     link.setAttribute('aria-describedby', 'headerRewardDot');
-    link.title = '받을 수 있는 보상이 있어요';
+    link.title = text;
   } else {
     link.removeAttribute('aria-describedby');
     link.removeAttribute('title');
   }
 }
+export function setHeaderRewardReady(ready) {
+  revision++;
+  rewardReady = Boolean(ready);
+  renderHeaderNotifications();
+}
+subscribeKujiAccount(summary => {
+  kujiSummary = summary;
+  renderHeaderNotifications();
+});
 
 async function refreshHeaderRewards() {
   const account = window.puzzleAccount;

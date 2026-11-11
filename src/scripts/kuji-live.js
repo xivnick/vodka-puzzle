@@ -1,3 +1,4 @@
+import {applyKujiContext} from './kuji-account.js';
 import {couponFrame} from '../lib/kuji-ticket-frame.js';
 
 export async function initializeKuji(root) {
@@ -46,6 +47,7 @@ export async function initializeKuji(root) {
   }
   function render(animateNumber = null) {
     if (!context) return;
+    applyKujiContext(context);
     root.classList.remove('is-loading');
     root.setAttribute('aria-busy', 'false');
     $('prizeList').setAttribute('aria-busy', 'false');
