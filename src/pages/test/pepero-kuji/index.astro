@@ -2,21 +2,19 @@
 import PageLayout from '../../../layouts/PageLayout.astro';
 import '../../../styles/pepero-kuji-preview.css';
 ---
-<PageLayout title="빼빼로 쿠지" subtitle="빼빼로 스도쿠를 풀고, 나만의 행운을 한 장 뽑아 보세요.">
+<PageLayout title="빼빼로 쿠지" subtitle="빼빼로 스도쿠를 완료하면 한 번 뽑을 수 있습니다.">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section id="kujiPreview" class="kuji" aria-label="빼빼로 쿠지 예시">
-    <div class="kuji-intro"><span class="kuji-label">11.11 · PEPERO KUJI</span><span class="sample-label">예시 이벤트</span></div>
-    <div class="kuji-status"><div><span id="playerName">퍼즐러</span><p id="eligibility">빼빼로 스도쿠 완료 · 뽑기 1회 가능</p></div><span id="ticketStatus" class="ticket-status">1장</span></div>
-    <div id="myPrize" class="my-prize" hidden></div>
-    <div class="draw-heading"><h2>어떤 행운을 고르실래요?</h2><span id="remainingCount"></span></div>
-    <p id="drawHint" class="draw-hint">마음에 드는 번호표를 한 장 골라 주세요.</p>
-    <div class="kuji-box"><div class="box-decoration" aria-hidden="true"><i></i><i></i><i></i><span>작은 한 장, 달콤한 행운.</span></div><div id="ticketGrid" class="ticket-grid" aria-label="뽑기 번호표"></div><div class="box-bottom">GOOD LUCK TO YOU</div></div>
-    <p id="drawStatus" class="draw-status" role="status" aria-live="polite"></p>
-    <section class="prize-section" aria-labelledby="prizeHeading"><div class="section-heading"><h2 id="prizeHeading">이번 쿠지의 상품</h2><span>모든 번호표에 상품이 있어요</span></div><div id="prizeList"></div></section>
-    <section class="winner-section" aria-labelledby="winnerHeading"><div class="section-heading"><h2 id="winnerHeading">행운의 주인공</h2><span id="winnerCount"></span></div><ol id="winnerList" class="winner-list"></ol></section>
-    <p class="event-rule">빼빼로 스도쿠를 완료한 계정마다 한 번 참여할 수 있습니다.<br />상품은 뽑을 때마다 남은 수량에서 하나씩 지급됩니다.</p>
-    <details class="demo-tools" open><summary>예시 화면 설정</summary><label for="demoPlayer">참여 상태</label><select id="demoPlayer"><option value="ready">퍼즐러 · 스도쿠 완료</option><option value="locked">초코 · 스도쿠 미완료</option><option value="drawn">모카 · 뽑기 완료</option></select><button id="resetDemo" type="button">예시 초기화</button><p>상품·수량·당첨자는 예시입니다. 인원은 미정이며 상품 구성은 추후 정합니다. 실제 완료 기록과 연결되지 않고, 체험 기록은 이 브라우저에만 저장됩니다.</p></details>
+    <div class="draw-heading"><h2>뽑기</h2><span id="remainingCount"></span></div>
+    <div class="draw-actions"><p id="eligibility">빼빼로 스도쿠 완료 · 뽑기 1회 가능</p><button id="drawButton" type="button">1회 뽑기</button></div>
+    <section id="drawResult" class="draw-result" aria-labelledby="resultHeading" hidden>
+      <h2 id="resultHeading">뽑기 결과</h2>
+      <p id="drawStatus" class="draw-status" role="status" aria-live="polite"></p>
+      <div id="resultItem" class="result-item"></div>
+    </section>
+    <section aria-labelledby="prizeHeading"><div class="section-heading"><h2 id="prizeHeading">상품</h2><span>남은 수량 / 전체</span></div><div id="prizeList"></div></section>
+    <section aria-labelledby="winnerHeading"><div class="section-heading"><h2 id="winnerHeading">당첨자</h2><span id="winnerCount"></span></div><ol id="winnerList" class="winner-list"></ol></section>
+    <details class="demo-tools"><summary>예시 설정</summary><label for="demoPlayer">참여 상태</label><select id="demoPlayer"><option value="ready">퍼즐러 · 스도쿠 완료</option><option value="locked">초코 · 스도쿠 미완료</option><option value="drawn">모카 · 뽑기 완료</option></select><button id="resetDemo" type="button">초기화</button><p>상품·수량·당첨자는 예시입니다. 실제 완료 기록과 연결되지 않으며, 체험 결과는 이 브라우저에 저장됩니다.</p></details>
   </section>
-  <dialog id="prizeDialog" class="prize-dialog" aria-labelledby="resultTitle"><div class="result-content"><span class="result-eyebrow">오늘의 달콤한 행운</span><div id="resultGrade" class="result-grade"></div><div class="result-sticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><h2 id="resultTitle"></h2><p id="resultDescription"></p><button id="closeResult" type="button">내 상품 확인하기</button></div><div id="confetti" class="confetti" aria-hidden="true"></div></dialog>
 </PageLayout>
 <script>import '../../../scripts/pepero-kuji-preview.js';</script>
