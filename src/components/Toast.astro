@@ -10,6 +10,7 @@
   window.showToast=display;
   window.showAchievementNotifications=(result,{defer=false}={})=>{
     if(!result)return;
+    if(result.achievement_notifications?.length||result.daily_task_notifications?.length)window.dispatchEvent(new Event('puzzle-rewards-changed'));
     if(defer){
       const userId=window.puzzleAccount?.user?.id;
       if(userId&&(result.achievement_notifications?.length||result.daily_task_notifications?.length))try{sessionStorage.setItem('puzzle-mission-notice',JSON.stringify({userId,result}));}catch{}

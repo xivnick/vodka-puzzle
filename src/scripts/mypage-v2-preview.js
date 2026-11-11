@@ -1,6 +1,7 @@
 import {getAchievementGoal as previewGoal,isAchievementThreshold} from '../lib/achievement-goals.js';
 import {createBadgeEffect,cloneBadgeVisual} from './nickname-badge-effects.js';
 import {initNicknameBadges} from './nickname-badge-alignment.js';
+import {setHeaderRewardReady} from './header-rewards.js';
 export function initMypage(root,{server=null}={}){
   const goal=mission=>server?mission.serverGoal:previewGoal(mission);
   const storageKey='mypage-v2-demo-v1';
@@ -417,6 +418,7 @@ export function initMypage(root,{server=null}={}){
     data.total=state.total;allClearCompleted=state.allClearCompleted;if(!dressSaving)allClearEnabled=state.allClearEnabled;
     applied={...state.applied};if(!dressSaving)draft={...applied};data.missions=state.missions;data.dailyQuests=state.dailyQuests;
     dailyDate=state.dailyDate;dailyClaimed.clear();for(const id of state.dailyClaimed)dailyClaimed.add(id);
+    setHeaderRewardReady(state.missions.some(m=>m.serverState==='claimable'&&m.configured&&m.active!==false)||state.dailyQuests.some(q=>q.complete&&!q.claimed&&!q.unavailable&&q.configured));
     $('#accountName').textContent=nickname;setBadgeName($('#profileBadge'),nickname);
     const selected=craft.filter(Boolean),needed=new Map();selected.forEach(id=>needed.set(id,(needed.get(id)||0)+1));
     if([...needed].some(([id,count])=>(inventory.get(id)||0)<count))craft=[];

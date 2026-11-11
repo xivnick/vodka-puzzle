@@ -26,11 +26,13 @@ try{
 const inline=fs.readFileSync(new URL('../src/components/Toast.astro',import.meta.url),'utf8').match(/<script is:inline>([\s\S]*?)<\/script>/)[1];
 const classes=new Set(),element={textContent:'',classList:{add:k=>classes.add(k),remove:k=>classes.delete(k)}};
 let nextTimer=0;const timers=new Map(),store=new Map();
-const toastWindow={puzzleAuthReady:new Promise(()=>{}),puzzleAccount:{user:{id:'fixture'}}};
-vm.runInNewContext(inline,{window:toastWindow,document:{getElementById:()=>element},setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer;},clearTimeout:id=>timers.delete(id),sessionStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)}});
+const rewardEvents=[];
+const toastWindow={puzzleAuthReady:new Promise(()=>{}),puzzleAccount:{user:{id:'fixture'}},dispatchEvent:event=>rewardEvents.push(event.type)};
+vm.runInNewContext(inline,{window:toastWindow,Event,document:{getElementById:()=>element},setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer;},clearTimeout:id=>timers.delete(id),sessionStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)}});
 const tick=()=>{const [id,fn]=timers.entries().next().value;timers.delete(id);fn();};
 toastWindow.showToast('완료 기록 저장');const response={operation_id:'fixture-operation',achievement_notifications:[{id:'first',name:'반가워요'},{id:'first',name:'반가워요'}],daily_task_notifications:[{id:'daily-complete',name:'하루 한 문제'}]};
 toastWindow.showAchievementNotifications(response);assert.equal(element.textContent,'완료 기록 저장');
+assert.deepEqual(rewardEvents,['puzzle-rewards-changed'],'new rewards refresh the header indicator');
 tick();tick();assert.equal(element.textContent,'도전 과제 달성: 반가워요');tick();tick();assert.equal(element.textContent,'일일 과제 달성: 하루 한 문제');tick();assert.equal(timers.size,0);
 toastWindow.showAchievementNotifications(response);assert.equal(timers.size,0,'same operation notice must not repeat');
 toastWindow.showAchievementNotifications(response,{defer:true});assert.equal(JSON.parse(store.get('puzzle-mission-notice')).userId,'fixture');

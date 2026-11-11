@@ -4,12 +4,18 @@
     <a id="headerTickets" class="header-tickets" href="/time-machine/" hidden>
       <span id="headerTicketCount"></span><img src="/icons/time-machine/ticket.svg" width="16" height="16" alt="" />
     </a>
-    <a id="nicknameLink" class="header-nick-link" href="/nickname/">로그인</a></nav>
+    <span class="header-nick-anchor">
+      <a id="nicknameLink" class="header-nick-link" href="/nickname/">로그인</a>
+      <span id="headerRewardDot" class="header-reward-dot" role="img" aria-label="받을 수 있는 보상이 있어요" hidden></span>
+    </span></nav>
 </header>
 <style>nav{display:flex;gap:10px;align-items:center}nav a{text-decoration:none}.header-back{font-size:.85rem;color:#999}.site-header{height:44px}</style>
 
-<script>import '../scripts/header-tickets.js';</script>
+<script>import '../scripts/header-tickets.js'; import '../scripts/header-rewards.js';</script>
 <style>
+.header-nick-anchor { display:inline-flex; position:relative; min-width:0; }
+.header-reward-dot { position:absolute; top:1px; right:-8px; width:6px; height:6px; border-radius:50%; background:#df8a48; pointer-events:none; }
+.header-reward-dot[hidden] { display:none; }
 .header-tickets { display:inline-flex; align-items:center; gap:4px; flex-shrink:0; color:#888; font-size:.75rem; line-height:1; text-decoration:none; font-variant-numeric:tabular-nums; padding:6px 0; }
 .header-tickets[hidden] { display:none; }
 .header-tickets img { display:block; }
