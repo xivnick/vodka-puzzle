@@ -2,19 +2,18 @@
 import PageLayout from '../../../layouts/PageLayout.astro';
 import '../../../styles/pepero-kuji-preview.css';
 ---
-<PageLayout title="빼빼로 쿠지" subtitle="빼빼로 스도쿠를 완료하면 한 번 뽑을 수 있습니다.">
+<PageLayout title="빼빼로 쿠지">
   <meta slot="head" name="robots" content="noindex, nofollow" />
   <section id="kujiPreview" class="kuji" aria-label="빼빼로 쿠지 예시">
     <div class="draw-heading"><h2>뽑기</h2><span id="remainingCount"></span></div>
-    <div class="draw-actions"><p id="eligibility">빼빼로 스도쿠 완료 · 뽑기 1회 가능</p><p id="couponHint" class="coupon-hint">원하는 쿠폰을 한 장 골라 주세요.</p><div id="couponGrid" class="coupon-grid" aria-label="뽑기 쿠폰"></div></div>
+    <div class="draw-actions"><div id="couponGrid" class="coupon-grid" aria-label="뽑기 쿠폰"></div></div>
     <section id="drawResult" class="draw-result" aria-labelledby="resultHeading" hidden>
       <h2 id="resultHeading">뽑기 결과</h2>
-      <p id="drawStatus" class="draw-status" role="status" aria-live="polite"></p>
-      <div id="resultItem" class="result-item"></div>
+      <div id="resultItem" class="result-item" role="status" aria-live="polite"></div>
     </section>
-    <section aria-labelledby="prizeHeading"><div class="section-heading"><h2 id="prizeHeading">상품</h2><span>남은 수량 / 전체</span></div><div id="prizeList"></div></section>
+    <section aria-labelledby="prizeHeading"><div class="section-heading"><h2 id="prizeHeading">상품</h2></div><div id="prizeList"></div></section>
     <section aria-labelledby="winnerHeading"><div class="section-heading"><h2 id="winnerHeading">당첨자</h2><span id="winnerCount"></span></div><ol id="winnerList" class="winner-list"></ol></section>
-    <details class="demo-tools"><summary>예시 설정</summary><label for="demoPlayer">참여 상태</label><select id="demoPlayer"><option value="ready">퍼즐러 · 스도쿠 완료</option><option value="locked">초코 · 스도쿠 미완료</option><option value="drawn">모카 · 뽑기 완료</option></select><button id="resetDemo" type="button">초기화</button><p>상품·수량·당첨자는 예시입니다. 실제 완료 기록과 연결되지 않으며, 체험 결과는 이 브라우저에 저장됩니다.</p></details>
+    <details class="demo-tools"><summary>예시</summary><select id="demoPlayer" aria-label="참여 상태"><option value="ready">퍼즐러 · 스도쿠 완료</option><option value="locked">초코 · 스도쿠 미완료</option><option value="drawn">모카 · 뽑기 완료</option></select><button id="resetDemo" type="button">초기화</button></details>
   </section>
 </PageLayout>
 <script>import '../../../scripts/pepero-kuji-preview.js';</script>

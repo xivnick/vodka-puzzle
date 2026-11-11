@@ -35,8 +35,6 @@ if (root) {
     const name = player();
     const own = draws.find(d => d.person === name);
     const eligible = $('demoPlayer').value !== 'locked';
-    $('eligibility').textContent = own ? `${name} · 참여 완료` : eligible ? `${name} · 스도쿠 완료 · 뽑기 1회 가능` : `${name} · 빼빼로 스도쿠를 완료하면 참여할 수 있습니다.`;
-    $('couponHint').textContent = own ? '뽑기가 완료되었습니다.' : eligible ? '원하는 쿠폰을 한 장 골라 주세요.' : '스도쿠 완료 후 쿠폰을 고를 수 있습니다.';
     $('couponGrid').replaceChildren(...Array.from({ length: totalPrizes }, (_, i) => {
       const ticket = i + 1;
       const drawn = draws.find(d => d.ticket === ticket);
@@ -45,14 +43,13 @@ if (root) {
       button.className = `coupon${drawn ? ' is-used' : ''}`;
       button.disabled = busy || !!own || !eligible || !!drawn;
       button.setAttribute('aria-label', `${ticket}번 쿠폰${drawn ? `, ${drawn.person}님 추첨 완료` : ', 뽑기'}`);
-      button.innerHTML = `<span class="coupon-number">${String(ticket).padStart(2, '0')}</span><span class="coupon-label">${drawn ? drawn.person : '미개봉'}</span>`;
+      button.innerHTML = `<img class="coupon-icon" src="/icons/pepero-kuji/ticket.svg" width="18" height="18" alt="" /><span class="coupon-number">${String(ticket).padStart(2, '0')}</span><span class="coupon-prize">${drawn ? prizeFor(drawn.prizeId).name : ''}</span><span class="coupon-label">${drawn ? drawn.person : ''}</span>`;
       button.addEventListener('click', () => draw(ticket, button));
       return button;
     }));
-    $('remainingCount').textContent = `남은 상품 ${totalPrizes - draws.length}개`;
+    $('remainingCount').textContent = `${totalPrizes - draws.length} / ${totalPrizes}`;
     $('drawResult').hidden = !own && !busy;
     if (own && !busy) {
-      $('drawStatus').textContent = '당첨 결과가 기록되었습니다.';
       $('resultItem').className = 'result-item';
       $('resultItem').innerHTML = `<span class="result-grade">${prizeFor(own.prizeId).grade}상</span><div><strong>${prizeFor(own.prizeId).name}</strong><small>${name} · ${String(own.ticket).padStart(2, '0')}번 쿠폰</small></div>`;
     }
@@ -73,12 +70,12 @@ if (root) {
     $('resetDemo').disabled = true;
     root.querySelectorAll('.coupon').forEach(coupon => { coupon.disabled = true; });
     button.classList.add('is-selected');
-    $('couponHint').textContent = `${String(ticket).padStart(2, '0')}번 쿠폰을 확인하고 있습니다.`;
+    button.setAttribute('aria-busy', 'true');
+    button.setAttribute('aria-label', `${ticket}번 쿠폰 확인 중`);
     $('drawResult').hidden = false;
     $('drawResult').setAttribute('aria-busy', 'true');
-    $('drawStatus').textContent = '열어보는 중…';
-    $('resultItem').className = 'result-item is-sealed';
-    $('resultItem').innerHTML = '<span class="result-cover" aria-hidden="true">?</span>';
+    $('resultItem').className = 'result-item';
+    $('resultItem').innerHTML = '';
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     await pause(reduced ? 0 : 800);
     busy = false;
@@ -87,11 +84,13 @@ if (root) {
     render();
     $('drawResult').setAttribute('aria-busy', 'false');
     $('resultItem').classList.add('is-revealed');
+    const revealed = $('couponGrid').children[ticket - 1];
+    revealed.classList.add('is-revealed');
   }
-  $('demoPlayer').addEventListener('change', () => { $('drawStatus').textContent = ''; render(); });
+  $('demoPlayer').addEventListener('change', render);
   $('resetDemo').addEventListener('click', () => {
     if (busy) return;
-    draws = seed(); save(); $('demoPlayer').value = 'ready'; $('drawStatus').textContent = '예시를 처음 상태로 되돌렸습니다.'; render();
+    draws = seed(); save(); $('demoPlayer').value = 'ready'; render();
   });
   render();
 }

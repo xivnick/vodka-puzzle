@@ -5,23 +5,22 @@
 .draw-heading,.section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
 .draw-heading>span,.section-heading>span{font-size:.65rem;color:#999}
 .draw-actions{padding:16px 18px;border-top:1px solid #e8e5df;border-bottom:1px solid #e8e5df}
-.draw-actions p{font-size:.73rem;line-height:1.8;color:#888;margin:0 0 12px}
-.draw-actions .coupon-hint{font-size:.65rem;color:#999;margin-bottom:14px}
-.coupon-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.coupon{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-width:0;padding:14px 4px 10px;border:1px solid #d8d3c9;border-radius:2px;background:#faf9f6;color:#666}
+.coupon-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.coupon{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:110px;padding:16px 6px 10px;box-sizing:border-box;border:1px solid #d8d3c9;border-radius:2px;background:#faf9f6;color:#666}
+.coupon-icon{position:absolute;right:7px;top:7px;opacity:.65}
+.coupon-prize{display:flex;align-items:center;justify-content:center;min-height:28px;font-size:.65rem;line-height:1.5;overflow-wrap:anywhere}
 .coupon-number{font-size:1rem;font-variant-numeric:tabular-nums}
 .coupon-label{display:block;width:100%;padding-top:7px;border-top:1px dashed #e3dfd6;font-size:.58rem;color:#aaa;overflow-wrap:anywhere}
 .coupon:hover:not(:disabled){background:#f0ede6;border-color:#bcb5a8}
 .coupon:disabled{cursor:default}
-.coupon.is-used{background:#fff;border-color:#eeeae3;color:#c4bfb5}
+.coupon.is-used{background:#fff;border-color:#e8e5df;color:#aaa}
+.coupon.is-used .coupon-prize{color:#777}
 .coupon.is-used .coupon-label{color:#bbb}
-.coupon.is-selected{background:#ede9e1;border-color:#bcb5a8}
+.coupon.is-selected{background:#f5f3ef;border-color:#c8c3b8}
+.coupon.is-selected::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 25%,#ffffffd0 50%,transparent 75%);transform:translateX(-100%);animation:kuji-waiting .8s ease-in-out both}
+.coupon.is-revealed{animation:kuji-reveal .32s ease-out both}
 .draw-result{margin-top:24px}
-.draw-status{font-size:.65rem;color:#999;margin:8px 0;line-height:1.5}
 .result-item{position:relative;display:flex;align-items:center;gap:12px;min-height:64px;box-sizing:border-box;padding:14px 18px;border-radius:3px;background:#f5f3ef;overflow:hidden}
-.result-item.is-sealed{justify-content:center}
-.result-cover{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e9e5dd;color:#b2aa9c;font-size:.9rem}
-.result-item.is-sealed::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 25%,#ffffffc0 50%,transparent 75%);transform:translateX(-100%);animation:kuji-waiting 1.15s ease-in-out infinite}
 .result-item.is-revealed{animation:kuji-reveal .32s ease-out both}
 .result-grade{font-size:.8rem;color:#888;flex-shrink:0}
 .result-item strong{display:block;font-size:.8rem;font-weight:400;color:#444}
@@ -36,10 +35,8 @@
 .winner-prize{margin-left:auto;color:#999;font-size:.7rem;text-align:right}
 .demo-tools{border-top:1px solid #e8e5df;padding-top:16px;margin-top:32px;color:#999;font-size:.65rem}
 .demo-tools summary{cursor:pointer;margin-bottom:12px}
-.demo-tools label{margin-right:8px}
 .demo-tools select{max-width:100%;padding:6px;background:#fff;border:1px solid #ddd7ce;border-radius:2px;color:#777;font-size:.65rem}
 .demo-tools button{border:0;background:none;color:#888;font-size:.65rem;margin:10px 0 0 10px;padding:0;text-decoration:underline}
-.demo-tools p{line-height:1.8;margin:12px 0 0}
 @keyframes kuji-waiting{to{transform:translateX(100%)}}
 @keyframes kuji-reveal{from{opacity:.4;transform:translateY(5px) scale(.97)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.result-item.is-sealed::after,.result-item.is-revealed{animation:none}}
+@media(prefers-reduced-motion:reduce){.coupon.is-selected::after,.coupon.is-revealed,.result-item.is-revealed{animation:none}}
