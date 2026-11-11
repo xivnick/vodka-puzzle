@@ -60,8 +60,6 @@ if (root) {
       $('resultItem').innerHTML = `<span class="result-grade">${prizeFor(own.prizeId).grade}상</span><div><strong>${prizeFor(own.prizeId).name}</strong><small>${name}</small></div>`;
     }
     $('prizeList').innerHTML = prizes.map(p => `<article class="prize-row"><span class="prize-grade">${p.grade}상</span><h3>${p.name}</h3><span class="prize-stock">${remaining(p)} / ${p.total}</span></article>`).join('');
-    $('winnerCount').textContent = `${draws.length}명`;
-    $('winnerList').innerHTML = [...draws].reverse().map(d => `<li><span>${d.person}${d.person === name ? ' (나)' : ''}</span><span class="winner-prize">${prizeFor(d.prizeId).grade}상 · ${prizeFor(d.prizeId).name}</span></li>`).join('');
   }
   const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
   async function draw(ticket, button) {

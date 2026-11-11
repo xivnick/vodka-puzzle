@@ -38,9 +38,6 @@
 .prize-grade{color:#999;font-size:.68rem;min-width:22px}
 .prize-row h3{margin:0;font-size:.75rem;font-weight:400;flex:1}
 .prize-stock{font-size:.7rem;color:#999;font-variant-numeric:tabular-nums}
-.winner-list{list-style:none;padding:0;margin:0}
-.winner-list li{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #e8e5df;font-size:.73rem}
-.winner-prize{margin-left:auto;color:#999;font-size:.7rem;text-align:right}
 .demo-tools{border-top:1px solid #e8e5df;padding-top:16px;margin-top:32px;color:#999;font-size:.65rem}
 .demo-tools summary{cursor:pointer;margin-bottom:12px}
 .demo-tools select{max-width:100%;padding:6px;background:#fff;border:1px solid #ddd7ce;border-radius:2px;color:#777;font-size:.65rem}
