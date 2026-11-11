@@ -33,6 +33,7 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
       <div class="icon-overview"><div class="icon-display"><div id="profileBadge" hidden><NicknameBadge name="퍼즐러" icon="leaf" label="현재 표시 이름"/></div><span id="equippedIcon" class="equipped-icon" role="img" aria-label="현재 아이콘: 잎사귀"></span><div class="equipped-description"><span id="equippedIconName">잎사귀</span><span id="equippedColorSeparator" aria-hidden="true">·</span><span id="equippedColor" class="equipped-color-name">기본</span></div></div><a class="appearance-link" href={`${basePath}customize/`}><span class="appearance-label">꾸미기</span><span class="appearance-chevron" aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/chevron-right.svg")}/></span></a>
 
       </div>
+      <slot name="account-links" />
     </section>
     <section class="preview-section" aria-labelledby="previewTitle" hidden={!customize}>
       <div class="view-heading"><h2 id="previewTitle">미리보기</h2></div>
