@@ -1,0 +1,1 @@
+export const couponFrame = '<svg class="coupon-frame" viewBox="-1 -1 122 74" preserveAspectRatio="none" aria-hidden="true"><path class="coupon-paper" d="M4 .5h112a3.5 3.5 0 0 1 3.5 3.5v39a5 5 0 0 0 0 10v15a3.5 3.5 0 0 1-3.5 3.5H4A3.5 3.5 0 0 1 .5 68V53a5 5 0 0 0 0-10V4A3.5 3.5 0 0 1 4 .5Z"/><path class="coupon-perforation" d="M9 48h102"/></svg>';
