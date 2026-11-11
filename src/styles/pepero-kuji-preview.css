@@ -3,15 +3,17 @@
 .kuji :focus{outline:none;box-shadow:none}
 .kuji h2{font-size:.85rem;font-weight:500;margin:0;color:#444}
 .draw-heading,.section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
-.draw-heading>span,.section-heading>span{font-size:.65rem;color:#999}
-.draw-actions{padding:16px 18px;border-top:1px solid #e8e5df;border-bottom:1px solid #e8e5df}
-.coupon-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.coupon{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:110px;padding:16px 6px 10px;box-sizing:border-box;border:1px solid #d8d3c9;border-radius:2px;background:#faf9f6;color:#666}
-.ticket-wallet{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
-.ticket-wallet img{display:block}
-.coupon-prize{display:flex;align-items:center;justify-content:center;min-height:28px;font-size:.65rem;line-height:1.5;overflow-wrap:anywhere}
-.coupon-number{font-size:1rem;font-variant-numeric:tabular-nums}
-.coupon-label{display:block;width:100%;padding-top:7px;border-top:1px dashed #e3dfd6;font-size:.58rem;color:#aaa;overflow-wrap:anywhere}
+.section-heading>span{font-size:.65rem;color:#999}
+.draw-heading{min-height:32px;margin:6px 0 12px}
+.draw-actions{padding:12px;border-top:1px solid #e8e5df;border-bottom:1px solid #e8e5df}
+.coupon-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.coupon{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;height:72px;padding:9px 6px;box-sizing:border-box;border:1px solid #d8d3c9;border-radius:2px;background:#faf9f6;color:#666}
+.ticket-wallet{display:inline-flex;align-items:center;gap:6px;color:#888;font-size:.8rem;line-height:18px;font-variant-numeric:tabular-nums}
+.ticket-wallet img{display:block;flex-shrink:0}
+.ticket-wallet>span{display:flex;align-items:center;height:18px;font-weight:700}
+.coupon-prize{display:flex;align-items:center;justify-content:center;font-size:.65rem;line-height:1.45;overflow-wrap:anywhere}
+.coupon-number{font-size:.9rem;font-variant-numeric:tabular-nums}
+.coupon-label{display:block;width:100%;padding-top:5px;border-top:1px dashed #e3dfd6;font-size:.58rem;color:#aaa;overflow-wrap:anywhere}
 .coupon:hover:not(:disabled){background:#f0ede6;border-color:#bcb5a8}
 .coupon:disabled{cursor:default}
 .coupon.is-used{background:#fff;border-color:#e8e5df;color:#aaa}
@@ -20,20 +22,20 @@
 .coupon.is-selected{z-index:1;background:#f5f1e9;border-color:#c8bda9;animation:kuji-pick .7s ease-in-out both}
 .coupon.is-selected::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 20%,#fff 50%,transparent 80%);transform:translateX(-100%);animation:kuji-waiting .7s ease-in-out both}
 .coupon.is-opening{z-index:1;backface-visibility:hidden;animation:kuji-open .52s ease-in-out both}
-.draw-result{display:grid;gap:12px;margin-top:24px}
-.result-item{display:flex;align-items:center;gap:12px;box-sizing:border-box;padding:12px 18px;border-radius:3px;background:#f5f3ef;line-height:1.6}
+.draw-result{display:grid;gap:10px;margin-top:24px}
+.result-item{display:flex;align-items:center;gap:12px;box-sizing:border-box;padding:12px;border-radius:3px;background:#f5f3ef;line-height:1.6}
 .result-item>div{min-width:0}
 .result-item.is-revealed{animation:kuji-reveal .32s ease-out both}
 .result-grade{font-size:.8rem;color:#888;flex-shrink:0}
 .result-item strong{display:block;overflow-wrap:anywhere;font-size:.8rem;font-weight:400;color:#444}
 .result-item small{display:block;font-size:.65rem;color:#999;margin-top:4px}
-.section-heading{margin-top:28px}
-.prize-row{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid #e8e5df;font-size:.75rem}
+.section-heading{margin-top:24px;margin-bottom:10px}
+.prize-row{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #e8e5df;font-size:.75rem}
 .prize-grade{color:#999;font-size:.68rem;min-width:22px}
 .prize-row h3{margin:0;font-size:.75rem;font-weight:400;flex:1}
 .prize-stock{font-size:.7rem;color:#999;font-variant-numeric:tabular-nums}
 .winner-list{list-style:none;padding:0;margin:0}
-.winner-list li{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid #e8e5df;font-size:.73rem}
+.winner-list li{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #e8e5df;font-size:.73rem}
 .winner-prize{margin-left:auto;color:#999;font-size:.7rem;text-align:right}
 .demo-tools{border-top:1px solid #e8e5df;padding-top:16px;margin-top:32px;color:#999;font-size:.65rem}
 .demo-tools summary{cursor:pointer;margin-bottom:12px}

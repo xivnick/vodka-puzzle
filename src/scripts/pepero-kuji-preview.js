@@ -31,7 +31,9 @@ if (root) {
   const prizeFor = id => prizes.find(p => p.id === id);
   const remaining = prize => prize.total - draws.filter(d => d.prizeId === prize.id).length;
   const save = () => { try { localStorage.setItem(key, JSON.stringify(draws)); } catch { /* Keep the current page usable. */ } };
-  const couponMarkup = (ticket, drawn) => `<span class="coupon-number">${String(ticket).padStart(2, '0')}</span><span class="coupon-prize">${drawn ? prizeFor(drawn.prizeId).name : ''}</span><span class="coupon-label">${drawn ? drawn.person : ''}</span>`;
+  const couponMarkup = (ticket, drawn) => drawn
+    ? `<span class="coupon-prize">${prizeFor(drawn.prizeId).name}</span><span class="coupon-label">${drawn.person}</span>`
+    : `<span class="coupon-number">${String(ticket).padStart(2, '0')}</span>`;
   function render() {
     const name = player();
     const own = draws.find(d => d.person === name);
@@ -54,7 +56,7 @@ if (root) {
     $('drawResult').hidden = !own || busy;
     if (own && !busy) {
       $('resultItem').className = 'result-item';
-      $('resultItem').innerHTML = `<span class="result-grade">${prizeFor(own.prizeId).grade}상</span><div><strong>${prizeFor(own.prizeId).name}</strong><small>${name} · ${String(own.ticket).padStart(2, '0')}번 쿠폰</small></div>`;
+      $('resultItem').innerHTML = `<span class="result-grade">${prizeFor(own.prizeId).grade}상</span><div><strong>${prizeFor(own.prizeId).name}</strong><small>${name}</small></div>`;
     }
     $('prizeList').innerHTML = prizes.map(p => `<article class="prize-row"><span class="prize-grade">${p.grade}상</span><h3>${p.name}</h3><span class="prize-stock">${remaining(p)} / ${p.total}</span></article>`).join('');
     $('winnerCount').textContent = `${draws.length}명`;
