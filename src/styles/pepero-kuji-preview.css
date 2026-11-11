@@ -52,3 +52,13 @@
 .kuji-recovery:has(a:not([hidden]),button:not([hidden])){margin-bottom:12px}
 .kuji-recovery a,.kuji-recovery button{padding:0;border:0;background:none;color:#888;font:inherit;font-size:.73rem;text-decoration:underline}
 .kuji-results{display:grid;gap:8px}
+.kuji-skeleton-ticket{pointer-events:none;--ticket-edge:#e8e4dc;--ticket-paper:#f7f5f1}
+.kuji-skeleton-bar{display:block;height:10px;border-radius:2px;background:#e9e5de}
+.kuji-skeleton-number{position:absolute;top:18px;left:calc(50% - 7px);width:14px;height:12px}
+.kuji-skeleton-prize{min-height:40px}
+.skeleton-grade{width:18px}
+.skeleton-stock{width:28px}
+.kuji.is-loading .kuji-skeleton-bar,.kuji.is-loading .kuji-skeleton-ticket{animation:kuji-skeleton-pulse 1.6s ease-in-out infinite}
+.kuji.is-loading #ticketBalance{min-width:12px;color:transparent;border-radius:2px;background:#e9e5de;animation:kuji-skeleton-pulse 1.6s ease-in-out infinite}
+@keyframes kuji-skeleton-pulse{0%,100%{opacity:.45}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.kuji.is-loading .kuji-skeleton-bar,.kuji.is-loading .kuji-skeleton-ticket,.kuji.is-loading #ticketBalance{animation:none}}

@@ -1,18 +1,19 @@
 ---
+import {couponFrame} from '../../../lib/kuji-ticket-frame.js';
 import PageLayout from '../../../layouts/PageLayout.astro';
 import '../../../styles/pepero-kuji-preview.css';
 ---
 <PageLayout title="빼빼로 쿠지">
-  <section id="kujiLive" class="kuji" data-event="pepero-2026" aria-label="빼빼로 쿠지">
+  <section id="kujiLive" class="kuji is-loading" aria-busy="true" data-event="pepero-2026" aria-label="빼빼로 쿠지">
     <div class="draw-heading"><h2>뽑기</h2><span id="ticketWallet" class="ticket-wallet" aria-label="내 남은 티켓"><span id="ticketBalance">—</span><img src="/icons/time-machine/ticket.svg" width="18" height="18" alt="" /></span></div>
-    <p id="kujiMessage" class="kuji-message" role="status">불러오는 중...</p>
+    <p id="kujiMessage" class="kuji-message" role="status" hidden></p>
     <div class="kuji-recovery"><a id="kujiLogin" href="/nickname/?next=%2Fkuji%2Fpepero-2026%2F" hidden>로그인</a><button id="kujiRetry" type="button" hidden>다시 확인</button></div>
-    <div class="draw-actions"><div id="couponGrid" class="coupon-grid" aria-label="뽑기 쿠폰" aria-busy="true"></div></div>
+    <div class="draw-actions"><div id="couponGrid" class="coupon-grid" aria-label="뽑기 쿠폰" aria-busy="true">{Array.from({length:12},()=> <div class="coupon kuji-skeleton-ticket" aria-hidden="true"><Fragment set:html={couponFrame}/><span class="kuji-skeleton-number kuji-skeleton-bar" /></div>)}</div></div>
     <section id="drawResult" class="draw-result" aria-labelledby="resultHeading" hidden>
       <h2 id="resultHeading">뽑기 결과</h2>
       <div id="resultItems" class="kuji-results" aria-live="polite" aria-relevant="additions"></div>
     </section>
-    <section aria-labelledby="prizeHeading"><div class="section-heading"><h2 id="prizeHeading">상품</h2></div><div id="prizeList"></div></section>
+    <section aria-labelledby="prizeHeading"><div class="section-heading"><h2 id="prizeHeading">상품</h2></div><div id="prizeList" aria-busy="true">{Array.from({length:7},(_,i)=> <div class="prize-row kuji-skeleton-prize" aria-hidden="true"><span class="prize-grade"><span class="kuji-skeleton-bar skeleton-grade" /></span><h3><span class="kuji-skeleton-bar" style={`width:${i<2?66:54}%`} /></h3><span class="prize-stock"><span class="kuji-skeleton-bar skeleton-stock" /></span></div>)}</div></section>
   </section>
 </PageLayout>
 <script>import '../../../scripts/kuji-live.js';</script>

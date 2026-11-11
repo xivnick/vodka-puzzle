@@ -46,6 +46,9 @@ export async function initializeKuji(root) {
   }
   function render(animateNumber = null) {
     if (!context) return;
+    root.classList.remove('is-loading');
+    root.setAttribute('aria-busy', 'false');
+    $('prizeList').setAttribute('aria-busy', 'false');
     $('ticketBalance').textContent = String(context.remaining_tickets);
     $('ticketWallet').setAttribute('aria-label', `내 남은 티켓 ${context.remaining_tickets}장`);
     $('couponGrid').replaceChildren(...context.tickets.map(ticket => {
@@ -76,6 +79,11 @@ export async function initializeKuji(root) {
   async function refresh() {
     if (busy || reading) return;
     reading = true;
+    if (!context) {
+      root.classList.add('is-loading');
+      root.setAttribute('aria-busy', 'true');
+      message();
+    }
     const request = ++revision;
     try {
       if (account.error) throw new Error('ACCOUNT_ERROR');
@@ -92,6 +100,9 @@ export async function initializeKuji(root) {
       if (request === revision) message(messages[error.message] ?? '불러오지 못했습니다. 다시 확인해 주세요.', true);
     } finally {
       reading = false;
+      root.classList.remove('is-loading');
+      root.setAttribute('aria-busy', 'false');
+      $('prizeList').setAttribute('aria-busy', 'false');
       $('couponGrid').setAttribute('aria-busy', String(busy));
     }
   }

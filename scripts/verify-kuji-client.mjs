@@ -47,7 +47,7 @@ async function boot({balance = 2, restored = false, anonymous = false} = {}) {
       }};
     },
   }};
-  const root = {dataset:{event:'fixture-event'}, querySelectorAll: () => get('couponGrid').children};
+  const root = {...makeElement(), dataset:{event:'fixture-event'}, querySelectorAll: () => get('couponGrid').children};
   await initializeKuji(root);
 }
 async function settle() { for (let i = 0; i < 20; i++) await Promise.resolve(); }
