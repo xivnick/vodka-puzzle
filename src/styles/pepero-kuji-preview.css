@@ -4,7 +4,7 @@
 .kuji h2{font-size:.85rem;font-weight:500;margin:0;color:#444}
 .draw-heading,.section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
 .section-heading>span{font-size:.65rem;color:#999}
-.draw-heading{min-height:32px;margin:6px 0 12px}
+.draw-heading{margin:0 0 10px}
 .draw-actions{padding:12px;border-top:1px solid #e8e5df;border-bottom:1px solid #e8e5df}
 .coupon-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .coupon{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;height:72px;padding:9px 6px;box-sizing:border-box;border:1px solid #d8d3c9;border-radius:2px;background:#faf9f6;color:#666}
