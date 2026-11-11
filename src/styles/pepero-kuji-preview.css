@@ -7,7 +7,8 @@
 .draw-actions{padding:16px 18px;border-top:1px solid #e8e5df;border-bottom:1px solid #e8e5df}
 .coupon-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .coupon{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:110px;padding:16px 6px 10px;box-sizing:border-box;border:1px solid #d8d3c9;border-radius:2px;background:#faf9f6;color:#666}
-.coupon-icon{position:absolute;right:7px;top:7px;opacity:.65}
+.ticket-wallet{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.ticket-wallet img{display:block}
 .coupon-prize{display:flex;align-items:center;justify-content:center;min-height:28px;font-size:.65rem;line-height:1.5;overflow-wrap:anywhere}
 .coupon-number{font-size:1rem;font-variant-numeric:tabular-nums}
 .coupon-label{display:block;width:100%;padding-top:7px;border-top:1px dashed #e3dfd6;font-size:.58rem;color:#aaa;overflow-wrap:anywhere}

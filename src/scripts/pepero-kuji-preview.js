@@ -43,11 +43,13 @@ if (root) {
       button.className = `coupon${drawn ? ' is-used' : ''}`;
       button.disabled = busy || !!own || !eligible || !!drawn;
       button.setAttribute('aria-label', `${ticket}번 쿠폰${drawn ? `, ${drawn.person}님 추첨 완료` : ', 뽑기'}`);
-      button.innerHTML = `<img class="coupon-icon" src="/icons/pepero-kuji/ticket.svg" width="18" height="18" alt="" /><span class="coupon-number">${String(ticket).padStart(2, '0')}</span><span class="coupon-prize">${drawn ? prizeFor(drawn.prizeId).name : ''}</span><span class="coupon-label">${drawn ? drawn.person : ''}</span>`;
+      button.innerHTML = `<span class="coupon-number">${String(ticket).padStart(2, '0')}</span><span class="coupon-prize">${drawn ? prizeFor(drawn.prizeId).name : ''}</span><span class="coupon-label">${drawn ? drawn.person : ''}</span>`;
       button.addEventListener('click', () => draw(ticket, button));
       return button;
     }));
-    $('remainingCount').textContent = `${totalPrizes - draws.length} / ${totalPrizes}`;
+    const balance = eligible && !own ? 1 : 0;
+    $('ticketBalance').textContent = String(balance);
+    $('ticketWallet').setAttribute('aria-label', `내 남은 티켓 ${balance}장`);
     $('drawResult').hidden = !own && !busy;
     if (own && !busy) {
       $('resultItem').className = 'result-item';
@@ -66,6 +68,8 @@ if (root) {
     // Commit before the animation so refreshing cannot grant another draw.
     draws.push({ ticket, prizeId: prize.id, person: player() });
     save();
+    $('ticketBalance').textContent = '0';
+    $('ticketWallet').setAttribute('aria-label', '내 남은 티켓 0장');
     $('demoPlayer').disabled = true;
     $('resetDemo').disabled = true;
     root.querySelectorAll('.coupon').forEach(coupon => { coupon.disabled = true; });
