@@ -1,0 +1,35 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import { throughSquares261112 as puzzle } from '../lib/through-squares.js';
+const { puzzleId } = Astro.props;
+---
+<PuzzleLayout title="261112 사각형을 지나라" {puzzleId}
+  subtitle="모든 회색 정사각형에서 한 칸씩만 지나 S와 F를 연결하세요"
+  description="2×2 회색 정사각형마다 정확히 한 칸을 방문하는 경로 퍼즐">
+  <div slot="rules">
+    <p>칸과 칸의 중앙을 연결하여 격자의 경계선을 수직으로 통과하는 경로를 그리세요.</p>
+    <ul>
+      <li>경로는 S에서 시작해서 F로 끝나야 하며, 한 번 갔던 칸을 다시 방문하거나 자기 자신과 교차할 수 없습니다.</li>
+      <li>경로는 모든 2×2 회색 정사각형에 대하여, 그 정사각형의 4칸 중 오직 한 칸을 꼭 방문해야 합니다. 다른 3칸은 방문할 수 없습니다.</li>
+    </ul>
+  </div>
+  <div slot="controls">같은 행·열의 두 칸을 차례로 누르거나 드래그하여 선을 그리세요. 이미 연결된 구간을 다시 이으면 지워집니다. 지우기로 선택한 칸에 닿은 선을 지우세요.</div>
+  <section id="throughSquaresGame" data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} aria-label="사각형을 지나라">
+    <svg id="throughSquaresBoard" viewBox="-1 -1 522 522" role="group" aria-label="13행 13열 경로 격자, 왼쪽 위 S에서 오른쪽 아래 F까지 연결"></svg>
+    <div class="bottom-buttons">
+      <button id="throughSquaresErase" type="button">지우기</button>
+      <button id="throughSquaresReset" type="button" class="danger">초기화</button>
+    </div>
+    <p id="throughSquaresStatus" class="sr-only" role="status" aria-live="polite"></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="throughSquaresComplete" />
+</PuzzleLayout>
+<script>import '../scripts/through-squares.js';</script>
+<style>
+  p{margin:0} ul{padding-left:20px;margin-bottom:0}
+  #throughSquaresBoard{display:block;width:100%;height:auto;background:white;touch-action:none;user-select:none;-webkit-user-select:none}
+  #throughSquaresBoard :global(text){font-family:'Noto Sans KR',sans-serif}
+  .bottom-buttons{gap:8px}.bottom-buttons button{flex:1;min-width:0}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+</style>
