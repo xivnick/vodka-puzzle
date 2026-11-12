@@ -21,10 +21,6 @@ if (game) {
       const fill = visits === 1 ? '#c7dfc7' : visits > 1 ? '#edbaba' : '#c4c4c6';
       html += `<rect x="${c * 40 + 9}" y="${r * 40 + 9}" width="62" height="62" fill="${fill}"/>`;
     });
-    for (const cell of result.conflicts) {
-      const [x, y] = xy(cell);
-      html += `<rect x="${x - 20}" y="${y - 20}" width="40" height="40" fill="#edbaba" fill-opacity=".7"/>`;
-    }
     if (selected !== null) {
       const [x, y] = xy(selected);
       html += `<rect x="${x - 20}" y="${y - 20}" width="40" height="40" fill="#4a6fa5" fill-opacity=".16"/>`;
