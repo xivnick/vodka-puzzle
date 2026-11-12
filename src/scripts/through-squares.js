@@ -6,7 +6,7 @@ if (game) {
   const board = document.getElementById('throughSquaresBoard'), status = document.getElementById('throughSquaresStatus');
   const erase = document.getElementById('throughSquaresErase'), reset = document.getElementById('throughSquaresReset');
   const complete = document.getElementById('throughSquaresComplete');
-  let edges = new Set(), selected = null, gesture = null, ready = false, completionRecorded = false;
+  let edges = new Set(), selected = null, ready = false, completionRecorded = false;
   const state = () => ({ version: 1, puzzleId: id, edges: [...edges] });
   const xy = cell => [(cell % n + .5) * 40, (Math.floor(cell / n) + .5) * 40];
   function persist() {
@@ -42,7 +42,7 @@ if (game) {
     complete.hidden = !result.complete;
     status.textContent = result.complete ? '퍼즐을 완성했습니다.' : result.conflicts.size ? '규칙에 어긋나는 칸이 있습니다.' : '';
     if (!result.complete) completionRecorded = false;
-    if (ready && !gesture && result.complete && window.puzzlePage?.published && !completionRecorded) {
+    if (ready && result.complete && window.puzzlePage?.published && !completionRecorded) {
       completionRecorded = true; window.recordCompletion(id, state());
     }
   }
@@ -60,35 +60,14 @@ if (game) {
     return keys;
   }
   const apply = (keys, removing) => keys.forEach(key => removing ? edges.delete(key) : edges.add(key));
-  board.addEventListener('pointerdown', event => {
-    if (!ready || gesture || event.button !== 0) return;
+  board.addEventListener('click', event => {
+    if (!ready) return;
     const current = cellAt(event); if (current === null) return;
-    event.preventDefault(); board.setPointerCapture(event.pointerId);
-    gesture = { id: event.pointerId, start: current, last: current, previous: selected, moved: false, removing: null, before: [...edges] };
-    selected = current; render();
+    const keys = straightEdges(selected, current);
+    apply(keys, keys.every(key => edges.has(key)));
+    selected = selected === current ? null : current;
+    persist(); render();
   });
-  board.addEventListener('pointermove', event => {
-    if (!gesture || gesture.id !== event.pointerId) return;
-    const current = cellAt(event), keys = straightEdges(gesture.last, current);
-    if (!keys.length) return;
-    gesture.moved = true;
-    if (gesture.removing === null) gesture.removing = edges.has(keys[0]);
-    apply(keys, gesture.removing); gesture.last = current; selected = current; render();
-  });
-  function end(event) {
-    if (!gesture || gesture.id !== event.pointerId) return;
-    if (event.type !== 'pointerup') {
-      edges = new Set(gesture.before); selected = gesture.previous;
-    } else if (!gesture.moved) {
-      const keys = straightEdges(gesture.previous, gesture.start);
-      apply(keys, keys.every(key => edges.has(key)));
-      if (gesture.previous === gesture.start) selected = null;
-    }
-    gesture = null; persist(); render();
-  }
-  board.addEventListener('pointerup', end);
-  board.addEventListener('pointercancel', end);
-  board.addEventListener('lostpointercapture', end);
   erase.addEventListener('click', () => {
     if (!ready || selected === null) return;
     edges = new Set([...edges].filter(key => !key.split(':').map(Number).includes(selected)));
@@ -100,7 +79,7 @@ if (game) {
   });
   function restore(saved) {
     edges = parseThroughSquaresState(puzzle, saved, id) || new Set();
-    selected = null; gesture = null; completionRecorded = false;
+    selected = null; completionRecorded = false;
   }
   function init() {
     let saved = null;
@@ -112,7 +91,7 @@ if (game) {
     if (!ready || !window.puzzlePage?.published) return;
     const owner = window.puzzleAccount?.user?.id, before = JSON.stringify(state());
     const saved = await window.loadProgressCloud(id);
-    if (saved == null || owner !== window.puzzleAccount?.user?.id || before !== JSON.stringify(state()) || gesture) return;
+    if (saved == null || owner !== window.puzzleAccount?.user?.id || before !== JSON.stringify(state())) return;
     if (!parseThroughSquaresState(puzzle, saved, id)) { window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.'); return; }
     restore(saved); persist(); render();
   };
