@@ -63,7 +63,7 @@ if (game) {
     const current = cellAt(event); if (current === null) return;
     const keys = straightEdges(selected, current);
     apply(keys, keys.every(key => edges.has(key)));
-    selected = selected === current ? null : current;
+    selected = keys.length || selected === current ? null : current;
     persist(); render();
   });
   erase.addEventListener('click', () => {
