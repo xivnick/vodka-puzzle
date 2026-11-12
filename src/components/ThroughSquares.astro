@@ -28,7 +28,8 @@ const { puzzleId } = Astro.props;
 <script>import '../scripts/through-squares.js';</script>
 <style>
   p{margin:0} ul{padding-left:20px;margin-bottom:0}
-  #throughSquaresBoard{display:block;width:100%;height:auto;background:white;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+  #throughSquaresBoard{display:block;width:100%;height:auto;background:white;touch-action:manipulation;user-select:none;-webkit-user-select:none;pointer-events:all}
+  #throughSquaresBoard :global(*){pointer-events:none}
   #throughSquaresBoard :global(text){font-family:'Noto Sans KR',sans-serif}
   .bottom-buttons{gap:8px}.bottom-buttons button{flex:1;min-width:0}
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
