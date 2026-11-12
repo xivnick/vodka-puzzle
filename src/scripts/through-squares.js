@@ -16,8 +16,10 @@ if (game) {
   function render() {
     const result = inspectThroughSquares(puzzle, edges);
     let html = '<rect width="520" height="520" fill="white"/>';
-    puzzle.squares.forEach(([r, c]) => {
-      html += `<rect x="${c * 40 + 9}" y="${r * 40 + 9}" width="62" height="62" fill="#c4c4c6"/>`;
+    puzzle.squares.forEach(([r, c], index) => {
+      const visits = result.visits[index];
+      const fill = visits === 1 ? '#c7dfc7' : visits > 1 ? '#edbaba' : '#c4c4c6';
+      html += `<rect x="${c * 40 + 9}" y="${r * 40 + 9}" width="62" height="62" fill="${fill}"/>`;
     });
     for (const cell of result.conflicts) {
       const [x, y] = xy(cell);
