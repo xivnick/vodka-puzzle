@@ -32,7 +32,7 @@ function checkComplete() {
 window.checkComplete = checkComplete;
 
 function render() {
-  const { conflicts, clueErrors } = inspectSlovakSums(puzzle, values);
+  const { conflicts, clueErrors, satisfiedClues } = inspectSlovakSums(puzzle, values);
   for (const [index, cell] of cellByIndex) {
     cell.replaceChildren();
     if (values[index]) cell.textContent = values[index];
@@ -52,7 +52,11 @@ function render() {
     cell.tabIndex = index === selected ? 0 : -1;
     cell.setAttribute('aria-label', `${Math.floor(index / puzzle.size) + 1}행 ${index % puzzle.size + 1}열, ${values[index] ? `숫자 ${values[index]}` : '빈칸'}${notes[index].length ? `, 메모 ${notes[index].join(', ')}` : ''}${conflicts.has(index) ? ', 중복 오류' : ''}`);
   }
-  clueCells.forEach(cell => cell.classList.toggle('error', clueErrors.has(Number(cell.dataset.index))));
+  clueCells.forEach(cell => {
+    const index = Number(cell.dataset.index);
+    cell.classList.toggle('error', clueErrors.has(index));
+    cell.classList.toggle('satisfied', satisfiedClues.has(index));
+  });
   checkComplete();
 }
 function select(index, focus = false) {

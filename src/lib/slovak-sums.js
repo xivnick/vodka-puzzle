@@ -29,8 +29,8 @@ export function parseSlovakSumsState(puzzle, saved, puzzleId) {
 // Inspect only the player's entries; no solution search or stored answer.
 export function inspectSlovakSums(puzzle, values) {
   const { size, digits, clues } = puzzle;
-  const conflicts = new Set(), clueErrors = new Set();
-  if (!parseSlovakSumsState(puzzle, { version: 1, puzzleId: '', values }, '')) return { complete: false, conflicts, clueErrors };
+  const conflicts = new Set(), clueErrors = new Set(), satisfiedClues = new Set();
+  if (!parseSlovakSumsState(puzzle, { version: 1, puzzleId: '', values }, '')) return { complete: false, conflicts, clueErrors, satisfiedClues };
   let linesComplete = true;
   const checkLine = indexes => {
     for (const digit of digits) {
@@ -53,10 +53,11 @@ export function inspectSlovakSums(puzzle, values) {
     const sumMatches = clue.sum == null || sum === clue.sum;
     const countMatches = clue.count == null || count === clue.count;
     if (!sumMatches || !countMatches) cluesComplete = false;
+    else satisfiedClues.add(clue.row * size + clue.column);
     if ((clue.sum != null && sum > clue.sum) || (clue.count != null && count > clue.count) ||
       (clue.count != null && count === clue.count && !sumMatches) || (linesComplete && (!sumMatches || !countMatches))) {
       clueErrors.add(clue.row * size + clue.column);
     }
   }
-  return { complete: linesComplete && cluesComplete, conflicts, clueErrors };
+  return { complete: linesComplete && cluesComplete, conflicts, clueErrors, satisfiedClues };
 }
