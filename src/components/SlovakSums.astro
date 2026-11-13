@@ -1,0 +1,63 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import NumberPad from './NumberPad.astro';
+import { slovakSums261113 as puzzle } from '../lib/slovak-sums.js';
+const { puzzleId } = Astro.props;
+const clues = new Map(puzzle.clues.map(clue => [clue.row * puzzle.size + clue.column, clue]));
+---
+<PuzzleLayout title="261113 슬로바키아 합" {puzzleId}
+  subtitle="각 행과 열에 1~4를 한 번씩 넣어 회색 칸의 단서를 맞추세요"
+  description="이웃한 숫자의 합과 개수 단서에 맞춰 일부 흰 칸에 1~4를 넣는 퍼즐">
+  <div slot="rules">
+    <p>흰색 칸에 숫자를 넣어 모든 행과 열에 1, 2, 3, 4가 각각 한 번씩 나타나도록 하세요. 모든 흰색 칸을 채울 필요는 없습니다.</p>
+    <ul>
+      <li>한 칸에는 숫자 하나만 들어갈 수 있습니다. 회색 칸에는 숫자를 넣을 수 없습니다.</li>
+      <li>회색 칸의 단서는 그 칸과 변을 맞댄 상하좌우 이웃 칸에 적용됩니다.</li>
+      <li>숫자 단서는 이웃 칸에 들어 있는 숫자들의 합입니다.</li>
+      <li>흰 동그라미의 개수는 숫자가 들어 있는 이웃 칸의 개수입니다. 두 단서가 함께 있으면 둘 다 만족해야 합니다.</li>
+    </ul>
+  </div>
+  <div slot="controls">흰 칸을 누른 뒤 숫자 버튼으로 입력하세요. 메모하기 버튼이나 M으로 메모 입력을 켜고 끄세요. 지우기로 선택한 칸의 숫자와 메모를 지우세요.</div>
+  <section id="slovakGame" data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} aria-label="슬로바키아 합">
+    <div class="board-tools"><button id="slovakNotes" type="button" aria-pressed="false">메모하기</button></div>
+    <div id="slovakBoard" role="grid" aria-label="8행 8열 슬로바키아 합 격자">
+      {Array.from({ length: puzzle.size ** 2 }, (_, index) => {
+        const clue = clues.get(index);
+        const position = `${Math.floor(index / puzzle.size) + 1}행 ${index % puzzle.size + 1}열`;
+        return clue ? <div class="slovak-clue" role="gridcell" data-index={index}
+          aria-label={`${position}, 회색 단서${clue.sum != null ? `, 합 ${clue.sum}` : ''}${clue.count != null ? `, 숫자가 있는 이웃 ${clue.count}칸` : ''}`}>
+          {clue.sum != null && <span class="clue-sum">{clue.sum}</span>}
+          {clue.count != null && <span class="clue-circles" aria-hidden="true">{Array.from({ length: clue.count }, () => <span />)}</span>}
+        </div> : <button class="slovak-cell" type="button" role="gridcell" data-index={index} tabindex={index === 0 ? 0 : -1} aria-label={`${position}, 빈칸`} />;
+      })}
+    </div>
+    <NumberPad max={4} />
+    <div class="bottom-buttons"><button id="slovakErase" type="button">지우기</button><button id="slovakReset" class="danger" type="button">초기화</button></div>
+    <p id="slovakStatus" class="sr-only" role="status" aria-live="polite"></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="slovakComplete" />
+</PuzzleLayout>
+<script>import '../scripts/slovak-sums.js';</script>
+<style>
+  p{margin:0}ul{padding-left:20px;margin-bottom:0}
+  #slovakGame{width:100%;max-width:480px;margin-inline:auto}
+  .board-tools{display:flex;justify-content:flex-end;margin-bottom:8px}
+  #slovakNotes{background:none;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:0 0 1px;color:#888;font:inherit;font-size:.82rem;cursor:pointer}
+  #slovakNotes[aria-pressed=true]{color:#4a6fa5;border-color:#4a6fa5;font-weight:700}
+  #slovakBoard{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));border:2px solid #333;background:#fff;user-select:none;-webkit-user-select:none}
+  .slovak-cell,.slovak-clue{position:relative;aspect-ratio:1;min-width:0;box-sizing:border-box;border:0;border-right:1px solid #777;border-bottom:1px solid #777;border-radius:0;padding:0;margin:0;font-family:inherit}
+  #slovakBoard>:nth-child(8n){border-right:0}#slovakBoard>:nth-last-child(-n+8){border-bottom:0}
+  .slovak-cell{appearance:none;display:flex;align-items:center;justify-content:center;background:#fff;color:#4a6fa5;font-size:clamp(20px,5vw,29px);font-weight:700;cursor:pointer;touch-action:manipulation}
+  .slovak-cell.selected{background:#e8edf5}.slovak-cell.conflict{background:#f5d0d0;color:#b05050}
+  #slovakGame :global(button:focus){outline:none;box-shadow:none}
+  .slovak-clue{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:#c5c5c5;color:#111}
+  .clue-sum{font-size:clamp(22px,5.8vw,34px);font-weight:700;line-height:1.1;margin-top:3%}
+  .clue-circles{position:absolute;bottom:9%;display:flex;gap:5px;justify-content:center;width:100%}
+  .clue-circles span{display:block;width:24%;aspect-ratio:1;border:1.8px solid #222;border-radius:50%;background:white;box-sizing:border-box}
+  .slovak-clue.error{color:#b05050;background:#e5bebe}
+  .slovak-cell :global(.notes){position:absolute;inset:3px;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);font-size:clamp(10px,2.7vw,14px);font-weight:500;color:#606975}
+  .slovak-cell :global(.notes span){display:flex;align-items:center;justify-content:center}
+  .bottom-buttons{gap:8px}.bottom-buttons button{flex:1;min-width:0}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+</style>
