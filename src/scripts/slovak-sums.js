@@ -32,7 +32,7 @@ function checkComplete() {
 window.checkComplete = checkComplete;
 
 function render() {
-  const { conflicts, clueErrors, satisfiedClues } = inspectSlovakSums(puzzle, values);
+  const { conflicts, satisfiedSums, satisfiedCounts } = inspectSlovakSums(puzzle, values);
   for (const [index, cell] of cellByIndex) {
     cell.replaceChildren();
     if (values[index]) cell.textContent = values[index];
@@ -50,12 +50,12 @@ function render() {
     cell.classList.toggle('selected', index === selected);
     cell.classList.toggle('conflict', conflicts.has(index));
     cell.tabIndex = index === selected ? 0 : -1;
-    cell.setAttribute('aria-label', `${Math.floor(index / puzzle.size) + 1}행 ${index % puzzle.size + 1}열, ${values[index] ? `숫자 ${values[index]}` : '빈칸'}${notes[index].length ? `, 메모 ${notes[index].join(', ')}` : ''}${conflicts.has(index) ? ', 중복 오류' : ''}`);
+    cell.setAttribute('aria-label', `${Math.floor(index / puzzle.size) + 1}행 ${index % puzzle.size + 1}열, ${values[index] ? `숫자 ${values[index]}` : '빈칸'}${notes[index].length ? `, 메모 ${notes[index].join(', ')}` : ''}${conflicts.has(index) ? ', 규칙 오류' : ''}`);
   }
   clueCells.forEach(cell => {
     const index = Number(cell.dataset.index);
-    cell.classList.toggle('error', clueErrors.has(index));
-    cell.classList.toggle('satisfied', satisfiedClues.has(index));
+    cell.querySelector('.clue-sum')?.classList.toggle('satisfied', satisfiedSums.has(index));
+    cell.querySelector('.clue-circles')?.classList.toggle('satisfied', satisfiedCounts.has(index));
   });
   checkComplete();
 }

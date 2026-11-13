@@ -29,8 +29,8 @@ export function parseSlovakSumsState(puzzle, saved, puzzleId) {
 // Inspect only the player's entries; no solution search or stored answer.
 export function inspectSlovakSums(puzzle, values) {
   const { size, digits, clues } = puzzle;
-  const conflicts = new Set(), clueErrors = new Set(), satisfiedClues = new Set();
-  if (!parseSlovakSumsState(puzzle, { version: 1, puzzleId: '', values }, '')) return { complete: false, conflicts, clueErrors, satisfiedClues };
+  const conflicts = new Set(), clueErrors = new Set(), satisfiedSums = new Set(), satisfiedCounts = new Set();
+  if (!parseSlovakSumsState(puzzle, { version: 1, puzzleId: '', values }, '')) return { complete: false, conflicts, clueErrors, satisfiedSums, satisfiedCounts };
   let linesComplete = true;
   const checkLine = indexes => {
     for (const digit of digits) {
@@ -45,19 +45,23 @@ export function inspectSlovakSums(puzzle, values) {
   }
   let cluesComplete = true;
   for (const clue of clues) {
-    const neighbors = [[clue.row - 1, clue.column], [clue.row + 1, clue.column], [clue.row, clue.column - 1], [clue.row, clue.column + 1]]
+    const neighborIndexes = [[clue.row - 1, clue.column], [clue.row + 1, clue.column], [clue.row, clue.column - 1], [clue.row, clue.column + 1]]
       .filter(([row, column]) => row >= 0 && row < size && column >= 0 && column < size)
-      .map(([row, column]) => values[row * size + column]);
+      .map(([row, column]) => row * size + column);
+    const neighbors = neighborIndexes.map(index => values[index]);
     const sum = neighbors.reduce((total, value) => total + value, 0);
     const count = neighbors.filter(Boolean).length;
     const sumMatches = clue.sum == null || sum === clue.sum;
     const countMatches = clue.count == null || count === clue.count;
     if (!sumMatches || !countMatches) cluesComplete = false;
-    else satisfiedClues.add(clue.row * size + clue.column);
+    const clueIndex = clue.row * size + clue.column;
+    if (clue.sum != null && sumMatches) satisfiedSums.add(clueIndex);
+    if (clue.count != null && countMatches) satisfiedCounts.add(clueIndex);
     if ((clue.sum != null && sum > clue.sum) || (clue.count != null && count > clue.count) ||
       (clue.count != null && count === clue.count && !sumMatches) || (linesComplete && (!sumMatches || !countMatches))) {
-      clueErrors.add(clue.row * size + clue.column);
+      clueErrors.add(clueIndex);
+      neighborIndexes.filter(index => values[index]).forEach(index => conflicts.add(index));
     }
   }
-  return { complete: linesComplete && cluesComplete, conflicts, clueErrors, satisfiedClues };
+  return { complete: linesComplete && cluesComplete, conflicts, clueErrors, satisfiedSums, satisfiedCounts };
 }
