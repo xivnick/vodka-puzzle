@@ -45,19 +45,19 @@ const clues = new Map(puzzle.clues.map(clue => [clue.row * puzzle.size + clue.co
   .board-tools{display:flex;justify-content:flex-end;margin-bottom:8px}
   #slovakNotes{background:none;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:0 0 1px;color:#888;font:inherit;font-size:.82rem;cursor:pointer}
   #slovakNotes[aria-pressed=true]{color:#4a6fa5;border-color:#4a6fa5;font-weight:700}
-  #slovakBoard{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));border:2px solid #333;background:#fff;user-select:none;-webkit-user-select:none}
-  .slovak-cell,.slovak-clue{position:relative;aspect-ratio:1;min-width:0;box-sizing:border-box;border:0;border-right:1px solid #777;border-bottom:1px solid #777;border-radius:0;padding:0;margin:0;font-family:inherit}
+  #slovakBoard{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));border:2px solid #444;background:#fff;user-select:none;-webkit-user-select:none}
+  .slovak-cell,.slovak-clue{position:relative;aspect-ratio:1;min-width:0;box-sizing:border-box;border:0;border-right:1px solid #aaa;border-bottom:1px solid #aaa;border-radius:0;padding:0;margin:0;font-family:inherit;font-variant-numeric:tabular-nums}
   #slovakBoard>:nth-child(8n){border-right:0}#slovakBoard>:nth-last-child(-n+8){border-bottom:0}
-  .slovak-cell{appearance:none;display:flex;align-items:center;justify-content:center;background:#fff;color:#4a6fa5;font-size:clamp(20px,5vw,29px);font-weight:700;cursor:pointer;touch-action:manipulation}
-  .slovak-cell.selected{background:#e8edf5}.slovak-cell.conflict{background:#f5d0d0;color:#b05050}
+  .slovak-cell{appearance:none;display:flex;align-items:center;justify-content:center;background:#fff;color:#4a6fa5;font-size:clamp(18px,5vw,27px);font-weight:700;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .slovak-cell.selected{background:#e8edf5}.slovak-cell.conflict{background:#fbeaea;color:#b05050}
   #slovakGame :global(button:focus){outline:none;box-shadow:none}
-  .slovak-clue{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:#c5c5c5;color:#111}
-  .clue-sum{font-size:clamp(22px,5.8vw,34px);font-weight:700;line-height:1.1;margin-top:3%}
-  .clue-circles{position:absolute;bottom:9%;display:flex;gap:5px;justify-content:center;width:100%}
-  .clue-circles span{display:block;width:24%;aspect-ratio:1;border:1.8px solid #222;border-radius:50%;background:white;box-sizing:border-box}
-  .clue-sum.satisfied{color:#35734a}
+  .slovak-clue{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#d7d7d7;color:#333}
+  .clue-sum{font-size:clamp(18px,5vw,27px);font-weight:700;line-height:1}
+  .clue-circles{display:flex;gap:5px;justify-content:center;width:100%}
+  .clue-circles span{display:block;width:20%;max-width:11px;aspect-ratio:1;border:1.5px solid #222;border-radius:50%;background:white;box-sizing:border-box}
+  .clue-sum.satisfied{color:#66845b}
   .clue-sum.error{color:#b05050}
-  .clue-circles.satisfied span{background:#35734a}
+  .clue-circles.satisfied span{background:#66845b}
   .slovak-cell :global(.notes){position:absolute;inset:3px;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);font-size:clamp(10px,2.7vw,14px);font-weight:500;color:#606975}
   .slovak-cell :global(.notes span){display:flex;align-items:center;justify-content:center}
   .bottom-buttons{gap:8px}.bottom-buttons button{flex:1;min-width:0}
