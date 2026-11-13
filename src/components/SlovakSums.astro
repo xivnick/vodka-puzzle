@@ -56,6 +56,7 @@ const clues = new Map(puzzle.clues.map(clue => [clue.row * puzzle.size + clue.co
   .clue-circles{position:absolute;bottom:9%;display:flex;gap:5px;justify-content:center;width:100%}
   .clue-circles span{display:block;width:24%;aspect-ratio:1;border:1.8px solid #222;border-radius:50%;background:white;box-sizing:border-box}
   .clue-sum.satisfied{color:#35734a}
+  .clue-sum.error{color:#b05050}
   .clue-circles.satisfied span{background:#35734a}
   .slovak-cell :global(.notes){position:absolute;inset:3px;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);font-size:clamp(10px,2.7vw,14px);font-weight:500;color:#606975}
   .slovak-cell :global(.notes span){display:flex;align-items:center;justify-content:center}

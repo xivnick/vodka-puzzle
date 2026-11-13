@@ -32,7 +32,7 @@ function checkComplete() {
 window.checkComplete = checkComplete;
 
 function render() {
-  const { conflicts, satisfiedSums, satisfiedCounts } = inspectSlovakSums(puzzle, values);
+  const { conflicts, clueErrors, satisfiedSums, satisfiedCounts } = inspectSlovakSums(puzzle, values);
   for (const [index, cell] of cellByIndex) {
     cell.replaceChildren();
     if (values[index]) cell.textContent = values[index];
@@ -55,6 +55,7 @@ function render() {
   clueCells.forEach(cell => {
     const index = Number(cell.dataset.index);
     cell.querySelector('.clue-sum')?.classList.toggle('satisfied', satisfiedSums.has(index));
+    cell.querySelector('.clue-sum')?.classList.toggle('error', clueErrors.has(index) && !satisfiedSums.has(index));
     cell.querySelector('.clue-circles')?.classList.toggle('satisfied', satisfiedCounts.has(index));
   });
   checkComplete();
