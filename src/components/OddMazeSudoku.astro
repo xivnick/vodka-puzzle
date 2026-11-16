@@ -1,0 +1,48 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import NumberPad from './NumberPad.astro';
+import '../styles/daily-sudoku.css';
+import { givens, endpoints } from '../lib/odd-maze-sudoku.js';
+const { puzzleId = '261116_01', preview = false } = Astro.props;
+const markerLabel = i => endpoints.includes(i) ? (i === 0 ? ', 출발 원' : ', 도착 원') : '';
+---
+<PuzzleLayout title="261116 스도쿠(홀수 미로)" {puzzleId}
+  subtitle="홀수 칸을 따라 좌상단 원과 우하단 원을 연결하세요"
+  description="스도쿠를 완성하고 홀수 칸으로 두 원 사이를 연결하세요"
+  preview={preview} showCloud={!preview} showLeaderboard={!preview}>
+  <div slot="rules">
+    일반적인 스도쿠의 규칙을 따릅니다. 각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9를 한 번씩 넣으세요.<br />
+    좌상단 동그라미 칸부터 우하단 동그라미 칸까지 가로세로로 맞닿은 홀수 칸만으로 이동할 수 있는 경로가 존재해야 합니다.
+  </div>
+  <div slot="controls">
+    칸을 선택하고 숫자 버튼으로 입력하세요.<br />
+    메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br />
+    다른 칸을 눌러 이동하고 지우기 버튼으로 입력을 지우세요.
+  </div>
+  <section id="oddMazeGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="스도쿠(홀수 미로)">
+    <div class="sudoku-board-tools"><button id="oddMazeNotes" class="sudoku-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>
+    <div id="oddMazeBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">
+      {givens.flat().map((n, i) => <button type="button"
+        class:list={['sudoku-cell', { given: !!n, endpoint: endpoints.includes(i) }]}
+        data-cell={i} tabindex={i === 0 ? 0 : -1}
+        aria-label={`${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${n || '빈칸'}${n ? ', 고정 숫자' : ''}${markerLabel(i)}`}>{n || ''}</button>)}
+    </div>
+    <NumberPad id="oddMazeNumbers" max={9} />
+    <div class="bottom-buttons">
+      <button id="oddMazeErase" type="button">지우기</button>
+      <button id="oddMazeReset" type="button" class="danger">초기화</button>
+    </div>
+  </section>
+  <PuzzleCompletion slot="completion" id="oddMazeComplete" />
+</PuzzleLayout>
+<script>import '../scripts/odd-maze-sudoku.js';</script>
+<style>
+  #oddMazeGame { width:100%; }
+  #oddMazeBoard .sudoku-cell.endpoint::before { content:""; position:absolute; inset:15%; background:#d7d7d7; pointer-events:none; }
+  #oddMazeBoard .sudoku-cell.endpoint::before { border-radius:50%; }
+  #oddMazeBoard .sudoku-cell :global(.cell-value) { position:relative; z-index:1; }
+  #oddMazeBoard .sudoku-cell :global(.notes) { z-index:1; }
+  #oddMazeBoard .sudoku-cell.conflict { background:#fbeaea; }
+  #oddMazeBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
+</style>
