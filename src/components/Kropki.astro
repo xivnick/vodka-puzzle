@@ -6,7 +6,7 @@ import { kropkiPuzzles, kropkiEdges } from '../lib/kropki.js';
 const { number } = Astro.props;
 const puzzle = kropkiPuzzles[number - 1];
 const puzzleId = puzzle.id;
-const title = `261117 크롶키 ${number}(${'하중상'[number - 1]})`;
+const title = `261117 크롶키 ${number}`;
 const dotLabel = dot => dot === 'W' ? '흰 점' : '검은 점';
 ---
 <PuzzleLayout {title} {puzzleId}
