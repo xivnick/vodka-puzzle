@@ -1,0 +1,59 @@
+---
+import PuzzleLayout from '../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from './PuzzleCompletion.astro';
+import NumberPad from './NumberPad.astro';
+import { kropkiPuzzles, kropkiEdges } from '../lib/kropki.js';
+const { number } = Astro.props;
+const puzzle = kropkiPuzzles[number - 1];
+const puzzleId = puzzle.id;
+const title = `261117 크롶키 ${number}(${'하중상'[number - 1]})`;
+const dotLabel = dot => dot === 'W' ? '흰 점' : '검은 점';
+---
+<PuzzleLayout {title} {puzzleId}
+  subtitle="흰 점은 차이가 1, 검은 점은 두 배가 되도록 숫자를 채우세요"
+  description="행과 열에 숫자를 한 번씩 넣고 흰 점과 검은 점의 관계를 맞추는 크롶키 퍼즐">
+  <div slot="rules">
+    <p>각 행과 열에 1부터 {puzzle.size}까지의 숫자가 한 번씩 들어가도록 모든 칸을 채우세요.</p>
+    <ul>
+      <li>흰 점으로 연결된 두 칸의 숫자는 차이가 1입니다.</li>
+      <li>검은 점으로 연결된 두 칸의 숫자는 하나가 다른 하나의 2배입니다.</li>
+      <li>점이 없는 두 이웃 칸의 숫자는 차이가 1이 아니며, 2배 관계도 아닙니다.</li>
+    </ul>
+  </div>
+  <div slot="controls">칸을 누른 뒤 숫자 버튼으로 입력하세요. 메모하기 버튼이나 M으로 메모 입력을 켜고 끄세요. 다른 칸을 눌러 이동하고 지우기로 숫자와 메모를 지우세요.</div>
+  <section id="kropkiGame" data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} style={`--size:${puzzle.size}`} aria-label={title}>
+    <div class="board-tools"><button id="kropkiNotes" type="button" aria-pressed="false">메모하기</button></div>
+    <div class="board-wrap">
+      <div id="kropkiBoard" role="group" aria-label={`${puzzle.size}행 ${puzzle.size}열 크롶키 격자`}>
+        {Array.from({ length: puzzle.size ** 2 }, (_, index) => <button class="kropki-cell" type="button" data-index={index} tabindex={index === 0 ? 0 : -1} style={`${index % puzzle.size === puzzle.size - 1 ? 'border-right:0;' : ''}${index >= puzzle.size * (puzzle.size - 1) ? 'border-bottom:0;' : ''}`} aria-label={`${Math.floor(index / puzzle.size) + 1}행 ${index % puzzle.size + 1}열, 빈칸`} />)}
+      </div>
+      <div class="dots">
+        {kropkiEdges(puzzle).filter(edge => edge.dot !== '.').map(edge => <span class:list={['dot', { black: edge.dot === 'B' }]} style={`left:${edge.x / puzzle.size * 100}%;top:${edge.y / puzzle.size * 100}%`} role="img" aria-label={`${Math.floor(edge.a / puzzle.size) + 1}행 ${edge.a % puzzle.size + 1}열과 ${Math.floor(edge.b / puzzle.size) + 1}행 ${edge.b % puzzle.size + 1}열 사이 ${dotLabel(edge.dot)}`} />)}
+      </div>
+    </div>
+    <NumberPad max={puzzle.size} />
+    <div class="bottom-buttons"><button id="kropkiErase" type="button">지우기</button><button id="kropkiReset" class="danger" type="button">초기화</button></div>
+    <p id="kropkiStatus" class="sr-only" role="status" aria-live="polite"></p>
+  </section>
+  <PuzzleCompletion slot="completion" id="kropkiComplete" />
+</PuzzleLayout>
+<script>import '../scripts/kropki.js';</script>
+<style>
+  p{margin:0}ul{padding-left:20px;margin-bottom:0}
+  #kropkiGame{width:100%;max-width:480px;margin-inline:auto}
+  .board-tools{display:flex;justify-content:flex-end;margin-bottom:8px}
+  #kropkiNotes{background:none;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:0 0 1px;color:#888;font:inherit;font-size:.82rem;cursor:pointer}
+  #kropkiNotes[aria-pressed=true]{color:#4a6fa5;border-color:#4a6fa5;font-weight:700}
+  .board-wrap{position:relative;border:2px solid #444;background:#fff;user-select:none;-webkit-user-select:none}
+  #kropkiBoard{display:grid;grid-template-columns:repeat(var(--size),minmax(0,1fr))}
+  .kropki-cell{position:relative;aspect-ratio:1;min-width:0;box-sizing:border-box;border:0;border-right:1px solid #777;border-bottom:1px solid #777;border-radius:0;padding:0;margin:0;appearance:none;display:flex;align-items:center;justify-content:center;background:#fff;color:#4a6fa5;font:700 clamp(20px,5vw,30px) 'Noto Sans KR',sans-serif;font-variant-numeric:tabular-nums;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .kropki-cell.selected{background:#e8edf5}.kropki-cell.conflict{background:#fbeaea;color:#b05050}
+  #kropkiGame :global(button:focus){outline:none;box-shadow:none}
+  .dots{position:absolute;inset:0;pointer-events:none}
+  .dot{position:absolute;transform:translate(-50%,-50%);width:calc(100% / var(--size) * .23);aspect-ratio:1;box-sizing:border-box;border:1.5px solid #222;border-radius:50%;background:#fff}
+  .dot.black{background:#222}
+  .kropki-cell :global(.notes){position:absolute;inset:10%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);font-size:clamp(9px,2.6vw,14px);font-weight:500;color:#606975}
+  .kropki-cell :global(.notes span){display:flex;align-items:center;justify-content:center}
+  .bottom-buttons{gap:8px}.bottom-buttons button{flex:1;min-width:0}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+</style>
