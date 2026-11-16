@@ -21,6 +21,29 @@ export function cleanEvent(value){
  if(value.status!==0&&value.status<100)throw new Error('Invalid status');
  if(value.status>0&&value.status<400&&value.duration_ms<2000)throw new Error('Fast success');
  if(!triggers.has(value.trigger)||!['visible','hidden'].includes(value.visibility)||typeof value.online!=='boolean')throw new Error('Invalid context');
+ // Optional v2 metadata keeps older, already-open pages compatible.
+ for(const [field,pattern] of Object.entries({client_request_id:/^[a-f0-9-]{36}$/,started_at:patterns.at})){
+  if(value[field]!==undefined){if(typeof value[field]!=='string'||!pattern.test(value[field]))throw new Error('Invalid trace');result[field]=value[field];}
+ }
+ for(const [field,allowed] of Object.entries({phase:['request','probe'],browser:['chromium','firefox','safari','other'],
+  error_name:['TypeError','AbortError','TimeoutError','Error','Other'],error_kind:['aborted','timeout','fetch_failed','other'],
+  timing:['exposed','restricted','missing','ambiguous'],protocol:['h2','h3','http/1.1']})){
+  if(value[field]!==undefined){if(!allowed.includes(value[field]))throw new Error('Invalid diagnostic');result[field]=value[field];}
+ }
+ for(const field of ['signal_aborted','lifecycle_changed']){
+  if(value[field]!==undefined){if(typeof value[field]!=='boolean')throw new Error('Invalid flag');result[field]=value[field];}
+ }
+ for(const field of ['wall_ms','resource_ms','dns_ms','connect_ms','ttfb_ms']){
+  if(value[field]!==undefined){if(!Number.isInteger(value[field])||value[field]<0||value[field]>86400000)throw new Error('Invalid timing');result[field]=value[field];}
+ }
+ for(const field of ['probe_site','probe_api']){
+  if(value[field]===undefined)continue;
+  const probe=value[field];
+  if(!probe||!Number.isInteger(probe.status)||(probe.status!==0&&(probe.status<100||probe.status>599))||
+   !Number.isInteger(probe.duration_ms)||probe.duration_ms<0||probe.duration_ms>86400000||
+   !['none','timeout','TypeError','AbortError','TimeoutError','Error','Other'].includes(probe.error))throw new Error('Invalid probe');
+  result[field]={status:probe.status,duration_ms:probe.duration_ms,error:probe.error};
+ }
  return {...result,trigger:value.trigger,visibility:value.visibility,online:value.online};
 }
 export function createHandler(log=event=>console.log(JSON.stringify(event)),now=()=>Date.now()){

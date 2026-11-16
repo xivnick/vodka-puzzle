@@ -2,19 +2,23 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-const listeners={},sent=[],timers=new Map();let clock=0,nextTimer=0,mode='fast',calls=0;
+const listeners={},sent=[],timers=new Map(),requests=[],probeRequests=[];let clock=0,nextTimer=0,mode='fast',calls=0;
 let release;
 const gate=new Promise(resolve=>{release=resolve;});
-const sandbox={URL,Request,Response,Headers,crypto,Date,Set,Map,JSON,Promise,console,
+const sandbox={URL,Request,Response,Headers,AbortController,crypto,Date,Set,Map,JSON,Promise,console,
  location:{href:'https://puzzle.xivnick.me/daily-sudoku/?access_token=SECRET',pathname:'/daily-sudoku/'},
- navigator:{onLine:true},document:{hidden:false,addEventListener:(name,fn)=>{listeners[name]=fn;}},
+ navigator:{onLine:true,userAgent:'Mozilla/5.0 Chrome/140.0.0.0'},document:{hidden:false,addEventListener:(name,fn)=>{listeners[name]=fn;}},
  performance:{now:()=>clock},setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer;},clearTimeout:id=>timers.delete(id),
  addEventListener:(name,fn)=>{listeners[name]=fn;},
  async fetch(input,init){
   if(String(input).endsWith('/functions/v1/client-events')){sent.push(JSON.parse(init.body));return new Response(null,{status:204});}
+  if(String(input)==='/diagnostics/ping.json'||String(input).endsWith('/auth/v1/health')){probeRequests.push({input,init});return new Response('{}');}
+  requests.push({input,init});
   calls++;
   if(mode==='wait'){await gate;return new Response('{}');}
   if(mode==='network')throw new TypeError('SECRET email@example.com');
+  if(mode==='abort')throw Object.assign(new Error('SECRET'),{name:'AbortError'});
+  if(mode==='lifecycle'){listeners.visibilitychange();throw new TypeError('Failed to fetch SECRET');}
   if(mode==='slow'){clock+=2100;return new Response('{"state":"SECRET"}');}
   if(mode==='error')return new Response(JSON.stringify({code:'57014',message:'SECRET email@example.com',state:'ANSWER'}),{status:500,headers:{'sb-request-id':'a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1'}});
   return new Response('{}');
@@ -30,6 +34,28 @@ assert.equal(sent[1].events[0].code,'57014');assert.equal(sent[1].events[0].requ
 await sandbox.puzzleFetch(url);await new Promise(resolve=>setTimeout(resolve,30));listeners.pagehide();assert.equal(sent.length,2,'same failure is deduplicated');
 mode='network';await assert.rejects(()=>sandbox.puzzleFetch(url),/SECRET/);listeners.pagehide();await new Promise(resolve=>setImmediate(resolve));assert.equal(sent[2].events[0].code,'FETCH_ERROR');
 assert(!JSON.stringify(sent).match(/SECRET|ANSWER|email@|access_token|Authorization/),'only sanitized metadata leaves browser');
+// Correlate even unreadable responses, without discarding SDK/trigger headers.
+const originalHeaders=new Headers({'x-client-info':'vodka-trigger/retry',apikey:'PUBLIC_TEST_KEY',Authorization:'SECRET'});
+const diagnosticUrl='https://hlhrzbylbwebtoytmmpd.supabase.co/rest/v1/rpc/puzzle_details';
+await assert.rejects(()=>sandbox.puzzleFetch(diagnosticUrl,{headers:originalHeaders}),/SECRET/);
+await new Promise(resolve=>setImmediate(resolve));listeners.pagehide();await new Promise(resolve=>setImmediate(resolve));
+const diagnostics=sent.at(-1).events,requestEvent=diagnostics.find(event=>event.phase==='request'),probeEvent=diagnostics.find(event=>event.phase==='probe');
+assert.equal(requestEvent.error_name,'TypeError');assert.equal(requestEvent.error_kind,'other');assert.equal(requestEvent.browser,'chromium');
+assert.equal(requestEvent.trigger,'retry');assert.equal(requestEvent.timing,'missing');
+assert.equal(requests.at(-1).init.headers.get('x-client-info'),`vodka-trigger/retry; vodka-diag/${requestEvent.client_request_id}`);
+assert.equal(originalHeaders.get('x-client-info'),'vodka-trigger/retry','caller headers remain unchanged');
+assert.equal(probeEvent.client_request_id,requestEvent.client_request_id);assert.equal(probeEvent.probe_site.status,200);assert.equal(probeEvent.probe_api.status,200);
+assert.equal(probeRequests.length,2);assert.equal(probeRequests[1].init.headers.apikey,'PUBLIC_TEST_KEY');assert.equal(probeRequests[1].init.headers.Authorization,undefined,'probe never forwards user token');
+await assert.rejects(()=>sandbox.puzzleFetch(diagnosticUrl,{headers:originalHeaders}));
+await new Promise(resolve=>setImmediate(resolve));assert.equal(probeRequests.length,2,'reachability probes are rate limited');
+mode='abort';const controller=new AbortController();controller.abort();
+await assert.rejects(()=>sandbox.puzzleFetch(diagnosticUrl,{headers:originalHeaders,signal:controller.signal}));
+listeners.pagehide();await new Promise(resolve=>setImmediate(resolve));
+assert.equal(sent.at(-1).events[0].error_kind,'aborted');assert.equal(sent.at(-1).events[0].signal_aborted,true);
+clock+=61000;mode='lifecycle';await assert.rejects(()=>sandbox.puzzleFetch(diagnosticUrl,{headers:originalHeaders}));
+listeners.pagehide();await new Promise(resolve=>setImmediate(resolve));
+assert.equal(sent.at(-1).events[0].lifecycle_changed,true);assert.equal(probeRequests.length,2,'navigation/background failures do not probe');
+assert(!JSON.stringify(sent).match(/SECRET|ANSWER|email@|access_token|Authorization|PUBLIC_TEST_KEY/),'v2 metadata excludes messages, tokens, URLs and API keys');
 // Same-identity daily refreshes share one request; account changes never share it.
 let rpcCalls=0;
 sandbox.puzzleAuthReady=Promise.resolve();sandbox.puzzleAccount={user:{id:'one'},client:{rpc(){rpcCalls++;return {setHeader:()=>gate.then(()=>({data:{day:'today'}}))};}}};
@@ -57,6 +83,11 @@ const {createHandler}=await import('../supabase/functions/client-events/index.js
 const collected=[],handler=createHandler(event=>collected.push(event));
 const makeRequest=(events,extra={})=>new Request('https://example.test/',{method:'POST',headers:{origin:'https://puzzle.xivnick.me','content-type':'application/json',...extra},body:JSON.stringify({events})});
 assert.equal((await handler(makeRequest([{...sent[0].events[0],email:'SECRET',body:'ANSWER',authorization:'SECRET'}]))).status,204);
+assert.equal((await handler(makeRequest([{...probeEvent,page_id:crypto.randomUUID(),probe_api:{...probeEvent.probe_api,message:'SECRET'}}]))).status,204);
+assert.equal(collected.at(-1).probe_api.message,undefined,'nested probe fields are independently sanitized');
+assert.equal((await handler(makeRequest([{...requestEvent,error_name:'SECRET'}]))).status,400);
+assert.equal((await handler(makeRequest([{...requestEvent,client_request_id:'SECRET'}]))).status,400);
+assert.equal((await handler(makeRequest([{...probeEvent,probe_api:{status:0,duration_ms:1,error:'SECRET'}}]))).status,400);
 assert(!JSON.stringify(collected).match(/SECRET|ANSWER|email|authorization/),'collector independently strips unknown fields');
 assert.equal((await handler(makeRequest(sent[0].events,{origin:'https://attacker.test'}))).status,403);
 assert.equal((await handler(makeRequest([{...sent[0].events[0],endpoint:'/rest/v1/rpc/name?token=SECRET'}]))).status,400);

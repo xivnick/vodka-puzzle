@@ -40,9 +40,17 @@ python3 scripts/database.py /비공개/경로/daily-sudoku-YYYY-MM-DD.sql
 
 같은 종류의 오류는 30초 동안 중복 전송하지 않고, 페이지당 최대 40건을 10건 이하로 묶어 보낸다. 수집기는 출처·크기·항목을 다시 검증하고 허용하지 않은 필드를 버린다. 수집기 제한은 인스턴스별 임시 제한이며 전역 공격 방어를 보장하지 않는다. 로그 전송 실패는 재시도하지 않으며 게임 요청 결과를 바꾸지 않는다.
 
+진단 v2는 요청마다 임의 UUID를 `x-client-info`의 `vodka-diag/<UUID>`로 붙인다. 기존 SDK·갱신 계기 헤더를 보존하며 UUID에 계정 정보는 넣지 않는다. 브라우저 이벤트의 `client_request_id`로 게이트웨이 로그와 대조할 수 있다. REST 응답의 `sb-request-id`는 현재 CORS 노출 헤더에 없어 브라우저에서 비어 있을 수 있다. 서버가 이 헤더를 반환하지 않았다는 뜻은 아니다.
+
+실패·지연 로그에는 요청 시작 시각, 브라우저 계열, 예외 이름과 고정 오류 분류, AbortSignal 취소 여부, 요청 중 페이지 표시 상태 변화도 남긴다. 원본 예외 메시지와 전체 User-Agent는 보내지 않는다. Resource Timing이 노출된 경우에만 DNS·연결·첫 응답 시간을 남기며, 다른 출처의 타이밍이 가려졌거나 요청을 구분하지 못하면 `restricted`·`missing`·`ambiguous`로 표시한다. 이를 0 ms로 해석하지 않는다.
+
+화면이 열린 상태에서 취소·화면 전환을 동반하지 않은 통신 실패가 나면 사이트의 `/diagnostics/ping.json`과 Supabase `/auth/v1/health`를 읽기 전용으로 확인한다. 페이지당 최대 3회, 60초에 한 번이며 각각 6초 제한이다. 결과는 같은 추적 UUID의 `phase=probe` 이벤트로 남긴다. 인증 상태·DB 쿼리·완료 제출을 재시도하지 않으며, 사용자 토큰을 전달하지 않는다. 이 검사는 연결 가능성 비교용이다. 둘 다 성공하더라도 앞선 요청의 통신 장애나 CORS 오류를 배제하지 않는다.
+
 수집기는 DB·인증 서버를 호출하지 않으며 `function_logs`에 `kind=client_request` JSON 로그를 남긴다. `verify_jwt=false`는 로그인·DB 장애 중에도 진단을 수신하기 위한 설정이다. 로그 보관 기간은 현재 Supabase 요금제의 로그 보관 정책을 따른다. 수집기를 수정하면 `python3 scripts/deploy-client-events.py`로 이 함수만 배포한다. 사이트 정적 배포는 함수를 배포하지 않는다.
 
 `python3 scripts/inspect-request-health.py --minutes 30`은 클라이언트 로그, 같은 시각의 DB·인증 시간 초과 집계, 현재 자원 지표와 연결 수를 읽는다. 지표 출력은 조회 시점의 스냅샷이며 과거 자원 추이가 아니다. 장애 당시의 CPU·메모리·스왑·디스크 I/O 추이는 Supabase Reports와 대조한다. 로그 수집기까지 장애가 나면 클라이언트 이벤트는 유실될 수 있으므로 DB·인증 원본 로그도 함께 확인한다.
+
+게이트웨이의 HTTP 오류·2초 이상 원본 서버 지연도 함께 집계한다. `--trace <client_request_id>`를 추가하면 해당 브라우저 요청과 연결 확인 요청의 게이트웨이 수신 여부, 상태, 원본 서버 처리 시간, upstream 처리 시간, Cloudflare ray·리전을 조회한다. 로그 반영 지연과 조회 범위를 고려해야 하며, 조회 결과가 없다는 사실만으로 서버 미도달을 확정하지 않는다. 쿼리 문자열·IP·인증 메타데이터는 출력하지 않는다.
 
 데일리 첫 진입은 기존 `daily_sudoku_context`를 사용한다. 홈과 30초 주기 갱신은 보드·저장 내용을 제외한 `daily_sudoku_summary`를 사용하며, 홈에서만 전체 스트릭 순위를 요청한다. 같은 계정·날짜·종류의 동시 요청은 공유한다. `20261107_request_performance.sql` 적용 전 `python3 scripts/verify-request-performance.py`로 현재/과거 날짜, 게스트/계정별 결과·공개 필터·권한을 롤백 검증한다.
 
