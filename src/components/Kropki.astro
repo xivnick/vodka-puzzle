@@ -52,7 +52,7 @@ const dotLabel = dot => dot === 'W' ? '흰 점' : '검은 점';
   .dots{position:absolute;inset:0;pointer-events:none}
   .dot{position:absolute;transform:translate(-50%,-50%);width:calc(100% / var(--size) * .23);aspect-ratio:1;box-sizing:border-box;border:1.5px solid #222;border-radius:50%;background:#fff}
   .dot.black{background:#222}
-  .kropki-cell :global(.notes){position:absolute;inset:10%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);font-size:clamp(9px,2.6vw,14px);font-weight:500;color:#606975}
+  .kropki-cell :global(.notes){position:absolute;inset:20%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);font-size:clamp(9px,2.6vw,14px);font-weight:500;color:#606975}
   .kropki-cell :global(.notes span){display:flex;align-items:center;justify-content:center}
   .bottom-buttons{gap:8px}.bottom-buttons button{flex:1;min-width:0}
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
