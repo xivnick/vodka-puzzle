@@ -44,5 +44,9 @@ const markerLabel = i => endpoints.includes(i) ? (i === 0 ? ', 출발 원' : ', 
   #oddMazeBoard .sudoku-cell :global(.cell-value) { position:relative; z-index:1; }
   #oddMazeBoard .sudoku-cell :global(.notes) { z-index:1; }
   #oddMazeBoard .sudoku-cell.conflict { background:#fbeaea; }
+  #oddMazeBoard .sudoku-cell.odd-path { background:#e0efdf; }
+  #oddMazeBoard .sudoku-cell.odd-path.selected { background:#c6dfc4; }
+  #oddMazeBoard .sudoku-cell.blocked-path { background:#f6dddd; }
+  #oddMazeBoard .sudoku-cell.blocked-path.selected { background:#edc4c4; }
   #oddMazeBoard .sudoku-cell { -webkit-tap-highlight-color:transparent; }
 </style>

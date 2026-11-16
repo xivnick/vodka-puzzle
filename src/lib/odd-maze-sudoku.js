@@ -20,28 +20,46 @@ const units = [
     (Math.floor(b / 3) * 3 + Math.floor(n / 3)) * 9 + (b % 3) * 3 + n % 3)),
 ];
 
-// Check only the player's current digits; no answer or solution search is needed.
-export function hasOddPath(values) {
-  if (values.length !== 81 || endpoints.some(i => values[i] % 2 !== 1)) return false;
-  const visited = new Set([endpoints[0]]);
-  const queue = [endpoints[0]];
+function neighbors(i) {
+  const r = Math.floor(i / 9), c = i % 9;
+  return [r > 0 ? i - 9 : -1, r < 8 ? i + 9 : -1,
+    c > 0 ? i - 1 : -1, c < 8 ? i + 1 : -1].filter(next => next >= 0);
+}
+
+function traceOddRegion(values, start) {
+  const cells = new Set();
+  let open = false;
+  if (values[start] % 2 !== 1) return { cells, open };
+  cells.add(start);
+  const queue = [start];
   for (let head = 0; head < queue.length; head++) {
-    const i = queue[head];
-    if (i === endpoints[1]) return true;
-    const r = Math.floor(i / 9), c = i % 9;
-    const neighbors = [];
-    if (r > 0) neighbors.push(i - 9);
-    if (r < 8) neighbors.push(i + 9);
-    if (c > 0) neighbors.push(i - 1);
-    if (c < 8) neighbors.push(i + 1);
-    for (const next of neighbors) {
-      if (!visited.has(next) && values[next] % 2 === 1) {
-        visited.add(next);
+    for (const next of neighbors(queue[head])) {
+      if (values[next] === 0) open = true;
+      if (!cells.has(next) && values[next] % 2 === 1) {
+        cells.add(next);
         queue.push(next);
       }
     }
   }
-  return false;
+  return { cells, open };
+}
+
+// Check only the player's current digits; no answer or solution search is needed.
+export function hasOddPath(values) {
+  return values.length === 81 && traceOddRegion(values, endpoints[0]).cells.has(endpoints[1]);
+}
+
+export function oddPathColors(values) {
+  const green = new Set(), red = new Set();
+  if (values.length !== 81) return { green, red };
+  for (const start of endpoints) {
+    const { cells, open } = traceOddRegion(values, start);
+    // A region joining both circles is valid even when surrounded by even cells.
+    const connected = endpoints.every(i => cells.has(i));
+    const color = open || connected ? green : red;
+    cells.forEach(i => color.add(i));
+  }
+  return { green, red };
 }
 
 export function conflicts(values) {

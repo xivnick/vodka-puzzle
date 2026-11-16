@@ -1,4 +1,4 @@
-import { givens, endpoints, boardSignature, conflicts, solved, parseOddMazeSudokuState } from '../lib/odd-maze-sudoku.js';
+import { givens, endpoints, boardSignature, oddPathColors, conflicts, solved, parseOddMazeSudokuState } from '../lib/odd-maze-sudoku.js';
 
 const $ = id => document.getElementById(id);
 const game = $('oddMazeGame');
@@ -24,13 +24,16 @@ function persist() {
 function render() {
   const bad = conflicts(values);
   const complete = solved(values);
+  const path = oddPathColors(values);
   cells.forEach((cell, i) => {
     cell.classList.toggle('selected', !complete && i === selected);
     cell.classList.toggle('conflict', bad.has(i));
+    cell.classList.toggle('odd-path', path.green.has(i));
+    cell.classList.toggle('blocked-path', path.red.has(i));
     cell.classList.toggle('has-notes', !values[i] && notes[i].length > 0);
     cell.tabIndex = i === selected ? 0 : -1;
     cell.setAttribute('aria-pressed', String(i === selected));
-    cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${values[i] || '빈칸'}${markerLabels[i]}${fixed[i] ? ', 고정 숫자' : ''}${bad.has(i) ? ', 규칙 위반' : ''}${notes[i].length ? ', 메모 ' + notes[i].join(', ') : ''}`);
+    cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${values[i] || '빈칸'}${markerLabels[i]}${fixed[i] ? ', 고정 숫자' : ''}${bad.has(i) ? ', 규칙 위반' : ''}${path.red.has(i) ? ', 짝수에 막힌 홀수 경로' : path.green.has(i) ? ', 원과 이어진 홀수 경로' : ''}${notes[i].length ? ', 메모 ' + notes[i].join(', ') : ''}`);
     cell.replaceChildren();
     if (values[i]) {
       const digit = document.createElement('span');
