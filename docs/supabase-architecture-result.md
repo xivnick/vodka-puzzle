@@ -26,3 +26,8 @@ Migration: `20261118_shared_read_state.sql` 적용 성공. 정적 릴리스: `20
 복구 SQL: `supabase/rollback/20261118_shared_read_state.sql`. 정적 이전 릴리스 전환은 `operations.md`를 따른다. 완료된 거래와 원본 기록은 유지한다.
 
 구현·운영 배포는 완료했다. 다음 자정 혼잡 구간의 운영 성능 관측은 아직 도래하지 않아 대기 상태다. 기존 진단과 독립 health 로그가 계속 기록하며, 다음 관측에서는 호출 수·지연·실패와 DB 자원 추이를 함께 비교한다.
+
+
+## 배포 후 오류 수정
+
+01:41~01:47 KST 업적 조회에서 SQLSTATE 25006/HTTP 405가 발생했다. STABLE 컨텍스트 RPC가 PostgREST에서 읽기 전용으로 실행되어 캐시 INSERT가 거부된 오류다. 초기 SQL 직접 검증은 이 API 트랜잭션 설정을 재현하지 못했다. `20261118_cached_context_volatility.sql`로 해당 RPC를 VOLATILE로 수정하고 `20261118_read_only_cache_fallback.sql`로 읽기 전용 호출의 캐시 누락 시 원본 계산을 반환하도록 보완했다. 로컬 회귀 검증에 RPC volatility와 빈 캐시의 읽기 전용 조회를 추가해 통과했다.

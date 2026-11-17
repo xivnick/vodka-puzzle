@@ -54,6 +54,9 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         sql("UPDATE private.cosmetic_settings SET enabled=true,history_policy='all_records',champion_tickets=1; UPDATE private.cosmetic_draw_configs SET status='active',price_per_draw=100;")
         if '--shared-reads' in sys.argv:
             sql((ROOT / 'supabase/migrations/20261118_shared_read_state.sql').read_text())
+            sql((ROOT / 'supabase/migrations/20261118_cached_context_volatility.sql').read_text())
+            sql((ROOT / 'supabase/migrations/20261118_read_only_cache_fallback.sql').read_text())
+            assert sql("SELECT bool_and(provolatile='v') FROM pg_proc WHERE oid IN ('public.achievement_context()'::regprocedure,'public.cosmetic_context()'::regprocedure)")=='t'
         users = [str(uuid.uuid4()) for _ in range(8)]
         for uid in users:
             sql(f"INSERT INTO auth.users VALUES('{uid}'); INSERT INTO public.semester_nicknames VALUES('2026-2','{uid}','test');")
@@ -187,6 +190,11 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
             assert json.loads(rpc(a,'SELECT public.reward_summary()')).get('ready') in [True,False]
             assert rpc(a,'SELECT jsonb_agg(r) FROM public.recent_completions() r')==rpc(b,'SELECT jsonb_agg(r) FROM public.recent_completions() r')
             assert sql("SELECT count(*) FROM private.shared_query_cache WHERE key='recent'")=='1'
+            sql('DELETE FROM private.achievement_metric_cache; DELETE FROM private.shared_query_cache;')
+            claims=json.dumps({'sub':a,'role':'authenticated','app_metadata':{'provider':'google'}})
+            result=json.loads(sql(f"BEGIN READ ONLY; SET LOCAL ROLE authenticated; SET LOCAL request.jwt.claims='{claims}'; SELECT public.achievement_context(); COMMIT;"))
+            assert 'achievements' in result
+            sql('BEGIN READ ONLY; SELECT count(*) FROM public.recent_completions(); SELECT count(*) FROM private.daily_streak_rankings_at(current_date); COMMIT;')
             sql((ROOT / 'supabase/rollback/20261118_shared_read_state.sql').read_text())
             assert 'achievements' in json.loads(rpc(a,'SELECT public.achievement_context()'))
             print('Shared reads passed: metric parity for all fixture accounts, private summary and shared recent results.')

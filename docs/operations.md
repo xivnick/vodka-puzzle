@@ -115,3 +115,8 @@ DB 권한 검증 도구는 관련 DB 작업 때만 적용 범위를 확인하고
 로컬 검증: `python3 scripts/verify-cosmetic-concurrency.py --shared-reads`, `node scripts/verify-cosmetic-client.mjs`, `node scripts/verify-request-diagnostics.mjs`, `npm run build`. 동시성 검증은 임시 로컬 DB만 사용한다. 운영에서는 실제 기록의 계산 결과만 대조한다.
 
 복구는 정적 이전 릴리스 전환과 `supabase/rollback/20261118_shared_read_state.sql`을 사용한다. 복구 SQL은 원래 함수와 잠금 동작을 복원하고 무효화 트리거를 해제한다. 파생 테이블과 비공개 계산 함수는 조사용으로 보존한다. 복구 후 재적용할 때는 기존 파생 테이블을 고려해 migration을 조정하고 캐시를 재생성한다. 원본 기록이나 완료된 거래를 되돌리지 않는다.
+
+
+### 캐시 조회 RPC의 트랜잭션 모드
+
+PostgREST는 STABLE/IMMUTABLE RPC를 읽기 전용 트랜잭션으로 실행한다. 캐시를 채우는 `achievement_context`와 `cosmetic_context`는 `20261118_cached_context_volatility.sql`로 VOLATILE을 지정한다. SQL Editor의 일반 SELECT 성공만으로 API 호환성을 판단하지 않는다. 캐시 함수는 `20261118_read_only_cache_fallback.sql`에 따라 읽기 전용 트랜잭션에서 캐시가 없으면 원본 계산을 반환한다. 동시성 검증의 `--shared-reads`는 컨텍스트 volatility와 캐시가 빈 읽기 전용 호출도 검증한다.
