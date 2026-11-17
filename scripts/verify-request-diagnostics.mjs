@@ -56,6 +56,44 @@ clock+=61000;mode='lifecycle';await assert.rejects(()=>sandbox.puzzleFetch(diagn
 listeners.pagehide();await new Promise(resolve=>setImmediate(resolve));
 assert.equal(sent.at(-1).events[0].lifecycle_changed,true);assert.equal(probeRequests.length,2,'navigation/background failures do not probe');
 assert(!JSON.stringify(sent).match(/SECRET|ANSWER|email@|access_token|Authorization|PUBLIC_TEST_KEY/),'v2 metadata excludes messages, tokens, URLs and API keys');
+// An unavailable collector must not erase events; replay survives a new page.
+const durable = { unrelated_puzzle_save: 'keep' }, replayed = [];
+let delivery = 'offline', uploads = 0;
+Object.defineProperties(durable, {
+ getItem:{value:key=>durable[key]??null}, setItem:{value:(key,value)=>{durable[key]=value;}}, removeItem:{value:key=>{delete durable[key];}},
+});
+function newPage() {
+ const handlers={},pendingTimers=new Map();let tick=0,seq=0;
+ const runtime={...sandbox,localStorage:durable,performance:{now:()=>tick},
+  document:{hidden:false,addEventListener:(name,fn)=>{handlers[name]=fn;}},
+  addEventListener:(name,fn)=>{handlers[name]=fn;},
+  setTimeout:fn=>{pendingTimers.set(++seq,fn);return seq;},clearTimeout:id=>pendingTimers.delete(id),
+  async fetch(input,init){
+   if(String(input).endsWith('/functions/v1/client-events')){
+    uploads++;if(delivery==='offline')throw new TypeError('Failed to fetch');
+    if(delivery==='unavailable')return new Response(null,{status:503});
+    replayed.push(...JSON.parse(init.body).events);return new Response(null,{status:204});
+   }
+   tick+=2100;return new Response('{}');
+  }};
+ runtime.window=runtime;vm.runInNewContext(fs.readFileSync('public/js/request-diagnostics.js','utf8'),runtime);
+ return {runtime,handlers};
+}
+let tab=newPage();await tab.runtime.puzzleFetch(url);tab.handlers.pagehide();await new Promise(resolve=>setImmediate(resolve));
+let storedKeys=Object.keys(durable).filter(key=>key.startsWith('vodka_request_event_v3:'));
+assert.equal(storedKeys.length,1,'event is retained after transport failure');
+const saved=JSON.parse(durable[storedKeys[0]]);saved.event.authorization='SECRET';durable[storedKeys[0]]=JSON.stringify(saved);
+delivery='unavailable';tab=newPage();tab.handlers.pagehide();await new Promise(resolve=>setImmediate(resolve));
+assert(durable[storedKeys[0]],'HTTP 503 does not acknowledge a batch');
+const beforeRetries=uploads;
+for(let n=0;n<10;n++){tab.handlers.pagehide();await new Promise(resolve=>setImmediate(resolve));}
+assert.equal(uploads-beforeRetries,7,'consecutive failed uploads stop after eight attempts per page');
+assert(durable[storedKeys[0]],'exhausting the retry budget retains the event');
+delivery='ok';tab.handlers.online();await new Promise(resolve=>setImmediate(resolve));
+assert.equal(replayed.length,1,'a fresh page replays the earlier event');assert.equal(durable[storedKeys[0]],undefined,'204 acknowledges and removes the event');
+assert(!JSON.stringify(replayed).includes('SECRET'),'unknown stored fields never leave the browser');
+const expiredKey='vodka_request_event_v3:expired';durable[expiredKey]=JSON.stringify({...saved,expires:Date.now()-1});newPage();
+assert.equal(durable[expiredKey],undefined);assert.equal(durable.unrelated_puzzle_save,'keep','queue cleanup preserves player saves');
 // Same-identity daily refreshes share one request; account changes never share it.
 let rpcCalls=0;
 sandbox.puzzleAuthReady=Promise.resolve();sandbox.puzzleAccount={user:{id:'one'},client:{rpc(){rpcCalls++;return {setHeader:()=>gate.then(()=>({data:{day:'today'}}))};}}};

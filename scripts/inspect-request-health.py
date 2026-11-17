@@ -42,6 +42,16 @@ def logs(sql):
 trace_filter = " AND event_message LIKE '%" + args.trace + "%'" if args.trace else ''
 client_events = logs("SELECT timestamp,event_message FROM logs WHERE source='function_logs' AND event_message LIKE '%\"kind\":\"client_request\"%'" + trace_filter + " ORDER BY timestamp DESC LIMIT 100")
 print(json.dumps({'window_start': start.isoformat(), 'window_end': now.isoformat(), 'client_events': client_events}, ensure_ascii=False, indent=2))
+summary = logs("""SELECT if(JSONExtractString(event_message,'page')='/test/','test','site') AS scope,
+count() AS event_rows,countIf(JSONExtractString(event_message,'phase')='probe') AS probe_rows,
+countIf(JSONExtractString(event_message,'phase')!='probe' AND JSONExtractUInt(event_message,'status')=0) AS failed_request_events,
+countIf(JSONExtractString(event_message,'phase')!='probe' AND JSONExtractUInt(event_message,'status')>=400) AS http_error_events,
+countIf(JSONExtractString(event_message,'phase')!='probe' AND JSONExtractUInt(event_message,'status')>=200 AND JSONExtractUInt(event_message,'duration_ms')>=2000) AS slow_response_events,
+max(JSONExtractUInt(event_message,'duration_ms')) AS max_ms,min(timestamp) AS first_event,max(timestamp) AS last_event
+FROM logs WHERE source='function_logs' AND event_message LIKE '%\"kind\":\"client_request\"%'
+GROUP BY scope""")
+print(json.dumps({'client_summary_full_window': summary, 'client_event_detail_limit': 100,
+                  'coverage_note': 'Missing diagnostics are not evidence of availability; uploads may fail. Rows may include retries.'}, indent=2))
 failures = logs("""SELECT toStartOfMinute(timestamp) AS minute,source,count() AS failures
 FROM logs WHERE (source IN ('postgres_logs','postgrest_logs') AND event_message LIKE '%canceling statement due to statement timeout%')
 OR (source='auth_logs' AND (event_message LIKE '%context deadline exceeded%' OR event_message LIKE '%context canceled%'))
