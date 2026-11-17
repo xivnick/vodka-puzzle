@@ -1,3 +1,4 @@
+import { writeNumber } from '../lib/number-notes.js';
 import {raids, conflicts as findConflicts, solved as isSolved, skyscraperClueStates, weightedArrowStates, sandwichClueStates} from '../lib/raid-sudoku.js';
 
 import {terminationZero} from '../lib/termination-zero.js';
@@ -27,7 +28,7 @@ const conflicts = values => findConflicts(puzzle,values);
 const solved = values => isSolved(puzzle,values);
 function parseRaidSudokuState(saved, id) {
  if (!saved || saved.version !== 1 || saved.puzzleId !== id || !matchesBoardSignature(saved.boardSignature) || !Array.isArray(saved.values) || saved.values.length !== 81 || !saved.values.every((n,i) => Number.isInteger(n) && n >= 0 && n <= 9 && (!givens[i] || n === givens[i])) || !Array.isArray(saved.notes) || saved.notes.length !== 81 || !saved.notes.every(a => Array.isArray(a) && a.every(n => Number.isInteger(n) && n >= 1 && n <= 9))) return null;
- return {values:[...saved.values], notes:saved.notes.map((a,i)=>saved.values[i]?[]:[...new Set(a)].sort((a,b)=>a-b))};
+ return {values:[...saved.values], notes:saved.notes.map((a,i)=>givens[i]?[]:[...new Set(a)].sort((a,b)=>a-b))};
 }
 const fixed = givens.flat();
 const cells = [...$('raidBoard').querySelectorAll('[data-cell]')];
@@ -187,7 +188,7 @@ function render() {
     cell.classList.toggle('has-notes', !values[i] && notes[i].length > 0);
     cell.tabIndex = i === selected ? 0 : -1;
     cell.setAttribute('aria-pressed', String(i === selected));
-    cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${label(values[i]) || '빈칸'}${fixed[i] ? ', 고정 숫자' : ''}${bad.has(i) ? ', 규칙 위반' : ''}${notes[i].length ? ', 메모 ' + notes[i].map(label).join(', ') : ''}`);
+    cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${label(values[i]) || '빈칸'}${fixed[i] ? ', 고정 숫자' : ''}${bad.has(i) ? ', 규칙 위반' : ''}${!values[i] && notes[i].length ? ', 메모 ' + notes[i].map(label).join(', ') : ''}`);
     cell.replaceChildren();
     if (values[i]) {
       const digit = document.createElement('span');
@@ -229,8 +230,7 @@ function change(number) {
       ? notes[selected].filter(n => n !== number)
       : [...notes[selected], number].sort((a,b) => a-b);
   } else {
-    values[selected] = number;
-    notes[selected] = [];
+    writeNumber(values, notes, selected, number);
   }
   persist();
   render();

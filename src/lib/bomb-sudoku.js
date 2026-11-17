@@ -72,7 +72,7 @@ export function parseBombSudokuState(saved, puzzleId) {
   if (saved.values.some((value, index) => fixed[index] && value !== fixed[index])) return null;
   return {
     values: [...saved.values],
-    notes: saved.notes.map((note, index) => saved.values[index]
+    notes: saved.notes.map((note, index) => fixed[index]
       ? []
       : [...new Set(note)].sort((a, b) => a - b)),
   };

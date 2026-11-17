@@ -41,5 +41,5 @@ export function solved(puzzle,values){return values.length===puzzle.givens.lengt
 export function parseState(puzzle,saved,puzzleId){
  if(!saved||saved.version!==1||saved.puzzleId!==puzzleId||!Array.isArray(saved.values)||saved.values.length!==puzzle.givens.length**2||!saved.values.every(n=>Number.isInteger(n)&&n>=0&&n<=puzzle.givens.length)||!Array.isArray(saved.notes)||saved.notes.length!==puzzle.givens.length**2||!saved.notes.every(a=>Array.isArray(a)&&a.every(n=>Number.isInteger(n)&&n>=1&&n<=puzzle.givens.length)))return null;
  const values=saved.values.map((n,i)=>puzzle.givens.flat()[i]||n);
- return {values,notes:saved.notes.map((a,i)=>values[i]?[]:[...new Set(a)])};
+ return {values,notes:saved.notes.map((a,i)=>puzzle.givens.flat()[i]?[]:[...new Set(a)])};
 }

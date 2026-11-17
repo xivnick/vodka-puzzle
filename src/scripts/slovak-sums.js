@@ -1,3 +1,4 @@
+import { writeNumber } from '../lib/number-notes.js';
 import { inspectSlovakSums, parseSlovakSumsState } from '../lib/slovak-sums.js';
 
 const game = document.getElementById('slovakGame');
@@ -50,7 +51,7 @@ function render() {
     cell.classList.toggle('selected', index === selected);
     cell.classList.toggle('conflict', conflicts.has(index));
     cell.tabIndex = index === selected ? 0 : -1;
-    cell.setAttribute('aria-label', `${Math.floor(index / puzzle.size) + 1}행 ${index % puzzle.size + 1}열, ${values[index] ? `숫자 ${values[index]}` : '빈칸'}${notes[index].length ? `, 메모 ${notes[index].join(', ')}` : ''}${conflicts.has(index) ? ', 규칙 오류' : ''}`);
+    cell.setAttribute('aria-label', `${Math.floor(index / puzzle.size) + 1}행 ${index % puzzle.size + 1}열, ${values[index] ? `숫자 ${values[index]}` : '빈칸'}${!values[index] && notes[index].length ? `, 메모 ${notes[index].join(', ')}` : ''}${conflicts.has(index) ? ', 규칙 오류' : ''}`);
   }
   clueCells.forEach(cell => {
     const index = Number(cell.dataset.index);
@@ -71,10 +72,9 @@ function input(value) {
     if (values[selected]) return;
     notes[selected] = notes[selected].includes(value) ? notes[selected].filter(note => note !== value) : [...notes[selected], value].sort((a, b) => a - b);
   } else {
-    values[selected] = value;
-    notes[selected] = [];
+    writeNumber(values, notes, selected, value);
   }
-  status.textContent = value ? `${value}${notesMode ? ' 메모를 변경했습니다.' : '을 입력했습니다.'}` : '숫자와 메모를 지웠습니다.';
+  status.textContent = value ? `${value}${notesMode ? ' 메모를 변경했습니다.' : '을 입력했습니다.'}` : '지웠습니다.';
   persist();
   render();
 }

@@ -85,6 +85,6 @@ export function parseEqualSumSudokuState(puzzle, saved, puzzleId) {
   const values = saved.values.map((value, index) => givens[index] || value);
   return {
     values,
-    notes: saved.notes.map((note, index) => values[index] ? [] : [...new Set(note)].sort((a, b) => a - b)),
+    notes: saved.notes.map((note, index) => givens[index] ? [] : [...new Set(note)].sort((a, b) => a - b)),
   };
 }

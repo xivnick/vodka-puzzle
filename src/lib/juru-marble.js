@@ -83,5 +83,5 @@ export function parseMarbleState(saved, puzzleId, givens) {
     || saved.values.some((n, i) => !Number.isInteger(n) || n < 0 || n > 9 || givens[i] && givens[i] !== n)
     || !Array.isArray(saved.notes) || saved.notes.length !== 81
     || saved.notes.some(note => !Array.isArray(note) || note.some(n => !Number.isInteger(n) || n < 1 || n > 9))) return null;
-  return { values: saved.values.slice(), notes: saved.notes.map((note, i) => saved.values[i] ? [] : [...new Set(note)].sort((a, b) => a - b)) };
+  return { values: saved.values.slice(), notes: saved.notes.map((note, i) => givens[i] ? [] : [...new Set(note)].sort((a, b) => a - b)) };
 }

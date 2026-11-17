@@ -57,5 +57,5 @@ export function parseMathPathState(puzzle, saved, puzzleId) {
   if (saved?.version !== 1 || saved.puzzleId !== puzzleId || !Array.isArray(saved.values) || saved.values.length !== size || !saved.values.every((value, index) => valid(value) && (cells.has(index) || value === 0))) return null;
   const notes = saved.notes ?? Array.from({ length: size }, () => []);
   if (!Array.isArray(notes) || notes.length !== size || !notes.every((row, index) => Array.isArray(row) && (cells.has(index) || !row.length) && row.every(value => valid(value) && value > 0))) return null;
-  return { values: [...saved.values], notes: notes.map((row, index) => saved.values[index] ? [] : [...new Set(row)]) };
+  return { values: [...saved.values], notes: notes.map(row => [...new Set(row)]) };
 }

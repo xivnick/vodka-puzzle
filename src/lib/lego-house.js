@@ -47,7 +47,7 @@ export function parseLegoHouseState(saved,puzzleId) {
     || !saved.values.every(n=>Number.isInteger(n) && n>=0 && n<=9)
     || !Array.isArray(saved.notes) || saved.notes.length!==81
     || !saved.notes.every(note=>Array.isArray(note) && note.every(n=>Number.isInteger(n) && n>=1 && n<=9))) return null;
-  return {values:[...saved.values],notes:saved.notes.map((note,i)=>saved.values[i]?[]:[...new Set(note)].sort((a,b)=>a-b))};
+  return {values:[...saved.values],notes:saved.notes.map((note,i)=>[...new Set(note)].sort((a,b)=>a-b))};
 }
 export function center(i) { return [i%3*100+50,Math.floor(i/3)*100+50]; }
 export function arrowDrawing(board) {

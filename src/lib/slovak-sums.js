@@ -22,7 +22,7 @@ export function parseSlovakSumsState(puzzle, saved, puzzleId) {
     !saved.notes.every(note => Array.isArray(note) && note.every(value => puzzle.digits.includes(value))))) return null;
   return {
     values: [...saved.values],
-    notes: saved.values.map((value, index) => value || blocked.has(index) ? [] : [...new Set(saved.notes?.[index] || [])].sort((a, b) => a - b)),
+    notes: saved.values.map((value, index) => blocked.has(index) ? [] : [...new Set(saved.notes?.[index] || [])].sort((a, b) => a - b)),
   };
 }
 

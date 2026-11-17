@@ -1,3 +1,4 @@
+import { writeNumber } from '../lib/number-notes.js';
 import { equalSumRegionConflicts, parseEqualSumSudokuState, solvedEqualSumSudoku, sudokuConflicts } from '../lib/equal-sum-sudoku.js';
 
 const game = document.getElementById('equalSumGame');
@@ -78,13 +79,12 @@ function input(value) {
       ? notes[selected].filter(note => note !== value)
       : [...notes[selected], value].sort((a, b) => a - b);
   } else {
-    values[selected] = value;
-    notes[selected] = [];
+    writeNumber(values, notes, selected, value);
   }
   completionRecorded = false;
   persist();
   render();
-  announce(value ? `${Math.floor(selected / size) + 1}행 ${selected % size + 1}열에 ${value}${notesMode ? ' 메모를 변경했습니다.' : '을 입력했습니다.'}` : '숫자와 메모를 지웠습니다.');
+  announce(value ? `${Math.floor(selected / size) + 1}행 ${selected % size + 1}열에 ${value}${notesMode ? ' 메모를 변경했습니다.' : '을 입력했습니다.'}` : '지웠습니다.');
 }
 
 function toggleNotes() {

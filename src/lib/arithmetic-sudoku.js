@@ -107,7 +107,7 @@ export function parseArithmeticSudokuState(saved, puzzleId) {
   const values = [...saved.values];
   return {
     values,
-    notes: saved.notes.map((note, index) => values[index]
+    notes: saved.notes.map((note, index) => fixed[index]
       ? []
       : [...new Set(note)].sort((a, b) => a - b)),
   };

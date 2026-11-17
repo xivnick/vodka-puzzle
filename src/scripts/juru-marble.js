@@ -1,3 +1,4 @@
+import { writeNumber } from '../lib/number-notes.js';
 import { traceGlasses, stopConflicts, sudokuConflicts, marbleSolved, parseMarbleState } from '../lib/juru-marble.js';
 
 const { path, givens: fixed, puzzleId, preview, released } = window.marbleConfig;
@@ -62,7 +63,7 @@ function render() {
     cell.classList.toggle('conflict', bad.has(i));
     cell.tabIndex = i === selected ? 0 : -1;
     cell.setAttribute('aria-pressed', String(i === selected));
-    cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${values[i] || '빈칸'}${fixed[i] ? ', 고정 숫자' : ''}${marked.has(i) ? ', 잔' : ''}${bad.has(i) ? ', 규칙 위반' : ''}${notes[i].length ? ', 메모 ' + notes[i].join(', ') : ''}`);
+    cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${values[i] || '빈칸'}${fixed[i] ? ', 고정 숫자' : ''}${marked.has(i) ? ', 잔' : ''}${bad.has(i) ? ', 규칙 위반' : ''}${!values[i] && notes[i].length ? ', 메모 ' + notes[i].join(', ') : ''}`);
   }
   status.textContent = [...(sudokuBad.size ? ['스도쿠 숫자 중복'] : []), ...reasons,
     ...(distance > 32 ? ['출발 칸을 지나쳤습니다.'] : [])].join(' · ');
@@ -82,8 +83,7 @@ function change(number) {
     if (values[selected]) return;
     notes[selected] = notes[selected].includes(number) ? notes[selected].filter(n => n !== number) : [...notes[selected], number].sort((a,b) => a-b);
   } else {
-    values[selected] = number;
-    notes[selected] = [];
+    writeNumber(values, notes, selected, number);
   }
   persist();
   render();

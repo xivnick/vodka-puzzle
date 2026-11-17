@@ -1,3 +1,4 @@
+import { writeNumber } from '../lib/number-notes.js';
 import {context,summary,title,rankings,rankMessage} from '../lib/daily-sudoku-client.js';
 import {renderStreak} from '../lib/daily-streak.js';
 import {units,dailyDate} from '../lib/sudoku.js';
@@ -50,7 +51,7 @@ function render(){ $('sudokuComplete').hidden=!isSolved();const conflicts=new Se
  const board=$('sudokuBoard');board.replaceChildren();for(let i=0;i<81;i++){const b=document.createElement('button');b.type='button';b.disabled=!ready;b.className=`sudoku-cell${data.givens[i]!=='0'?' given':''}${selected===i?' selected':''}${conflicts.has(i)?' conflict':''}`;b.setAttribute('aria-label',`${Math.floor(i/9)+1}행 ${i%9+1}열, ${state.values[i]||'빈칸'}${data.givens[i]!=='0'?', 고정 숫자':''}`);b.tabIndex=i===selected?0:-1;b.dataset.cell=i;if(state.values[i])b.textContent=state.values[i];else{const n=document.createElement('span');n.className='notes';for(let v=1;v<=9;v++){const s=document.createElement('span');s.textContent=state.notes[i].includes(v)?v:'\u00a0';n.append(s);}b.append(n);}board.append(b);}}
 function focus(){document.querySelector(`[data-cell="${selected}"]`)?.focus();}
 function toggleNotes(){notesMode=!notesMode;$('sudokuNotes').setAttribute('aria-pressed',String(notesMode));}
-function change(n){if(!ready||!state||data.givens[selected]!=='0')return;if(notesMode&&n){const a=state.notes[selected];state.notes[selected]=a.includes(n)?a.filter(v=>v!==n):[...a,n];}else{state.values[selected]=n;state.notes[selected]=[];}persist();render();if(state.values.every(Boolean)&&!notesMode)submit();}
+function change(n){if(!ready||!state||data.givens[selected]!=='0')return;if(notesMode&&n){if(state.values[selected])return;const a=state.notes[selected];state.notes[selected]=a.includes(n)?a.filter(v=>v!==n):[...a,n];}else{writeNumber(state.values,state.notes,selected,n);}message('');persist();render();if(state.values.every(Boolean)&&!notesMode)submit();}
 async function submit(){
  if(!ready||submitting||!state||!state.values.every(Boolean))return;
  const answer=state.values.join('');
@@ -60,7 +61,7 @@ async function submit(){
  await window.puzzleAuthReady;
  if(!window.puzzleAccount.user||!window.puzzleAccount.profile){completedAnswer=answer;complete();return;}
  const owner=window.puzzleAccount.user.id;
- submitting=true;complete();message('완료 기록을 저장하고 있습니다...');
+ submitting=true;complete();
  try{
   const {data:result,error}=await window.puzzleAccount.client.rpc('submit_completion',{requested_puzzle:`daily-sudoku:${data.day}`,submitted_state:{version:1,values:state.values.slice()},state_version:1});
   if(error)throw error;

@@ -1,3 +1,4 @@
+import { writeNumber } from '../lib/number-notes.js';
 import { givens, bombValues, boardSignature, isBomb, validValue, conflicts, solved, parseBombSudokuState } from '../lib/bomb-sudoku.js';
 
 const $ = id => document.getElementById(id);
@@ -37,7 +38,7 @@ function render() {
     cell.classList.toggle('has-notes', !values[i] && notes[i].length > 0);
     cell.tabIndex = i === selected ? 0 : -1;
     cell.setAttribute('aria-pressed', String(i === selected));
-    cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${isBomb(i) ? '폭탄 ' : ''}${values[i] || '빈칸'}${fixed[i] ? ', 고정 숫자' : ''}${bad.has(i) ? ', 규칙 위반' : ''}${notes[i].length ? ', 메모 ' + notes[i].join(', ') : ''}`);
+    cell.setAttribute('aria-label', `${Math.floor(i / 9) + 1}행 ${i % 9 + 1}열, ${isBomb(i) ? '폭탄 ' : ''}${values[i] || '빈칸'}${fixed[i] ? ', 고정 숫자' : ''}${bad.has(i) ? ', 규칙 위반' : ''}${!values[i] && notes[i].length ? ', 메모 ' + notes[i].join(', ') : ''}`);
     cell.replaceChildren();
     if (values[i]) {
       const digit = document.createElement('span');
@@ -76,8 +77,7 @@ function change(number) {
       ? notes[selected].filter(n => n !== number)
       : [...notes[selected], number].sort((a,b) => a-b);
   } else {
-    values[selected] = number;
-    notes[selected] = [];
+    writeNumber(values, notes, selected, number);
   }
   persist();
   render();

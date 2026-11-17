@@ -42,5 +42,5 @@ export function parseSamsungSudokuState(saved, puzzleId) {
     || !Array.isArray(saved.notes) || saved.notes.length !== 144
     || !saved.notes.every(note => Array.isArray(note) && note.every(n => Number.isInteger(n) && n >= 1 && n <= 12))
     || saved.values.some((n,i) => fixed[i] && n !== fixed[i])) return null;
-  return { values:[...saved.values], notes:saved.notes.map((note,i) => saved.values[i] ? [] : [...new Set(note)].sort((a,b) => a-b)) };
+  return { values:[...saved.values], notes:saved.notes.map((note,i) => givens.flat()[i] ? [] : [...new Set(note)].sort((a,b) => a-b)) };
 }

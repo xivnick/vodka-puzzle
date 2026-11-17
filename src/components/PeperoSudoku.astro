@@ -5,6 +5,7 @@ import NumberPad from './NumberPad.astro';
 import '../styles/daily-sudoku.css';
 import { givens, sticks } from '../lib/pepero-sudoku.js';
 const puzzleId = '261111_01';
+const { preview = false } = Astro.props;
 const cellKinds = Array(81).fill('');
 for (const [handle, ...chocolate] of sticks) {
   cellKinds[handle] = '과자 칸';
@@ -30,9 +31,10 @@ const shapes = sticks.map(cells => {
   };
 });
 ---
-<PuzzleLayout title="261111 빼빼로 스도쿠" {puzzleId}
+<PuzzleLayout title="261111 빼빼로 스도쿠" {puzzleId} {preview}
   subtitle="초코 칸의 합에서 과자 칸의 숫자를 빼면 11!"
   description="초코 칸의 합에서 과자 한 칸의 숫자를 빼면 11이 되는 빼빼로 스도쿠">
+  {preview && <meta slot="head" name="robots" content="noindex, nofollow" />}
   <div slot="rules">
     각 가로줄, 세로줄, 굵은 선으로 구분된 3×3 영역에 1~9를 한 번씩 넣으세요.<br />
     회색 막대 안에 흰색 표시가 있는 한 칸은 과자 칸이고, 나머지는 초코 칸입니다.<br />
@@ -43,7 +45,7 @@ const shapes = sticks.map(cells => {
     메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.<br />
     다른 칸을 눌러 이동하고 지우기 버튼으로 입력을 지우세요.
   </div>
-  <section id="peperoGame" data-puzzle-id={puzzleId} data-preview="false" aria-label="빼빼로 스도쿠">
+  <section id="peperoGame" data-puzzle-id={puzzleId} data-preview={String(preview)} aria-label="빼빼로 스도쿠">
     <div class="sudoku-board-tools"><button id="peperoNotes" class="sudoku-notes-toggle" type="button" tabindex="-1" aria-pressed="false">메모하기</button></div>
     <div class="pepero-grid">
       <div id="peperoBoard" class="sudoku-board" role="group" aria-label="9행 9열 스도쿠">

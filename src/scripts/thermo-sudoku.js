@@ -1,3 +1,4 @@
+import { writeNumber } from '../lib/number-notes.js';
 import {puzzles,photoPuzzles,conflicts,solved,parseState} from '../lib/thermo-sudoku.js';
 const $=id=>document.getElementById(id);
 const puzzle=[...puzzles,...photoPuzzles].find(p=>p.id===$('thermoGame').dataset.difficulty);
@@ -15,7 +16,7 @@ function render(){
  $('thermoComplete').hidden=!solved(puzzle,values);
 }
 function focus(){document.querySelector(`[data-cell="${selected}"]`).focus();}
-function change(n){if(!ready||givens[selected])return;if(notesMode&&n){if(values[selected])return;notes[selected]=notes[selected].includes(n)?notes[selected].filter(v=>v!==n):[...notes[selected],n];}else{values[selected]=n;notes[selected]=[];}update();}
+function change(n){if(!ready||givens[selected])return;if(notesMode&&n){if(values[selected])return;notes[selected]=notes[selected].includes(n)?notes[selected].filter(v=>v!==n):[...notes[selected],n];}else{writeNumber(values,notes,selected,n);}update();}
 function toggleNotes(){notesMode=!notesMode;$('thermoNotes').setAttribute('aria-pressed',String(notesMode));}
 $('thermoCells').addEventListener('click',e=>{const cell=e.target.closest('[data-cell]');if(cell){selected=Number(cell.dataset.cell);render();focus();}});
 $('thermoCells').addEventListener('keydown',e=>{

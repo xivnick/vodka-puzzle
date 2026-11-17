@@ -1,3 +1,4 @@
+import { writeNumber } from '../lib/number-notes.js';
 import { inspectArrowMaze, parseArrowMazeState } from '../lib/arrow-maze.js';
 
 const game = document.getElementById('arrowMazeGame');
@@ -95,7 +96,7 @@ if (game) {
     if (memo && value) {
       values[selected] = 0;
       notes[selected] = notes[selected].includes(value) ? notes[selected].filter(number => number !== value) : [...notes[selected], value];
-    } else { values[selected] = value; notes[selected] = []; }
+    } else { writeNumber(values, notes, selected, value); }
     persist(); render();
     status.textContent = `${Math.floor(selected / puzzle.size) + 1}행 ${selected % puzzle.size + 1}열, ${value ? `${memo ? '메모 ' : ''}${value}` : '지웠습니다.'}`;
   }

@@ -60,5 +60,5 @@ export function parseTessellationState(saved, puzzleId) {
     || !saved.values.every((n,i) => Number.isInteger(n) && n >= 0 && n <= 9 && (!givens[i] || givens[i] === n))
     || !Array.isArray(saved.notes) || saved.notes.length !== cells.length
     || !saved.notes.every(note => Array.isArray(note) && note.every(n => Number.isInteger(n) && n >= 1 && n <= 9))) return null;
-  return {values:[...saved.values], notes:saved.notes.map((note,i) => saved.values[i] ? [] : [...new Set(note)].sort((a,b) => a-b))};
+  return {values:[...saved.values], notes:saved.notes.map((note,i) => givens[i] ? [] : [...new Set(note)].sort((a,b) => a-b))};
 }
