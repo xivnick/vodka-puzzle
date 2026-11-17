@@ -1,3 +1,4 @@
+import {readAccount} from './account-reads.js';
 import {subscribeKujiAccount} from './kuji-account.js';
 let revision = 0;
 let scheduled = false;
@@ -42,11 +43,11 @@ async function refreshHeaderRewards() {
     setHeaderRewardReady(false);
     return;
   }
+  if(document.getElementById('cosmeticLivePanel'))return;
   try {
-    const {data, error} = await account.client.rpc('achievement_context');
+    const data = await readAccount(account,'reward_summary');
     if (request !== revision || owner !== window.puzzleAccount.user?.id) return;
-    const claimable = row => row.state === 'claimable' && row.configured && row.active !== false;
-    setHeaderRewardReady(!error && ((data?.achievements ?? []).some(claimable) || (data?.daily_tasks ?? []).some(claimable)));
+    setHeaderRewardReady(data?.ready);
   } catch {
     if (request === revision) setHeaderRewardReady(false);
   }
@@ -55,10 +56,10 @@ async function refreshHeaderRewards() {
 function scheduleRefresh() {
   if (scheduled) return;
   scheduled = true;
-  queueMicrotask(() => {
+  setTimeout(() => {
     scheduled = false;
-    void refreshHeaderRewards();
-  });
+    if (!document.hidden) void refreshHeaderRewards();
+  }, 100);
 }
 
 window.puzzleAuthReady.then(scheduleRefresh);

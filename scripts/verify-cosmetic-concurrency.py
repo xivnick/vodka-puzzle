@@ -3,6 +3,7 @@ Uses the real cosmetic migrations with a minimal existing-service fixture.
 Never connects to Supabase. Requires initdb, pg_ctl and psql on PATH.
 """
 import json
+import sys
 import subprocess
 import tempfile
 import uuid
@@ -51,6 +52,8 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         for name in ['20261105_cosmetic_foundation.sql', '20261105_cosmetic_service.sql', '20261105_numeric_difficulty.sql', '20261106_all_clear_effect.sql','20261106_achievement_repeat_rewards.sql','20261106_time_traveler_mission.sql','20261106_time_traveler_clock_bolt.sql','20261106_achievement_history_champion.sql','20261106_cosmetic_test_accounts.sql','20261106_cosmetic_test_transactions.sql','20261106_cosmetic_color_orientation.sql','20261106_cosmetic_release.sql','20261106_cosmetic_attendance_notice.sql','20261106_cosmetic_notification_claim_filter.sql','20261107_achievement_current_streak.sql']:
             sql((ROOT / 'supabase/migrations' / name).read_text())
         sql("UPDATE private.cosmetic_settings SET enabled=true,history_policy='all_records',champion_tickets=1; UPDATE private.cosmetic_draw_configs SET status='active',price_per_draw=100;")
+        if '--shared-reads' in sys.argv:
+            sql((ROOT / 'supabase/migrations/20261118_shared_read_state.sql').read_text())
         users = [str(uuid.uuid4()) for _ in range(8)]
         for uid in users:
             sql(f"INSERT INTO auth.users VALUES('{uid}'); INSERT INTO public.semester_nicknames VALUES('2026-2','{uid}','test');")
@@ -176,6 +179,17 @@ with tempfile.TemporaryDirectory(prefix='vp-cosmetic-', dir='/tmp') as temp:
         assert sql("""SELECT count(*) FROM private.account_coin_wallets w WHERE balance<>coalesce((SELECT sum(delta) FROM private.coin_ledger l WHERE l.user_id=w.user_id),0)""")=='0'
         assert sql("""SELECT count(*) FROM (SELECT user_id,item_id,sum(delta) AS quantity FROM private.inventory_ledger GROUP BY user_id,item_id) l WHERE quantity<>coalesce((SELECT quantity FROM private.cosmetic_inventory i WHERE i.user_id=l.user_id AND i.item_id=l.item_id),0)""")=='0'
         assert sql("SELECT count(*) FROM private.account_operations WHERE status<>'completed'")=='0'
+        if '--shared-reads' in sys.argv:
+            # Original calculation remains the oracle; warming cache must preserve results.
+            for uid in [a,b,c,d,e,f,g,h]:
+                claims=json.dumps({'sub':uid,'role':'authenticated','app_metadata':{'provider':'google'}})
+                assert sql(f"BEGIN; SET LOCAL request.jwt.claims='{claims}'; SELECT bool_and(private.achievement_metric(r,'2026-2')=private.calculate_achievement_metric(r,'2026-2')) FROM private.achievement_rules r; ROLLBACK;")=='t'
+            assert json.loads(rpc(a,'SELECT public.reward_summary()')).get('ready') in [True,False]
+            assert rpc(a,'SELECT jsonb_agg(r) FROM public.recent_completions() r')==rpc(b,'SELECT jsonb_agg(r) FROM public.recent_completions() r')
+            assert sql("SELECT count(*) FROM private.shared_query_cache WHERE key='recent'")=='1'
+            sql((ROOT / 'supabase/rollback/20261118_shared_read_state.sql').read_text())
+            assert 'achievements' in json.loads(rpc(a,'SELECT public.achievement_context()'))
+            print('Shared reads passed: metric parity for all fixture accounts, private summary and shared recent results.')
         print('Concurrent RPCs passed: overspend, request replay, rapid 1/10 draws, shared craft creation, material contention, duplicate mission/ticket claims, revision ordering and ledger audit.')
     finally:
         run(['pg_ctl', '-D', data, '-m', 'immediate', '-w', 'stop'])

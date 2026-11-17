@@ -43,3 +43,23 @@ account.user={id:'test-user'};state={...initial,state_revision:6};
 const pendingId='pending-draw';store.set('cosmetic-pending:test-user',JSON.stringify({[pendingId]:{name:'draw_cosmetics',args:{request_id:pendingId,count:1,expected_draw_config_version:1}}}));recorded.set(pendingId,{state,results:[{item_id:'common:c0',kind:'common_color',name:'수박',definition:{a:'#D9747C',b:'#D9747C'}}]});
 const recovered=createCosmeticAccountClient(account,template,storage);await recovered.initialize();assert.equal(recovered.takeRecovered()[0].response.results[0].name,'수박');assert.equal(drawCalls,1);
 console.log('Live normalization, no demo seed, monotonic economic/equipment state, interrupted request recovery, reload recovery and account switching: passed.');
+
+// New complete mutation responses update UI without context round trips.
+const readsBefore=calls.filter(c=>['achievement_context','cosmetic_context'].includes(c.name)).length;
+const oldRpc=account.client.rpc;
+account.client.rpc=async(name,args)=>name==='set_all_clear_effect'?{data:{state:{...state,state_revision:7},achievements,daily_tasks:[],current_day:'2026-11-18'}}:oldRpc(name,args);
+await recovered.toggleAllClear(true);
+assert.equal(calls.filter(c=>['achievement_context','cosmetic_context'].includes(c.name)).length,readsBefore);
+console.log('Complete mutation response applies without follow-up account reads: passed.');
+
+const {readAccount,invalidateAccountReads}=await import('../src/scripts/account-reads.js');
+invalidateAccountReads();
+let releaseRead,readCalls=0;
+const shared={user:{id:'shared-test'},client:{rpc:()=>{readCalls++;return new Promise(resolve=>{releaseRead=resolve;});}}};
+const first=readAccount(shared,'reward_summary'),second=readAccount(shared,'reward_summary');
+assert.equal(readCalls,1);releaseRead({data:{ready:true}});
+assert.deepEqual(await first,await second);
+invalidateAccountReads();
+const switched=readAccount(shared,'reward_summary');shared.user={id:'different'};releaseRead({data:{ready:true}});
+await assert.rejects(switched,/ACCOUNT_CHANGED/);
+console.log('Concurrent account reads share one request and reject switched-account responses: passed.');

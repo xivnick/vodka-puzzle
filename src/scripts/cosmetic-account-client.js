@@ -1,3 +1,4 @@
+import {readAccount,notifyAccountChange} from './account-reads.js';
 // Real account adapter. Demo storage, demo balances and client RNG never enter it.
 export const localItemId=id=>id==null?null:id.replace(/^(icon|effect|common|rare):/,'');
 export function serverItemId(id,kind){
@@ -45,7 +46,8 @@ export function createCosmeticAccountClient(account,template,storage=globalThis.
  const savePending=()=>storage.setItem(pendingKey,JSON.stringify(pending));
  function assertAccount(){if(account.user?.id!==uid)throw new Error('ACCOUNT_CHANGED');}
  async function rpc(name,args={}){
-  assertAccount();const {data,error}=await client.rpc(name,args);assertAccount();if(error)throw error;return data;
+  assertAccount();if(name==='achievement_context'||name==='cosmetic_context')return readAccount(account,name,args);
+  const {data,error}=await client.rpc(name,args);assertAccount();if(error)throw error;return data;
  }
  function mergeState(state){
   if(!state)return;
@@ -88,7 +90,7 @@ export function createCosmeticAccountClient(account,template,storage=globalThis.
     catch{throw error;}
    }
    delete pending[id];savePending();apply(response);
-   await refresh().catch(()=>{});return response;
+   notifyAccountChange(uid);if(!response.achievements){const context=await rpc('achievement_context').catch(()=>null);if(context)apply(context);}return response;
   });
  }
  const snapshot=()=>normalizeCosmeticAccount(model,template,identity);
@@ -101,9 +103,9 @@ export function createCosmeticAccountClient(account,template,storage=globalThis.
   craft:materials=>mutation('craft_cosmetic',{material_ids:materials.map(id=>serverItemId(id,'common'))}),
   equip:value=>enqueue(async()=>{
    const args={expected_equipment_version:Number(model.state.equipment.equipment_version),equipment:{icon_id:serverItemId(value.icon,'icon'),color_id:serverItemId(value.color,value.color?.startsWith('c')?'common':'rare'),effect_id:serverItemId(value.effect,'effect'),expression:value.mode,direction:value.angle==='90deg'?'horizontal':value.angle==='180deg'?'vertical':'diagonal',reversed:Boolean(value.reversed)}};
-   const response=await rpc('set_cosmetic_equipment',args);apply(response);await refresh().catch(()=>{});return response;
+   const response=await rpc('set_cosmetic_equipment',args);apply(response);notifyAccountChange(uid);if(!response.achievements){const context=await rpc('achievement_context').catch(()=>null);if(context)apply(context);}return response;
   }),
-  toggleAllClear:enabled=>enqueue(async()=>{const response=await rpc('set_all_clear_effect',{expected_equipment_version:Number(model.state.equipment.equipment_version),enabled});apply(response);await refresh().catch(()=>{});return response;}),
+  toggleAllClear:enabled=>enqueue(async()=>{const response=await rpc('set_all_clear_effect',{expected_equipment_version:Number(model.state.equipment.equipment_version),enabled});apply(response);notifyAccountChange(uid);if(!response.achievements){const context=await rpc('achievement_context').catch(()=>null);if(context)apply(context);}return response;}),
   rename:nickname=>enqueue(async()=>{
    assertAccount();const {data,error}=await client.from('semester_nicknames').update({nickname}).eq('season_id',document.documentElement.dataset.season).eq('user_id',uid).select('nickname').single();assertAccount();if(error)throw error;identity.nickname=data.nickname;account.profile.nickname=data.nickname;window.dispatchEvent(new Event('puzzle-auth-ready'));
   })

@@ -19,7 +19,7 @@ export async function initializeLiveMypage(root){
   root.hidden=false;initMypage(root,{server});status.hidden=true;finishLoading();
   const refresh=()=>{if(!document.hidden)window.dispatchEvent(new Event('cosmetic-refresh'));};
   window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',refresh);
-  function scheduleMidnight(){const day=86400000,delay=day-((Date.now()+9*3600000)%day)+250;setTimeout(()=>{refresh();scheduleMidnight();},delay);}
+  function scheduleMidnight(){const day=86400000,delay=day-((Date.now()+9*3600000)%day)+250+Math.random()*2000;setTimeout(()=>{refresh();scheduleMidnight();},delay);}
   scheduleMidnight();
  }catch(error){finishLoading();console.error('Cosmetic page initialization failed',error);status.textContent=cosmeticError(error);status.hidden=false;root.hidden=true;}
 }

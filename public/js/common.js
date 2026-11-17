@@ -58,7 +58,15 @@ function publicHeaders() {
   return { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` };
 }
 
-async function sbPublicRpc(name, body, { trigger = 'interaction' } = {}) {
+const _publicRpcPending = new Map();
+async function sbPublicRpc(name, body, options = {}) {
+  const key = JSON.stringify([name, body]);
+  if (_publicRpcPending.has(key)) return _publicRpcPending.get(key);
+  const pending = performPublicRpc(name, body, options);
+  _publicRpcPending.set(key, pending);
+  try { return await pending; } finally { if (_publicRpcPending.get(key) === pending) _publicRpcPending.delete(key); }
+}
+async function performPublicRpc(name, body, { trigger = 'interaction' } = {}) {
   const res = await sbFetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
     method: 'POST', headers: { ...publicHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(body), puzzleTrigger: trigger,

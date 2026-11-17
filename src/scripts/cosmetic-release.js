@@ -20,10 +20,10 @@ export async function refreshCosmeticRelease(){
    let delay;
    if(result.active){const day=86400000;delay=day-((Date.now()+serverOffset+9*3600000)%day);}
    else if(result.launch_at)delay=Date.parse(result.launch_at)-Date.parse(result.server_now);
-   if(delay!==undefined)timer=setTimeout(()=>{window.puzzleCosmeticReleaseReady=refreshCosmeticRelease();},Math.min(Math.max(delay+150,1000),2147483647));
+   if(delay!==undefined)timer=setTimeout(()=>{if(!document.hidden)window.puzzleCosmeticReleaseReady=refreshCosmeticRelease();},Math.min(Math.max(delay+150+Math.random()*2000,1000),2147483647));
    window.dispatchEvent(new CustomEvent('cosmetic-release-ready',{detail:result}));void recordVisit();
    return result;
-  }catch(error){console.warn('Cosmetic release context unavailable',error);clearTimeout(timer);timer=setTimeout(()=>{window.puzzleCosmeticReleaseReady=refreshCosmeticRelease();},retryDelay);retryDelay=Math.min(retryDelay*2,30000);return window.puzzleCosmeticRelease;}
+  }catch(error){console.warn('Cosmetic release context unavailable',error);clearTimeout(timer);timer=setTimeout(()=>{if(!document.hidden)window.puzzleCosmeticReleaseReady=refreshCosmeticRelease();},retryDelay*(0.75+Math.random()*0.5));retryDelay=Math.min(retryDelay*2,30000);return window.puzzleCosmeticRelease;}
   finally{loading=null;}
  })();return loading;
 }
