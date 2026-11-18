@@ -1,12 +1,16 @@
-<div class="admin-toolbar">
-  <label class="sr-label" for="adminSearch">문제 검색</label>
-  <input class="account-input" id="adminSearch" type="search" placeholder="제목 또는 ID 검색" />
-  <label class="sr-label" for="adminFilter">공개 상태</label>
-  <select class="account-input" id="adminFilter"><option value="all">모든 상태</option><option value="draft">초안</option><option value="test">테스트</option><option value="scheduled">예약 공개</option><option value="published">공개</option></select>
-  <button id="adminRefresh" class="admin-quiet-action" type="button">새로고침</button>
-</div>
-<p id="adminStatus" class="admin-status" role="status" aria-live="polite"></p>
-<div class="admin-picker">
-  <div id="adminList" class="admin-list" aria-label="문제 목록"></div>
-  <p id="adminCount" class="admin-count"></p>
+<div class="admin-catalog">
+  <div class="admin-toolbar">
+    <label class="admin-search">
+      <span class="sr-label">문제 검색</span>
+      <input id="adminSearch" type="search" placeholder="제목 또는 ID 검색" />
+    </label>
+    <label class="sr-label" for="adminFilter">공개 상태</label>
+    <select id="adminFilter"><option value="all">모든 상태</option><option value="draft">초안</option><option value="test">테스트</option><option value="scheduled">예약 공개</option><option value="published">공개</option></select>
+    <button id="adminRefresh" class="account-button" type="button">새로고침</button>
+  </div>
+  <p id="adminStatus" class="admin-status" role="status"></p>
+  <div class="admin-picker">
+    <div id="adminList" class="admin-list" aria-label="문제 목록"></div>
+    <p id="adminCount" class="admin-count"></p>
+  </div>
 </div>

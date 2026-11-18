@@ -19,8 +19,53 @@ body:has(.admin-shell) .page-content { width: min(96vw, 640px); }
   width: 100%;
 }
 .admin-shell [hidden] { display: none; }
-.admin-toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
-.admin-toolbar input { flex: 1; min-width: 150px; }
+.admin-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(8rem, max-content) auto;
+  gap: 10px;
+}
+.admin-toolbar :is(input, select, button) {
+  min-width: 0;
+  min-height: 44px;
+  border-radius: 4px;
+  font-size: .85rem;
+}
+.admin-toolbar :is(input, select) {
+  width: 100%;
+  border: 1px solid var(--admin-border);
+  color: #444;
+  font-family: inherit;
+}
+.admin-search { position: relative; color: #777; }
+.admin-search::before, .admin-search::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+.admin-search::before {
+  top: calc(50% - 7px);
+  left: 14px;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+.admin-search::after {
+  top: calc(50% + 3px);
+  left: 23px;
+  width: 6px;
+  height: 1.5px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+.admin-toolbar input {
+  padding: 0 12px 0 38px;
+  background: var(--admin-surface);
+}
+.admin-toolbar input::placeholder { color: #777; }
+.admin-toolbar select { padding: 0 8px 0 12px; background: #fff; }
+.admin-toolbar :is(input, select):focus-visible { background: #f4f1eb; }
+.admin-toolbar button { padding: 0 14px; white-space: nowrap; }
 .admin-shell .account-input {
   min-height: 42px;
   padding: 8px 0;
@@ -50,8 +95,8 @@ body:has(.admin-shell) .page-content { width: min(96vw, 640px); }
   text-decoration: none;
 }
 .admin-status { color: var(--admin-muted); font-size: .85rem; line-height: 1.6; }
-.admin-toolbar + .admin-status:not(:empty) { margin-top: 8px; }
-.admin-picker { display: grid; gap: 8px; margin: 12px 0 16px; }
+.admin-toolbar + .admin-status:not(:empty) { margin-top: 12px; }
+.admin-picker { display: grid; gap: 10px; margin: 24px 0 16px; }
 .admin-count, .admin-help, .admin-notice {
   color: var(--admin-muted);
   font-size: .8rem;
@@ -152,9 +197,13 @@ body:has(.admin-shell) .page-content { width: min(96vw, 640px); }
 .sr-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
 @media (max-width: 640px) {
-  .admin-toolbar input { flex-basis: 100%; min-width: 0; }
-  .admin-toolbar select { flex: 1; min-width: 0; }
-  .admin-shell .account-input { font-size: 16px; }
+  .admin-catalog { margin-inline: 8px; }
+  .admin-shell .account-input, .admin-toolbar :is(input, select) { font-size: 16px; }
+}
+
+@media (max-width: 480px) {
+  .admin-toolbar { grid-template-columns: minmax(0, 1fr) auto; }
+  .admin-search { grid-column: 1 / -1; }
 }
 
 @media (max-width: 420px) {
