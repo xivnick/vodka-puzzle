@@ -4,6 +4,7 @@ import { digits, size, inspect } from '../lib/kakuro.js';
 const game = document.getElementById('kakuroGame');
 const puzzleId = game.dataset.puzzleId;
 const cells = [...game.querySelectorAll('.kakuro-cell')];
+const clues = game.querySelectorAll('[data-clue]');
 const cellByIndex = new Map(cells.map(cell => [Number(cell.dataset.index), cell]));
 const complete = document.getElementById('kakuroComplete');
 const status = document.getElementById('kakuroStatus');
@@ -31,7 +32,10 @@ window.checkComplete = checkComplete;
 
 function render() {
   const result = inspect(values);
-  const { conflicts } = result;
+  const { conflicts, satisfied } = result;
+  for (const clue of clues) {
+    clue.classList.toggle('satisfied', satisfied.has(clue.dataset.clue));
+  }
   for (const [index, cell] of cellByIndex) {
     cell.replaceChildren();
     if (values[index]) cell.textContent = values[index];

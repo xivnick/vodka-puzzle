@@ -32,15 +32,16 @@ for (const [row, line] of board.entries()) {
         r += dr;
         c += dc;
       }
-      if (cells.length) runs.push({ cells, sum: clue[direction] });
+      if (cells.length) runs.push({ id: `${row * size + column}-${direction}`, cells, sum: clue[direction] });
     }
   }
 }
 
 export function inspect(values) {
+  const satisfied = new Set();
   const conflicts = new Set();
   const complete = grid.every((cell, index) => cell !== white || digits.includes(values[index]));
-  for (const { cells, sum } of runs) {
+  for (const { id, cells, sum } of runs) {
     const seen = new Map();
     let total = 0;
     let filled = 0;
@@ -55,9 +56,10 @@ export function inspect(values) {
       filled++;
       total += value;
     }
+    if (seen.size === cells.length && total === sum) satisfied.add(id);
     if (sum != null && (total > sum || (filled === cells.length && total !== sum))) {
       cells.filter(index => values[index]).forEach(index => conflicts.add(index));
     }
   }
-  return { complete: complete && !conflicts.size, conflicts };
+  return { complete: complete && !conflicts.size, conflicts, satisfied };
 }

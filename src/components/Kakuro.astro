@@ -25,8 +25,8 @@ const puzzleId = '261118_01';
           ? <button type="button" role="gridcell" class="kakuro-cell" data-index={index} tabindex="-1" aria-label={`${position}, 빈칸`} />
           : <div role="gridcell" class:list={['kakuro-clue', { diagonal: clue.right || clue.down, right: clue.right, down: clue.down }]}
               aria-label={[`${position}, 회색 칸`, clue.right && `오른쪽 합 ${clue.right}`, clue.down && `아래 합 ${clue.down}`].filter(Boolean).join(', ')}>
-              {clue.right && <span class="right-sum">{clue.right}</span>}
-              {clue.down && <span class="down-sum">{clue.down}</span>}
+              {clue.right && <span class="right-sum" data-clue={`${index}-right`}>{clue.right}</span>}
+              {clue.down && <span class="down-sum" data-clue={`${index}-down`}>{clue.down}</span>}
             </div>;
       })}
     </div>
@@ -52,6 +52,7 @@ const puzzleId = '261118_01';
   .kakuro-clue{background:#575757;color:#181818;font-size:clamp(12px,3.4vw,19px);font-weight:700;line-height:1}
   .kakuro-clue.diagonal{background:linear-gradient(to top right,var(--lower,#575757) calc(50% - .65px),#444 50%,var(--upper,#575757) calc(50% + .65px))}
   .kakuro-clue.right{--upper:#ccc}.kakuro-clue.down{--lower:#ccc}
+  [data-clue].satisfied{color:#236332}
   .right-sum{position:absolute;right:7%;top:9%}.down-sum{position:absolute;left:7%;bottom:8%}
   .kakuro-cell :global(.notes){position:absolute;inset:3px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);font-size:clamp(8px,2.1vw,12px);font-weight:500;color:#606975}
   .kakuro-cell :global(.notes span){display:flex;align-items:center;justify-content:center}
