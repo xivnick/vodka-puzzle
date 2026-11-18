@@ -17,16 +17,10 @@ const { previewPuzzle } = Astro.props;
       <label for="adminSummary">요약설명</label>
       <textarea class="account-input" id="adminSummary" maxlength="500" rows="3" required></textarea>
     </div>
-    <div class="admin-field-pair">
-      <div class="admin-field">
-        <label for="adminType">문제 종류</label>
-        <input class="account-input" id="adminType" maxlength="80" required />
-      </div>
-      <div class="admin-field">
-        <label for="adminOrder">목록 순서</label>
-        <input class="account-input" id="adminOrder" type="number" min="-100000" max="100000" step="1" aria-describedby="adminOrderHelp" required />
-        <p class="admin-help" id="adminOrderHelp">큰 값이 먼저 표시됩니다. 값이 같으면 최근에 공개된 문제가 먼저 표시됩니다.</p>
-      </div>
+    <div class="admin-field">
+      <label for="adminOrder">목록 순서</label>
+      <input class="account-input" id="adminOrder" type="number" min="-100000" max="100000" step="1" aria-describedby="adminOrderHelp" required />
+      <p class="admin-help" id="adminOrderHelp">큰 값이 먼저 표시됩니다. 값이 같으면 최근에 공개된 문제가 먼저 표시됩니다.</p>
     </div>
     <fieldset id="adminDifficulty" class="admin-difficulty">
       <legend>난이도</legend>

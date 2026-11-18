@@ -14,7 +14,7 @@ INSERT INTO auth.users(id,aud,role,email,raw_app_meta_data) VALUES
  ('__U1__','authenticated','authenticated','release-__U1__@example.invalid','{"provider":"google"}'),
  ('__U2__','authenticated','authenticated','release-__U2__@example.invalid','{"provider":"google"}');
 INSERT INTO public.semester_nicknames(season_id,user_id,nickname) SELECT active_season,v.u,v.n FROM public.semester_settings CROSS JOIN(VALUES('__U1__'::uuid,'__release_a'),('__U2__'::uuid,'__release_b'))v(u,n) WHERE id;
-INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,puzzle_type,status,published_at,difficulty) SELECT active_season,'__release_puzzle','fixture','fixture','test','published',clock_timestamp()-interval '1 day',1 FROM public.semester_settings WHERE id;
+INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,status,published_at,difficulty) SELECT active_season,'__release_puzzle','fixture','fixture','published',clock_timestamp()-interval '1 day',1 FROM public.semester_settings WHERE id;
 UPDATE private.cosmetic_settings SET enabled=true,history_policy='all_records',launched_at=clock_timestamp()+interval '1 day' WHERE id;
 SET LOCAL ROLE anon;
 DO $$ BEGIN
@@ -61,7 +61,7 @@ DO $$ DECLARE a jsonb;b jsonb;BEGIN
 END $$;
 RESET ROLE;
 -- New puzzle, same original completion API and first-place guarantee.
-INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,puzzle_type,status,published_at,difficulty) SELECT active_season,'__release_second','fixture','fixture','test','published',clock_timestamp()-interval '1 day',1 FROM public.semester_settings WHERE id;
+INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,status,published_at,difficulty) SELECT active_season,'__release_second','fixture','fixture','published',clock_timestamp()-interval '1 day',1 FROM public.semester_settings WHERE id;
 SELECT set_config('request.jwt.claims','__JWT2__',true);
 SET LOCAL ROLE authenticated;
 DO $$ DECLARE a jsonb;BEGIN
@@ -104,7 +104,7 @@ RESET ROLE;
 SET LOCAL ROLE anon;
 DO $$ BEGIN IF public.cosmetic_rank_displays('2026-2',ARRAY['__release_a'])->'__release_a'->>'sparkle'<>'true' THEN RAISE EXCEPTION 'Public all-clear missing'; END IF;END $$;
 RESET ROLE;
-INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,puzzle_type,status,published_at,difficulty) SELECT active_season,'__release_new','fixture','fixture','test','published',clock_timestamp()-interval '1 day',0 FROM public.semester_settings WHERE id;
+INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,status,published_at,difficulty) SELECT active_season,'__release_new','fixture','fixture','published',clock_timestamp()-interval '1 day',0 FROM public.semester_settings WHERE id;
 SET LOCAL ROLE anon;
 DO $$ BEGIN IF public.cosmetic_rank_displays('2026-2',ARRAY['__release_a'])->'__release_a'->>'sparkle'<>'false' THEN RAISE EXCEPTION 'New puzzle did not hide public all-clear'; END IF;END $$;
 RESET ROLE;

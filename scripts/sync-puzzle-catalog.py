@@ -14,7 +14,7 @@ for puzzle in puzzles:
         raise SystemExit(f'Missing built puzzle: {puzzle_id}')
     if not puzzle.get('summary','').strip():
         raise SystemExit(f'Missing summary: {puzzle_id}')
-    values.append('('+','.join(literal(puzzle[key]) for key in ['season','id','title','summary','type'])+",'test',NULL)")
+    values.append('('+','.join(literal(puzzle[key]) for key in ['season','id','title','summary'])+",'test',NULL)")
 if values:
-    query('INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,puzzle_type,status,published_at) VALUES '+','.join(values)+' ON CONFLICT(season_id,puzzle_id) DO NOTHING;')
+    query('INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,status,published_at) VALUES '+','.join(values)+' ON CONFLICT(season_id,puzzle_id) DO NOTHING;')
 print('New puzzle pages registered as test; existing metadata preserved')

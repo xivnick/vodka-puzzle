@@ -56,8 +56,8 @@ DO $$ DECLARE ctx jsonb; v bigint; BEGIN
  EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'EQUIPMENT_CHANGED' THEN RAISE; END IF; END;
 END $$;
 RESET ROLE;
-INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,puzzle_type,status,published_at)
- SELECT active_season,'__all_clear_new','test','summary','test','test',NULL FROM public.semester_settings WHERE id;
+INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,status,published_at)
+ SELECT active_season,'__all_clear_new','test','summary','test',NULL FROM public.semester_settings WHERE id;
 DO $$ BEGIN
  IF private.all_clear_status()->>'active'<>'true' THEN RAISE EXCEPTION 'Test puzzle removed eligibility'; END IF;
 END $$;

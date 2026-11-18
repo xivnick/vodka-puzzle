@@ -216,8 +216,8 @@ DO $$ DECLARE before_coins bigint; result jsonb; BEGIN
 END $$;
 RESET ROLE;
 -- Record-derived missions: no solve API calls or existing puzzle records changed.
-INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,puzzle_type,status,published_at,difficulty)
- SELECT active_season,'__cosmetic_'||i,'test','summary','test','published',clock_timestamp()-interval '1 day',
+INSERT INTO public.puzzle_catalog(season_id,puzzle_id,title,summary,status,published_at,difficulty)
+ SELECT active_season,'__cosmetic_'||i,'test','summary','published',clock_timestamp()-interval '1 day',
  CASE WHEN i<=10 THEN 1 WHEN i=11 THEN 2 ELSE 3 END
  FROM public.semester_settings CROSS JOIN generate_series(1,12) i WHERE id;
 INSERT INTO public.semester_completions(season_id,user_id,nickname,puzzle_id,completed_at)

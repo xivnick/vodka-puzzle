@@ -21,7 +21,7 @@ function values() {
   const status = state === displayState(selected) ? selected.status : state;
   return {
     title:$('adminTitle').value.trim(), summary:$('adminSummary').value.trim(),
-    puzzle_type:$('adminType').value.trim(), difficulty:Number(difficulty.value),
+    difficulty:Number(difficulty.value),
     status:status === 'scheduled' ? 'published' : status,
     published_at:state === 'scheduled'
       ? ($('adminDate').value === koreanInput(selected.published_at) ? selected.published_at
@@ -49,7 +49,7 @@ function selectRow(row) {
   $('adminPreview').href = `/${row.puzzle_id}/`;
   $('adminTitle').value = row.title; $('adminSummary').value = row.summary;
   difficulty.value = String(row.difficulty ?? 0);
-  $('adminType').value = row.puzzle_type; $('adminState').value = displayState(row);
+  $('adminState').value = displayState(row);
   $('adminDate').value = koreanInput(row.published_at); $('adminOrder').value = row.sort_order;
   publicationUI(); updateDirty();
 }
@@ -67,7 +67,7 @@ $('adminForm').addEventListener('submit',async event => {
   const publicationChanged = current.status !== selected.status || Date.parse(current.published_at) !== Date.parse(selected.published_at) && !(current.published_at === null && selected.published_at === null);
   if (current.status === 'published' && publicationChanged && !confirm(`「${current.title}」\n${state === 'scheduled' ? `${formatDate(current.published_at)} (한국 시간)에 예약 공개` : '지금 공개'}합니다.\n목록·완료 기록·클라우드 저장이 활성화됩니다.\n저장할까요?`)) return;
   const args = { requested_season:season, requested_puzzle:selected.puzzle_id,
-    new_title:current.title, new_summary:current.summary, new_type:current.puzzle_type,
+    new_title:current.title, new_summary:current.summary,
     new_difficulty:current.difficulty, new_status:current.status, new_published_at:current.published_at,
     new_sort_order:current.sort_order, expected_updated_at:selected.updated_at };
   saving = true; $('adminFields').disabled = true;
