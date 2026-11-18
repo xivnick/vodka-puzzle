@@ -1,0 +1,12 @@
+---
+import AdminEditor from '../../components/AdminEditor.astro';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+<AdminLayout title="문제 편집" subtitle="문제 정보와 공개 일정을 관리합니다" editor preview>
+  <AdminEditor />
+</AdminLayout>
+<script>
+import { mockAdmin } from '../../scripts/admin-preview.js';
+await mockAdmin();
+await import('../../scripts/admin-editor.js');
+</script>

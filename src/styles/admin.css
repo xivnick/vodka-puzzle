@@ -38,15 +38,13 @@ body:has(.admin-shell) .page-content { width: min(96vw, 640px); }
 .admin-status { color: var(--admin-muted); font-size: .85rem; line-height: 1.6; }
 .admin-toolbar + .admin-status:not(:empty) { margin-top: 8px; }
 .admin-picker { display: grid; gap: 8px; margin: 12px 0 16px; }
-.admin-count, .admin-help, #adminEmpty {
+.admin-count, .admin-help, .admin-notice {
   color: var(--admin-muted);
   font-size: .8rem;
   line-height: 1.6;
   margin: 0;
 }
 .admin-list {
-  max-height: 360px;
-  overflow-y: auto;
   border-block: 1px solid var(--admin-border);
 }
 .admin-list > .admin-help { padding: 14px 18px; }
@@ -60,22 +58,29 @@ body:has(.admin-shell) .page-content { width: min(96vw, 640px); }
   border-bottom: 1px solid var(--admin-border);
   border-radius: 0;
   background: #fff;
-  text-align: left;
+  text-decoration: none;
   transition: background .12s;
 }
 .admin-list .admin-row:last-child { border-bottom: 0; }
-.admin-list .admin-row[aria-pressed="false"]:enabled:hover { background: var(--admin-surface); }
-.admin-list .admin-row[aria-pressed="true"] { background: #eeebe4; }
+.admin-list .admin-row:hover { background: var(--admin-surface); }
 .admin-row-title { color: #333; font-size: .95rem; font-weight: 500; overflow-wrap: anywhere; }
 .admin-row-state, .admin-row-meta { color: var(--admin-muted); font-size: .75rem; }
 .admin-row-state { white-space: nowrap; }
 .admin-row-meta { grid-column: 1 / -1; }
 
+.admin-back {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-size: .85rem;
+  text-decoration: none;
+}
+.admin-back:hover { text-decoration: underline; }
+.admin-shell .admin-notice { margin-bottom: 12px; }
+#adminPanel > .admin-status:not(:empty) { margin-bottom: 12px; }
 .admin-editor {
   border: 1px solid var(--admin-border);
   border-radius: 6px;
   padding: 20px;
-  scroll-margin-top: 56px;
 }
 .admin-editor-heading {
   display: flex;

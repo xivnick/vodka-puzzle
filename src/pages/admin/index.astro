@@ -1,12 +1,8 @@
 ---
-import AdminPanel from '../../components/AdminPanel.astro';
-import PageLayout from '../../layouts/PageLayout.astro';
-import '../../styles/admin.css';
+import AdminList from '../../components/AdminList.astro';
+import AdminLayout from '../../layouts/AdminLayout.astro';
 ---
-<PageLayout title="문제 관리" subtitle="문제 정보와 공개 일정을 관리합니다" bannerText="ADMIN MODE">
-  <meta slot="head" name="robots" content="noindex, nofollow" />
-  <p id="adminAccess" role="status">관리자 권한을 확인하는 중...</p>
-  <a id="adminLogin" href="/nickname/?next=%2Fadmin%2F" hidden>Google로 로그인</a>
-  <AdminPanel />
-</PageLayout>
-<script>import '../../scripts/admin.js';</script>
+<AdminLayout title="문제 관리" subtitle="제목과 공개 상태로 문제를 찾고 편집합니다">
+  <AdminList />
+</AdminLayout>
+<script>import '../../scripts/admin-list.js';</script>
