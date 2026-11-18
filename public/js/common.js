@@ -368,7 +368,12 @@ async function renderRecentBanner(rows) {
   startRecentBannerRotation(banner, _recentBannerMessages);
 }
 
+function hasStaticBanner() {
+  return document.getElementById('recentBanner')?.hasAttribute('data-static');
+}
+
 function initRecentBanner() {
+  if (hasStaticBanner()) return;
   if (!_recentBannerInitPromise) {
     _recentBannerInitPromise = (async () => {
       const rows = await getLatestCompletions();
@@ -379,12 +384,13 @@ function initRecentBanner() {
 }
 
 async function refreshRecentBanner(force = false, trigger = 'interaction') {
+  if (hasStaticBanner()) return;
   const rows = await refreshLatestCompletions(force, trigger);
   await renderRecentBanner(rows);
 }
 
 function startRecentBannerPolling() {
-  if (_recentBannerTimer || !document.querySelector('.site-header')) return;
+  if (_recentBannerTimer || hasStaticBanner() || !document.querySelector('.site-header')) return;
   _recentBannerTimer = setInterval(() => {
     if (document.visibilityState !== 'visible') return;
     refreshRecentBanner(true, 'poll');

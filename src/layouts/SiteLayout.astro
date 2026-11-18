@@ -2,7 +2,7 @@
 import Header from '../components/Header.astro';
 import Toast from '../components/Toast.astro';
 import season from '../data/season.json';
-const { title = 'vodka puzzle', description = 'vodka puzzle', legacy = false, home = false, unified = false } = Astro.props;
+const { title = 'vodka puzzle', description = 'vodka puzzle', legacy = false, home = false, unified = false, bannerText } = Astro.props;
 ---
 <!doctype html>
 <html lang="ko" data-season={season.id}>
@@ -18,11 +18,16 @@ window.puzzleAuthReady = new Promise(resolve => { window.resolvePuzzleAuth = res
 </script>
 <script is:inline src="/js/ranking-ui.js?v=4"></script>
 <script is:inline src="/js/request-diagnostics.js?v=3"></script>
-<script is:inline src="/js/common.js?v=48"></script>
+<script is:inline src="/js/common.js?v=49"></script>
 <script>import '../scripts/auth.js'; import '../scripts/cosmetic-release.js'; import '../scripts/cosmetic-ranking.js';</script>
 <slot name="head" />
 </head>
-<body class:list={{ legacy, home, unified }}><Header /><div id="recentBanner" class="recent-banner" aria-live="polite"></div><slot /><Toast /><script is:inline>
+<body class:list={{ legacy, home, unified }}>
+<Header />
+<div id="recentBanner" class="recent-banner" data-static={bannerText ? '' : undefined} aria-live={bannerText ? undefined : 'polite'}>
+  {bannerText && <span class="recent-banner-text">{bannerText}</span>}
+</div>
+<slot /><Toast /><script is:inline>
 initHeader();
 document.addEventListener('pointerdown', event => {
   if (event.target.closest('button[id$="Notes"]')) event.preventDefault();

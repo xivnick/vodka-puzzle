@@ -1,8 +1,8 @@
 ---
 import SiteLayout from './SiteLayout.astro';
-const { title, heading = title, subtitle, description, home = false, puzzle = false } = Astro.props;
+const { title, heading = title, subtitle, description, home = false, puzzle = false, bannerText } = Astro.props;
 ---
-<SiteLayout title={title} description={description} home={home} unified>
+<SiteLayout title={title} description={description} home={home} unified bannerText={bannerText}>
   <slot name="head" slot="head" />
   <main class:list={["page-content", { "puzzle-content": puzzle }]}>
     <div class="page-heading">
