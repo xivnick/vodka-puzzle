@@ -1,9 +1,9 @@
 ---
-import AdminList from '../../components/AdminList.astro';
+import AdminEditor from '../../components/AdminEditor.astro';
 import AdminLayout from '../../layouts/AdminLayout.astro';
 ---
-<AdminLayout title="문제 관리" subtitle="제목과 공개 상태로 문제를 찾고 편집합니다" preview>
-  <AdminList />
+<AdminLayout title="문제 관리" subtitle="난이도 선택과 저장 알림을 확인합니다" preview>
+  <AdminEditor previewPuzzle="__ui_preview" />
   <div class="cloud-btns">
     <button class="admin-quiet-action" id="previewDailySave" type="button">데일리 스도쿠 저장 토스트</button>
     <button class="admin-quiet-action" id="previewDailyComplete" type="button">데일리 완료 토스트</button>
@@ -12,7 +12,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 <script>
 import { mockAdmin } from '../../scripts/admin-preview.js';
 await mockAdmin();
-await import('../../scripts/admin-list.js');
+await import('../../scripts/admin-editor.js');
 document.getElementById('previewDailySave').addEventListener('click',()=>window.showToast('저장했습니다.'));
 document.getElementById('previewDailyComplete').addEventListener('click',()=>window.showToast('🎉 완료 기록을 저장했습니다!'));
 </script>

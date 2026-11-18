@@ -1,9 +1,12 @@
+---
+const { previewPuzzle } = Astro.props;
+---
 <p id="adminStatus" class="admin-status" role="status"></p>
-<form id="adminForm" hidden>
+<form id="adminForm" data-preview-puzzle={previewPuzzle} hidden>
   <fieldset id="adminFields" class="admin-fields">
     <div class="admin-editor-heading">
       <h2 id="adminPuzzleId"></h2>
-      <a id="adminPreview" class="admin-quiet-action" target="_blank" rel="noopener">문제 열기 ↗</a>
+      <a id="adminPreview" class="admin-quiet-action" target="_blank" rel="noopener" hidden={Boolean(previewPuzzle)}>문제 열기 ↗</a>
     </div>
 
     <div class="admin-field">

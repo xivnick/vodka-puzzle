@@ -89,8 +89,9 @@ $('adminForm').addEventListener('submit',async event => {
 window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
 
 const query = listQuery();
-if (query.size) $('adminBack').href = listPath + '?' + query;
-const puzzleId = new URLSearchParams(location.search).get('id');
+const back = $('adminBack');
+if (back && query.size) back.href = listPath + '?' + query;
+const puzzleId = $('adminForm').dataset.previewPuzzle ?? new URLSearchParams(location.search).get('id');
 bootstrap(async () => {
   if (!puzzleId) {
     message('목록에서 편집할 문제를 선택해 주세요.');

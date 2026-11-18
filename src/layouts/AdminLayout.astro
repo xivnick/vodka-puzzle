@@ -2,14 +2,12 @@
 import PageLayout from './PageLayout.astro';
 import '../styles/admin.css';
 const { title, subtitle, preview = false, editor = false } = Astro.props;
-const listPath = preview ? '/test/admin-toast/' : '/admin/';
-const editorPath = preview ? '/test/admin-editor/' : '/admin/edit/';
 ---
 <PageLayout title={title} subtitle={subtitle} bannerText="ADMIN MODE">
   <meta slot="head" name="robots" content="noindex, nofollow" />
-  <section class="admin-shell" data-list-path={listPath} data-editor-path={editorPath}>
+  <section class="admin-shell">
     {preview && <p class="admin-notice">시연용 데이터입니다. 실제 문제에는 반영되지 않습니다.</p>}
-    {editor && <a id="adminBack" class="admin-back" href={listPath}>← 문제 목록</a>}
+    {editor && <a id="adminBack" class="admin-back" href="/admin/">← 문제 목록</a>}
     <p id="adminAccess" class="admin-status" role="status">
       {preview ? '시연을 준비하는 중...' : '관리자 권한을 확인하는 중...'}
     </p>

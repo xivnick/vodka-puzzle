@@ -44,8 +44,8 @@ export async function bootstrap(load) {
   await load();
 }
 
-export const listPath = document.querySelector('.admin-shell').dataset.listPath;
-export const editorPath = document.querySelector('.admin-shell').dataset.editorPath;
+export const listPath = '/admin/';
+export const editorPath = '/admin/edit/';
 export function listQuery() {
   const source = new URLSearchParams(location.search);
   const query = new URLSearchParams();
