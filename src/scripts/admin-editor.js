@@ -11,17 +11,18 @@ function publicationUI() {
   $('adminSchedule').hidden = state !== 'scheduled';
   $('adminDate').required = state === 'scheduled';
   $('adminDate').setCustomValidity('');
-  $('adminPublicationHelp').textContent = state === 'draft' || state === 'test'
+  $('adminPublicationHelp').textContent = state === 'test'
     ? '목록에 표시되지 않으며, 완료 기록과 클라우드 저장을 사용하지 않습니다.'
     : state === 'scheduled' ? '지정한 한국 시간부터 목록·완료 기록·클라우드 저장이 활성화됩니다.'
     : '목록·완료 기록·클라우드 저장이 활성화됩니다.';
 }
 function values() {
   const state = $('adminState').value;
+  const status = state === displayState(selected) ? selected.status : state;
   return {
     title:$('adminTitle').value.trim(), summary:$('adminSummary').value.trim(),
     puzzle_type:$('adminType').value.trim(), difficulty:Number(difficulty.value),
-    status:state === 'scheduled' ? 'published' : state,
+    status:status === 'scheduled' ? 'published' : status,
     published_at:state === 'scheduled'
       ? ($('adminDate').value === koreanInput(selected.published_at) ? selected.published_at
         : $('adminDate').value ? new Date(`${$('adminDate').value}+09:00`).toISOString() : null)

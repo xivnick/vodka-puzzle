@@ -5,9 +5,9 @@ const dateFormat = new Intl.DateTimeFormat('ko-KR', {timeZone:'Asia/Seoul', year
 export const formatDate = value => value ? dateFormat.format(new Date(value)) : '—';
 export function displayState(row) {
   if (row.status === 'published' && new Date(row.published_at) > new Date()) return 'scheduled';
-  return row.status;
+  return row.status === 'draft' ? 'test' : row.status;
 }
-export const labels = { draft:'초안', test:'테스트', scheduled:'예약 공개', published:'공개' };
+export const labels = { test:'테스트', scheduled:'예약 공개', published:'공개' };
 export async function rpc(name,args) {
   const { data, error } = await window.puzzleAccount.client.rpc(name,args);
   if (error) throw error;
@@ -52,6 +52,7 @@ export function listQuery() {
   for (const key of ['q', 'state']) {
     if (source.get(key)) query.set(key, source.get(key));
   }
+  if (query.get('state') === 'draft') query.set('state', 'test');
   return query;
 }
 export function loadPuzzles() {

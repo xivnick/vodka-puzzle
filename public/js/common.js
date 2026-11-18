@@ -114,7 +114,7 @@ async function applyPuzzleDetails(puzzleId) {
     window.puzzlePage.published = puzzle.published;
     if (status) {
       status.hidden = puzzle.published;
-      const label = puzzle.status === 'test' ? '테스트 중인' : puzzle.status === 'draft' ? '초안 상태인' : '공개 예정인';
+      const label = puzzle.status === 'test' || puzzle.status === 'draft' ? '테스트 중인' : '공개 예정인';
       status.textContent = puzzle.published ? '' : `${label} 문제입니다. 완료 기록과 클라우드 저장은 연결되지 않습니다.`;
     }
     if (leaderboard) leaderboard.hidden = !puzzle.published;
