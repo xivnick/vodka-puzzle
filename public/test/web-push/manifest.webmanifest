@@ -1,0 +1,12 @@
+{
+  "id": "/test/web-push/",
+  "name": "보드카 퍼즐 알림 테스트",
+  "short_name": "보드카 퍼즐",
+  "start_url": "/test/web-push/",
+  "scope": "/",
+  "display": "standalone",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

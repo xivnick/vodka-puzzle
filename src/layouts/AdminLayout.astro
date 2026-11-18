@@ -5,6 +5,7 @@ const { title, subtitle, preview = false, editor = false } = Astro.props;
 ---
 <PageLayout title={title} subtitle={subtitle} bannerText="ADMIN MODE">
   <meta slot="head" name="robots" content="noindex, nofollow" />
+  <slot name="head" slot="head" />
   <section class:list={['admin-shell', { 'admin-edit-page': editor }]}>
     {preview && <p class="admin-notice">시연용 데이터입니다. 실제 문제에는 반영되지 않습니다.</p>}
     {editor && <a id="adminBack" class="admin-back" href="/admin/">← 문제 목록</a>}
