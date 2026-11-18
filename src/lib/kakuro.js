@@ -24,7 +24,6 @@ for (const [row, line] of board.entries()) {
   for (const [column, clue] of line.entries()) {
     if (clue === white) continue;
     for (const [direction, dr, dc] of [['right', 0, 1], ['down', 1, 0]]) {
-      if (!Object.hasOwn(clue, direction)) continue;
       const cells = [];
       let r = row + dr, c = column + dc;
       while (board[r]?.[c] === white) {
