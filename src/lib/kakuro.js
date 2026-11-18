@@ -18,11 +18,13 @@ export const board = [
 
 export const size = board.length;
 export const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const grid = board.flat();
 const runs = [];
 for (const [row, line] of board.entries()) {
   for (const [column, clue] of line.entries()) {
     if (clue === white) continue;
     for (const [direction, dr, dc] of [['right', 0, 1], ['down', 1, 0]]) {
+      if (!Object.hasOwn(clue, direction)) continue;
       const cells = [];
       let r = row + dr, c = column + dc;
       while (board[r]?.[c] === white) {
@@ -37,7 +39,7 @@ for (const [row, line] of board.entries()) {
 
 export function inspect(values) {
   const conflicts = new Set();
-  let complete = true;
+  const complete = grid.every((cell, index) => cell !== white || digits.includes(values[index]));
   for (const { cells, sum } of runs) {
     const seen = new Map();
     let total = 0;
@@ -53,7 +55,6 @@ export function inspect(values) {
       filled++;
       total += value;
     }
-    if (filled !== cells.length) complete = false;
     if (sum != null && (total > sum || (filled === cells.length && total !== sum))) {
       cells.filter(index => values[index]).forEach(index => conflicts.add(index));
     }
