@@ -109,9 +109,9 @@ body:has(.admin-shell) .page-content { width: min(96vw, 640px); }
 .admin-list > .admin-help { padding: 14px 18px; }
 .admin-list .admin-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 4px 12px;
+  gap: 12px;
   width: 100%;
   padding: 14px 18px;
   border: 0;
@@ -124,9 +124,7 @@ body:has(.admin-shell) .page-content { width: min(96vw, 640px); }
 .admin-list .admin-row:last-child { border-bottom: 0; }
 .admin-list .admin-row:hover { background: var(--admin-surface); }
 .admin-row-title { color: #333; font-size: .95rem; font-weight: 500; overflow-wrap: anywhere; }
-.admin-row-state, .admin-row-meta { color: var(--admin-muted); font-size: .75rem; }
-.admin-row-state { grid-column: 3; white-space: nowrap; }
-.admin-row-meta { grid-column: 1 / -1; }
+.admin-row-state { color: var(--admin-muted); font-size: .78rem; font-weight: 400; white-space: nowrap; }
 
 .admin-back {
   display: inline-block;

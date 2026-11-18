@@ -1,4 +1,4 @@
-import { $, bootstrap, displayState, editorPath, labels, formatDate, listPath, listQuery, loadPuzzles, message } from './admin.js';
+import { $, bootstrap, displayState, editorPath, labels, listPath, listQuery, loadPuzzles, message } from './admin.js';
 
 let rows = [];
 function sortRows() {
@@ -20,9 +20,13 @@ function renderList() {
     query.set('id', row.puzzle_id);
     link.href = editorPath + '?' + query;
     const title = document.createElement('span'); title.className = 'admin-row-title'; title.textContent = row.title;
-    const state = document.createElement('span'); state.className = 'admin-row-state'; state.textContent = labels[displayState(row)];
-    const meta = document.createElement('span'); meta.className = 'admin-row-meta';
-    meta.textContent = row.published_at ? `${row.puzzle_id} · ${formatDate(row.published_at)}` : row.puzzle_id;
+    const state = displayState(row);
+    if (state !== 'published') {
+      const status = document.createElement('span');
+      status.className = 'admin-row-state';
+      status.textContent = `(${labels[state]})`;
+      title.append(' ', status);
+    }
     link.append(title);
     if ([1, 2, 3].includes(row.difficulty)) {
       const mark = document.createElement('span');
@@ -37,7 +41,6 @@ function renderList() {
       }
       link.append(mark);
     }
-    link.append(state,meta);
     list.append(link);
   }
 }
