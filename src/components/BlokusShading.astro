@@ -4,6 +4,7 @@ import PuzzleCompletion from './PuzzleCompletion.astro';
 import { blokus as defaultGrid, pieces } from '../lib/blokus-shading.js';
 const { puzzleId = 'test-blokus-shading', preview = true, grid = defaultGrid, polygraph = false } = Astro.props;
 const blokus=grid, {rows,cols}=grid;
+const margin=polygraph ? 18 : 0;
 const title=polygraph ? '261108 블로커스(폴리그래프)' : '261105 블로커스';
 const subtitle=polygraph ? '점의 접촉 규칙과 안팎의 숫자에 맞게 모든 블록을 칠하세요' : '점에서만 블록의 모서리가 맞닿도록 모든 블록을 놓으세요';
 ---
@@ -25,17 +26,24 @@ const subtitle=polygraph ? '점의 접촉 규칙과 안팎의 숫자에 맞게 �
   <div slot="controls">칸을 짧게 눌러 칠하고, 길게 눌러 X로 메모하세요. 같은 표시를 다시 입력하면 지워집니다.<br />오른쪽 위 버튼으로 짧게 누르기와 길게 누르기의 동작을 바꿀 수 있습니다.</div>
   <section id="blokusGame" data-puzzle-id={puzzleId} data-preview={String(preview)} data-grid={JSON.stringify(grid)} aria-label="블로커스">
     <div class="board-tools"><button id="blokusMode" class="mode-toggle" type="button" aria-pressed="false">길게 눌러 x 표시</button></div>
-    <svg id="blokusBoard" viewBox={`0 0 ${cols*40} ${rows*40}`} role="group" focusable="false" aria-label={`${rows}행 ${cols}열 블로커스 격자. 짧게 눌러 칠하고 길게 눌러 X로 메모하세요`}>
+    <svg id="blokusBoard" class:list={[{polygraph}]} viewBox={`${-margin} ${-margin} ${cols*40+2*margin} ${rows*40+2*margin}`} role="group" focusable="false" aria-label={`${rows}행 ${cols}열 블로커스 격자. 짧게 눌러 칠하고 길게 눌러 X로 메모하세요`}>
       <g id="blokusFills" aria-hidden="true" />
       <g id="blokusCrosses" aria-hidden="true" pointer-events="none" />
       <g class="blokus-grid" aria-hidden="true">
         {Array.from({length:cols-1},(_,x)=><path d={`M${(x+1)*40} 0V${rows*40}`} />)}
         {Array.from({length:rows-1},(_,y)=><path d={`M0 ${(y+1)*40}H${cols*40}`} />)}
       </g>
+      {polygraph && <>
+        <rect class="grid-edge" width={cols*40} height={rows*40} />
+        <g id="blokusOutlines" fill="none" stroke-width="4" stroke-linecap="round" aria-hidden="true" />
+        <g class="vertices" aria-hidden="true">
+          {Array.from({length:(rows+1)*(cols+1)},(_,i)=><circle cx={i%(cols+1)*40} cy={Math.floor(i/(cols+1))*40} r="3.3" />)}
+        </g>
+      </>}
       <g class="blokus-clues" pointer-events="none">{grid.clues?.flatMap((row,y)=>row.map((clue,x)=>clue!==null && <text data-clue={y*cols+x} x={(x+.5)*40} y={(y+.5)*40}>{clue}</text>))}</g>
       <g class="blokus-input">{Array.from({length:rows*cols},(_,index)=><rect data-cell={index} x={index%cols*40} y={Math.floor(index/cols)*40} width="40" height="40" fill="transparent" role="button" focusable="false" aria-label={`${Math.floor(index/cols)+1}행 ${index%cols+1}열, 빈칸`} aria-pressed="false" />)}</g>
-      <g class="blokus-dots" aria-hidden="true">{blokus.dots.map(([x,y])=><circle cx={x*40} cy={y*40} r="5" stroke={polygraph ? "white" : "none"} stroke-width="1.5" />)}</g>
-      <rect class="blokus-border" x="1.5" y="1.5" width={cols*40-3} height={rows*40-3} aria-hidden="true" />
+      <g class="blokus-dots" aria-hidden="true">{blokus.dots.map(([x,y])=><circle cx={x*40} cy={y*40} r={polygraph ? 5.5 : 5} stroke={polygraph ? "white" : "none"} stroke-width="1.5" />)}</g>
+      {!polygraph && <rect class="blokus-border" x="1.5" y="1.5" width={cols*40-3} height={rows*40-3} aria-hidden="true" />}
     </svg>
     <div class="bottom-buttons"><button id="blokusReset" type="button" class="danger">초기화</button></div>
     <p id="blokusStatus" class="sr-only" role="status" aria-live="polite"></p>
@@ -71,6 +79,9 @@ const subtitle=polygraph ? '점의 접촉 규칙과 안팎의 숫자에 맞게 �
   #blokusBoard, .blokus-input rect { outline:none; box-shadow:none; -webkit-tap-highlight-color:transparent; }
   .blokus-dots { fill:#222; pointer-events:none; }
   .blokus-border { fill:none; stroke:#202a36; stroke-width:3; pointer-events:none; }
+  .polygraph .blokus-grid path, .grid-edge { fill:none; stroke:#b6b6b6; stroke-width:1.5; stroke-dasharray:3 4; }
+  .vertices { fill:white; stroke:#888; stroke-width:1.2; }
+  .polygraph .blokus-clues text { font-family:sans-serif; font-size:25px; }
   .shape-reference { margin-top:22px; font-size:14px; }
   .shape-reference summary { color:#333; cursor:pointer; }
   .shape-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:12px 4px; margin-top:12px; }

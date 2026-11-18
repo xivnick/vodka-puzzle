@@ -17,22 +17,37 @@ function persist() {
     else window.saveLocalState(puzzleId,state());
   }catch {window.showToast('브라우저에 저장하지 못했습니다.');}
 }
+const outlines=$('Outlines');
+function blockOutline(index) {
+  const cols=blokus.cols, col=index%cols, x=col*40, y=Math.floor(index/cols)*40;
+  let path='';
+  if(!filled.has(index-cols))path+=`M${x} ${y}h40`;
+  if(col===cols-1 || !filled.has(index+1))path+=`M${x+40} ${y}v40`;
+  if(!filled.has(index+cols))path+=`M${x} ${y+40}h40`;
+  if(col===0 || !filled.has(index-1))path+=`M${x} ${y}v40`;
+  return path;
+}
 function render() {
   const result=inspect(filled,blokus,crosses);
   let html='';
   for(const block of result.blocks)for(const index of block.cells) {
-    const color=block.bad ? '#b65c5c' : block.name ? '#5b8c64' : '#333';
+    const color=outlines ? (block.bad ? '#fbeaea' : '#e5edf8') : block.bad ? '#b65c5c' : block.name ? '#5b8c64' : '#333';
     const cell=`<rect x="${index%blokus.cols*40}" y="${Math.floor(index/blokus.cols)*40}" width="40" height="40" fill="${color}"/>`;
     html+=cell;
   }
   $('Fills').innerHTML=html;
+  if(outlines)outlines.innerHTML=result.blocks.map(block=>
+    `<path d="${block.cells.map(blockOutline).join('')}" stroke="${block.bad ? '#c34242' : '#4a6fa5'}"/>`
+  ).join('');
   board.querySelectorAll('[data-clue]').forEach(text=>{
     const index=Number(text.dataset.clue),error=result.clueErrors.has(index),matched=result.clueMatches.has(index);
-    const shaded=filled.has(index);
+    const shaded=!outlines && filled.has(index);
     text.style.fill=error ? (shaded ? '#ffd0ca' : '#c0392b') : matched ? (shaded ? '#b9f6c7' : '#287a3e') : shaded ? '#fff' : '#222';
   });
   $('Crosses').innerHTML=[...crosses].map(index=>{
     const x=(index%blokus.cols+.5)*40,y=(Math.floor(index/blokus.cols)+.5)*40;
+    if(outlines && blokus.clues[Math.floor(index/blokus.cols)][index%blokus.cols]!==null)
+      return `<path d="M${x+9} ${y-15}l8 8m-8 0l8 -8" stroke="#999" stroke-width="1.8"/>`;
     return `<path d="M${x-6} ${y-6}L${x+6} ${y+6}M${x+6} ${y-6}L${x-6} ${y+6}" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"/>`;
   }).join('');
   inputs.forEach((cell,index)=>{
