@@ -1,3 +1,5 @@
+@import './puzzle-difficulty.css';
+
 /* Original home styles, scoped to the current home page. */
 
 body.home .puzzle-list { display:contents; }
@@ -131,15 +133,6 @@ body.home .list a { position: relative; }
 body.home .list a[data-puzzle-id] { gap:10px; }
 body.home .list a[data-puzzle-id] .title { min-width:0; }
 body.home .list .solver-count { flex-shrink:0; }
-body.home .puzzle-difficulty {
-  display:inline-flex; align-items:center; justify-content:flex-end;
-  flex-shrink:0; width:32px; height:18px; gap:5px;
-}
-body.home .difficulty-diamond {
-  display:block; flex-shrink:0; width:5px; height:5px;
-  background:#888; transform:rotate(45deg);
-}
-
 body.home .pager:empty { display:none; }
 body.home .home-rank { width:100%; margin-top:32px; }
 body.home .home-rank > .lb-section { margin-top:0; }

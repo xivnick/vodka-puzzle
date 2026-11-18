@@ -22,8 +22,22 @@ function renderList() {
     const title = document.createElement('span'); title.className = 'admin-row-title'; title.textContent = row.title;
     const state = document.createElement('span'); state.className = 'admin-row-state'; state.textContent = labels[displayState(row)];
     const meta = document.createElement('span'); meta.className = 'admin-row-meta';
-    meta.textContent = `${row.puzzle_id} · ${row.difficulty ? '◆'.repeat(row.difficulty) : '난이도 미지정'} · ${formatDate(row.published_at)}`;
-    link.append(title,state,meta);
+    meta.textContent = row.published_at ? `${row.puzzle_id} · ${formatDate(row.published_at)}` : row.puzzle_id;
+    link.append(title);
+    if ([1, 2, 3].includes(row.difficulty)) {
+      const mark = document.createElement('span');
+      mark.className = 'puzzle-difficulty';
+      mark.setAttribute('role', 'img');
+      mark.setAttribute('aria-label', `난이도 ${row.difficulty}`);
+      for (let index = 0; index < row.difficulty; index += 1) {
+        const diamond = document.createElement('span');
+        diamond.className = 'difficulty-diamond';
+        diamond.setAttribute('aria-hidden', 'true');
+        mark.append(diamond);
+      }
+      link.append(mark);
+    }
+    link.append(state,meta);
     list.append(link);
   }
 }

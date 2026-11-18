@@ -1,0 +1,8 @@
+.puzzle-difficulty {
+  display:inline-flex; align-items:center; justify-content:flex-end;
+  flex-shrink:0; width:32px; height:18px; gap:5px;
+}
+.difficulty-diamond {
+  display:block; flex-shrink:0; width:5px; height:5px;
+  background:#888; transform:rotate(45deg);
+}

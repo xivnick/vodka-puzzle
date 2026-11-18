@@ -1,5 +1,6 @@
 import { $, bootstrap, displayState, formatDate, listPath, listQuery, loadPuzzles, message, rpc, season } from './admin.js';
 
+const difficulty = $('adminForm').elements.namedItem('difficulty');
 let selected = null, dirty = false, saving = false;
 function koreanInput(value) {
   if (!value) return '';
@@ -19,7 +20,7 @@ function values() {
   const state = $('adminState').value;
   return {
     title:$('adminTitle').value.trim(), summary:$('adminSummary').value.trim(),
-    puzzle_type:$('adminType').value.trim(), difficulty:Number($('adminDifficulty').value),
+    puzzle_type:$('adminType').value.trim(), difficulty:Number(difficulty.value),
     status:state === 'scheduled' ? 'published' : state,
     published_at:state === 'scheduled'
       ? ($('adminDate').value === koreanInput(selected.published_at) ? selected.published_at
@@ -46,7 +47,7 @@ function selectRow(row) {
   $('adminPuzzleId').textContent = row.puzzle_id;
   $('adminPreview').href = `/${row.puzzle_id}/`;
   $('adminTitle').value = row.title; $('adminSummary').value = row.summary;
-  $('adminDifficulty').value = String(row.difficulty ?? 0);
+  difficulty.value = String(row.difficulty ?? 0);
   $('adminType').value = row.puzzle_type; $('adminState').value = displayState(row);
   $('adminDate').value = koreanInput(row.published_at); $('adminOrder').value = row.sort_order;
   publicationUI(); updateDirty();
