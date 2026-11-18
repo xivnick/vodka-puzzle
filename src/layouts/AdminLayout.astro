@@ -13,7 +13,7 @@ const editorPath = preview ? '/test/admin-editor/' : '/admin/edit/';
     <p id="adminAccess" class="admin-status" role="status">
       {preview ? '시연을 준비하는 중...' : '관리자 권한을 확인하는 중...'}
     </p>
-    <a id="adminLogin" href="/nickname/" hidden>Google로 로그인</a>
+    <a id="adminLogin" class="account-button admin-login" href="/nickname/" hidden>Google로 로그인</a>
     <div id="adminPanel" hidden><slot /></div>
   </section>
 </PageLayout>

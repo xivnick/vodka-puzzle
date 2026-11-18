@@ -1,17 +1,14 @@
+@import './account-controls.css';
+
 .form-wrap {
     width: min(94vw, 480px);
   }
 
   .nick-input {
     width: 100%;
-    font-family: 'Noto Sans KR', sans-serif;
     font-size: 1rem;
-    border: none;
-    border-bottom: 1.5px solid #ddd;
     padding: 10px 0;
     outline: none;
-    color: #222;
-    background: transparent;
     transition: border-color 0.15s;
   }
   .nick-input::placeholder { color: #ccc; }
@@ -33,18 +30,8 @@
     width: 100%;
     margin-top: 20px;
     padding: 13px;
-    font-family: 'Noto Sans KR', sans-serif;
     font-size: 0.95rem;
-    font-weight: 500;
-    background: #f4f1eb;
-    border: 1px solid #c8c3b8;
-    border-radius: 2px;
-    cursor: pointer;
-    color: #444;
-    transition: background 0.12s;
   }
-  .use-btn:hover { background: #ede9e1; }
-  .use-btn:disabled { opacity: 0.4; cursor: default; }
 
   .desc-section {
     width: min(94vw, 480px);

@@ -1,4 +1,5 @@
 @import './puzzle-difficulty.css';
+@import './account-controls.css';
 
 .recent-banner[data-static] {
   background: #000;
@@ -20,23 +21,34 @@ body:has(.admin-shell) .page-content { width: min(96vw, 640px); }
 .admin-shell [hidden] { display: none; }
 .admin-toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
 .admin-toolbar input { flex: 1; min-width: 150px; }
-.admin-shell :is(input:where(:not([type="radio"])), textarea, select, button) {
-  min-height: 36px;
-  padding: 8px 10px;
-  border: 1px solid #d0ccc4;
-  border-radius: 3px;
-  background: #fff;
-  color: #333;
-  font: inherit;
+.admin-shell .account-input {
+  min-height: 42px;
+  padding: 8px 0;
+  font-size: .9rem;
+}
+.admin-shell .account-input::placeholder { color: #777; }
+.admin-shell .account-input:focus-visible { background: var(--admin-surface); }
+.admin-shell select.account-input { padding-right: 4px; }
+.admin-quiet-action {
+  border: 0;
+  background: none;
+  padding: 4px 0;
+  color: #666;
+  font-size: .78rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.admin-quiet-action:hover { color: #333; }
+.admin-quiet-action:disabled { opacity: .5; cursor: default; }
+.admin-shell .admin-login:not([hidden]) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  margin-top: 8px;
+  padding: 8px 16px;
   font-size: .85rem;
+  text-decoration: none;
 }
-.admin-shell button {
-  padding-inline: 12px;
-  background: var(--admin-surface);
-  color: #555;
-}
-.admin-shell button:enabled:hover { background: #eeebe4; }
-.admin-shell button:disabled { opacity: .45; cursor: default; }
 .admin-status { color: var(--admin-muted); font-size: .85rem; line-height: 1.6; }
 .admin-toolbar + .admin-status:not(:empty) { margin-top: 8px; }
 .admin-picker { display: grid; gap: 8px; margin: 12px 0 16px; }
@@ -74,10 +86,11 @@ body:has(.admin-shell) .page-content { width: min(96vw, 640px); }
 .admin-back {
   display: inline-block;
   margin-bottom: 12px;
-  font-size: .85rem;
+  color: #777;
+  font-size: .78rem;
   text-decoration: none;
 }
-.admin-back:hover { text-decoration: underline; }
+.admin-back:hover { color: #555; }
 .admin-shell .admin-notice { margin-bottom: 12px; }
 #adminPanel > .admin-status:not(:empty) { margin-bottom: 12px; }
 .admin-editor-heading {
@@ -89,7 +102,7 @@ body:has(.admin-shell) .page-content { width: min(96vw, 640px); }
   border-bottom: 1px solid var(--admin-border);
 }
 .admin-editor-heading h2 { font-size: 1rem; margin: 0; overflow-wrap: anywhere; }
-.admin-editor-heading a { font-size: .85rem; white-space: nowrap; }
+.admin-editor-heading a { white-space: nowrap; }
 .admin-fields, .admin-field, .admin-publication {
   display: grid;
   min-width: 0;
@@ -98,7 +111,7 @@ body:has(.admin-shell) .page-content { width: min(96vw, 640px); }
 .admin-fields { gap: 20px; }
 .admin-field { gap: 6px; align-content: start; }
 .admin-field-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
-.admin-field label, .admin-difficulty legend { font-size: .85rem; color: #444; font-weight: 500; }
+.admin-field label, .admin-difficulty legend { font-size: .85rem; color: #555; font-weight: 500; }
 .admin-field :is(input, textarea, select) { width: 100%; min-width: 0; min-height: 42px; }
 .admin-field textarea { resize: vertical; line-height: 1.55; }
 .admin-difficulty legend { margin-bottom: 6px; }
@@ -109,17 +122,20 @@ body:has(.admin-shell) .page-content { width: min(96vw, 640px); }
   align-items: center;
   justify-content: center;
   min-height: 42px;
-  border: 1px solid var(--admin-border);
-  border-radius: 3px;
-  color: #555;
+  color: #777;
   font-size: .8rem;
 }
 .admin-difficulty-option .puzzle-difficulty { justify-content: center; }
-.admin-difficulty-options input:checked + span { border-color: #bdb7ad; background: #eeebe4; font-weight: 700; }
+.admin-difficulty-options input:checked + span {
+  color: #555;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.admin-difficulty-options input:checked + span .puzzle-difficulty {
+  border-bottom: 1px solid currentColor;
+}
 .admin-difficulty-options input:focus-visible + span,
 .admin-difficulty-options label:hover .admin-difficulty-option { background: #faf8f4; }
-.admin-difficulty-options input:checked:focus-visible + span,
-.admin-difficulty-options label:hover input:checked + span { background: #e8e4da; }
 .admin-difficulty-options input:disabled + span { opacity: .6; cursor: default; }
 .admin-publication { gap: 10px; padding-top: 16px; border-top: 1px solid var(--admin-border); }
 .admin-publication h3 { color: #333; font-size: .95rem; margin: 0; }
@@ -132,14 +148,13 @@ body:has(.admin-shell) .page-content { width: min(96vw, 640px); }
   border-top: 1px solid var(--admin-border);
   padding-top: 16px;
 }
-.admin-shell .admin-save { margin-left: auto; min-height: 42px; background: #4a6fa5; border-color: #4a6fa5; color: #fff; }
-.admin-shell .admin-save:enabled:hover { background: #3c5d8d; }
+.admin-save { margin-left: auto; min-height: 42px; padding: 9px 18px; font-size: .85rem; }
 .sr-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
 @media (max-width: 640px) {
   .admin-toolbar input { flex-basis: 100%; min-width: 0; }
   .admin-toolbar select { flex: 1; min-width: 0; }
-  .admin-shell :is(input, textarea, select) { font-size: 16px; }
+  .admin-shell .account-input { font-size: 16px; }
 }
 
 @media (max-width: 420px) {

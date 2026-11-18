@@ -1,0 +1,25 @@
+.nick-input,
+.account-input {
+  border: 0;
+  border-bottom: 1.5px solid #ddd;
+  border-radius: 0;
+  background: transparent;
+  color: #222;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.use-btn,
+.account-button {
+  border: 1px solid #c8c3b8;
+  border-radius: 2px;
+  background: #f4f1eb;
+  color: #444;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.use-btn:hover,
+.account-button:not(:disabled):hover { background: #ede9e1; }
+.use-btn:disabled,
+.account-button:disabled { opacity: .4; cursor: default; }
