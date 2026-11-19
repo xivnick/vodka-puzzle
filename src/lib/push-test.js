@@ -1,6 +1,6 @@
-export async function invokePushTest(action, target) {
+export async function invokePushTest(action, target, preference) {
   const { data, error } = await window.puzzleAccount.client.functions.invoke('puzzle-push-test', {
-    body: { action, subscription: target?.toJSON() },
+    body: { action, subscription: target?.toJSON(), preference },
   });
   if (error) {
     const status = error.context instanceof Response ? error.context.status : null;

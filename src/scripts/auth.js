@@ -12,7 +12,10 @@ let initialized = false;
 export function safeNext(value) {
   try {
     const url = new URL(value || '/', location.origin);
-    if (url.origin === location.origin && url.pathname.startsWith('/') && !/^\/(auth|nickname)(\/|$)/.test(url.pathname)) return url.pathname + url.search + url.hash;
+    if (url.origin === location.origin && url.pathname.startsWith('/') &&
+        (url.pathname === '/nickname/notifications/' || !/^\/(auth|nickname)(\/|$)/.test(url.pathname))) {
+      return url.pathname + url.search + url.hash;
+    }
   } catch {}
   return '/';
 }

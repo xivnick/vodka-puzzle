@@ -28,20 +28,20 @@ void bootstrap(async () => {
     busy('시험 알림을 보내는 중…');
     try {
       await invokePushTest('send-self', subscription);
-      show('시험 알림을 접수했습니다. 이 기기의 알림을 확인해 주세요.');
+      show('테스트 알림을 보냈습니다');
     } catch {
-      show('시험 발송에 실패했습니다. 새로고침 후 다시 시도해 주세요.');
+      show('테스트 알림을 보내지 못했습니다');
     }
   };
 
   const appleMobile = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   if (appleMobile && !navigator.standalone && !matchMedia('(display-mode: standalone)').matches) {
-    show('이 기기에서 받으려면 홈 화면에 추가한 뒤 앱을 열어 주세요.');
+    show('이 기기에서 받으려면 홈 화면에 추가한 뒤 앱을 열어 주세요');
     return;
   }
   if (!('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window)) {
-    show('이 브라우저에서는 알림을 받을 수 없습니다.');
+    show('이 브라우저에서는 알림을 받을 수 없습니다');
     return;
   }
 
@@ -50,10 +50,10 @@ void bootstrap(async () => {
     subscription = await registration.pushManager.getSubscription();
     deviceReady = true;
     if (subscription && Notification.permission !== 'denied') await invokePushTest('register', subscription);
-    show(subscription ? '이 기기에서 시험 알림을 받을 수 있습니다.' : Notification.permission === 'denied'
-      ? '알림이 차단되어 있습니다. 기기 또는 브라우저 설정에서 허용해 주세요.' : '이 기기의 알림을 켜 주세요.');
+    show(subscription ? '이 기기에서 시험 알림을 받을 수 있습니다' : Notification.permission === 'denied'
+      ? '기기 또는 브라우저 설정에서 알림을 허용해 주세요' : '이 기기의 알림을 켜 주세요');
   } catch {
-    show('이 기기의 알림을 준비하지 못했습니다. 새로고침 후 다시 시도해 주세요.');
+    show('새로고침한 뒤 알림 설정을 다시 시도해 주세요');
   }
 
   subscribe.onclick = async () => {
@@ -62,10 +62,10 @@ void bootstrap(async () => {
       // On iOS this must start in the click handler, before another async operation.
       subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey });
       await invokePushTest('register', subscription);
-      show('이 기기의 알림을 켰습니다.');
+      show('이 기기의 알림을 켰습니다');
     } catch {
-      show(Notification.permission === 'denied' ? '알림이 차단되어 있습니다. 기기 또는 브라우저 설정에서 허용해 주세요.'
-        : '알림 구독을 저장하지 못했습니다. 새로고침 후 다시 시도해 주세요.');
+      show(Notification.permission === 'denied' ? '기기 또는 브라우저 설정에서 알림을 허용해 주세요'
+        : '새로고침한 뒤 알림 구독을 다시 저장해 주세요');
     }
   };
 
@@ -76,9 +76,9 @@ void bootstrap(async () => {
       await previous.unsubscribe();
       subscription = await registration.pushManager.getSubscription();
       if (!subscription) await invokePushTest('unregister', previous);
-      show(subscription ? '구독을 해제하지 못했습니다. 다시 시도해 주세요.' : '이 기기의 알림 구독을 해제했습니다.');
+      show(subscription ? '알림 구독 해제를 다시 시도해 주세요' : '이 기기의 알림 구독을 해제했습니다');
     } catch {
-      show('구독을 해제하지 못했습니다. 다시 시도해 주세요.');
+      show('알림 구독 해제를 다시 시도해 주세요');
     }
   };
 });

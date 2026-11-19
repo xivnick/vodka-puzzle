@@ -1,0 +1,294 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import AccountBackLink from './AccountBackLink.astro';
+import '../styles/account-controls.css';
+import '../styles/site-text-link.css';
+
+const options = [
+  { id: 'daily_sudoku', name: '데일리 스도쿠 알림', detail: '매일 자정에 알려드립니다' },
+  { id: 'new_puzzle', name: '새 문제 알림', detail: '새 문제 공개 시 알려드립니다' },
+  { id: 'daily_reminder', name: '데일리 스도쿠 미완료 알림', detail: '오늘 스도쿠를 아직 풀지 않았다면 오후 11시에 알려드립니다' },
+];
+
+const environments = [
+  { id: 'iphone-browser', name: '아이폰 브라우저', blocker: '홈 화면에 추가한 페이지에서 알림을 받을 수 있습니다' },
+  { id: 'blocked', name: '알림 권한 차단', blocker: '브라우저나 기기 설정에서 알림을 허용해 주세요' },
+  { id: 'unsupported', name: '미지원 브라우저', blocker: '알림을 지원하는 브라우저에서 다시 열어 주세요' },
+];
+const { preview = false } = Astro.props;
+const settingsPath = Astro.url.pathname;
+---
+<PageLayout title="알림 설정" subtitle="이 기기에서 받을 알림을 설정합니다">
+  <AccountBackLink slot="above-title" href="/nickname/" />
+  {preview && <Fragment slot="head">
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="manifest" href={`${settingsPath}manifest.json`} />
+    <link rel="apple-touch-icon" sizes="180x180" href="/brand/vodka-puzzle-icon-180.png?v=2" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/brand/vodka-puzzle-icon-192.png?v=2" />
+  </Fragment>}
+  <div class="notification-settings" data-scope={settingsPath}>
+    <section class="device-settings" aria-label="이 기기의 알림">
+      <div class="setting-row device-toggle">
+        <div>
+          <label class="setting-name" for="device-notifications">이 기기에서 알림 받기</label>
+          <p id="notification-message" role="alert"></p>
+          <a id="notification-install-guide" class="site-text-link" href="/home-screen-guide/" hidden>홈 화면에 추가하기</a>
+          <a id="notification-test-login" class="site-text-link" href={`/nickname/?${new URLSearchParams({ next: settingsPath })}`} hidden>로그인</a>
+        </div>
+        <input id="device-notifications" class="switch" type="checkbox" role="switch" aria-describedby="notification-message" />
+      </div>
+      <div class="setting-row">
+        <div>
+          <p class="setting-name">알림 테스트</p>
+          <p class="setting-detail">이 기기로 시험 알림을 보냅니다</p>
+        </div>
+        <button id="test-notification" class="account-button" type="button" disabled>발송</button>
+      </div>
+    </section>
+
+    <fieldset id="notification-types" disabled>
+      <legend>받을 알림</legend>
+      {options.map(({ id, name, detail }) => (
+        <label class="setting-row">
+          <span>
+            <span id={`${id}-label`} class="setting-name">{name}</span>
+            <span id={`${id}-detail`} class="setting-detail">{detail}</span>
+          </span>
+          <input class="switch" type="checkbox" role="switch" name={id} checked
+            aria-labelledby={`${id}-label`} aria-describedby={`${id}-detail`} />
+        </label>
+      ))}
+    </fieldset>
+
+    <div class="settings-footer">
+      <section class="environment-copy" aria-labelledby="environment-copy-title">
+        <h2 id="environment-copy-title">알림을 켤 수 없을 때</h2>
+        <ul>
+          {environments.map(({ id, name, blocker }) => <li><strong>{name}</strong> <span data-notification-blocker={id}>{blocker}</span></li>)}
+        </ul>
+      </section>
+    </div>
+  </div>
+</PageLayout>
+
+<script>
+  import { invokePushTest, preparePushTest } from '../lib/push-test.js';
+
+  const device = document.querySelector<HTMLInputElement>('#device-notifications');
+  const types = document.querySelector<HTMLFieldSetElement>('#notification-types');
+  const send = document.querySelector<HTMLButtonElement>('#test-notification');
+  const message = document.getElementById('notification-message');
+  const installGuide = document.getElementById('notification-install-guide');
+  const login = document.getElementById('notification-test-login');
+  const settings = document.querySelector<HTMLElement>('.notification-settings');
+  const blockers = new Map(Array.from(document.querySelectorAll<HTMLElement>('[data-notification-blocker]'),
+    node => [node.dataset.notificationBlocker, node.textContent]));
+  const scope = settings?.dataset.scope;
+
+  function currentEnvironment() {
+    const appleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const standalone = ('standalone' in navigator && navigator.standalone === true) ||
+      matchMedia('(display-mode: standalone)').matches;
+    if (appleMobile && !standalone) return 'iphone-browser';
+    if (!(window.isSecureContext && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window)) {
+      return 'unsupported';
+    }
+    return Notification.permission === 'denied' ? 'blocked' : 'available';
+  }
+
+  if (device && types && send && message && installGuide && login && scope) {
+    let push: Awaited<ReturnType<typeof preparePushTest>> | undefined;
+    let subscription: PushSubscription | null = null;
+    let needsLogin = false;
+    let initializing = true;
+    let busy = false;
+    let registered = false;
+    let setupMessage = '잠시 후 알림 설정을 다시 시도해 주세요';
+
+    const updateControls = () => {
+      device.disabled = busy || initializing;
+      types.disabled = send.disabled = busy || initializing || !registered;
+    };
+    const showNotice = (text = '', mode = '') => {
+      message.textContent = text;
+      installGuide.hidden = mode !== 'iphone-browser';
+      login.hidden = mode !== 'login';
+    };
+    const blockerFor = (mode: string) => blockers.get(mode);
+    const preferenceInputs = types.querySelectorAll<HTMLInputElement>('input[name]');
+    const saveSubscription = async (target: PushSubscription) => {
+      const { preferences } = await invokePushTest('register', target);
+      for (const input of preferenceInputs) input.checked = preferences?.[input.name] !== false;
+      registered = true;
+    };
+
+    const initialize = async () => {
+      await window.puzzleAuthReady;
+      needsLogin = !window.puzzleAccount.user;
+      if (needsLogin) {
+        setupMessage = '알림을 설정하려면 로그인해주세요';
+        return;
+      }
+      if (currentEnvironment() !== 'available') return;
+      try {
+        push = await preparePushTest(scope);
+        subscription = await push.registration.pushManager.getSubscription();
+      } catch {
+        push = undefined;
+        setupMessage = '새로고침한 뒤 알림 설정을 다시 시도해 주세요';
+        return;
+      }
+      if (subscription) {
+        try {
+          await saveSubscription(subscription);
+        } catch {
+          showNotice('새로고침한 뒤 알림 구독을 다시 저장해 주세요');
+        }
+      }
+      device.checked = !!subscription;
+      updateControls();
+    };
+
+    device.addEventListener('change', async () => {
+      const mode = currentEnvironment();
+      const blocker = device.checked ? blockerFor(mode) : undefined;
+      if (blocker) {
+        device.checked = false;
+        showNotice(blocker, mode);
+        updateControls();
+        return;
+      }
+      showNotice();
+      if (!push) {
+        device.checked = false;
+        showNotice(setupMessage, needsLogin ? 'login' : '');
+        updateControls();
+        return;
+      }
+      busy = true;
+      updateControls();
+      try {
+        if (device.checked) {
+          subscription = await push.registration.pushManager.subscribe({
+            userVisibleOnly: true, applicationServerKey: push.applicationServerKey,
+          });
+          await saveSubscription(subscription).catch(() => {
+            showNotice('새로고침한 뒤 알림 구독을 다시 저장해 주세요');
+          });
+        } else {
+          const previous = subscription;
+          await previous?.unsubscribe();
+          subscription = await push.registration.pushManager.getSubscription();
+          if (subscription) showNotice('알림 끄기를 다시 시도해 주세요');
+          else {
+            registered = false;
+            if (previous) await invokePushTest('unregister', previous);
+          }
+        }
+      } catch {
+        showNotice(blockerFor(currentEnvironment()) ?? '알림 설정을 변경하지 못했습니다');
+      } finally {
+        device.checked = !!subscription;
+        busy = false;
+        updateControls();
+      }
+    });
+    types.addEventListener('change', async event => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || !subscription || !registered) return;
+      const enabled = input.checked;
+      busy = true;
+      updateControls();
+      try {
+        await invokePushTest('set-preference', subscription, { name: input.name, enabled });
+      } catch {
+        input.checked = !enabled;
+        window.showToast('알림 설정을 저장하지 못했습니다');
+      } finally {
+        busy = false;
+        updateControls();
+      }
+    });
+    send.addEventListener('click', async () => {
+      if (!subscription) return;
+      busy = true;
+      updateControls();
+      try {
+        await invokePushTest('send-self', subscription);
+        window.showToast('테스트 알림을 보냈습니다');
+      } catch (error) {
+        window.showToast(error instanceof Error && error.message === 'SUBSCRIPTION_EXPIRED'
+          ? '구독이 만료됐으니 알림을 껐다가 다시 켜 주세요'
+          : '테스트 알림을 보내지 못했습니다');
+      } finally {
+        busy = false;
+        updateControls();
+      }
+    });
+    updateControls();
+    void initialize().finally(() => {
+      initializing = false;
+      updateControls();
+    });
+  }
+</script>
+
+<style>
+  .notification-settings { width: 100%; color: #555; }
+  .device-settings { border-top: 1px solid #e8e5df; }
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid #e8e5df;
+  }
+  .setting-name, .setting-detail { display: block; line-height: 1.6; }
+  .setting-name { color: #333; font-size: .86rem; }
+  .setting-detail { margin-top: 4px; color: #777; font-size: .75rem; }
+  .device-toggle { align-items: flex-start; }
+  #notification-message:not(:empty) { margin-top: 4px; color: #777; font-size: .75rem; line-height: 1.6; }
+  .device-toggle a:not([hidden]) { display: inline-block; margin-top: 4px; }
+  fieldset { min-width: 0; margin: 28px 0 0; border: 0; }
+  legend { padding: 0 0 6px; color: #555; font-size: .85rem; font-weight: 500; }
+  .account-button { flex-shrink: 0; min-height: 36px; padding: 0 10px; font-size: .75rem; }
+  .switch {
+    appearance: none;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 22px;
+    display: grid;
+    align-items: center;
+    padding: 3px;
+    border: 0;
+    border-radius: 11px;
+    background: #ccc8c0;
+    cursor: pointer;
+  }
+  .switch::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+  }
+  .switch:checked { background: #5b8c64; }
+  .switch:checked::after { transform: translateX(14px); }
+  .switch:disabled { opacity: .45; cursor: default; }
+  .settings-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 26px;
+    color: #777;
+    font-size: .72rem;
+    line-height: 1.6;
+  }
+  .environment-copy { margin-top: 10px; }
+  .environment-copy h2 { margin: 0 0 4px; color: #555; font-size: .85rem; font-weight: 500; }
+  .environment-copy ul { display: grid; gap: 4px; list-style: none; }
+  .environment-copy strong { margin-right: 4px; color: #555; font-weight: 500; }
+</style>

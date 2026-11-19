@@ -33,22 +33,23 @@ function projectFetch(path, token, init = {}) {
   });
 }
 
-async function subscriptions(query, method, value) {
+async function subscriptions(query, method, value, prefer) {
   const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   const response = await projectFetch(`/rest/v1/puzzle_push_subscriptions?${new URLSearchParams(query)}`, key, {
     method,
-    headers: { apikey: key, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' },
+    headers: { apikey: key, 'Content-Type': 'application/json', ...(prefer ? { Prefer: prefer } : {}) },
     body: value ? JSON.stringify(value) : undefined,
   });
   if (!response.ok) {
     await response.body?.cancel();
     throw new Error('SUBSCRIPTION_STORAGE_FAILED');
   }
-  if (method === 'GET') return response.json();
+  if (method === 'GET' || prefer?.includes('return=representation')) return response.json();
   await response.body?.cancel();
 }
 
-const testPayload = JSON.stringify({ title: '테스트 알림', body: '테스트 알림입니다.' });
+const preferences = ['daily_sudoku', 'new_puzzle', 'daily_reminder'];
+const testPayload = JSON.stringify({ title: '테스트 알림', body: '테스트 알림입니다' });
 
 async function sendPush(subscription, payload, vapidDetails) {
   const details = webPush.generateRequestDetails(subscription, payload, {
@@ -79,12 +80,16 @@ Deno.serve(async request => {
 
   try {
     const token = authorization.slice(7);
-    const { action, subscription } = (await request.json().catch(() => null)) ?? {};
+    const { action, subscription, preference } = (await request.json().catch(() => null)) ?? {};
     const isDailyReminder = action === 'send-daily-reminder';
-    const ownSubscription = ['register', 'unregister', 'send-self'].includes(action);
+    const ownSubscription = ['register', 'unregister', 'send-self', 'set-preference'].includes(action);
     if (action !== 'config' &&
         (!(ownSubscription || isDailyReminder || action === 'send') || !validSubscription(subscription))) {
       return reply(400, { error: 'INVALID_REQUEST' });
+    }
+    if (action === 'set-preference' &&
+        (!preferences.includes(preference?.name) || typeof preference.enabled !== 'boolean')) {
+      return reply(400, { error: 'INVALID_PREFERENCE' });
     }
 
     if (ownSubscription || action === 'config') {
@@ -94,14 +99,14 @@ Deno.serve(async request => {
       const { id } = await user.json();
       if (!id) return reply(401, { error: 'LOGIN_REQUIRED' });
       if (action === 'register') {
-        await subscriptions({ on_conflict: 'endpoint' }, 'POST', {
+        const [settings] = await subscriptions({ on_conflict: 'endpoint', select: preferences.join(',') }, 'POST', {
           account_id: id,
           endpoint: subscription.endpoint,
           p256dh: subscription.keys.p256dh,
           auth: subscription.keys.auth,
           updated_at: new Date().toISOString(),
-        });
-        return reply(200, { registered: true });
+        }, 'resolution=merge-duplicates,return=representation');
+        return reply(200, { registered: true, preferences: settings });
       }
       if (ownSubscription) {
         const owned = { account_id: `eq.${id}`, endpoint: `eq.${subscription.endpoint}` };
@@ -109,13 +114,17 @@ Deno.serve(async request => {
           await subscriptions(owned, 'DELETE');
           return reply(200, { registered: false });
         }
-        const rows = await subscriptions({
+        const verified = {
           ...owned,
           select: 'id',
           p256dh: `eq.${subscription.keys.p256dh}`,
           auth: `eq.${subscription.keys.auth}`,
-        }, 'GET');
+        };
+        const rows = action === 'set-preference'
+          ? await subscriptions(verified, 'PATCH', { [preference.name]: preference.enabled }, 'return=representation')
+          : await subscriptions(verified, 'GET');
         if (rows.length === 0) return reply(409, { error: 'SUBSCRIPTION_NOT_REGISTERED' });
+        if (action === 'set-preference') return reply(200, { saved: true });
       }
     } else {
       const admin = await projectFetch('/rest/v1/rpc/is_puzzle_admin', token, {
@@ -134,7 +143,7 @@ Deno.serve(async request => {
     const vapidDetails = { subject: site, publicKey, privateKey };
 
     const payload = isDailyReminder
-      ? JSON.stringify({ title: '데일리 리마인더', body: '데일리 스도쿠 마감까지 1시간 남았습니다.' })
+      ? JSON.stringify({ title: '데일리 리마인더', body: '데일리 스도쿠 마감까지 1시간 남았습니다' })
       : testPayload;
     const result = await sendPush(subscription, payload, vapidDetails);
     if (result === 'accepted') return reply(200, { accepted: true });

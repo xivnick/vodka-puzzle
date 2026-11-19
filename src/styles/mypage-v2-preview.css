@@ -94,6 +94,7 @@
 .mypage-v2 .view-heading h2{font-size:.88rem;font-weight:700;color:#555;flex-shrink:0}
 .mypage-v2[data-customize=false] .profile{padding:var(--row-padding) var(--row-inset);border-top:1px solid var(--line)}
 .mypage-v2[data-customize=false] .icon-overview{padding:var(--row-padding) var(--row-inset);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.mypage-v2 .appearance-link.account-settings-link{display:flex;justify-content:space-between;padding:var(--row-padding) var(--row-inset);border-bottom:1px solid var(--line)}
 .mypage-v2[data-customize=false] .icon-section{margin-bottom:var(--section-gap)}
 .mypage-v2 .mission-heading .filters{justify-content:flex-end;gap:0 var(--space-sm);margin:0}
 .mypage-v2 .mission-list{border-top:1px solid #e8e5df}
