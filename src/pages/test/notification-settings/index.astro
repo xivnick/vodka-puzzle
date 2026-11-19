@@ -33,7 +33,7 @@ const previewPath = '/test/notification-settings/';
           <label class="setting-name" for="device-notifications">이 기기에서 알림 받기</label>
           <p id="notification-message" role="alert"></p>
           <a id="notification-install-guide" class="site-text-link" href="/home-screen-guide/" hidden>홈 화면에 추가하기</a>
-          <a id="notification-test-login" class="site-text-link" href={`/nickname/?${new URLSearchParams({ next: previewPath })}`} hidden>관리자 계정으로 로그인</a>
+          <a id="notification-test-login" class="site-text-link" href={`/nickname/?${new URLSearchParams({ next: previewPath })}`} hidden>로그인</a>
         </div>
         <input id="device-notifications" class="switch" type="checkbox" role="switch" aria-describedby="notification-message" />
       </div>
@@ -130,7 +130,7 @@ const previewPath = '/test/notification-settings/';
       if (currentEnvironment() !== 'available') return;
       needsLogin = !window.puzzleAccount.user;
       if (needsLogin) {
-        setupMessage = '시험 알림을 보내려면 관리자 계정으로 로그인해 주세요.';
+        setupMessage = '알림을 설정하려면 로그인해주세요.';
         return;
       }
       try {
