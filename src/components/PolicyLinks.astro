@@ -1,4 +1,14 @@
-<nav class="policy-links" aria-label="서비스 정책"><a href="/terms/">이용약관</a><a href="/privacy/">개인정보처리방침</a></nav>
+---
+const { showArchive = false, showHomeScreenGuide = false } = Astro.props;
+---
+<nav class:list={['policy-links', { 'footer-links': showArchive }]} aria-label={showArchive ? '사이트 안내' : '서비스 정책'}>
+  {showHomeScreenGuide && <div class="guide-link"><a href="/home-screen-guide/">홈 화면에 추가하기</a></div>}
+  {showArchive && <a href="/archive/">archive</a>}
+  <a href="/terms/">이용약관</a>
+  <a href="/privacy/">개인정보처리방침</a>
+</nav>
 <style>
 .policy-links{display:flex;justify-content:center;gap:16px;margin-top:16px}.policy-links a{font-size:12px;color:#888;text-decoration:none}.policy-links a:hover{text-decoration:underline}
+.footer-links{flex-wrap:wrap;row-gap:8px;margin-top:0}
+.guide-link{flex-basis:100%;text-align:center}
 </style>

@@ -3,14 +3,8 @@ import PolicyLinks from './PolicyLinks.astro';
 const { showHomeScreenGuide = false } = Astro.props;
 ---
 <footer>
-  {showHomeScreenGuide && <a class="home-screen-guide" href="/home-screen-guide/">홈 화면에 추가하는 방법</a>}
-  <a href="/archive/">archive</a>
-  <PolicyLinks />
+  <PolicyLinks showArchive showHomeScreenGuide={showHomeScreenGuide} />
 </footer>
 <style>
 footer{padding:24px 20px;text-align:center}
-a{color:#888;font-size:14px;text-decoration:none}
-a:hover{text-decoration:underline}
-.home-screen-guide{display:block;width:fit-content;margin:0 auto 8px}
-
 </style>
