@@ -43,7 +43,8 @@ Deno.serve(async request => {
 
     const body = await request.json().catch(() => null);
     const { action, subscription } = body ?? {};
-    if (action !== 'config' && (action !== 'send' || !validSubscription(subscription))) {
+    const isDailyReminder = action === 'send-daily-reminder';
+    if (action !== 'config' && ((!isDailyReminder && action !== 'send') || !validSubscription(subscription))) {
       return reply(400, { error: 'INVALID_REQUEST' });
     }
 
@@ -51,7 +52,9 @@ Deno.serve(async request => {
     if (!publicKey || !privateKey) return reply(503, { error: 'PUSH_UNAVAILABLE' });
     if (action === 'config') return reply(200, { publicKey });
 
-    const payload = JSON.stringify({ title: '테스트 알림', body: '테스트 알림입니다.' });
+    const payload = JSON.stringify(isDailyReminder
+      ? { title: '데일리 리마인더', body: '데일리 스도쿠 마감까지 1시간 남았습니다.' }
+      : { title: '테스트 알림', body: '테스트 알림입니다.' });
     const details = webPush.generateRequestDetails(subscription, payload, {
       TTL: 300,
       vapidDetails: { subject: site, publicKey, privateKey },
