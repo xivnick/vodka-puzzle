@@ -12,8 +12,8 @@ const hasSiteAppIcon = !legacy && !Astro.url.pathname.startsWith('/test/');
 <title>{title === 'vodka puzzle' ? title : `${title} · vodka puzzle`}</title><meta name="description" content={description} />
 <meta property="og:title" content={title} /><meta property="og:description" content={description} /><meta property="og:type" content="website" /><meta property="og:url" content={new URL(Astro.url.pathname, Astro.site)} />
 {hasSiteAppIcon && <Fragment>
-  <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/brand/vodka-puzzle-icon-180.png" />
+  <link rel="manifest" href="/manifest.webmanifest?v=2" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/brand/vodka-puzzle-icon-180.png?v=2" />
 </Fragment>}
 <link rel="stylesheet" href="/css/common.css?v=31" />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
