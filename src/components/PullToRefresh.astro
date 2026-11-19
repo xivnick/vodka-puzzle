@@ -14,6 +14,7 @@
     ('standalone' in navigator && navigator.standalone === true);
 
   if (standalone && indicator && status) {
+    const root = document.documentElement;
     const threshold = 80;
     const slop = 12;
     const passive = { passive: true };
@@ -22,15 +23,21 @@
 
     const atTop = () => window.scrollY <= 0 && (window.visualViewport?.scale ?? 1) === 1;
     const showProgress = (distance: number) => {
-      const progress = Math.min(1, Math.max(0, (distance - slop) / (threshold - slop)));
-      indicator.hidden = progress === 0;
-      if (!progress) return;
-      indicator.style.setProperty('--pull-offset', `${5 + progress * 16}px`);
+      const pull = Math.max(0, distance - slop);
+      const offset = 96 * (1 - Math.exp(-pull / 100));
+      const progress = Math.min(1, pull / (threshold - slop));
+      root.style.setProperty('--app-pull-offset', `${offset}px`);
+      root.toggleAttribute('data-pull-open', offset > 0);
       indicator.style.setProperty('--visible-spokes', String(Math.ceil(progress * 8)));
+      if (offset > 0) indicator.hidden = false;
     };
     const reset = () => {
       start = undefined;
-      if (!refreshing) indicator.hidden = true;
+      root.removeAttribute('data-pull-dragging');
+      if (!refreshing) {
+        root.removeAttribute('data-pull-open');
+        root.style.removeProperty('--app-pull-offset');
+      }
     };
     const isNestedScroll = (target: Element) => {
       for (let element: Element | null = target; element && element !== document.body; element = element.parentElement) {
@@ -41,7 +48,7 @@
       return false;
     };
 
-    document.documentElement.classList.add('app-pull-to-refresh');
+    root.classList.add('app-pull-to-refresh');
 
     document.addEventListener('touchstart', event => {
       reset();
@@ -51,6 +58,7 @@
           target.closest('input, textarea, select, [contenteditable], dialog, [role="dialog"]') ||
           isNestedScroll(target)) return;
       start = event.touches[0];
+      root.setAttribute('data-pull-dragging', '');
     }, passive);
 
     document.addEventListener('touchmove', event => {
@@ -80,7 +88,7 @@
         return;
       }
       refreshing = true;
-      start = undefined;
+      reset();
       showProgress(threshold);
       indicator.dataset.refreshing = '';
       status.textContent = '새로고침 중';
@@ -100,14 +108,24 @@
 
 <style>
   :global(html.app-pull-to-refresh) { overscroll-behavior-y: none; }
+  :global(html.app-pull-to-refresh > body) { transition: translate 180ms ease-out; }
+  :global(html.app-pull-to-refresh[data-pull-open] > body) { translate: 0 var(--app-pull-offset); }
+  :global(html.app-pull-to-refresh[data-pull-dragging] > body) { transition-duration: 0s; }
   #pull-to-refresh {
-    position: fixed;
-    z-index: 101;
-    top: env(safe-area-inset-top);
-    left: 50%;
-    transform: translate(-50%, var(--pull-offset, 0px));
+    position: absolute;
+    bottom: 100%;
+    inset-inline: 0;
+    height: var(--app-pull-offset, 0px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #f6f6f6;
     pointer-events: none;
+    transition: height 180ms ease-out;
   }
+  #pull-to-refresh[hidden] { display: none; }
+  :global(html[data-pull-dragging]) #pull-to-refresh { transition-duration: 0s; }
   .refresh-wheel { display: block; position: relative; width: 22px; height: 22px; }
   .refresh-spoke {
     position: absolute;
@@ -129,6 +147,7 @@
   #pull-to-refresh[data-refreshing] .refresh-wheel { animation: refresh-spin .85s steps(8) infinite; }
   @keyframes refresh-spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) {
+    :global(html.app-pull-to-refresh > body), #pull-to-refresh { transition-duration: 0s; }
     #pull-to-refresh[data-refreshing] .refresh-wheel { animation: none; }
   }
   #pull-to-refresh-status {
