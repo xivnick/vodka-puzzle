@@ -1,0 +1,170 @@
+---
+const designs = [
+  { title: '스도쿠 숫자', cells: [{ text: '2' }, {}, { style: 'err-white' }, {}, { text: '5', style: 'correct' }, {}] },
+  { title: '두 칸 연결', cells: [{}, {}, {}, {}, { style: 'correct' }, {}], line: 'top-link' },
+  { title: '카쿠로 단서', cells: [{}, {}, { text: '7', style: 'kakuro' }, {}, { text: '3', style: 'correct' }, {}] },
+  { title: '야지린 화살표', cells: [{ text: '2 →' }, {}, { style: 'err-white' }, {}, {}, { style: 'painted' }] },
+  { title: '꺾인 경로', cells: [{ text: '4' }, {}, {}, {}, {}, { style: 'correct' }], line: 'bottom-turn' },
+  { title: '부등호', cells: [{ text: '2' }, { text: '>' }, { text: '1', style: 'correct' }, {}, {}, {}] },
+  { title: '스도쿠 메모', cells: [{ text: '1 3', style: 'notes' }, {}, { style: 'err-white' }, {}, { text: '3', style: 'correct' }, {}] },
+  { title: '흑칸과 표식', cells: [{ style: 'painted' }, {}, {}, {}, { style: 'correct', mark: 'ring' }, { style: 'cross' }] },
+  { title: '원과 연결선', cells: [{ mark: 'ring' }, {}, { style: 'err-white' }, {}, { style: 'correct', mark: 'mini-link' }, {}] },
+];
+---
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>보드카 퍼즐 로고 시안</title>
+    <link rel="stylesheet" href="/css/common.css?v=31" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <main id="logo-sheet">
+      <h1>보드카 퍼즐 로고 시안</h1>
+      <div class="designs">
+        {designs.map(({ title, cells, line }, index) => (
+          <figure>
+            <div class="board" aria-hidden="true">
+              {cells.map(({ text, style, mark }, position) => (
+                <Fragment>
+                  {position === 3 && <div class="wordmark" lang="en">vodka</div>}
+                  <div class:list={['paint-grid-cell', 'logo-cell', style, { 'column-divider': position % 3 !== 2 }]}>
+                    {text}{mark && <span class={mark}></span>}
+                  </div>
+                </Fragment>
+              ))}
+              {line && <span class:list={['path', line]}></span>}
+            </div>
+            <figcaption>{index + 1}. {title}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </main>
+  </body>
+</html>
+
+<style>
+  body {
+    background: #fff;
+    color: #222;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  main {
+    width: min(100%, 840px);
+    margin: 0 auto;
+    padding: clamp(18px, 5vw, 50px);
+  }
+  h1 {
+    margin: 0 0 clamp(20px, 4vw, 34px);
+    font-size: clamp(17px, 3vw, 24px);
+    font-weight: 500;
+  }
+  .designs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(14px, 5vw, 46px);
+  }
+  figure {
+    min-width: 0;
+    container-type: inline-size;
+  }
+  figcaption {
+    margin-top: 10px;
+    font-size: clamp(10px, 1.7vw, 14px);
+    color: #555;
+    line-height: 1.4;
+    text-align: center;
+  }
+  .board {
+    --line: #222;
+    --path-width: max(1px, 1.25cqw);
+    --dot-size: max(4px, 4.8cqw);
+    position: relative;
+    display: grid;
+    grid-template: repeat(3, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr));
+    aspect-ratio: 1;
+    border: max(1px, 1.25cqw) solid var(--line);
+  }
+  .logo-cell {
+    aspect-ratio: auto;
+    position: relative;
+    cursor: inherit;
+    border: 0;
+    font-size: 15cqw;
+    font-weight: 400;
+    line-height: 1;
+  }
+  .logo-cell.column-divider { border-right: 1px solid #bbb; }
+  .wordmark {
+    grid-column: 1 / -1;
+    display: grid;
+    place-items: center;
+    border-block: max(1px, 1.25cqw) solid var(--line);
+    font-size: 20cqw;
+    font-weight: 400;
+    line-height: 1;
+  }
+  .kakuro {
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding: 3cqw;
+    background: linear-gradient(to top right, #fff calc(50% - .5px), #444 50%, #ddd calc(50% + .5px));
+    font-size: 10cqw;
+  }
+  .notes {
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 3cqw;
+    font-size: 9cqw;
+    color: #777;
+    white-space: pre;
+  }
+  .ring {
+    width: 13cqw;
+    aspect-ratio: 1;
+    border: var(--path-width) solid var(--line);
+    border-radius: 50%;
+  }
+  .cross::before, .cross::after {
+    content: '';
+    position: absolute;
+    width: 13cqw;
+    height: var(--path-width);
+    background: #999;
+    transform: rotate(45deg);
+  }
+  .cross::after { transform: rotate(-45deg); }
+  .path, .mini-link {
+    position: absolute;
+    z-index: 1;
+    height: var(--path-width);
+    background: var(--line);
+    transform: translateY(-50%);
+  }
+  .top-link { top: calc(100% / 6); left: calc(100% / 6); width: calc(100% / 3); }
+  .bottom-turn { top: calc(500% / 6); left: 50%; width: calc(100% / 3); }
+  .mini-link { top: 50%; left: 25%; width: 50%; }
+  .path::before, .path::after, .mini-link::before, .mini-link::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: var(--dot-size);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--line);
+    transform: translate(-50%, -50%);
+  }
+  .path::before, .mini-link::before { left: 0; }
+  .path::after, .mini-link::after { left: 100%; }
+  .bottom-turn::before {
+    top: auto;
+    bottom: 0;
+    width: var(--path-width);
+    height: 9cqw;
+    border-radius: 0;
+    transform: translateX(-50%);
+  }
+</style>
