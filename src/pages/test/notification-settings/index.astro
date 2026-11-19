@@ -220,11 +220,11 @@ const previewPath = '/test/notification-settings/';
       updateControls();
       try {
         await invokePushTest('send-self', subscription);
-        window.showToast('시험 알림을 접수했습니다. 이 기기의 알림을 확인해 주세요.');
+        window.showToast('테스트 알림을 보냈습니다.');
       } catch (error) {
         window.showToast(error instanceof Error && error.message === 'SUBSCRIPTION_EXPIRED'
           ? '구독이 만료되었습니다. 알림을 껐다가 다시 켜 주세요.'
-          : '시험 발송에 실패했습니다. 새로고침 후 다시 시도해 주세요.');
+          : '테스트 알림을 보내지 못했습니다.');
       } finally {
         busy = false;
         updateControls();

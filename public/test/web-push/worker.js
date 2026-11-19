@@ -1,11 +1,13 @@
 const page = new URL(self.registration.scope);
 
+self.addEventListener('install', event => event.waitUntil(self.skipWaiting()));
+
 self.addEventListener('push', event => {
-  const { title, body } = event.data.json();
+  const { title, body, tag = 'vodka-puzzle-push-test' } = event.data.json();
   event.waitUntil(self.registration.showNotification(title, {
     body,
     icon: new URL('/test/web-push/icon-192.png?v=2', page).href,
-    tag: 'vodka-puzzle-push-test',
+    tag,
     renotify: true,
   }));
 });
