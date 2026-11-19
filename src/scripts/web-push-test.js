@@ -1,4 +1,5 @@
 import { $, bootstrap } from './admin.js';
+import { invokePushTest, preparePushTest } from '../lib/push-test.js';
 
 const scope = '/test/web-push/';
 const subscribe = $('pushSubscribe');
@@ -6,20 +7,6 @@ const send = $('pushSend');
 const unsubscribe = $('pushUnsubscribe');
 const status = $('pushStatus');
 let registration, applicationServerKey, subscription;
-
-async function invoke(action, target) {
-  const { data, error } = await window.puzzleAccount.client.functions.invoke('puzzle-push-test', {
-    body: { action, subscription: target?.toJSON() },
-  });
-  if (error) {
-    const response = error.context;
-    if (response instanceof Response && response.status === 410) {
-      throw new Error('SUBSCRIPTION_EXPIRED');
-    }
-    throw error;
-  }
-  return data;
-}
 
 function show(text) {
   status.textContent = text;
@@ -46,13 +33,7 @@ void bootstrap(async () => {
   }
 
   try {
-    const [, { publicKey }] = await Promise.all([
-      navigator.serviceWorker.register(`${scope}worker.js`, { scope }),
-      invoke('config'),
-    ]);
-    registration = await navigator.serviceWorker.ready;
-    if (registration.scope !== new URL(scope, location.origin).href) throw new Error('WRONG_SCOPE');
-    applicationServerKey = Uint8Array.from(atob(publicKey.replace(/-/g, '+').replace(/_/g, '/')), char => char.charCodeAt(0));
+    ({ registration, applicationServerKey } = await preparePushTest(scope));
     subscription = await registration.pushManager.getSubscription();
     show(subscription ? '이 기기에서 시험 알림을 받을 수 있습니다.' : Notification.permission === 'denied'
       ? '알림이 차단되어 있습니다. 기기 또는 브라우저 설정에서 허용해 주세요.' : '이 기기의 알림을 켜 주세요.');
@@ -76,7 +57,7 @@ void bootstrap(async () => {
   send.onclick = async () => {
     busy('시험 알림을 보내는 중…');
     try {
-      await invoke('send', subscription);
+      await invokePushTest('send', subscription);
       show('푸시 서비스가 시험 알림을 접수했습니다. 기기의 알림을 확인해 주세요.');
     } catch (error) {
       show(error.message === 'SUBSCRIPTION_EXPIRED'

@@ -4,7 +4,7 @@ self.addEventListener('push', event => {
   const { title, body } = event.data.json();
   event.waitUntil(self.registration.showNotification(title, {
     body,
-    icon: new URL('icon-192.png?v=2', page).href,
+    icon: new URL('/test/web-push/icon-192.png?v=2', page).href,
     tag: 'vodka-puzzle-push-test',
     renotify: true,
   }));

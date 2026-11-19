@@ -17,9 +17,14 @@ const environments = [
   { id: 'blocked', name: '알림 권한 차단', blocker: '브라우저나 기기 설정에서 알림을 허용해 주세요.' },
   { id: 'unsupported', name: '미지원 브라우저', blocker: '알림을 지원하는 브라우저에서 다시 열어 주세요.' },
 ];
+const previewPath = '/test/notification-settings/';
 ---
 <PageLayout title="알림 설정" subtitle="이 기기에서 받을 알림을 설정합니다.">
-  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="manifest" href={`${previewPath}manifest.webmanifest`} />
+    <link rel="apple-touch-icon" sizes="180x180" href="/brand/vodka-puzzle-icon-180.png?v=2" />
+  </Fragment>
   <div class="notification-settings">
     <section class="device-settings" aria-label="이 기기의 알림">
       <div class="setting-row device-toggle">
@@ -27,6 +32,7 @@ const environments = [
           <label class="setting-name" for="device-notifications">이 기기에서 알림 받기</label>
           <p id="notification-message" role="alert"></p>
           <a id="notification-install-guide" class="site-text-link" href="/home-screen-guide/" hidden>홈 화면에 추가하기</a>
+          <a id="notification-test-login" class="site-text-link" href={`/nickname/?${new URLSearchParams({ next: previewPath })}`} hidden>관리자 계정으로 로그인</a>
         </div>
         <input id="device-notifications" class="switch" type="checkbox" role="switch" aria-describedby="notification-message" />
       </div>
@@ -77,11 +83,14 @@ const environments = [
 </PageLayout>
 
 <script>
+  import { invokePushTest, preparePushTest } from '../../../lib/push-test.js';
+
   const device = document.querySelector<HTMLInputElement>('#device-notifications');
   const types = document.querySelector<HTMLFieldSetElement>('#notification-types');
   const send = document.querySelector<HTMLButtonElement>('#test-notification');
   const message = document.getElementById('notification-message');
   const installGuide = document.getElementById('notification-install-guide');
+  const login = document.getElementById('notification-test-login');
   const environment = document.querySelector<HTMLSelectElement>('#notification-environment');
 
   function currentEnvironment() {
@@ -96,24 +105,116 @@ const environments = [
     return Notification.permission === 'denied' ? 'blocked' : 'available';
   }
 
-  if (device && types && send && message && installGuide && environment) {
-    const updatePreview = () => {
-      const mode = environment.value || currentEnvironment();
-      const blocker = device.checked ? environment.options.namedItem(mode)?.dataset.blocker : undefined;
-      if (blocker) device.checked = false;
+  if (device && types && send && message && installGuide && login && environment) {
+    let push: Awaited<ReturnType<typeof preparePushTest>> | undefined;
+    let subscription: PushSubscription | null = null;
+    let needsLogin = false;
+    let busy = false;
+    let setupMessage = '알림을 준비하고 있습니다. 잠시 후 다시 시도해 주세요.';
 
-      types.disabled = send.disabled = !device.checked;
-      installGuide.hidden = !blocker || mode !== 'iphone-browser';
-      message.textContent = blocker ?? '';
+    const updateControls = () => {
+      device.disabled = environment.disabled = busy;
+      types.disabled = send.disabled = busy || !device.checked;
+      send.textContent = environment.value ? '시험 발송 미리보기' : '시험 발송';
+    };
+    const showNotice = (text = '', mode = '') => {
+      message.textContent = text;
+      installGuide.hidden = mode !== 'iphone-browser';
+      login.hidden = mode !== 'login';
+    };
+    const blockerFor = (mode: string) => environment.options.namedItem(mode)?.dataset.blocker;
+
+    const initialize = async () => {
+      await window.puzzleAuthReady;
+      if (currentEnvironment() !== 'available') return;
+      needsLogin = !window.puzzleAccount.user;
+      if (needsLogin) {
+        setupMessage = '시험 알림을 보내려면 관리자 계정으로 로그인해 주세요.';
+        return;
+      }
+      try {
+        const ready = await preparePushTest('/test/notification-settings/');
+        subscription = await ready.registration.pushManager.getSubscription();
+        push = ready;
+        if (!environment.value) {
+          device.checked = !!subscription;
+          showNotice();
+          updateControls();
+        }
+      } catch (error) {
+        setupMessage = error instanceof Error && error.message === 'ADMIN_REQUIRED'
+          ? '시험 발송은 관리자 계정에서 사용할 수 있습니다.'
+          : '알림을 준비하지 못했습니다. 새로고침 후 다시 시도해 주세요.';
+      }
     };
 
-    device.addEventListener('change', updatePreview);
-    environment.addEventListener('change', () => {
-      device.checked = false;
-      updatePreview();
+    device.addEventListener('change', async () => {
+      const mode = environment.value || currentEnvironment();
+      const blocker = device.checked ? blockerFor(mode) : undefined;
+      if (blocker) {
+        device.checked = false;
+        showNotice(blocker, mode);
+        updateControls();
+        return;
+      }
+      showNotice();
+      if (environment.value) {
+        updateControls();
+        return;
+      }
+      if (!push) {
+        device.checked = false;
+        showNotice(setupMessage, needsLogin ? 'login' : '');
+        updateControls();
+        return;
+      }
+      busy = true;
+      updateControls();
+      try {
+        if (device.checked) {
+          subscription = await push.registration.pushManager.subscribe({
+            userVisibleOnly: true, applicationServerKey: push.applicationServerKey,
+          });
+        } else {
+          await subscription?.unsubscribe();
+          subscription = await push.registration.pushManager.getSubscription();
+          if (subscription) showNotice('알림을 끄지 못했습니다. 다시 시도해 주세요.');
+        }
+      } catch {
+        showNotice(blockerFor(currentEnvironment()) ?? '알림 설정을 변경하지 못했습니다. 다시 시도해 주세요.');
+      } finally {
+        device.checked = !!subscription;
+        busy = false;
+        updateControls();
+      }
     });
-    send.addEventListener('click', () => window.showToast('보드카 퍼즐 시험 알림 미리보기입니다.'));
-    updatePreview();
+    environment.addEventListener('change', () => {
+      device.checked = !environment.value && !!subscription;
+      showNotice();
+      updateControls();
+    });
+    send.addEventListener('click', async () => {
+      if (environment.value) {
+        window.showToast('보드카 퍼즐 시험 알림 미리보기입니다.');
+        return;
+      }
+      if (!subscription) return;
+      busy = true;
+      updateControls();
+      try {
+        await invokePushTest('send', subscription);
+        window.showToast('시험 알림을 접수했습니다. 이 기기의 알림을 확인해 주세요.');
+      } catch (error) {
+        window.showToast(error instanceof Error && error.message === 'SUBSCRIPTION_EXPIRED'
+          ? '구독이 만료되었습니다. 알림을 껐다가 다시 켜 주세요.'
+          : '시험 발송에 실패했습니다. 다시 시도해 주세요.');
+      } finally {
+        busy = false;
+        updateControls();
+      }
+    });
+    updateControls();
+    void initialize();
   }
 </script>
 
@@ -133,7 +234,7 @@ const environments = [
   .setting-detail { margin-top: 4px; color: #777; font-size: .75rem; }
   .device-toggle { align-items: flex-start; }
   #notification-message:not(:empty) { margin-top: 4px; color: #777; font-size: .75rem; line-height: 1.6; }
-  #notification-install-guide:not([hidden]) { display: inline-block; margin-top: 4px; }
+  .device-toggle a:not([hidden]) { display: inline-block; margin-top: 4px; }
   fieldset { min-width: 0; margin: 28px 0 0; border: 0; }
   legend { padding: 0 0 6px; color: #555; font-size: .85rem; font-weight: 500; }
   .timezone { margin-top: 8px; color: #777; font-size: .72rem; }
