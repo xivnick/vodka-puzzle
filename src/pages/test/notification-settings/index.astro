@@ -1,0 +1,118 @@
+---
+import PageLayout from '../../../layouts/PageLayout.astro';
+import '../../../styles/account-controls.css';
+import '../../../styles/site-text-link.css';
+
+const options = [
+  { id: 'daily', name: '데일리 스도쿠 알림', detail: '매일 자정, 새 데일리 스도쿠가 열리면 알려드립니다.' },
+  { id: 'new-puzzle', name: '새 문제 알림', detail: '새 문제가 공개되면 알려드립니다.' },
+  { id: 'daily-reminder', name: '데일리 스도쿠 미완료 알림', detail: '그날의 스도쿠를 아직 풀지 않았다면 오후 11시에 알려드립니다.' },
+];
+---
+<PageLayout title="알림 설정" subtitle="이 기기에서 받을 알림을 설정합니다.">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <div class="notification-settings">
+    <section class="device-settings" aria-label="이 기기의 알림">
+      <label class="setting-row">
+        <span id="device-notifications-label" class="setting-name">이 기기에서 알림 받기</span>
+        <input id="device-notifications" class="switch" type="checkbox" role="switch" aria-labelledby="device-notifications-label" />
+      </label>
+      <div class="setting-row">
+        <div>
+          <p class="setting-name">알림 테스트</p>
+          <p class="setting-detail">알림이 이 기기에 도착하는지 확인합니다.</p>
+        </div>
+        <button id="test-notification" class="account-button" type="button" disabled>시험 발송</button>
+      </div>
+    </section>
+
+    <fieldset id="notification-types" disabled>
+      <legend>받을 알림</legend>
+      {options.map(({ id, name, detail }) => (
+        <label class="setting-row">
+          <span>
+            <span id={`${id}-label`} class="setting-name">{name}</span>
+            <span id={`${id}-detail`} class="setting-detail">{detail}</span>
+          </span>
+          <input class="switch" type="checkbox" role="switch"
+            aria-labelledby={`${id}-label`} aria-describedby={`${id}-detail`} />
+        </label>
+      ))}
+      <p class="timezone">시간은 한국 기준입니다.</p>
+    </fieldset>
+
+    <div class="settings-footer">
+      <a class="site-text-link" href="/nickname/">마이페이지</a>
+      <p>미리보기에서는 설정과 시험 발송을 화면에서 확인할 수 있습니다.</p>
+    </div>
+  </div>
+</PageLayout>
+
+<script>
+  const device = document.querySelector<HTMLInputElement>('#device-notifications');
+  const types = document.querySelector<HTMLFieldSetElement>('#notification-types');
+  const send = document.querySelector<HTMLButtonElement>('#test-notification');
+
+  if (device && types && send) {
+    const updatePreview = () => {
+      types.disabled = send.disabled = !device.checked;
+    };
+
+    device.addEventListener('change', updatePreview);
+    send.addEventListener('click', () => window.showToast('보드카 퍼즐 시험 알림 미리보기입니다.'));
+    updatePreview();
+  }
+</script>
+
+<style>
+  .notification-settings { width: 100%; color: #555; }
+  .device-settings { border-top: 1px solid #e8e5df; }
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid #e8e5df;
+  }
+  .setting-name, .setting-detail { display: block; line-height: 1.6; }
+  .setting-name { color: #333; font-size: .86rem; }
+  .setting-detail { margin-top: 4px; color: #777; font-size: .75rem; }
+  fieldset { min-width: 0; margin: 28px 0 0; border: 0; }
+  legend { padding: 0 0 6px; color: #555; font-size: .85rem; font-weight: 500; }
+  .timezone { margin-top: 8px; color: #777; font-size: .72rem; }
+  .account-button { flex-shrink: 0; min-height: 36px; padding: 0 10px; font-size: .75rem; }
+  .switch {
+    appearance: none;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 22px;
+    display: grid;
+    align-items: center;
+    padding: 3px;
+    border: 0;
+    border-radius: 11px;
+    background: #ccc8c0;
+    cursor: pointer;
+  }
+  .switch::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+  }
+  .switch:checked { background: #5b8c64; }
+  .switch:checked::after { transform: translateX(14px); }
+  .switch:disabled { opacity: .45; cursor: default; }
+  .settings-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 26px;
+    color: #777;
+    font-size: .72rem;
+    line-height: 1.6;
+  }
+</style>
