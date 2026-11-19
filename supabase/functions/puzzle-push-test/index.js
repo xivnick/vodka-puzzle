@@ -1,4 +1,6 @@
 import webPush from 'npm:web-push@3.6.7';
+import { Buffer } from 'node:buffer';
+import { timingSafeEqual } from 'node:crypto';
 
 const site = 'https://puzzle.xivnick.me';
 const cors = {
@@ -69,7 +71,59 @@ async function sendPush(subscription, payload, vapidDetails) {
   if (result.ok) return 'accepted';
   if ([404, 410].includes(result.status)) return 'expired';
   console.warn('Test push rejected', result.status);
-  return 'failed';
+  return result.status === 429 || result.status >= 500 ? 'retry' : 'failed';
+}
+
+function pushKeys() {
+  return JSON.parse(Deno.env.get('PUZZLE_PUSH_TEST_VAPID') || 'null') ?? {};
+}
+
+async function dispatchRpc(name, args) {
+  const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const response = await projectFetch(`/rest/v1/rpc/${name}`, key, {
+    method: 'POST',
+    headers: { apikey: key, 'Content-Type': 'application/json' },
+    body: JSON.stringify(args ?? {}),
+  });
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new Error(name);
+  }
+  if (!args) return response.json();
+  await response.body?.cancel();
+}
+
+async function dispatchNotifications(token) {
+  const secret = Deno.env.get('PUZZLE_NOTIFICATION_DISPATCH_TOKEN');
+  if (!secret || !/^[A-Za-z0-9_-]{43}$/.test(token) || token.length !== secret.length ||
+      !timingSafeEqual(Buffer.from(token), Buffer.from(secret))) return reply(403, { error: 'DISPATCH_FORBIDDEN' });
+  const { publicKey, privateKey } = pushKeys();
+  if (!publicKey || !privateKey) return reply(503, { error: 'PUSH_UNAVAILABLE' });
+  const vapidDetails = { subject: site, publicKey, privateKey };
+  const counts = { sent: 0, expired: 0, retry: 0, failed: 0, uncertain: 0 };
+  for (let batch = 0; batch < 3; batch++) {
+    const deliveries = await dispatchRpc('claim_puzzle_notifications');
+    if (!deliveries.length) break;
+    await Promise.all(deliveries.map(async delivery => {
+      const { endpoint, p256dh, auth, title, body, path, tag } = delivery;
+      const target = { endpoint, keys: { p256dh, auth } };
+      let outcome = 'failed';
+      if (validSubscription(target)) {
+        try {
+          outcome = await sendPush(target, JSON.stringify({ title, body, path, tag }), vapidDetails);
+          if (outcome === 'accepted') outcome = 'sent';
+        } catch {
+          outcome = 'uncertain';
+        }
+      }
+      await dispatchRpc('finish_puzzle_notification', {
+        delivery_id: delivery.delivery_id, attempt: delivery.attempt, outcome,
+        subscription_revision: delivery.subscription_revision,
+      });
+      counts[outcome]++;
+    }));
+  }
+  return reply(200, counts);
 }
 
 Deno.serve(async request => {
@@ -81,6 +135,7 @@ Deno.serve(async request => {
   try {
     const token = authorization.slice(7);
     const { action, subscription, preference } = (await request.json().catch(() => null)) ?? {};
+    if (action === 'dispatch') return await dispatchNotifications(token);
     const isDailyReminder = action === 'send-daily-reminder';
     const ownSubscription = ['register', 'unregister', 'send-self', 'set-preference'].includes(action);
     if (action !== 'config' &&
@@ -137,7 +192,7 @@ Deno.serve(async request => {
       if (await admin.json() !== true) return reply(403, { error: 'ADMIN_REQUIRED' });
     }
 
-    const { publicKey, privateKey } = JSON.parse(Deno.env.get('PUZZLE_PUSH_TEST_VAPID') || 'null') ?? {};
+    const { publicKey, privateKey } = pushKeys();
     if (!publicKey || !privateKey) return reply(503, { error: 'PUSH_UNAVAILABLE' });
     if (action === 'config') return reply(200, { publicKey });
     const vapidDetails = { subject: site, publicKey, privateKey };

@@ -1,1 +1,1 @@
-importScripts('/js/push-notification-worker.js?v=2');
+importScripts('/js/push-notification-worker.js?v=3');

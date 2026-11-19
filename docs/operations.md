@@ -32,6 +32,14 @@ python3 scripts/database.py /비공개/경로/daily-sudoku-YYYY-MM-DD.sql
 
 이미 적용한 `supabase/cutover.sql`이나 과거 마이그레이션은 일반 배포에서 재실행하지 않는다.
 
+## 푸시 알림 자동 발송
+
+`20261119_zz_notification_dispatch.sql`을 적용한 뒤 `python3 scripts/deploy-notification-dispatch.py`를 실행한다. 이 스크립트는 전용 인증 값을 Vault와 Edge Function에 설정하고, Supabase Cron의 `vodka-puzzle-notifications` 작업을 등록한다.
+
+정식 공개 트랜잭션이 커밋되면 새 문제 알림 발송을 시작한다. 미래 공개는 공개 시간까지 기다린다. Cron은 한국 시간 자정과 밤 11시에 데일리 알림을 등록하고 대기 중인 발송을 확인한다. 밤 11시 알림은 오늘 문제를 완료한 계정을 제외한다. 기기별 알림 설정은 발송 직전에 다시 확인한다.
+
+`private.puzzle_notification_jobs`와 `private.puzzle_notification_deliveries`에서 대기 건과 결과를 확인할 수 있다. 푸시 서비스가 명시적으로 재시도 가능한 오류를 반환하면 최대 세 번 시도한다. 발송 요청의 처리 결과가 불명확한 경우에는 중복 알림을 피하기 위해 `uncertain`으로 기록한다.
+
 ## 완료 기록과 DB 검증
 
 ### 느린 요청과 실패 진단
