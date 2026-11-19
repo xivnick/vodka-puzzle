@@ -22,11 +22,20 @@ import '../../../styles/policies.css';
       <li><strong>설치</strong>를 누릅니다. <strong>바로가기 만들기</strong>가 보이면 선택한 뒤 <strong>추가</strong>를 누르세요.</li>
     </ol>
 
-    <h2 class="resume-heading">저장한 풀이 이어 하기 <img src="/brand/vodka-puzzle-icon-180.png?v=2" width="28" height="28" alt="" /></h2>
-    <p>홈 화면 앱에서 같은 Google 계정으로 로그인한 뒤, 같은 문제에서 <strong>불러오기</strong>를 누르세요.</p>
-    <p><a href="/">보드카 퍼즐 열기</a></p>
+    <p class="copy-action"><button id="copyPuzzleLink" type="button">보드카 퍼즐 링크 복사</button></p>
   </article>
 </PageLayout>
+
+<script>
+  document.getElementById('copyPuzzleLink')?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(new URL('/', location.origin).href);
+      window.showToast('링크를 복사했습니다.');
+    } catch {
+      window.showToast('링크를 복사하지 못했습니다.');
+    }
+  });
+</script>
 
 <style>
   .guide { width: 100%; }
@@ -34,6 +43,13 @@ import '../../../styles/policies.css';
   .device-heading span { margin-left: 4px; color: #888; font-size: .82rem; font-weight: 400; }
   .guide ol { padding-inline-start: 20px; }
   .guide li + li { margin-top: 4px; }
-  .resume-heading { display: flex; align-items: center; gap: 6px; }
-  .resume-heading img { display: block; }
+  .copy-action { margin-top: 16px; }
+  .copy-action button {
+    border: 0;
+    padding: 0;
+    background: none;
+    color: #4a6fa5;
+    font: inherit;
+    text-decoration: underline;
+  }
 </style>
