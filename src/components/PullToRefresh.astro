@@ -1,0 +1,104 @@
+<div id="pull-to-refresh" role="status"></div>
+
+<script>
+  const indicator = document.getElementById('pull-to-refresh');
+  const standalone = matchMedia('(display-mode: standalone)').matches ||
+    ('standalone' in navigator && navigator.standalone === true);
+
+  if (standalone && indicator) {
+    const threshold = 80;
+    const slop = 12;
+    const passive = { passive: true };
+    let start: Touch | undefined;
+    let refreshing = false;
+
+    const atTop = () => window.scrollY <= 0 && (window.visualViewport?.scale ?? 1) === 1;
+    const show = (message: string) => {
+      if (indicator.textContent !== message) indicator.textContent = message;
+    };
+    const reset = () => {
+      start = undefined;
+      if (!refreshing) show('');
+    };
+    const isNestedScroll = (target: Element) => {
+      for (let element: Element | null = target; element && element !== document.body; element = element.parentElement) {
+        if (element.scrollHeight > element.clientHeight && /^(auto|scroll)$/.test(getComputedStyle(element).overflowY)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    document.documentElement.classList.add('app-pull-to-refresh');
+
+    document.addEventListener('touchstart', event => {
+      reset();
+      if (refreshing || event.touches.length !== 1 || !atTop()) return;
+      const target = event.target;
+      if (!(target instanceof Element) ||
+          target.closest('input, textarea, select, [contenteditable], dialog, [role="dialog"]') ||
+          isNestedScroll(target)) return;
+      start = event.touches[0];
+    }, passive);
+
+    document.addEventListener('touchmove', event => {
+      if (!start) return;
+      if (event.touches.length !== 1 || !atTop()) {
+        reset();
+        return;
+      }
+      const touch = event.touches[0];
+      const down = touch.clientY - start.clientY;
+      const across = Math.abs(touch.clientX - start.clientX);
+      if (down < -slop || (across > slop && across >= down)) {
+        reset();
+        return;
+      }
+      show(down >= threshold ? '놓아서 새로고침' : down > slop ? '당겨서 새로고침' : '');
+    }, passive);
+
+    document.addEventListener('touchend', event => {
+      if (!start) return;
+      const touch = event.changedTouches[0];
+      const down = touch.clientY - start.clientY;
+      const across = Math.abs(touch.clientX - start.clientX);
+      if (touch.identifier !== start.identifier || event.touches.length ||
+          !atTop() || down < threshold || down <= across) {
+        reset();
+        return;
+      }
+      refreshing = true;
+      reset();
+      show('새로고침 중…');
+      window.location.reload();
+    }, passive);
+
+    document.addEventListener('touchcancel', reset, passive);
+    window.addEventListener('pageshow', event => {
+      if (!event.persisted) return;
+      refreshing = false;
+      reset();
+    });
+  }
+</script>
+
+<style>
+  :global(html.app-pull-to-refresh) { overscroll-behavior-y: none; }
+  #pull-to-refresh {
+    position: fixed;
+    z-index: 101;
+    top: calc(env(safe-area-inset-top) + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    color: #555;
+    background: #fff;
+    font-size: .75rem;
+    white-space: nowrap;
+  }
+  #pull-to-refresh:not(:empty) {
+    padding: 4px 12px;
+    border: 1px solid #e8e5df;
+    border-radius: 20px;
+  }
+</style>

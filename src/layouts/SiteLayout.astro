@@ -1,6 +1,7 @@
 ---
 import Header from '../components/Header.astro';
 import Toast from '../components/Toast.astro';
+import PullToRefresh from '../components/PullToRefresh.astro';
 import season from '../data/season.json';
 const { title = 'vodka puzzle', description = 'vodka puzzle', legacy = false, home = false, unified = false, bannerText } = Astro.props;
 const hasSiteAppIcon = !legacy && !Astro.url.pathname.startsWith('/test/');
@@ -32,7 +33,7 @@ window.puzzleAuthReady = new Promise(resolve => { window.resolvePuzzleAuth = res
 <div id="recentBanner" class="recent-banner" data-static={bannerText ? '' : undefined} aria-live={bannerText ? undefined : 'polite'}>
   {bannerText && <span class="recent-banner-text">{bannerText}</span>}
 </div>
-<slot /><Toast /><script is:inline>
+<slot /><Toast /><PullToRefresh /><script is:inline>
 initHeader();
 document.addEventListener('pointerdown', event => {
   if (event.target.closest('button[id$="Notes"]')) event.preventDefault();
