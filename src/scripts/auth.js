@@ -107,7 +107,13 @@ function setupAccountPage() {
     try {
       const puzzleId = /^\/(\d{6}_\d{2})(?:\/|$)/.exec(nextPage())?.[1];
       if (puzzleId) { try { window.loadLocalState?.(puzzleId); } catch {} }
-      const { error } = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/auth/callback/' } });
+      const { error } = await client.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: location.origin + '/auth/callback/',
+          queryParams: { prompt: 'select_account' },
+        },
+      });
       if (error) throw error;
     } catch {
       status.textContent = '구글 로그인을 시작하지 못했습니다. 다시 시도해 주세요.';
