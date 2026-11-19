@@ -1,5 +1,6 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
+import AccountBackLink from './AccountBackLink.astro';
 import NicknameBadge from './NicknameBadge.astro';
 import CoinAmount from './CoinAmount.astro';
 import coin from '../../public/icons/coin-candidates/tabler-coins.svg?raw';
@@ -18,7 +19,7 @@ const orderedMissions=[...data.missions].sort((a,b)=>missionPriority(a)-missionP
 ---
 <PageLayout title={customize?"꾸미기":production?"로그인":"마이페이지"}>
   {!production&&<meta slot="head" name="robots" content="noindex, nofollow" />}
-  {customize&&<nav slot="above-title" class="customize-back"><a href={basePath}><span aria-hidden="true"><Fragment set:html={raw("/icons/achievement-preview/chevron-right.svg")}/></span>돌아가기</a></nav>}
+  {customize&&<AccountBackLink slot="above-title" href={basePath} />}
   <slot/>
   <div id="cosmeticLivePanel" class="cosmetic-live-panel" hidden={production} data-production={String(production)}>
   {live&&<p id="cosmeticLiveStatus" class="cosmetic-live-status" data-loading="true" role="status">계정 정보를 불러오는 중입니다.</p>}

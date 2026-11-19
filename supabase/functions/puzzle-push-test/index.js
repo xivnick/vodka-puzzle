@@ -103,12 +103,12 @@ Deno.serve(async request => {
         });
         return reply(200, { registered: true });
       }
-      const owned = { account_id: `eq.${id}`, endpoint: `eq.${subscription.endpoint}` };
-      if (action === 'unregister') {
-        await subscriptions(owned, 'DELETE');
-        return reply(200, { registered: false });
-      }
-      if (action === 'send-self') {
+      if (ownSubscription) {
+        const owned = { account_id: `eq.${id}`, endpoint: `eq.${subscription.endpoint}` };
+        if (action === 'unregister') {
+          await subscriptions(owned, 'DELETE');
+          return reply(200, { registered: false });
+        }
         const rows = await subscriptions({
           ...owned,
           select: 'id',
