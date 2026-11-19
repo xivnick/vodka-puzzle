@@ -10,12 +10,12 @@ const options = [
 ];
 
 const environments = [
-  { id: 'iphone-browser', name: '아이폰 브라우저', detail: '홈 화면에 추가한 보드카 퍼즐 아이콘으로 열어 주세요.', blocked: true },
-  { id: 'iphone-app', name: '아이폰 홈 화면 앱', detail: '이 기기에서 알림을 켤 수 있습니다.' },
-  { id: 'android', name: '안드로이드 Chrome', detail: 'Chrome에서 바로 알림을 켤 수 있습니다.' },
-  { id: 'desktop', name: '컴퓨터', detail: '알림을 지원하는 브라우저에서 바로 켤 수 있습니다.' },
-  { id: 'blocked', name: '알림 권한 차단', detail: '브라우저나 기기 설정에서 알림을 허용해 주세요.', blocked: true },
-  { id: 'unsupported', name: '미지원 브라우저', detail: '알림을 지원하는 브라우저에서 다시 열어 주세요.', blocked: true },
+  { id: 'iphone-browser', name: '아이폰 브라우저', blocker: '홈 화면에서 보드카 퍼즐을 열면 알림을 켤 수 있습니다.' },
+  { id: 'iphone-app', name: '아이폰 홈 화면 앱' },
+  { id: 'android', name: '안드로이드 Chrome' },
+  { id: 'desktop', name: '컴퓨터' },
+  { id: 'blocked', name: '알림 권한 차단', blocker: '브라우저나 기기 설정에서 알림을 허용해 주세요.' },
+  { id: 'unsupported', name: '미지원 브라우저', blocker: '알림을 지원하는 브라우저에서 다시 열어 주세요.' },
 ];
 ---
 <PageLayout title="알림 설정" subtitle="이 기기에서 받을 알림을 설정합니다.">
@@ -61,15 +61,15 @@ const environments = [
         <label for="notification-environment">환경을 고른 뒤 위에서 알림을 켜 보세요.</label>
         <select id="notification-environment">
           <option value="">현재 환경</option>
-          {environments.map(({ id, name, detail, blocked }) => (
-            <option id={id} value={id} data-blocker={blocked ? detail : undefined}>{name}</option>
+          {environments.map(({ id, name, blocker }) => (
+            <option id={id} value={id} data-blocker={blocker}>{name}</option>
           ))}
         </select>
       </details>
       <section class="environment-copy" aria-labelledby="environment-copy-title">
-        <h2 id="environment-copy-title">환경별 안내</h2>
+        <h2 id="environment-copy-title">알림을 켤 수 없을 때</h2>
         <ul>
-          {environments.map(({ name, detail }) => <li><strong>{name}</strong> {detail}</li>)}
+          {environments.filter(({ blocker }) => blocker).map(({ name, blocker }) => <li><strong>{name}</strong> {blocker}</li>)}
         </ul>
       </section>
     </div>
