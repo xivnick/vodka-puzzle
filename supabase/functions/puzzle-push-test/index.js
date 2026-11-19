@@ -1,6 +1,6 @@
 import webPush from 'npm:web-push@3.6.7';
 import { Buffer } from 'node:buffer';
-import { timingSafeEqual } from 'node:crypto';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
 const site = 'https://puzzle.xivnick.me';
 const cors = {
@@ -95,8 +95,12 @@ async function dispatchRpc(name, args) {
 
 async function dispatchNotifications(token) {
   const secret = Deno.env.get('PUZZLE_NOTIFICATION_DISPATCH_TOKEN');
-  if (!secret || !/^[A-Za-z0-9_-]{43}$/.test(token) || token.length !== secret.length ||
-      !timingSafeEqual(Buffer.from(token), Buffer.from(secret))) return reply(403, { error: 'DISPATCH_FORBIDDEN' });
+  const match = /^(\d{10})\.([\da-f]{64})$/.exec(token);
+  if (!secret || !match) return reply(403, { error: 'DISPATCH_FORBIDDEN' });
+  const [, issued, signature] = match;
+  const expected = createHmac('sha256', secret).update(issued).digest();
+  if (Math.abs(Date.now() / 1000 - Number(issued)) > 120 ||
+      !timingSafeEqual(Buffer.from(signature, 'hex'), expected)) return reply(403, { error: 'DISPATCH_FORBIDDEN' });
   const { publicKey, privateKey } = pushKeys();
   if (!publicKey || !privateKey) return reply(503, { error: 'PUSH_UNAVAILABLE' });
   const vapidDetails = { subject: site, publicKey, privateKey };

@@ -34,7 +34,7 @@ python3 scripts/database.py /비공개/경로/daily-sudoku-YYYY-MM-DD.sql
 
 ## 푸시 알림 자동 발송
 
-`20261119_zz_notification_dispatch.sql`을 적용한 뒤 `python3 scripts/deploy-notification-dispatch.py`를 실행한다. 이 스크립트는 전용 인증 값을 Vault와 Edge Function에 설정하고, Supabase Cron의 `vodka-puzzle-notifications` 작업을 등록한다.
+`20261119_zz_notification_dispatch.sql`과 `20261119_zzz_sign_notification_wake.sql`을 적용한 뒤 `python3 scripts/deploy-notification-dispatch.py`를 실행한다. 이 스크립트는 전용 인증 값을 Vault와 Edge Function에 설정하고, Supabase Cron의 `vodka-puzzle-notifications` 작업을 등록한다. DB는 키를 전송하지 않고 2분 이내의 서명된 요청을 보낸다.
 
 정식 공개 트랜잭션이 커밋되면 새 문제 알림 발송을 시작한다. 미래 공개는 공개 시간까지 기다린다. Cron은 한국 시간 자정과 밤 11시에 데일리 알림을 등록하고 대기 중인 발송을 확인한다. 밤 11시 알림은 오늘 문제를 완료한 계정을 제외한다. 기기별 알림 설정은 발송 직전에 다시 확인한다.
 

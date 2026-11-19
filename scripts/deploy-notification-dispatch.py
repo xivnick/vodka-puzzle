@@ -1,7 +1,9 @@
 """Deploy the notification sender and install its Supabase cron job."""
+import hmac
 import json
 import pathlib
 import secrets
+import time
 import urllib.error
 import urllib.request
 import uuid
@@ -62,8 +64,10 @@ result = management(f'/functions/deploy?slug={slug}', data, f'multipart/form-dat
 if result.get('slug') != slug or result.get('status') != 'ACTIVE':
     raise SystemExit('The notification Edge Function is not active.')
 
+issued = str(int(time.time()))
+signature = hmac.new(secret.encode(), issued.encode(), 'sha256').hexdigest()
 request = urllib.request.Request(endpoint, data=b'{"action":"dispatch"}', headers={
-    'Authorization': 'Bearer ' + secret, 'Content-Type': 'application/json',
+    'Authorization': f'Bearer {issued}.{signature}', 'Content-Type': 'application/json',
 })
 try:
     with urllib.request.urlopen(request, timeout=55) as response:
