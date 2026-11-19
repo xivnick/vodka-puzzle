@@ -1,0 +1,93 @@
+---
+import PageLayout from '../../../layouts/PageLayout.astro';
+---
+<PageLayout title="홈 화면에 추가" subtitle="홈 화면에서 보드카 퍼즐을 바로 열 수 있습니다.">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <img slot="above-title" class="app-icon" src="/brand/vodka-puzzle-icon-180.png?v=2" width="72" height="72" alt="" />
+
+  <div class="guide">
+    <section class="save-note" aria-labelledby="before-title">
+      <h2 id="before-title">추가하기 전에 풀이를 저장하세요</h2>
+      <p>아이폰에서는 브라우저에만 저장한 풀이가 홈 화면 앱으로 자동으로 옮겨지지 않습니다. 기존 풀이는 원래 브라우저에서 확인할 수 있습니다.</p>
+      <p>브라우저에서 Google 계정으로 로그인한 뒤, 이어 풀 문제마다 격자 아래의 <strong>저장하기</strong>를 누르세요. ‘저장했습니다.’ 안내가 뜨면 클라우드에 저장된 상태입니다.</p>
+    </section>
+
+    <nav class="device-links" aria-label="기기별 안내">
+      <a href="#iphone">아이폰 · Safari</a>
+      <a href="#android">안드로이드 · Chrome</a>
+    </nav>
+
+    <section class="device" id="iphone" aria-labelledby="iphone-title">
+      <h2 id="iphone-title">아이폰 <span>Safari</span></h2>
+      <ol>
+        <li>Safari에서 보드카 퍼즐을 엽니다.</li>
+        <li><strong>공유</strong>를 누르고 <strong>홈 화면에 추가</strong>를 선택합니다. 공유 버튼이 보이지 않으면 Safari의 페이지 메뉴를 여세요.</li>
+        <li><strong>웹 앱으로 열기</strong>가 보이면 켜고 <strong>추가</strong>를 누릅니다.</li>
+      </ol>
+    </section>
+
+    <section class="device" id="android" aria-labelledby="android-title">
+      <h2 id="android-title">안드로이드 <span>Chrome</span></h2>
+      <ol>
+        <li>Chrome에서 보드카 퍼즐을 엽니다.</li>
+        <li>주소창 옆 <strong>더보기(⋮)</strong>에서 <strong>설치 및 바로가기 만들기</strong>를 누릅니다.</li>
+        <li><strong>설치</strong>를 누릅니다. <strong>바로가기 만들기</strong>가 보이면 선택한 뒤 <strong>추가</strong>를 누르세요.</li>
+      </ol>
+    </section>
+
+    <section class="resume" aria-labelledby="after-title">
+      <h2 id="after-title">저장한 풀이 이어 하기</h2>
+      <p>홈 화면의 퍼즐 아이콘을 열고, 저장할 때와 같은 Google 계정으로 로그인하세요. 같은 문제를 열어 격자 아래의 <strong>불러오기</strong>를 누르면 됩니다.</p>
+    </section>
+
+    <a class="open-site" href="/">보드카 퍼즐 열기 <span aria-hidden="true">→</span></a>
+  </div>
+</PageLayout>
+
+<style>
+  .app-icon {
+    display: block;
+    margin: 0 auto 6px;
+    border: 1px solid #e8e5df;
+    border-radius: 16px;
+  }
+  .guide {
+    display: grid;
+    gap: 16px;
+    width: 100%;
+    font-size: .88rem;
+    line-height: 1.7;
+  }
+  .guide h2 {
+    margin: 0 0 6px;
+    color: #333;
+    font-size: 1rem;
+  }
+  .save-note {
+    padding: 16px;
+    border-left: 3px solid #2d7a4a;
+    background: #e8f5ec;
+  }
+  .save-note h2 { color: #236332; }
+  .save-note p + p { margin-top: 8px; }
+  .device-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+  }
+  .device-links a, .open-site {
+    color: #4a6fa5;
+    text-underline-offset: 3px;
+  }
+  .device {
+    padding: 14px 16px;
+    border: 1px solid #e8e5df;
+    border-radius: 6px;
+    scroll-margin-top: 56px;
+  }
+  .device h2 span { margin-left: 4px; color: #666; font-size: .82rem; font-weight: 400; }
+  .device ol { padding-left: 1.25rem; }
+  .device li + li { margin-top: 4px; }
+  .resume { padding: 2px 0 0; }
+  .open-site { justify-self: start; }
+</style>
