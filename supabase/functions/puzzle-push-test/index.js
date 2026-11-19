@@ -51,7 +51,7 @@ Deno.serve(async request => {
     if (!publicKey || !privateKey) return reply(503, { error: 'PUSH_UNAVAILABLE' });
     if (action === 'config') return reply(200, { publicKey });
 
-    const payload = JSON.stringify({ title: '보드카 퍼즐', body: '시험 알림입니다. 눌러서 시험 페이지를 열어 보세요.' });
+    const payload = JSON.stringify({ title: '', body: '테스트 알림입니다.' });
     const details = webPush.generateRequestDetails(subscription, payload, {
       TTL: 300,
       vapidDetails: { subject: site, publicKey, privateKey },

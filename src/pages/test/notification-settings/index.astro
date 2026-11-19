@@ -42,7 +42,7 @@ const previewPath = '/test/notification-settings/';
           <p class="setting-name">알림 테스트</p>
           <p class="setting-detail">이 기기로 시험 알림을 보냅니다.</p>
         </div>
-        <button id="test-notification" class="account-button" type="button" disabled>시험 발송</button>
+        <button id="test-notification" class="account-button" type="button" disabled>발송</button>
       </div>
     </section>
 
@@ -116,7 +116,7 @@ const previewPath = '/test/notification-settings/';
     const updateControls = () => {
       device.disabled = environment.disabled = busy;
       types.disabled = send.disabled = busy || !device.checked;
-      send.textContent = environment.value ? '시험 발송 미리보기' : '시험 발송';
+      send.textContent = environment.value ? '발송 미리보기' : '발송';
     };
     const showNotice = (text = '', mode = '') => {
       message.textContent = text;
