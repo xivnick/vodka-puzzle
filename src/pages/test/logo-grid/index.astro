@@ -1,55 +1,14 @@
 ---
 const designs = [
-  {
-    name: '숫자와 경로',
-    cells: ['8', '', '', '', { text: '3', state: 'selected' }, { state: 'tomato-cell' }],
-    paths: [[1.5, .5, 2.5, .5]],
-    marks: [['end-dot', 1.5, .5], ['end-dot', 2.5, .5]],
-  },
-  {
-    name: '대각선과 흑백 점',
-    cells: [{ right: '7', down: '4' }, '2', '4', '', { text: '3', state: 'entry' }, ''],
-    marks: [['black-dot', 2, .5], ['white-dot', 2, 2.5]],
-  },
-  {
-    name: '화살표와 흑칸',
-    cells: [{ text: '1', state: 'yajilin-clue' }, '', '', { state: 'shade' }, '', { text: '×', state: 'excluded' }],
-    paths: [[1.5, .5, 2.5, .5], [2.5, .5, 2.5, .83]],
-  },
-  {
-    name: '온도계와 작은 메모',
-    cells: [{ note: '1 7' }, '2', { text: '7', state: 'entry' }, '', '4', ''],
-    paths: [[1.5, .5, 2.5, .5, 'thermo']],
-    marks: [['bulb', 1.5, .5], ['white-dot', 2, 2.5]],
-  },
-  {
-    name: '출발·도착과 대각선 단서',
-    cells: [{ text: 'S', state: 'endpoint' }, { state: 'visited' }, { text: 'F', state: 'endpoint' }, { right: '12' }, { text: '5', state: 'entry' }, ''],
-    paths: [[.5, .5, 2.5, .5]],
-  },
-  {
-    name: '토마토와 카쿠로',
-    cells: [{ state: 'tomato-cell' }, { text: '2', state: 'selected' }, { right: '9' }, '', '6', { state: 'tomato-cell' }],
-    marks: [['black-dot', 1, 2.5]],
-  },
-  {
-    name: '루프와 채운 칸',
-    cells: ['', { text: '3', state: 'loop-digit' }, '', { state: 'shade' }, { note: '2 6' }, ''],
-    paths: [[1, .08, 2, .08], [2, .08, 2, .92], [2, .92, 1, .92], [1, .92, 1, .08]],
-    marks: [['vertex', 1, .08], ['vertex', 2, .08], ['vertex', 2, .92], ['vertex', 1, .92]],
-  },
-  {
-    name: '사풍과 흑백 점',
-    cells: ['2', '4', '5', { state: 'wind-exact' }, { text: '2', state: 'wind-exact' }, { state: 'wind-exact' }],
-    paths: [[1.22, 2.5, .48, 2.5, 'wind'], [1.78, 2.5, 2.52, 2.5, 'wind']],
-    marks: [['black-dot', 1, .5], ['white-dot', 2, .5]],
-  },
-  {
-    name: '메모와 경로 표시',
-    cells: [{ note: '3 5' }, { text: '5', state: 'correct' }, { state: 'err-white' }, { text: '×', state: 'excluded' }, '', ''],
-    paths: [[1.5, 2.5, 2.5, 2.5], [2.5, 2.5, 2.5, 2.17]],
-    marks: [['end-dot', 1.5, 2.5]],
-  },
+  { name: '오른쪽 연결선', digits: ['8', '', '', '', '', ''], green: 4, paths: [[1.5, .5, 2.5, .5]] },
+  { name: '왼쪽 연결선', digits: ['', '', '5', '', '', ''], green: 1, paths: [[.5, 2.5, 1.5, 2.5]] },
+  { name: '두 숫자와 꺾인 선', digits: ['2', '', '7', '', '', ''], green: 5, paths: [[.5, 2.25, .5, 2.5], [.5, 2.5, 1.5, 2.5]] },
+  { name: '초록 칸의 숫자', digits: ['4', '', '', '', '', '7'], green: 0, paths: [[1.52, .75, 2.48, .25]] },
+  { name: '초록 칸까지 연결', digits: ['', '6', '', '', '', ''], green: 5, paths: [[1.5, 2.5, 2.5, 2.5]] },
+  { name: '대각선 배치', digits: ['', '', '8', '3', '', ''], green: 3, paths: [[.5, .5, 1.5, .5]] },
+  { name: '짧은 세로선', digits: ['', '', '', '', '2', ''], green: 2, paths: [[2.5, .21, 2.5, .79]] },
+  { name: '짧은 가로선', digits: ['', '', '', '9', '', ''], green: 1, paths: [[2.2, 2.5, 2.8, 2.5]] },
+  { name: '왼쪽 모서리 경로', digits: ['', '', '7', '5', '', ''], green: 2, paths: [[.5, .5, 1.5, .5], [1.5, .5, 1.5, .77]] },
 ];
 
 const percent = value => `${100 * value / 3}%`;
@@ -75,29 +34,22 @@ function pathStyle([x, y, endX, endY]) {
     <main id="logo-sheet">
       <h1>보드카 퍼즐 로고 시안</h1>
       <div class="designs">
-        {designs.map(({ name, cells, paths = [], marks = [] }, index) => (
+        {designs.map(({ name, digits, green, paths }, index) => (
           <figure>
             <div class="icon" aria-hidden="true">
               <div class="pattern">
-                {cells.map((cell, cellIndex) => {
-                  const { text, state, note, right, down } = typeof cell === 'string' ? { text: cell } : cell;
-                  return (
-                    <Fragment>
-                      {cellIndex === 3 && <div class="wordmark" lang="en">vodka</div>}
-                      <div class:list={['paint-grid-cell', 'cell', state, {
-                        given: text && !state, divider: cellIndex % 3 !== 2, clue: right || down,
-                        'has-right': right, 'has-down': down,
-                      }]}>
-                        {text && <span class="digit">{text}</span>}
-                        {note && <span class="notes">{note}</span>}
-                        {right && <span class="right-sum">{right}</span>}
-                        {down && <span class="down-sum">{down}</span>}
-                      </div>
-                    </Fragment>
-                  );
-                })}
-                {paths.map(path => <span class:list={['path', path[4]]} style={pathStyle(path)} />)}
-                {marks.map(([mark, x, y]) => <span class:list={['mark', mark]} style={position(x, y)} />)}
+                {digits.map((digit, cellIndex) => (
+                  <Fragment>
+                    {cellIndex === 3 && <div class="wordmark" lang="en">vodka</div>}
+                    <div class:list={['paint-grid-cell', 'cell', {
+                      correct: cellIndex === green,
+                      divider: cellIndex % 3 !== 2,
+                    }]}>
+                      {digit && <span class="digit">{digit}</span>}
+                    </div>
+                  </Fragment>
+                ))}
+                {paths.map(path => <span class="path" style={pathStyle(path)} />)}
               </div>
             </div>
             <figcaption>{index + 1}. {name}</figcaption>
@@ -167,34 +119,16 @@ function pathStyle([x, y, endX, endY]) {
     line-height: 1;
   }
   .cell {
-    position: relative;
     aspect-ratio: auto;
     min-width: 0;
     cursor: inherit;
     border: 0;
-    font-size: 11cqw;
+    font-size: 16cqw;
+    font-weight: 500;
     line-height: 1;
   }
   .cell.divider { box-shadow: inset -1px 0 0 var(--grid); }
   .digit { position: relative; z-index: 2; }
-  .entry, .selected { color: var(--blue); }
-  .selected { background: #e1e9f3; }
-  .given { background: #f8f8f6; }
-  .notes { position: absolute; top: 13%; left: 12%; font-size: 5cqw; color: #777; }
-
-  .clue {
-    --upper: #575757;
-    --lower: #575757;
-    background: linear-gradient(to top right, var(--lower) calc(50% - .65px), #444 50%, var(--upper) calc(50% + .65px));
-    color: #181818;
-    font-size: 7cqw;
-  }
-  .has-right { --upper: #ccc; }
-  .has-down { --lower: #ccc; }
-  .right-sum, .down-sum { position: absolute; }
-  .right-sum { right: 7%; top: 9%; }
-  .down-sum { left: 7%; bottom: 8%; }
-
   .path {
     position: absolute;
     z-index: 1;
@@ -203,58 +137,5 @@ function pathStyle([x, y, endX, endY]) {
     background: var(--blue);
     transform: translateY(-50%) rotate(var(--angle));
     transform-origin: left center;
-  }
-  .mark {
-    position: absolute;
-    z-index: 1;
-    transform: translate(-50%, -50%);
-    aspect-ratio: 1;
-    border-radius: 50%;
-  }
-  .black-dot, .white-dot {
-    width: 6cqw;
-    border: 1px solid #222;
-    background: #fff;
-  }
-  .black-dot { background: #222; }
-  .end-dot { width: 4.6cqw; background: var(--blue); }
-  .vertex { width: 3.7cqw; background: #fff; border: 1px solid #888; }
-  .loop-digit { font-weight: 500; }
-  .thermo, .bulb { background: #d6dde7; }
-  .thermo { height: 6.2cqw; }
-  .bulb { width: 13cqw; }
-
-  .shade { background: #303940; }
-  .excluded { color: #99a4ae; font-weight: 400; }
-  .yajilin-clue .digit { color: #28343e; font-weight: 500; text-shadow: 0 0 2px #fff; }
-  .yajilin-clue::before {
-    content: '';
-    position: absolute;
-    inset: 23% 12%;
-    background: #a5b2be;
-    clip-path: polygon(0 32%, 55% 32%, 55% 0, 100% 50%, 55% 100%, 55% 68%, 0 68%);
-  }
-  .visited { background: #c7dfc7; }
-  .endpoint { color: #222; font-size: 9cqw; }
-  .endpoint .digit { paint-order: stroke fill; -webkit-text-stroke: 3px white; }
-
-  .wind-exact { background: #dcebdc; }
-  .wind-exact .digit { font-weight: 500; }
-  .wind { background: #5b8c64; }
-  .wind::after {
-    content: '';
-    position: absolute;
-    inset: 50% -.5cqw auto auto;
-    transform: translateY(-50%);
-    border-top: 2.4cqw solid transparent;
-    border-bottom: 2.4cqw solid transparent;
-    border-left: 4cqw solid #5b8c64;
-  }
-  .tomato-cell::before {
-    content: '';
-    position: absolute;
-    inset: 4%;
-    background: url('/icons/tomato.svg?v=4') center / contain no-repeat;
-    opacity: .12;
   }
 </style>
