@@ -1,11 +1,19 @@
-<div id="pull-to-refresh" role="status"></div>
+<div id="pull-to-refresh" aria-hidden="true" hidden>
+  <span class="refresh-wheel">
+    {Array.from({ length: 8 }, (_, index) => (
+      <span class="refresh-spoke" style={`--spoke: ${index}`}></span>
+    ))}
+  </span>
+</div>
+<span id="pull-to-refresh-status" role="status"></span>
 
 <script>
   const indicator = document.getElementById('pull-to-refresh');
+  const status = document.getElementById('pull-to-refresh-status');
   const standalone = matchMedia('(display-mode: standalone)').matches ||
     ('standalone' in navigator && navigator.standalone === true);
 
-  if (standalone && indicator) {
+  if (standalone && indicator && status) {
     const threshold = 80;
     const slop = 12;
     const passive = { passive: true };
@@ -13,12 +21,16 @@
     let refreshing = false;
 
     const atTop = () => window.scrollY <= 0 && (window.visualViewport?.scale ?? 1) === 1;
-    const show = (message: string) => {
-      if (indicator.textContent !== message) indicator.textContent = message;
+    const showProgress = (distance: number) => {
+      const progress = Math.min(1, Math.max(0, (distance - slop) / (threshold - slop)));
+      indicator.hidden = progress === 0;
+      if (!progress) return;
+      indicator.style.setProperty('--pull-offset', `${5 + progress * 16}px`);
+      indicator.style.setProperty('--visible-spokes', String(Math.ceil(progress * 8)));
     };
     const reset = () => {
       start = undefined;
-      if (!refreshing) show('');
+      if (!refreshing) indicator.hidden = true;
     };
     const isNestedScroll = (target: Element) => {
       for (let element: Element | null = target; element && element !== document.body; element = element.parentElement) {
@@ -54,7 +66,7 @@
         reset();
         return;
       }
-      show(down >= threshold ? '놓아서 새로고침' : down > slop ? '당겨서 새로고침' : '');
+      showProgress(down);
     }, passive);
 
     document.addEventListener('touchend', event => {
@@ -68,15 +80,19 @@
         return;
       }
       refreshing = true;
-      reset();
-      show('새로고침 중…');
-      window.location.reload();
+      start = undefined;
+      showProgress(threshold);
+      indicator.dataset.refreshing = '';
+      status.textContent = '새로고침 중';
+      requestAnimationFrame(() => requestAnimationFrame(() => window.location.reload()));
     }, passive);
 
     document.addEventListener('touchcancel', reset, passive);
     window.addEventListener('pageshow', event => {
       if (!event.persisted) return;
       refreshing = false;
+      delete indicator.dataset.refreshing;
+      status.textContent = '';
       reset();
     });
   }
@@ -87,18 +103,41 @@
   #pull-to-refresh {
     position: fixed;
     z-index: 101;
-    top: calc(env(safe-area-inset-top) + 6px);
+    top: env(safe-area-inset-top);
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, var(--pull-offset, 0px));
     pointer-events: none;
-    color: #555;
-    background: #fff;
-    font-size: .75rem;
-    white-space: nowrap;
   }
-  #pull-to-refresh:not(:empty) {
-    padding: 4px 12px;
-    border: 1px solid #e8e5df;
-    border-radius: 20px;
+  .refresh-wheel { display: block; position: relative; width: 22px; height: 22px; }
+  .refresh-spoke {
+    position: absolute;
+    inset: 0;
+    transform: rotate(calc(var(--spoke) * 45deg));
+    opacity: clamp(.15, calc(var(--visible-spokes) - var(--spoke)), .85);
+  }
+  .refresh-spoke::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10px;
+    width: 2px;
+    height: 6px;
+    border-radius: 2px;
+    background: #777;
+  }
+  #pull-to-refresh[data-refreshing] .refresh-spoke { opacity: calc(.9 - var(--spoke) * .1); }
+  #pull-to-refresh[data-refreshing] .refresh-wheel { animation: refresh-spin .85s steps(8) infinite; }
+  @keyframes refresh-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    #pull-to-refresh[data-refreshing] .refresh-wheel { animation: none; }
+  }
+  #pull-to-refresh-status {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
 </style>
