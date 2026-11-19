@@ -1,8 +1,11 @@
 import { writeNumber } from '../lib/number-notes.js';
-import { digits, size, inspect } from '../lib/kakuro.js';
+import { digits, kakuroPuzzles, createInspector } from '../lib/kakuro.js';
 
 const game = document.getElementById('kakuroGame');
 const puzzleId = game.dataset.puzzleId;
+const puzzle = kakuroPuzzles[puzzleId];
+const size = puzzle.board.length;
+const inspect = createInspector(puzzle);
 const cells = [...game.querySelectorAll('.kakuro-cell')];
 const clues = game.querySelectorAll('[data-clue]');
 const cellByIndex = new Map(cells.map(cell => [Number(cell.dataset.index), cell]));

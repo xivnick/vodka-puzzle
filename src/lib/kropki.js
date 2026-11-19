@@ -36,6 +36,14 @@ export function parseKropkiState(puzzle, saved, puzzleId) {
   };
 }
 
+export function matchesKropkiDot(left, right, dot) {
+  const consecutive = Math.abs(left - right) === 1;
+  const double = left === 2 * right || right === 2 * left;
+  if (dot === 'W') return consecutive;
+  if (dot === 'B') return double;
+  return !consecutive && !double;
+}
+
 // Inspect player entries only; do not search for a solution.
 export function inspectKropki(puzzle, values) {
   const conflicts = new Set();
@@ -52,9 +60,7 @@ export function inspectKropki(puzzle, values) {
   }
   for (const { a, b, dot } of kropkiEdges(puzzle)) {
     if (!values[a] || !values[b]) continue;
-    const consecutive = Math.abs(values[a] - values[b]) === 1;
-    const double = values[a] === 2 * values[b] || values[b] === 2 * values[a];
-    if (!(dot === 'W' ? consecutive : dot === 'B' ? double : !consecutive && !double)) {
+    if (!matchesKropkiDot(values[a], values[b], dot)) {
       conflicts.add(a); conflicts.add(b);
     }
   }

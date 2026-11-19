@@ -2,34 +2,49 @@
 import PuzzleLayout from '../layouts/PuzzleLayout.astro';
 import PuzzleCompletion from './PuzzleCompletion.astro';
 import NumberPad from './NumberPad.astro';
-import { board, size } from '../lib/kakuro.js';
-const puzzleId = '261118_01';
+import { kakuroPuzzles } from '../lib/kakuro.js';
+import catalog from '../data/puzzles.json';
+interface Props { puzzleId?: keyof typeof kakuroPuzzles }
+const { puzzleId = '261118_01' } = Astro.props;
+const { board, edges } = kakuroPuzzles[puzzleId];
+const size = board.length;
+const { title, summary } = catalog.find(entry => entry.id === puzzleId)!;
+const markedEdges = edges.filter(edge => edge.dot !== '.');
 ---
-<PuzzleLayout title="261118 카쿠로" {puzzleId}
-  subtitle="가로·세로 단서의 합에 맞춰 흰 칸에 1~9를 채우세요"
-  description="가로·세로 합 단서에 맞춰 흰 칸을 채우는 카쿠로">
+<PuzzleLayout {title} {puzzleId} subtitle={summary} description={summary}>
   <div slot="rules">
     <p>모든 흰 칸에 1부터 9까지의 숫자를 하나씩 채우세요.</p>
     <ul>
       <li>가로나 세로로 이어진 흰 칸에는 합 힌트가 없어도 같은 숫자를 두 번 사용할 수 없습니다.</li>
       <li>회색 칸으로 나뉘어 있다면 같은 행이나 열에서도 같은 숫자를 사용할 수 있습니다.</li>
       <li>회색 칸의 오른쪽 위 숫자는 바로 오른쪽으로 이어진 흰 칸들의 합이고, 왼쪽 아래 숫자는 바로 아래로 이어진 흰 칸들의 합입니다.</li>
+      {edges.length > 0 && <>
+        <li>흰 점 양쪽의 숫자는 차이가 1입니다.</li>
+        <li>검은 점 양쪽의 숫자는 하나가 다른 하나의 2배입니다.</li>
+        <li>점 없이 가로나 세로로 이웃한 두 흰 칸에는 차이가 1인 숫자나 2배 관계인 숫자를 넣을 수 없습니다.</li>
+      </>}
     </ul>
   </div>
   <div slot="controls">흰 칸을 누른 뒤 숫자 버튼으로 입력하세요. 메모하기 버튼이나 M으로 메모 입력을 켜고 끄세요. 지우기로 선택한 칸의 숫자와 메모를 지우세요.</div>
-  <section id="kakuroGame" data-puzzle-id={puzzleId} aria-label="카쿠로">
+  <section id="kakuroGame" data-puzzle-id={puzzleId} aria-label={title}>
     <div class="board-tools"><button id="kakuroNotes" type="button" aria-pressed="false">메모하기</button></div>
-    <div id="kakuroBoard" role="grid" aria-label="9행 9열 카쿠로 격자">
-      {board.flat().map((clue, index) => {
-        const position = `${Math.floor(index / size) + 1}행 ${index % size + 1}열`;
-        return clue === null
-          ? <button type="button" role="gridcell" class="kakuro-cell" data-index={index} tabindex="-1" aria-label={`${position}, 빈칸`} />
-          : <div role="gridcell" class:list={['kakuro-clue', { diagonal: clue.right || clue.down, right: clue.right, down: clue.down }]}
-              aria-label={[`${position}, 회색 칸`, clue.right && `오른쪽 합 ${clue.right}`, clue.down && `아래 합 ${clue.down}`].filter(Boolean).join(', ')}>
-              {clue.right && <span class="right-sum" data-clue={`${index}-right`}>{clue.right}</span>}
-              {clue.down && <span class="down-sum" data-clue={`${index}-down`}>{clue.down}</span>}
-            </div>;
-      })}
+    <div class="board-wrap" style={`--size:${size}`}>
+      <div id="kakuroBoard" role="grid" aria-label={`${size}행 ${size}열 격자`}>
+        {board.flat().map((clue, index) => {
+          const position = `${Math.floor(index / size) + 1}행 ${index % size + 1}열`;
+          const border = { 'data-last-column': index % size === size - 1 || undefined, 'data-last-row': index >= size * (size - 1) || undefined };
+          return clue === null
+            ? <button {...border} type="button" role="gridcell" class="kakuro-cell" data-index={index} tabindex="-1" aria-label={`${position}, 빈칸`} />
+            : <div {...border} role="gridcell" class:list={['kakuro-clue', { diagonal: clue.right || clue.down, right: clue.right, down: clue.down }]}
+                aria-label={[`${position}, 회색 칸`, clue.right && `오른쪽 합 ${clue.right}`, clue.down && `아래 합 ${clue.down}`].filter(Boolean).join(', ')}>
+                {clue.right && <span class="right-sum" data-clue={`${index}-right`}>{clue.right}</span>}
+                {clue.down && <span class="down-sum" data-clue={`${index}-down`}>{clue.down}</span>}
+              </div>;
+        })}
+      </div>
+      {markedEdges.map(({ a, b, x, y, dot }) => <span class:list={['dot', { black: dot === 'B' }]}
+        style={`left:${x / size * 100}%;top:${y / size * 100}%`} role="img"
+        aria-label={`${Math.floor(a / size) + 1}행 ${a % size + 1}열에서 ${b === a + 1 ? '오른쪽' : '아래'}으로 ${dot === 'B' ? '검은 점' : '흰 점'}`} />)}
     </div>
     <NumberPad max={9} />
     <div class="bottom-buttons"><button id="kakuroErase" type="button">지우기</button><button id="kakuroReset" class="danger" type="button">초기화</button></div>
@@ -44,9 +59,12 @@ const puzzleId = '261118_01';
   .board-tools{display:flex;justify-content:flex-end;margin-bottom:8px}
   #kakuroNotes{background:none;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:0 0 1px;color:#888;font:inherit;font-size:.82rem;cursor:pointer}
   #kakuroNotes[aria-pressed=true]{color:#4a6fa5;border-color:#4a6fa5;font-weight:700}
-  #kakuroBoard{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));border:2px solid #444;background:#fff;user-select:none;-webkit-user-select:none}
+  .board-wrap{position:relative;border:2px solid #444}
+  .dot{position:absolute;transform:translate(-50%,-50%);width:calc(24% / var(--size));aspect-ratio:1;border:1.5px solid #171717;box-sizing:border-box;border-radius:50%;background:white;pointer-events:none}
+  .dot.black{background:#171717}
+  #kakuroBoard{display:grid;grid-template-columns:repeat(var(--size),minmax(0,1fr));background:#fff;user-select:none;-webkit-user-select:none}
   .kakuro-cell,.kakuro-clue{position:relative;aspect-ratio:1;min-width:0;box-sizing:border-box;border:0;border-right:1px solid #aaa;border-bottom:1px solid #aaa;border-radius:0;padding:0;margin:0;font-family:inherit;font-variant-numeric:tabular-nums}
-  #kakuroBoard>:nth-child(9n){border-right:0}#kakuroBoard>:nth-last-child(-n+9){border-bottom:0}
+  #kakuroBoard>[data-last-column]{border-right:0}#kakuroBoard>[data-last-row]{border-bottom:0}
   .kakuro-cell{appearance:none;display:flex;align-items:center;justify-content:center;background:#fff;color:#4a6fa5;font-size:clamp(18px,5vw,27px);font-weight:700;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   .kakuro-cell.selected{background:#e8edf5}.kakuro-cell.conflict{background:#fbeaea;color:#b05050}
   #kakuroGame :global(button:focus){outline:none;box-shadow:none}
