@@ -3,6 +3,7 @@ import Header from '../components/Header.astro';
 import Toast from '../components/Toast.astro';
 import season from '../data/season.json';
 const { title = 'vodka puzzle', description = 'vodka puzzle', legacy = false, home = false, unified = false, bannerText } = Astro.props;
+const hasSiteAppIcon = !legacy && !Astro.url.pathname.startsWith('/test/');
 ---
 <!doctype html>
 <html lang="ko" data-season={season.id}>
@@ -10,6 +11,10 @@ const { title = 'vodka puzzle', description = 'vodka puzzle', legacy = false, ho
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>{title === 'vodka puzzle' ? title : `${title} · vodka puzzle`}</title><meta name="description" content={description} />
 <meta property="og:title" content={title} /><meta property="og:description" content={description} /><meta property="og:type" content="website" /><meta property="og:url" content={new URL(Astro.url.pathname, Astro.site)} />
+{hasSiteAppIcon && <Fragment>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/brand/vodka-puzzle-icon-180.png" />
+</Fragment>}
 <link rel="stylesheet" href="/css/common.css?v=31" />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
 <script is:inline>
