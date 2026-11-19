@@ -1,6 +1,6 @@
-export async function invokePushTest(action, target, cursor) {
+export async function invokePushTest(action, target) {
   const { data, error } = await window.puzzleAccount.client.functions.invoke('puzzle-push-test', {
-    body: { action, subscription: target?.toJSON(), cursor },
+    body: { action, subscription: target?.toJSON() },
   });
   if (error) {
     const status = error.context instanceof Response ? error.context.status : null;
@@ -9,22 +9,6 @@ export async function invokePushTest(action, target, cursor) {
     throw error;
   }
   return data;
-}
-
-export async function broadcastPushTest() {
-  let cursor;
-  const counts = { accepted: 0, expired: 0, failed: 0 };
-  do {
-    const batch = await invokePushTest('send-all', undefined, cursor);
-    for (const status of Object.keys(counts)) counts[status] += batch[status];
-    cursor = batch.nextCursor;
-  } while (cursor);
-  if (!(counts.accepted + counts.expired + counts.failed)) return '등록된 앱이 없습니다.';
-  return [
-    counts.accepted ? `${counts.accepted}개 앱에 시험 발송을 접수했습니다.` : '접수된 알림이 없습니다.',
-    counts.expired ? `만료 ${counts.expired}개` : '',
-    counts.failed ? `실패 ${counts.failed}개` : '',
-  ].filter(Boolean).join(' ');
 }
 
 export async function preparePushTest(scope) {

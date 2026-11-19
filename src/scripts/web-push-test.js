@@ -1,5 +1,5 @@
 import { $, bootstrap } from './admin.js';
-import { broadcastPushTest, invokePushTest, preparePushTest } from '../lib/push-test.js';
+import { invokePushTest, preparePushTest } from '../lib/push-test.js';
 
 const scope = '/test/web-push/';
 const subscribe = $('pushSubscribe');
@@ -13,7 +13,7 @@ function show(text) {
   status.textContent = text;
   subscribe.hidden = !deviceReady || !!subscription || Notification.permission === 'denied';
   unsubscribe.hidden = !deviceReady || !subscription;
-  send.hidden = false;
+  send.hidden = !deviceReady || !subscription;
   subscribe.disabled = send.disabled = unsubscribe.disabled = false;
 }
 
@@ -24,11 +24,13 @@ function busy(text) {
 
 void bootstrap(async () => {
   send.onclick = async () => {
+    if (!subscription) return;
     busy('시험 알림을 보내는 중…');
     try {
-      show(await broadcastPushTest());
+      await invokePushTest('send-self', subscription);
+      show('시험 알림을 접수했습니다. 이 기기의 알림을 확인해 주세요.');
     } catch {
-      show('전체 시험 발송을 완료하지 못했습니다.');
+      show('시험 발송에 실패했습니다. 새로고침 후 다시 시도해 주세요.');
     }
   };
 

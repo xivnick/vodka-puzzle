@@ -71,39 +71,6 @@ async function sendPush(subscription, payload, vapidDetails) {
   return 'failed';
 }
 
-async function sendBatch(cursor, vapidDetails) {
-  const batchSize = 48;
-  const rows = await subscriptions({
-    select: 'id,endpoint,p256dh,auth,updated_at',
-    order: 'id.asc',
-    limit: String(batchSize + 1),
-    ...(cursor ? { id: `gt.${cursor}` } : {}),
-  }, 'GET');
-  const counts = { accepted: 0, expired: 0, failed: 0 };
-  const batch = rows.slice(0, batchSize);
-  for (let index = 0; index < batch.length; index += 12) {
-    await Promise.all(batch.slice(index, index + 12).map(async row => {
-      try {
-        const subscription = { endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } };
-        if (!validSubscription(subscription)) {
-          counts.failed++;
-          return;
-        }
-        const result = await sendPush(subscription, testPayload, vapidDetails);
-        counts[result]++;
-        if (result === 'expired') {
-          await subscriptions({ id: `eq.${row.id}`, updated_at: `eq.${row.updated_at}` }, 'DELETE').catch(() => {
-            console.warn('Could not remove expired push subscription');
-          });
-        }
-      } catch {
-        counts.failed++;
-      }
-    }));
-  }
-  return { ...counts, nextCursor: rows.length > batchSize ? batch.at(-1).id : null };
-}
-
 Deno.serve(async request => {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
   if (request.method !== 'POST') return reply(405, { error: 'METHOD_NOT_ALLOWED' });
@@ -112,19 +79,15 @@ Deno.serve(async request => {
 
   try {
     const token = authorization.slice(7);
-    const { action, subscription, cursor } = (await request.json().catch(() => null)) ?? {};
-    const registrationAction = action === 'register' || action === 'unregister';
+    const { action, subscription } = (await request.json().catch(() => null)) ?? {};
     const isDailyReminder = action === 'send-daily-reminder';
-    if (action !== 'config' && action !== 'send-all' &&
-        (!(registrationAction || isDailyReminder || action === 'send') || !validSubscription(subscription))) {
-      return reply(400, { error: 'INVALID_REQUEST' });
-    }
-    if (action === 'send-all' && cursor != null &&
-        (typeof cursor !== 'string' || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(cursor))) {
+    const ownSubscription = ['register', 'unregister', 'send-self'].includes(action);
+    if (action !== 'config' &&
+        (!(ownSubscription || isDailyReminder || action === 'send') || !validSubscription(subscription))) {
       return reply(400, { error: 'INVALID_REQUEST' });
     }
 
-    if (registrationAction || action === 'config') {
+    if (ownSubscription || action === 'config') {
       const user = await projectFetch('/auth/v1/user', token);
       if ([401, 403].includes(user.status)) return reply(user.status, { error: 'LOGIN_REQUIRED' });
       if (!user.ok) return reply(503, { error: 'AUTH_CHECK_FAILED' });
@@ -140,9 +103,19 @@ Deno.serve(async request => {
         });
         return reply(200, { registered: true });
       }
+      const owned = { account_id: `eq.${id}`, endpoint: `eq.${subscription.endpoint}` };
       if (action === 'unregister') {
-        await subscriptions({ account_id: `eq.${id}`, endpoint: `eq.${subscription.endpoint}` }, 'DELETE');
+        await subscriptions(owned, 'DELETE');
         return reply(200, { registered: false });
+      }
+      if (action === 'send-self') {
+        const rows = await subscriptions({
+          ...owned,
+          select: 'id',
+          p256dh: `eq.${subscription.keys.p256dh}`,
+          auth: `eq.${subscription.keys.auth}`,
+        }, 'GET');
+        if (rows.length === 0) return reply(409, { error: 'SUBSCRIPTION_NOT_REGISTERED' });
       }
     } else {
       const admin = await projectFetch('/rest/v1/rpc/is_puzzle_admin', token, {
@@ -159,7 +132,6 @@ Deno.serve(async request => {
     if (!publicKey || !privateKey) return reply(503, { error: 'PUSH_UNAVAILABLE' });
     if (action === 'config') return reply(200, { publicKey });
     const vapidDetails = { subject: site, publicKey, privateKey };
-    if (action === 'send-all') return reply(200, await sendBatch(cursor, vapidDetails));
 
     const payload = isDailyReminder
       ? JSON.stringify({ title: '데일리 리마인더', body: '데일리 스도쿠 마감까지 1시간 남았습니다.' })
