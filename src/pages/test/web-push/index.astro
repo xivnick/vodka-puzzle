@@ -3,8 +3,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 ---
 <AdminLayout title="알림 시험 발송" subtitle="현재 기기에서만 푸시 알림을 받습니다">
   <Fragment slot="head">
-    <link rel="manifest" href="/test/web-push/manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="/test/web-push/icon-192.png" />
+    <link rel="manifest" href="/test/web-push/manifest.webmanifest?v=2" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/test/web-push/icon-180.png" />
   </Fragment>
   <div class="actions">
     <button id="pushSubscribe" class="account-button" type="button" hidden>이 기기에서 알림 받기</button>
