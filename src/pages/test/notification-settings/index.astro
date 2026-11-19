@@ -17,6 +17,10 @@ const options = [
         <span id="device-notifications-label" class="setting-name">이 기기에서 알림 받기</span>
         <input id="device-notifications" class="switch" type="checkbox" role="switch" aria-labelledby="device-notifications-label" />
       </label>
+      <div id="notification-availability" class="availability" hidden>
+        <p id="notification-message" role="alert"></p>
+        <a id="notification-install-guide" class="site-text-link" href="/home-screen-guide/" hidden>홈 화면에 추가하기</a>
+      </div>
       <div class="setting-row">
         <div>
           <p class="setting-name">알림 테스트</p>
@@ -43,7 +47,20 @@ const options = [
 
     <div class="settings-footer">
       <a class="site-text-link" href="/nickname/">마이페이지</a>
-      <p>미리보기에서는 설정과 시험 발송을 화면에서 확인할 수 있습니다.</p>
+      <details class="environment-preview">
+        <summary>다른 환경 미리보기</summary>
+        <label for="notification-environment">환경을 고른 뒤 위에서 알림을 켜 보세요.</label>
+        <select id="notification-environment">
+          <option value="">현재 환경</option>
+          <option value="iphone-browser">아이폰 브라우저</option>
+          <option value="iphone-app">아이폰 홈 화면 앱</option>
+          <option value="android">안드로이드 Chrome</option>
+          <option value="desktop">컴퓨터 · 알림 지원 브라우저</option>
+          <option value="blocked">알림 권한이 차단된 환경</option>
+          <option value="unsupported">알림을 지원하지 않는 브라우저</option>
+        </select>
+      </details>
+      <p>시안에서 설정과 시험 발송 동작을 확인할 수 있습니다.</p>
     </div>
   </div>
 </PageLayout>
@@ -52,13 +69,46 @@ const options = [
   const device = document.querySelector<HTMLInputElement>('#device-notifications');
   const types = document.querySelector<HTMLFieldSetElement>('#notification-types');
   const send = document.querySelector<HTMLButtonElement>('#test-notification');
+  const availability = document.getElementById('notification-availability');
+  const message = document.getElementById('notification-message');
+  const installGuide = document.getElementById('notification-install-guide');
+  const environment = document.querySelector<HTMLSelectElement>('#notification-environment');
 
-  if (device && types && send) {
+  const blockers = new Map([
+    ['iphone-browser', '아이폰에서는 홈 화면에 추가한 뒤, 퍼즐 아이콘으로 열어야 알림을 켤 수 있습니다.'],
+    ['blocked', '알림이 차단되어 있습니다. 브라우저의 사이트 설정이나 기기의 알림 설정에서 보드카 퍼즐의 알림을 허용해 주세요.'],
+    ['unsupported', '이 브라우저에서는 알림을 사용할 수 없습니다. 알림을 지원하는 브라우저에서 다시 열어 주세요.'],
+  ]);
+
+  function currentEnvironment() {
+    const appleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const standalone = ('standalone' in navigator && navigator.standalone === true) ||
+      matchMedia('(display-mode: standalone)').matches;
+    if (appleMobile && !standalone) return 'iphone-browser';
+    if (!(window.isSecureContext && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window)) {
+      return 'unsupported';
+    }
+    return Notification.permission === 'denied' ? 'blocked' : 'available';
+  }
+
+  if (device && types && send && availability && message && installGuide && environment) {
     const updatePreview = () => {
+      const mode = environment.value || currentEnvironment();
+      const blocker = device.checked ? blockers.get(mode) : undefined;
+      if (blocker) device.checked = false;
+
       types.disabled = send.disabled = !device.checked;
+      availability.hidden = !blocker;
+      installGuide.hidden = !blocker || mode !== 'iphone-browser';
+      message.textContent = blocker ?? '';
     };
 
     device.addEventListener('change', updatePreview);
+    environment.addEventListener('change', () => {
+      device.checked = false;
+      updatePreview();
+    });
     send.addEventListener('click', () => window.showToast('보드카 퍼즐 시험 알림 미리보기입니다.'));
     updatePreview();
   }
@@ -78,6 +128,14 @@ const options = [
   .setting-name, .setting-detail { display: block; line-height: 1.6; }
   .setting-name { color: #333; font-size: .86rem; }
   .setting-detail { margin-top: 4px; color: #777; font-size: .75rem; }
+  .availability {
+    padding: 10px 0;
+    border-bottom: 1px solid #e8e5df;
+    color: #555;
+    font-size: .8rem;
+    line-height: 1.7;
+  }
+  .availability a:not([hidden]) { display: inline-block; margin-top: 6px; }
   fieldset { min-width: 0; margin: 28px 0 0; border: 0; }
   legend { padding: 0 0 6px; color: #555; font-size: .85rem; font-weight: 500; }
   .timezone { margin-top: 8px; color: #777; font-size: .72rem; }
@@ -115,4 +173,7 @@ const options = [
     font-size: .72rem;
     line-height: 1.6;
   }
+  .environment-preview summary { cursor: pointer; }
+  .environment-preview label { display: block; margin: 6px 0 4px; }
+  .environment-preview select { max-width: 100%; padding: 5px; font: inherit; color: #555; }
 </style>
