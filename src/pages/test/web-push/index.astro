@@ -1,14 +1,14 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 ---
-<AdminLayout title="알림 시험 발송" subtitle="현재 기기에서만 푸시 알림을 받습니다">
+<AdminLayout title="알림 시험 발송" subtitle="알림을 켠 모든 앱에 시험 알림을 보냅니다.">
   <Fragment slot="head">
     <link rel="manifest" href="/test/web-push/manifest.webmanifest?v=2" />
     <link rel="apple-touch-icon" sizes="180x180" href="/test/web-push/icon-180.png" />
   </Fragment>
   <div class="actions">
     <button id="pushSubscribe" class="account-button" type="button" hidden>이 기기에서 알림 받기</button>
-    <button id="pushSend" class="account-button" type="button" hidden>이 기기로 시험 발송</button>
+    <button id="pushSend" class="account-button" type="button" hidden>전체 시험 발송</button>
     <button id="pushUnsubscribe" class="admin-quiet-action" type="button" hidden>구독 해제</button>
   </div>
   <p id="pushStatus" class="admin-status" role="status">알림을 준비하는 중…</p>

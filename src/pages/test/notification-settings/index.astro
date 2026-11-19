@@ -37,8 +37,11 @@ const previewPath = '/test/notification-settings/';
         </div>
         <input id="device-notifications" class="switch" type="checkbox" role="switch" aria-describedby="notification-message" />
       </div>
-      <div class="setting-row">
-        <p class="setting-name">알림 테스트</p>
+      <div id="test-notification-row" class="setting-row" hidden>
+        <div>
+          <p class="setting-name">알림 테스트</p>
+          <p class="setting-detail">등록된 앱 전체에 보냅니다.</p>
+        </div>
         <button id="test-notification" class="account-button" type="button" disabled>발송</button>
       </div>
     </section>
@@ -81,11 +84,12 @@ const previewPath = '/test/notification-settings/';
 </PageLayout>
 
 <script>
-  import { invokePushTest, preparePushTest } from '../../../lib/push-test.js';
+  import { broadcastPushTest, invokePushTest, preparePushTest } from '../../../lib/push-test.js';
 
   const device = document.querySelector<HTMLInputElement>('#device-notifications');
   const types = document.querySelector<HTMLFieldSetElement>('#notification-types');
   const send = document.querySelector<HTMLButtonElement>('#test-notification');
+  const testRow = document.getElementById('test-notification-row');
   const message = document.getElementById('notification-message');
   const installGuide = document.getElementById('notification-install-guide');
   const login = document.getElementById('notification-test-login');
@@ -103,16 +107,21 @@ const previewPath = '/test/notification-settings/';
     return Notification.permission === 'denied' ? 'blocked' : 'available';
   }
 
-  if (device && types && send && message && installGuide && login && environment) {
+  if (device && types && send && testRow && message && installGuide && login && environment) {
     let push: Awaited<ReturnType<typeof preparePushTest>> | undefined;
     let subscription: PushSubscription | null = null;
     let needsLogin = false;
+    let canBroadcast = false;
+    let initializing = true;
     let busy = false;
     let setupMessage = '알림을 준비하고 있습니다. 잠시 후 다시 시도해 주세요.';
 
     const updateControls = () => {
-      device.disabled = environment.disabled = busy;
-      types.disabled = send.disabled = busy || !device.checked;
+      environment.disabled = busy;
+      device.disabled = busy || (initializing && !environment.value);
+      types.disabled = busy || !device.checked;
+      testRow.hidden = !environment.value && !canBroadcast;
+      send.disabled = busy || (environment.value ? !device.checked : initializing || !canBroadcast);
       send.textContent = environment.value ? '발송 미리보기' : '발송';
     };
     const showNotice = (text = '', mode = '') => {
@@ -124,25 +133,36 @@ const previewPath = '/test/notification-settings/';
 
     const initialize = async () => {
       await window.puzzleAuthReady;
-      if (currentEnvironment() !== 'available') return;
       needsLogin = !window.puzzleAccount.user;
       if (needsLogin) {
         setupMessage = '알림을 설정하려면 로그인해주세요.';
         return;
       }
+      void window.puzzleAccount.client.rpc('is_puzzle_admin').then(({ data }) => {
+        canBroadcast = data === true;
+        updateControls();
+      });
+      if (currentEnvironment() !== 'available') return;
       try {
-        const ready = await preparePushTest('/test/notification-settings/');
-        subscription = await ready.registration.pushManager.getSubscription();
-        push = ready;
-        if (!environment.value) {
-          device.checked = !!subscription;
-          showNotice();
-          updateControls();
+        push = await preparePushTest('/test/notification-settings/');
+        subscription = await push.registration.pushManager.getSubscription();
+      } catch {
+        push = undefined;
+        setupMessage = '알림을 준비하지 못했습니다. 새로고침 후 다시 시도해 주세요.';
+        return;
+      }
+      let restored = true;
+      if (subscription) {
+        try {
+          await invokePushTest('register', subscription);
+        } catch {
+          restored = false;
         }
-      } catch (error) {
-        setupMessage = error instanceof Error && error.message === 'ADMIN_REQUIRED'
-          ? '시험 발송은 관리자 계정에서 사용할 수 있습니다.'
-          : '알림을 준비하지 못했습니다. 새로고침 후 다시 시도해 주세요.';
+      }
+      if (!environment.value) {
+        device.checked = !!subscription;
+        showNotice(restored ? '' : '알림 구독을 저장하지 못했습니다. 새로고침 후 다시 시도해 주세요.');
+        updateControls();
       }
     };
 
@@ -173,10 +193,15 @@ const previewPath = '/test/notification-settings/';
           subscription = await push.registration.pushManager.subscribe({
             userVisibleOnly: true, applicationServerKey: push.applicationServerKey,
           });
+          await invokePushTest('register', subscription).catch(() => {
+            showNotice('알림 구독을 저장하지 못했습니다. 새로고침 후 다시 시도해 주세요.');
+          });
         } else {
-          await subscription?.unsubscribe();
+          const previous = subscription;
+          await previous?.unsubscribe();
           subscription = await push.registration.pushManager.getSubscription();
           if (subscription) showNotice('알림을 끄지 못했습니다. 다시 시도해 주세요.');
+          else if (previous) await invokePushTest('unregister', previous);
         }
       } catch {
         showNotice(blockerFor(currentEnvironment()) ?? '알림 설정을 변경하지 못했습니다. 다시 시도해 주세요.');
@@ -196,23 +221,23 @@ const previewPath = '/test/notification-settings/';
         window.showToast('테스트 알림 미리보기입니다.');
         return;
       }
-      if (!subscription) return;
+      if (!canBroadcast) return;
       busy = true;
       updateControls();
       try {
-        await invokePushTest('send', subscription);
-        window.showToast('시험 알림을 접수했습니다. 이 기기의 알림을 확인해 주세요.');
-      } catch (error) {
-        window.showToast(error instanceof Error && error.message === 'SUBSCRIPTION_EXPIRED'
-          ? '구독이 만료되었습니다. 알림을 껐다가 다시 켜 주세요.'
-          : '시험 발송에 실패했습니다. 다시 시도해 주세요.');
+        window.showToast(await broadcastPushTest());
+      } catch {
+        window.showToast('전체 시험 발송을 완료하지 못했습니다.');
       } finally {
         busy = false;
         updateControls();
       }
     });
     updateControls();
-    void initialize();
+    void initialize().finally(() => {
+      initializing = false;
+      updateControls();
+    });
   }
 </script>
 
@@ -228,6 +253,7 @@ const previewPath = '/test/notification-settings/';
     border-bottom: 1px solid #e8e5df;
   }
   .setting-name, .setting-detail { display: block; line-height: 1.6; }
+  .setting-row[hidden] { display: none; }
   .setting-name { color: #333; font-size: .86rem; }
   .setting-detail { margin-top: 4px; color: #777; font-size: .75rem; }
   .device-toggle { align-items: flex-start; }
