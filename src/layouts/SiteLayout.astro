@@ -29,11 +29,12 @@ window.puzzleAuthReady = new Promise(resolve => { window.resolvePuzzleAuth = res
 <slot name="head" />
 </head>
 <body class:list={{ legacy, home, unified }}>
+<PullToRefresh />
 <Header />
 <div id="recentBanner" class="recent-banner" data-static={bannerText ? '' : undefined} aria-live={bannerText ? undefined : 'polite'}>
   {bannerText && <span class="recent-banner-text">{bannerText}</span>}
 </div>
-<slot /><Toast /><PullToRefresh /><script is:inline>
+<slot /><Toast /><script is:inline>
 initHeader();
 document.addEventListener('pointerdown', event => {
   if (event.target.closest('button[id$="Notes"]')) event.preventDefault();

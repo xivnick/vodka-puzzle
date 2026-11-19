@@ -1,4 +1,4 @@
-<div id="pull-to-refresh" aria-hidden="true" hidden>
+<div id="pull-to-refresh" data-restore-key="vodka-puzzle:pull-refresh" aria-hidden="true" hidden>
   <span class="refresh-wheel">
     {Array.from({ length: 8 }, (_, index) => (
       <span class="refresh-spoke" style={`--spoke: ${index}`}></span>
@@ -6,6 +6,29 @@
   </span>
 </div>
 <span id="pull-to-refresh-status" role="status"></span>
+
+<script is:inline>
+  (() => {
+    if (!navigator.standalone && !matchMedia('(display-mode: standalone)').matches) return;
+    const indicator = document.getElementById('pull-to-refresh');
+    const key = indicator.dataset.restoreKey;
+    try {
+      const pending = JSON.parse(sessionStorage.getItem(key));
+      if (!pending) return;
+      sessionStorage.removeItem(key);
+      if (performance.getEntriesByType('navigation')[0]?.type !== 'reload' ||
+          pending.url !== location.href || Date.now() > pending.expiresAt) return;
+      const root = document.documentElement;
+      root.setAttribute('data-pull-resuming', '');
+      indicator.hidden = false;
+      document.addEventListener('DOMContentLoaded', () => {
+        requestAnimationFrame(() => requestAnimationFrame(() => root.removeAttribute('data-pull-resuming')));
+      }, { once: true });
+    } catch {
+      // The refresh still works when session storage is unavailable.
+    }
+  })();
+</script>
 
 <script>
   const indicator = document.getElementById('pull-to-refresh');
@@ -17,9 +40,11 @@
     const root = document.documentElement;
     const threshold = 80;
     const slop = 12;
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const passive = { passive: true };
     let start: Touch | undefined;
     let refreshing = false;
+    let reloadTimer = 0;
 
     const atTop = () => window.scrollY <= 0 && (window.visualViewport?.scale ?? 1) === 1;
     const showProgress = (distance: number) => {
@@ -52,7 +77,7 @@
 
     document.addEventListener('touchstart', event => {
       reset();
-      if (refreshing || event.touches.length !== 1 || !atTop()) return;
+      if (refreshing || root.hasAttribute('data-pull-resuming') || event.touches.length !== 1 || !atTop()) return;
       const target = event.target;
       if (!(target instanceof Element) ||
           target.closest('input, textarea, select, [contenteditable], dialog, [role="dialog"]') ||
@@ -89,13 +114,28 @@
       }
       refreshing = true;
       reset();
-      showProgress(threshold);
+      root.setAttribute('data-pull-open', '');
+      root.style.removeProperty('--app-pull-offset');
+      indicator.hidden = false;
       indicator.dataset.refreshing = '';
       status.textContent = '새로고침 중';
-      requestAnimationFrame(() => requestAnimationFrame(() => window.location.reload()));
+      reloadTimer = window.setTimeout(() => {
+        try {
+          if (!reducedMotion && indicator.dataset.restoreKey) {
+            sessionStorage.setItem(indicator.dataset.restoreKey, JSON.stringify({
+              url: location.href,
+              expiresAt: Date.now() + 30000,
+            }));
+          }
+        } catch {
+          // The refresh still works when session storage is unavailable.
+        }
+        window.location.reload();
+      }, reducedMotion ? 0 : 280);
     }, passive);
 
     document.addEventListener('touchcancel', reset, passive);
+    window.addEventListener('pagehide', () => clearTimeout(reloadTimer));
     window.addEventListener('pageshow', event => {
       if (!event.persisted) return;
       refreshing = false;
@@ -108,24 +148,26 @@
 
 <style>
   :global(html.app-pull-to-refresh) { overscroll-behavior-y: none; }
-  :global(html.app-pull-to-refresh > body) { transition: translate 180ms ease-out; }
-  :global(html.app-pull-to-refresh[data-pull-open] > body) { translate: 0 var(--app-pull-offset); }
-  :global(html.app-pull-to-refresh[data-pull-dragging] > body) { transition-duration: 0s; }
+  :global(html.app-pull-to-refresh > body) { transition: translate 220ms cubic-bezier(.2, .65, .32, 1); }
+  :global(html[data-pull-open]), :global(html[data-pull-resuming]) { --pull-height: var(--app-pull-offset, 36px); }
+  :global(html[data-pull-open] > body), :global(html[data-pull-resuming] > body) { translate: 0 var(--pull-height); }
+  :global(html[data-pull-dragging] > body), :global(html[data-pull-resuming] > body) { transition-duration: 0s; }
   #pull-to-refresh {
     position: absolute;
     bottom: 100%;
     inset-inline: 0;
-    height: var(--app-pull-offset, 0px);
+    height: var(--pull-height, 0px);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     background: #f6f6f6;
     pointer-events: none;
-    transition: height 180ms ease-out;
+    transition: height 220ms cubic-bezier(.2, .65, .32, 1);
   }
   #pull-to-refresh[hidden] { display: none; }
-  :global(html[data-pull-dragging]) #pull-to-refresh { transition-duration: 0s; }
+  :global(html[data-pull-dragging]) #pull-to-refresh,
+  :global(html[data-pull-resuming]) #pull-to-refresh { transition-duration: 0s; }
   .refresh-wheel { display: block; position: relative; width: 22px; height: 22px; }
   .refresh-spoke {
     position: absolute;
@@ -143,7 +185,8 @@
     border-radius: 2px;
     background: #777;
   }
-  #pull-to-refresh[data-refreshing] .refresh-spoke { opacity: calc(.9 - var(--spoke) * .1); }
+  #pull-to-refresh[data-refreshing] .refresh-spoke,
+  :global(html[data-pull-resuming]) .refresh-spoke { opacity: calc(.9 - var(--spoke) * .1); }
   #pull-to-refresh[data-refreshing] .refresh-wheel { animation: refresh-spin .85s steps(8) infinite; }
   @keyframes refresh-spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) {
