@@ -44,7 +44,7 @@ const { previewRaidDates = false } = Astro.props;
     <div id="dailyRankPanel" hidden><div id="dailyRank" aria-live="polite"><div class="lb-loading">불러오는 중...</div></div></div>
   </div>
 </div>
-<ArchiveLink slot="footer" />
+<ArchiveLink slot="footer" showHomeScreenGuide={Astro.url.pathname === '/'} />
 <script is:inline src="/js/home.js?v=24"></script>
 </PageLayout>
 
