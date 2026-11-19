@@ -38,13 +38,7 @@ const previewPath = '/test/notification-settings/';
         <input id="device-notifications" class="switch" type="checkbox" role="switch" aria-describedby="notification-message" />
       </div>
       <div class="setting-row">
-        <div>
-          <label class="setting-name" for="test-notification-message">알림 테스트</label>
-          <select id="test-notification-message" class="test-message-select" disabled>
-            <option value="send">테스트 알림</option>
-            <option value="send-daily-reminder">데일리 리마인더</option>
-          </select>
-        </div>
+        <p class="setting-name">알림 테스트</p>
         <button id="test-notification" class="account-button" type="button" disabled>발송</button>
       </div>
     </section>
@@ -92,7 +86,6 @@ const previewPath = '/test/notification-settings/';
   const device = document.querySelector<HTMLInputElement>('#device-notifications');
   const types = document.querySelector<HTMLFieldSetElement>('#notification-types');
   const send = document.querySelector<HTMLButtonElement>('#test-notification');
-  const testMessage = document.querySelector<HTMLSelectElement>('#test-notification-message');
   const message = document.getElementById('notification-message');
   const installGuide = document.getElementById('notification-install-guide');
   const login = document.getElementById('notification-test-login');
@@ -110,7 +103,7 @@ const previewPath = '/test/notification-settings/';
     return Notification.permission === 'denied' ? 'blocked' : 'available';
   }
 
-  if (device && types && send && testMessage && message && installGuide && login && environment) {
+  if (device && types && send && message && installGuide && login && environment) {
     let push: Awaited<ReturnType<typeof preparePushTest>> | undefined;
     let subscription: PushSubscription | null = null;
     let needsLogin = false;
@@ -119,7 +112,7 @@ const previewPath = '/test/notification-settings/';
 
     const updateControls = () => {
       device.disabled = environment.disabled = busy;
-      types.disabled = send.disabled = testMessage.disabled = busy || !device.checked;
+      types.disabled = send.disabled = busy || !device.checked;
       send.textContent = environment.value ? '발송 미리보기' : '발송';
     };
     const showNotice = (text = '', mode = '') => {
@@ -200,15 +193,14 @@ const previewPath = '/test/notification-settings/';
     });
     send.addEventListener('click', async () => {
       if (environment.value) {
-        const label = testMessage.selectedOptions[0].textContent;
-        window.showToast(`${label} 미리보기입니다.`);
+        window.showToast('테스트 알림 미리보기입니다.');
         return;
       }
       if (!subscription) return;
       busy = true;
       updateControls();
       try {
-        await invokePushTest(testMessage.value, subscription);
+        await invokePushTest('send', subscription);
         window.showToast('시험 알림을 접수했습니다. 이 기기의 알림을 확인해 주세요.');
       } catch (error) {
         window.showToast(error instanceof Error && error.message === 'SUBSCRIPTION_EXPIRED'
@@ -245,7 +237,6 @@ const previewPath = '/test/notification-settings/';
   legend { padding: 0 0 6px; color: #555; font-size: .85rem; font-weight: 500; }
   .timezone { margin-top: 8px; color: #777; font-size: .72rem; }
   .account-button { flex-shrink: 0; min-height: 36px; padding: 0 10px; font-size: .75rem; }
-  .test-message-select { max-width: 100%; margin-top: 4px; padding: 5px; font: inherit; font-size: .75rem; color: #555; }
   .switch {
     appearance: none;
     flex: 0 0 36px;
