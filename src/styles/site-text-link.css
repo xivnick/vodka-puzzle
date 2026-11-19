@@ -1,0 +1,9 @@
+.site-text-link {
+  color: #888;
+  font: 400 12px 'Noto Sans KR', sans-serif;
+  text-decoration: none;
+}
+
+.site-text-link:hover {
+  text-decoration: underline;
+}

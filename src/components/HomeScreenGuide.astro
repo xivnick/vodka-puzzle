@@ -1,6 +1,7 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
 import '../styles/policies.css';
+import '../styles/site-text-link.css';
 const { preview = false } = Astro.props;
 ---
 <PageLayout title="홈 화면에 추가하기" subtitle="홈 화면에서 보드카 퍼즐을 바로 열 수 있습니다.">
@@ -23,7 +24,7 @@ const { preview = false } = Astro.props;
       <li><strong>설치</strong>를 누릅니다. <strong>바로가기 만들기</strong>가 보이면 선택한 뒤 <strong>추가</strong>를 누르세요.</li>
     </ol>
 
-    <p class="copy-action"><button id="copyPuzzleLink" type="button">보드카 퍼즐 링크 복사</button></p>
+    <p class="copy-action"><button id="copyPuzzleLink" class="site-text-link" type="button">보드카 퍼즐 링크 복사</button></p>
   </article>
 </PageLayout>
 
@@ -49,8 +50,5 @@ const { preview = false } = Astro.props;
     border: 0;
     padding: 0;
     background: none;
-    color: #4a6fa5;
-    font: inherit;
-    text-decoration: underline;
   }
 </style>
