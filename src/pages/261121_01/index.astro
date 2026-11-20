@@ -1,0 +1,127 @@
+---
+import PuzzleLayout from '../../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from '../../components/PuzzleCompletion.astro';
+import { size, words, dots } from '../../lib/scrabble-kropki.js';
+
+const puzzleId = '261121_01';
+const title = '261121 스크래블(크롶키)';
+const subtitle = '흰 점과 검은 점의 단서에 맞춰 주어진 단어를 가로세로로 배치하세요';
+---
+<PuzzleLayout {title} {puzzleId} {subtitle} description={subtitle}>
+  <div slot="rules" class="scrabble-rules">
+    <p>주어진 단어가 모두 왼쪽에서 오른쪽으로 또는 위에서 아래로 정확히 한 번씩 나타나도록 알파벳을 배치하세요.</p>
+    <ul>
+      <li>각 칸에는 글자를 최대 한 개 넣을 수 있습니다.</li>
+      <li>주어진 단어 외에 다른 단어를 만들 수 없습니다. 상하좌우로 이웃한 두 글자는 반드시 주어진 단어 하나에 연속해서 들어가야 합니다.</li>
+      <li>각 단어의 앞뒤에는 빈칸이나 격자의 경계가 있어야 합니다.</li>
+      <li>모든 글자 칸은 상하좌우로 이어져 하나의 그룹을 이루어야 합니다.</li>
+    </ul>
+    <p>점 양쪽 칸에는 같은 단어의 연속된 두 글자가 들어갑니다. 점을 기준으로 단어를 두 부분으로 나눕니다.</p>
+    <ul>
+      <li>흰 점은 두 부분의 길이가 한 글자 차이 난다는 뜻입니다.</li>
+      <li>검은 점은 한 부분의 길이가 다른 부분의 두 배라는 뜻입니다.</li>
+      <li>점이 없는 곳에도 두 관계가 성립할 수 있습니다. 세 글자 단어에는 흰 점과 검은 점 모두 가능합니다.</li>
+    </ul>
+  </div>
+  <div slot="controls">칸을 누른 뒤 알파벳 버튼으로 글자를 넣으세요. 다른 칸을 눌러 이동하고, 지우기로 선택한 칸의 글자를 지우세요.</div>
+  <section id="scrabbleGame" data-puzzle-id={puzzleId} style={`--size:${size}`} aria-label={title}>
+    <ul class="word-bank" role="list" aria-label="주어진 단어">
+      {words.map(word => <li data-word={word}>{word}</li>)}
+    </ul>
+    <div class="board-wrap">
+      <div id="scrabbleBoard" role="group" aria-label={`${size}행 ${size}열 격자`}>
+        {Array.from({ length: size ** 2 }, (_, index) => <button type="button" class="cell"
+          tabindex={index === 0 ? 0 : -1} aria-label={`${Math.floor(index / size) + 1}행 ${index % size + 1}열, 빈칸`} />)}
+      </div>
+      {dots.map(({ row, column, direction, color }) => <span class:list={['dot', color]}
+        style={`left:${(column - (direction === 'down' ? .5 : 0)) / size * 100}%;top:${(row - (direction === 'across' ? .5 : 0)) / size * 100}%`}
+        role="img" aria-label={`${row}행 ${column}열과 ${row + Number(direction === 'down')}행 ${column + Number(direction === 'across')}열 사이 ${color === 'white' ? '흰 점' : '검은 점'}`} />)}
+    </div>
+    <div class="letter-pad" role="group" aria-label="알파벳 입력">
+      {['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].map(row => <div class="key-row">
+        {[...row].map(letter => <button type="button" data-letter={letter}>{letter}</button>)}
+      </div>)}
+    </div>
+    <div class="bottom-buttons"><button id="scrabbleErase" type="button">지우기</button><button id="scrabbleReset" type="button" class="danger">초기화</button></div>
+  </section>
+  <PuzzleCompletion slot="completion" id="scrabbleComplete" />
+</PuzzleLayout>
+
+<script>import '../../scripts/scrabble-kropki.js';</script>
+
+<style>
+  .scrabble-rules p { margin: 0; }
+  .scrabble-rules ul { margin: 4px 0 0; padding-left: 20px; }
+  .scrabble-rules ul + p { margin-top: 12px; }
+  #scrabbleGame { max-width: 480px; margin-inline: auto; }
+  .word-bank {
+    list-style: none;
+    display: grid;
+    grid-auto-flow: column;
+    grid-template: repeat(6, auto) / repeat(3, minmax(0, 1fr));
+    gap: 4px 8px;
+    margin: 0 0 16px;
+    padding: 0;
+    font-size: clamp(12px, 3.5vw, 16px);
+    font-weight: 600;
+  }
+  .word-bank .found { color: var(--puzzle-clue-satisfied); text-decoration: line-through; }
+  .board-wrap { position: relative; border: 2px solid #444; background: white; }
+  #scrabbleBoard { display: grid; grid-template-columns: repeat(var(--size), minmax(0, 1fr)); }
+  .cell {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-right: 1px solid #999;
+    border-bottom: 1px solid #999;
+    border-radius: 0;
+    background: white;
+    color: #4a6fa5;
+    font-family: inherit;
+    font-size: clamp(14px, 4.7vw, 23px);
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cell:nth-child(11n) { border-right: 0; }
+  .cell:nth-last-child(-n+11) { border-bottom: 0; }
+  .cell.selected { background: #e8edf5; }
+  .dot {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: calc(100% / var(--size) * .27);
+    aspect-ratio: 1;
+    box-sizing: border-box;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+    background: white;
+    color: #222;
+    pointer-events: none;
+  }
+  .dot.black { background: currentColor; }
+  .dot.satisfied { color: var(--puzzle-clue-satisfied); }
+  .letter-pad { display: grid; gap: 6px; margin-top: 14px; }
+  .key-row { display: flex; justify-content: center; gap: 4px; }
+  .key-row button {
+    flex: 0 0 calc((100% - 36px) / 10);
+    min-width: 0;
+    min-height: 42px;
+    padding: 0;
+    border: 1px solid #d6d4cd;
+    border-radius: 3px;
+    background: #faf8f4;
+    color: #555;
+    font: inherit;
+  }
+  .bottom-buttons { gap: 8px; }
+  .bottom-buttons button { flex: 1; }
+  #scrabbleGame button:focus { outline: none; }
+  #scrabbleGame button:focus-visible { background: #e8edf5; }
+</style>
