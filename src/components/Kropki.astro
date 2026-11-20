@@ -8,6 +8,7 @@ const puzzle = (outside ? outsideKropkiPuzzles : kropkiPuzzles)[number - 1];
 const puzzleId = puzzle.id;
 const title = outside ? `261120 크롶키(바깥) ${number}` : `261117 크롶키 ${number}`;
 const dotLabel = dot => dot === 'W' ? '흰 점' : '검은 점';
+const maxClues = axis => Math.max(...puzzle[`${axis}Clues`].map(line => line.length));
 ---
 <PuzzleLayout {title} {puzzleId}
   subtitle={outside ? "각 행과 열의 바깥 점을 순서대로 읽고 1부터 5까지 채우세요" : "흰 점은 차이가 1, 검은 점은 두 배가 되도록 숫자를 채우세요"}
@@ -24,7 +25,7 @@ const dotLabel = dot => dot === 'W' ? '흰 점' : '검은 점';
   <div slot="controls">칸을 누른 뒤 숫자 버튼으로 입력하세요. 메모하기 버튼이나 M으로 메모 입력을 켜고 끄세요. 다른 칸을 눌러 이동하고 지우기로 숫자와 메모를 지우세요.</div>
   <section id="kropkiGame" class:list={[{ "outside-game": outside }]} data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} style={`--size:${puzzle.size}`} aria-label={title}>
     <div class="board-tools"><button id="kropkiNotes" type="button" aria-pressed="false">메모하기</button></div>
-    <div class:list={['board-area', { outside }]}>
+    <div class:list={['board-area', { outside }]} style={outside ? `--row-clues:${maxClues('row')};--column-clues:${maxClues('column')}` : undefined}>
       {outside && ['column', 'row'].map(axis => <div class={`${axis}-clues`}>
         {puzzle[`${axis}Clues`].map((line, index) => <div class="clue-line" role="img" aria-label={`${index + 1}${axis === 'row' ? '행' : '열'}: ${[...line].map(dotLabel).join(', ')}`}>
           {[...line].map(dot => <span class:list={['clue-dot', { black: dot === 'B' }]} />)}
@@ -54,14 +55,32 @@ const dotLabel = dot => dot === 'W' ? '흰 점' : '검은 점';
   #kropkiNotes[aria-pressed=true]{color:#4a6fa5;border-color:#4a6fa5;font-weight:700}
   .outside-game{
     container-type:inline-size;
-    --dot:clamp(9px,2.8cqw,14px);
-    --dot-gap:clamp(2px,.8cqw,4px);
-    --clue-gutter:calc(4 * var(--dot) + 5 * var(--dot-gap));
+    --dot:3.6cqw;
+    --dot-gap:2cqw;
   }
-  .outside{display:grid;grid-template-columns:var(--clue-gutter) minmax(0,1fr) var(--clue-gutter);row-gap:calc(2 * var(--dot-gap))}
-  .outside-game .board-tools,.outside-game .bottom-buttons,.outside-game :global(.number-pad){margin-inline:var(--clue-gutter);width:auto}
-  .column-clues{grid-area:1 / 2;display:grid;grid-template-columns:repeat(5,1fr);padding-inline:2px;min-height:calc(3 * var(--dot) + 2 * var(--dot-gap))}
-  .row-clues{grid-area:2 / 1;display:grid;grid-template-rows:repeat(5,1fr);padding-block:2px;padding-right:calc(2 * var(--dot-gap))}
+  .outside{
+    --left-clues-width:calc(var(--row-clues) * (var(--dot) + var(--dot-gap)) + 5px);
+    --top-clues-height:calc(var(--column-clues) * (var(--dot) + var(--dot-gap)) + 5px);
+    display:grid;
+    grid-template-columns:var(--left-clues-width) minmax(0,1fr);
+    grid-template-rows:var(--top-clues-height) auto;
+  }
+  .column-clues,.row-clues{
+    display:grid;
+    position:relative;
+  }
+  .column-clues{
+    grid-area:1 / 2;
+    grid-template-columns:repeat(5,1fr);
+    padding:0 2px calc(var(--dot-gap) + 5px);
+    background:linear-gradient(90deg,#444 2px,transparent 2px calc(100% - 2px),#444 calc(100% - 2px));
+  }
+  .row-clues{
+    grid-area:2 / 1;
+    grid-template-rows:repeat(5,1fr);
+    padding:2px calc(var(--dot-gap) + 5px) 2px 0;
+    background:linear-gradient(#444 2px,transparent 2px calc(100% - 2px),#444 calc(100% - 2px));
+  }
   .outside .board-wrap{grid-area:2 / 2}
   .outside .kropki-cell:nth-child(-n+4)::before,
   .outside .kropki-cell:nth-child(5n+1):not(:nth-last-child(-n+5))::after{
@@ -71,15 +90,15 @@ const dotLabel = dot => dot === 'W' ? '흰 점' : '검은 점';
     pointer-events:none;
   }
   .outside .kropki-cell:nth-child(-n+4)::before{
-    top:calc(-2px - 2 * var(--dot-gap));
+    top:calc(-2px - var(--top-clues-height));
     right:-1px;
     width:1px;
-    height:calc(2px + 2 * var(--dot-gap));
+    height:calc(2px + var(--top-clues-height));
   }
   .outside .kropki-cell:nth-child(5n+1):not(:nth-last-child(-n+5))::after{
-    left:calc(-2px - 2 * var(--dot-gap));
+    left:calc(-2px - var(--left-clues-width));
     bottom:-1px;
-    width:calc(2px + 2 * var(--dot-gap));
+    width:calc(2px + var(--left-clues-width));
     height:1px;
   }
   .clue-line{display:flex;justify-content:flex-end;align-items:center;gap:var(--dot-gap)}
