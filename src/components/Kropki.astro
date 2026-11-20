@@ -56,10 +56,11 @@ const dotLabel = dot => dot === 'W' ? '흰 점' : '검은 점';
     container-type:inline-size;
     --dot:clamp(9px,2.8cqw,14px);
     --dot-gap:clamp(2px,.8cqw,4px);
-    --gutter:calc(4 * var(--dot) + 5 * var(--dot-gap));
+    --clue-gutter:calc(4 * var(--dot) + 5 * var(--dot-gap));
+    --opposite-gutter:calc(.6 * var(--clue-gutter));
   }
-  .outside{display:grid;grid-template-columns:var(--gutter) minmax(0,1fr) var(--gutter);row-gap:calc(2 * var(--dot-gap))}
-  .outside-game .board-tools,.outside-game .bottom-buttons,.outside-game :global(.number-pad){margin-inline:var(--gutter);width:auto}
+  .outside{display:grid;grid-template-columns:var(--clue-gutter) minmax(0,1fr) var(--opposite-gutter);row-gap:calc(2 * var(--dot-gap))}
+  .outside-game .board-tools,.outside-game .bottom-buttons,.outside-game :global(.number-pad){margin-inline:var(--clue-gutter) var(--opposite-gutter);width:auto}
   .column-clues{grid-area:1 / 2;display:grid;grid-template-columns:repeat(5,1fr);padding-inline:2px;min-height:calc(3 * var(--dot) + 2 * var(--dot-gap))}
   .row-clues{grid-area:2 / 1;display:grid;grid-template-rows:repeat(5,1fr);padding-block:2px;padding-right:calc(2 * var(--dot-gap))}
   .outside .board-wrap{grid-area:2 / 2}
