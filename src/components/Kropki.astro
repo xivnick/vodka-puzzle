@@ -105,7 +105,7 @@ const maxClues = axis => Math.max(...puzzle[`${axis}Clues`].map(line => line.len
   .column-clues .clue-line{flex-direction:column}
   .clue-dot{width:var(--dot);height:var(--dot);flex:none;box-sizing:border-box;border:1.5px solid #222;border-radius:50%;background:white}
   .clue-dot.black{background:#222}
-  .clue-line.satisfied{color:#66845b}
+  .clue-line.satisfied{color:var(--puzzle-clue-satisfied)}
   .clue-line.satisfied .clue-dot{border-color:currentColor}
   .clue-line.satisfied .clue-dot.black{background:currentColor}
   .board-wrap{position:relative;border:2px solid #444;background:#fff;user-select:none;-webkit-user-select:none}
