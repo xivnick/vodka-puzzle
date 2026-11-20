@@ -27,7 +27,7 @@ const maxClues = axis => Math.max(...puzzle[`${axis}Clues`].map(line => line.len
     <div class="board-tools"><button id="kropkiNotes" type="button" aria-pressed="false">메모하기</button></div>
     <div class:list={['board-area', { outside }]} style={outside ? `--row-clues:${maxClues('row')};--column-clues:${maxClues('column')}` : undefined}>
       {outside && ['column', 'row'].map(axis => <div class={`${axis}-clues`}>
-        {puzzle[`${axis}Clues`].map((line, index) => <div class="clue-line" role="img" aria-label={`${index + 1}${axis === 'row' ? '행' : '열'}: ${[...line].map(dotLabel).join(', ')}`}>
+        {puzzle[`${axis}Clues`].map((line, index) => <div class="clue-line" data-clue-axis={axis} data-clue-index={index} role="img" aria-label={`${index + 1}${axis === 'row' ? '행' : '열'}: ${[...line].map(dotLabel).join(', ')}`}>
           {[...line].map(dot => <span class:list={['clue-dot', { black: dot === 'B' }]} />)}
         </div>)}
       </div>)}
@@ -102,6 +102,7 @@ const maxClues = axis => Math.max(...puzzle[`${axis}Clues`].map(line => line.len
     height:1px;
   }
   .clue-line{display:flex;justify-content:flex-end;align-items:center;gap:var(--dot-gap)}
+  .clue-line.satisfied{background:#e4f2e6}
   .column-clues .clue-line{flex-direction:column}
   .clue-dot{width:var(--dot);height:var(--dot);flex:none;box-sizing:border-box;border:1.5px solid #222;border-radius:50%;background:white}
   .clue-dot.black{background:#222}

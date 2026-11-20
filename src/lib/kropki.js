@@ -60,11 +60,16 @@ export function matchesKropkiDot(left, right, dot) {
 // Inspect player entries only; do not search for a solution.
 export function inspectKropki(puzzle, values) {
   const conflicts = new Set();
-  if (!parseKropkiState(puzzle, { version: 1, puzzleId: '', values }, '')) return { complete: false, conflicts };
+  const satisfied = { row: [], column: [] };
+  if (!parseKropkiState(puzzle, { version: 1, puzzleId: '', values }, '')) return { complete: false, conflicts, satisfied };
   const checkLine = (indexes, clues) => {
+    let hasDuplicates = false;
     for (const digit of puzzle.digits) {
       const matches = indexes.filter(index => values[index] === digit);
-      if (matches.length > 1) matches.forEach(index => conflicts.add(index));
+      if (matches.length > 1) {
+        hasDuplicates = true;
+        matches.forEach(index => conflicts.add(index));
+      }
     }
     if (clues === undefined || indexes.some(index => !values[index])) return;
     let nextDot = 0;
@@ -78,11 +83,15 @@ export function inspectKropki(puzzle, values) {
       }
       nextDot++;
     }
-    if (nextDot !== clues.length) indexes.forEach(index => conflicts.add(index));
+    if (nextDot !== clues.length) {
+      indexes.forEach(index => conflicts.add(index));
+      return;
+    }
+    return !hasDuplicates;
   };
   for (let line = 0; line < puzzle.size; line++) {
-    checkLine(Array.from({ length: puzzle.size }, (_, c) => line * puzzle.size + c), puzzle.rowClues?.[line]);
-    checkLine(Array.from({ length: puzzle.size }, (_, r) => r * puzzle.size + line), puzzle.columnClues?.[line]);
+    if (checkLine(Array.from({ length: puzzle.size }, (_, c) => line * puzzle.size + c), puzzle.rowClues?.[line])) satisfied.row.push(line);
+    if (checkLine(Array.from({ length: puzzle.size }, (_, r) => r * puzzle.size + line), puzzle.columnClues?.[line])) satisfied.column.push(line);
   }
   for (const { a, b, dot } of puzzle.rowClues ? [] : kropkiEdges(puzzle)) {
     if (!values[a] || !values[b]) continue;
@@ -90,5 +99,5 @@ export function inspectKropki(puzzle, values) {
       conflicts.add(a); conflicts.add(b);
     }
   }
-  return { complete: values.every(Boolean) && conflicts.size === 0, conflicts };
+  return { complete: values.every(Boolean) && conflicts.size === 0, conflicts, satisfied };
 }

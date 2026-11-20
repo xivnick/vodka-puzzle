@@ -6,6 +6,12 @@ const puzzle = JSON.parse(game.dataset.puzzle);
 const puzzleId = game.dataset.puzzleId;
 const cells = [...game.querySelectorAll('.kropki-cell')];
 const cellByIndex = new Map(cells.map(cell => [Number(cell.dataset.index), cell]));
+const clues = [...game.querySelectorAll('[data-clue-axis]')].map(element => ({
+  element,
+  axis: element.dataset.clueAxis,
+  index: Number(element.dataset.clueIndex),
+  label: element.getAttribute('aria-label'),
+}));
 const complete = document.getElementById('kropkiComplete');
 const status = document.getElementById('kropkiStatus');
 let values = Array(puzzle.size ** 2).fill(0);
@@ -19,8 +25,7 @@ function persist() {
   try { window.saveLocalState(puzzleId, state()); }
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
-function checkComplete() {
-  const solved = inspectKropki(puzzle, values).complete;
+function checkComplete(solved = inspectKropki(puzzle, values).complete) {
   complete.hidden = !solved;
   if (!solved) { completionRecorded = false; return; }
   status.textContent = '퍼즐을 완성했습니다!';
@@ -29,10 +34,15 @@ function checkComplete() {
     window.recordCompletion(puzzleId, state());
   }
 }
-window.checkComplete = checkComplete;
+window.checkComplete = () => checkComplete();
 
 function render() {
-  const { conflicts } = inspectKropki(puzzle, values);
+  const { complete: solved, conflicts, satisfied } = inspectKropki(puzzle, values);
+  for (const { element, axis, index, label } of clues) {
+    const matches = satisfied[axis].includes(index);
+    element.classList.toggle('satisfied', matches);
+    element.setAttribute('aria-label', matches ? `${label}, 조건 충족` : label);
+  }
   for (const [index, cell] of cellByIndex) {
     cell.replaceChildren();
     if (values[index]) cell.textContent = values[index];
@@ -52,7 +62,7 @@ function render() {
     cell.tabIndex = index === selected ? 0 : -1;
     cell.setAttribute('aria-label', `${Math.floor(index / puzzle.size) + 1}행 ${index % puzzle.size + 1}열, ${values[index] ? `숫자 ${values[index]}` : '빈칸'}${!values[index] && notes[index].length ? `, 메모 ${notes[index].join(', ')}` : ''}${conflicts.has(index) ? ', 규칙 오류' : ''}`);
   }
-  checkComplete();
+  checkComplete(solved);
 }
 function select(index, focus = false) {
   if (!cellByIndex.has(index)) return;
