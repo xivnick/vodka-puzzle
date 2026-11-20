@@ -55,8 +55,8 @@ const maxClues = axis => Math.max(...puzzle[`${axis}Clues`].map(line => line.len
   #kropkiNotes[aria-pressed=true]{color:#4a6fa5;border-color:#4a6fa5;font-weight:700}
   .outside-game{
     container-type:inline-size;
-    --dot:3cqw;
-    --dot-gap:2cqw;
+    --dot:clamp(9px,2.8cqw,14px);
+    --dot-gap:clamp(2px,.8cqw,4px);
   }
   .outside{
     --left-clues-width:calc(var(--row-clues) * (var(--dot) + var(--dot-gap)) + 5px);
