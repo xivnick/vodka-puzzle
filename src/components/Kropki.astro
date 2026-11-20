@@ -57,13 +57,31 @@ const dotLabel = dot => dot === 'W' ? '흰 점' : '검은 점';
     --dot:clamp(9px,2.8cqw,14px);
     --dot-gap:clamp(2px,.8cqw,4px);
     --clue-gutter:calc(4 * var(--dot) + 5 * var(--dot-gap));
-    --opposite-gutter:calc(.6 * var(--clue-gutter));
   }
-  .outside{display:grid;grid-template-columns:var(--clue-gutter) minmax(0,1fr) var(--opposite-gutter);row-gap:calc(2 * var(--dot-gap))}
-  .outside-game .board-tools,.outside-game .bottom-buttons,.outside-game :global(.number-pad){margin-inline:var(--clue-gutter) var(--opposite-gutter);width:auto}
+  .outside{display:grid;grid-template-columns:var(--clue-gutter) minmax(0,1fr) var(--clue-gutter);row-gap:calc(2 * var(--dot-gap))}
+  .outside-game .board-tools,.outside-game .bottom-buttons,.outside-game :global(.number-pad){margin-inline:var(--clue-gutter);width:auto}
   .column-clues{grid-area:1 / 2;display:grid;grid-template-columns:repeat(5,1fr);padding-inline:2px;min-height:calc(3 * var(--dot) + 2 * var(--dot-gap))}
   .row-clues{grid-area:2 / 1;display:grid;grid-template-rows:repeat(5,1fr);padding-block:2px;padding-right:calc(2 * var(--dot-gap))}
   .outside .board-wrap{grid-area:2 / 2}
+  .outside .kropki-cell:nth-child(-n+4)::before,
+  .outside .kropki-cell:nth-child(5n+1):not(:nth-last-child(-n+5))::after{
+    content:"";
+    position:absolute;
+    background:#777;
+    pointer-events:none;
+  }
+  .outside .kropki-cell:nth-child(-n+4)::before{
+    top:calc(-2px - 2 * var(--dot-gap));
+    right:-1px;
+    width:1px;
+    height:calc(2px + 2 * var(--dot-gap));
+  }
+  .outside .kropki-cell:nth-child(5n+1):not(:nth-last-child(-n+5))::after{
+    left:calc(-2px - 2 * var(--dot-gap));
+    bottom:-1px;
+    width:calc(2px + 2 * var(--dot-gap));
+    height:1px;
+  }
   .clue-line{display:flex;justify-content:flex-end;align-items:center;gap:var(--dot-gap)}
   .column-clues .clue-line{flex-direction:column}
   .clue-dot{width:var(--dot);height:var(--dot);flex:none;box-sizing:border-box;border:1.5px solid #222;border-radius:50%;background:white}
