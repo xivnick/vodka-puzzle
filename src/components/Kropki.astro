@@ -55,7 +55,7 @@ const maxClues = axis => Math.max(...puzzle[`${axis}Clues`].map(line => line.len
   #kropkiNotes[aria-pressed=true]{color:#4a6fa5;border-color:#4a6fa5;font-weight:700}
   .outside-game{
     container-type:inline-size;
-    --dot:3.6cqw;
+    --dot:3cqw;
     --dot-gap:2cqw;
   }
   .outside{
@@ -102,10 +102,11 @@ const maxClues = axis => Math.max(...puzzle[`${axis}Clues`].map(line => line.len
     height:1px;
   }
   .clue-line{display:flex;justify-content:flex-end;align-items:center;gap:var(--dot-gap)}
-  .clue-line.satisfied{background:#e4f2e6}
   .column-clues .clue-line{flex-direction:column}
   .clue-dot{width:var(--dot);height:var(--dot);flex:none;box-sizing:border-box;border:1.5px solid #222;border-radius:50%;background:white}
   .clue-dot.black{background:#222}
+  .clue-line.satisfied .clue-dot{border-color:#29834c}
+  .clue-line.satisfied .clue-dot.black{background:#29834c}
   .board-wrap{position:relative;border:2px solid #444;background:#fff;user-select:none;-webkit-user-select:none}
   #kropkiBoard{display:grid;grid-template-columns:repeat(var(--size),minmax(0,1fr))}
   .kropki-cell{position:relative;aspect-ratio:1;min-width:0;box-sizing:border-box;border:0;border-right:1px solid #777;border-bottom:1px solid #777;border-radius:0;padding:0;margin:0;appearance:none;display:flex;align-items:center;justify-content:center;background:#fff;color:#4a6fa5;font:700 clamp(20px,5vw,30px) 'Noto Sans KR',sans-serif;font-variant-numeric:tabular-nums;cursor:pointer;-webkit-tap-highlight-color:transparent}
