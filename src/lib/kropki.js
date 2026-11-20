@@ -18,6 +18,19 @@ export const kropkiPuzzles = [
   },
 ].map(puzzle => ({ ...puzzle, digits: Array.from({ length: puzzle.size }, (_, index) => index + 1) }));
 
+export const outsideKropkiPuzzles = [
+  {
+    id: '261120_01',
+    rowClues: ['WWB', 'WWWW', 'BB', 'WW', 'B'],
+    columnClues: ['B', 'BW', 'B', 'BW', 'W'],
+  },
+  {
+    id: '261120_02',
+    rowClues: ['WWW', 'W', 'BB', 'BWW', 'BW'],
+    columnClues: ['W', 'WWB', 'WW', 'BW', 'BW'],
+  },
+].map(puzzle => ({ ...puzzle, size: 5, digits: [1, 2, 3, 4, 5] }));
+
 export function kropkiEdges(puzzle) {
   const edges = [];
   puzzle.horizontal.forEach((row, r) => [...row].forEach((dot, c) => edges.push({ a: r * puzzle.size + c, b: r * puzzle.size + c + 1, dot, x: c + 1, y: r + .5 })));
@@ -48,17 +61,30 @@ export function matchesKropkiDot(left, right, dot) {
 export function inspectKropki(puzzle, values) {
   const conflicts = new Set();
   if (!parseKropkiState(puzzle, { version: 1, puzzleId: '', values }, '')) return { complete: false, conflicts };
-  const checkLine = indexes => {
+  const checkLine = (indexes, clues) => {
     for (const digit of puzzle.digits) {
       const matches = indexes.filter(index => values[index] === digit);
       if (matches.length > 1) matches.forEach(index => conflicts.add(index));
     }
+    if (clues === undefined || indexes.some(index => !values[index])) return;
+    let nextDot = 0;
+    for (let i = 1; i < indexes.length; i++) {
+      const left = values[indexes[i - 1]], right = values[indexes[i]];
+      if (matchesKropkiDot(left, right, '.')) continue;
+      // The pair 1 and 2 can consume either colour, but only one dot.
+      if (nextDot >= clues.length || !matchesKropkiDot(left, right, clues[nextDot])) {
+        indexes.forEach(index => conflicts.add(index));
+        return;
+      }
+      nextDot++;
+    }
+    if (nextDot !== clues.length) indexes.forEach(index => conflicts.add(index));
   };
   for (let line = 0; line < puzzle.size; line++) {
-    checkLine(Array.from({ length: puzzle.size }, (_, c) => line * puzzle.size + c));
-    checkLine(Array.from({ length: puzzle.size }, (_, r) => r * puzzle.size + line));
+    checkLine(Array.from({ length: puzzle.size }, (_, c) => line * puzzle.size + c), puzzle.rowClues?.[line]);
+    checkLine(Array.from({ length: puzzle.size }, (_, r) => r * puzzle.size + line), puzzle.columnClues?.[line]);
   }
-  for (const { a, b, dot } of kropkiEdges(puzzle)) {
+  for (const { a, b, dot } of puzzle.rowClues ? [] : kropkiEdges(puzzle)) {
     if (!values[a] || !values[b]) continue;
     if (!matchesKropkiDot(values[a], values[b], dot)) {
       conflicts.add(a); conflicts.add(b);
