@@ -22,9 +22,9 @@ const dotLabel = dot => dot === 'W' ? '흰 점' : '검은 점';
     </ul>
   </div>
   <div slot="controls">칸을 누른 뒤 숫자 버튼으로 입력하세요. 메모하기 버튼이나 M으로 메모 입력을 켜고 끄세요. 다른 칸을 눌러 이동하고 지우기로 숫자와 메모를 지우세요.</div>
-  <section id="kropkiGame" data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} style={`--size:${puzzle.size}`} aria-label={title}>
+  <section id="kropkiGame" class:list={[{ "outside-game": outside }]} data-puzzle={JSON.stringify(puzzle)} data-puzzle-id={puzzleId} style={`--size:${puzzle.size}`} aria-label={title}>
     <div class="board-tools"><button id="kropkiNotes" type="button" aria-pressed="false">메모하기</button></div>
-    <div class:list={['board-area', { outside }]} style={outside ? `--left:${Math.max(...puzzle.rowClues.map(line => line.length)) * .42}fr` : undefined}>
+    <div class:list={['board-area', { outside }]}>
       {outside && ['column', 'row'].map(axis => <div class={`${axis}-clues`}>
         {puzzle[`${axis}Clues`].map((line, index) => <div class="clue-line" role="img" aria-label={`${index + 1}${axis === 'row' ? '행' : '열'}: ${[...line].map(dotLabel).join(', ')}`}>
           {[...line].map(dot => <span class:list={['clue-dot', { black: dot === 'B' }]} />)}
@@ -52,12 +52,20 @@ const dotLabel = dot => dot === 'W' ? '흰 점' : '검은 점';
   .board-tools{display:flex;justify-content:flex-end;margin-bottom:8px}
   #kropkiNotes{background:none;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:0 0 1px;color:#888;font:inherit;font-size:.82rem;cursor:pointer}
   #kropkiNotes[aria-pressed=true]{color:#4a6fa5;border-color:#4a6fa5;font-weight:700}
-  .outside{display:grid;grid-template-columns:minmax(0,var(--left)) minmax(0,5fr);gap:5px;container-type:inline-size}
-  .column-clues{grid-column:2;display:grid;grid-template-columns:repeat(5,1fr)}
-  .row-clues{grid-column:1;display:grid;grid-template-rows:repeat(5,1fr)}
-  .clue-line{display:flex;justify-content:flex-end;align-items:center;gap:2cqw}
+  .outside-game{
+    container-type:inline-size;
+    --dot:clamp(9px,2.8cqw,14px);
+    --dot-gap:clamp(2px,.8cqw,4px);
+    --gutter:calc(4 * var(--dot) + 5 * var(--dot-gap));
+  }
+  .outside{display:grid;grid-template-columns:var(--gutter) minmax(0,1fr) var(--gutter);row-gap:calc(2 * var(--dot-gap))}
+  .outside-game .board-tools,.outside-game .bottom-buttons,.outside-game :global(.number-pad){margin-inline:var(--gutter);width:auto}
+  .column-clues{grid-area:1 / 2;display:grid;grid-template-columns:repeat(5,1fr);padding-inline:2px;min-height:calc(3 * var(--dot) + 2 * var(--dot-gap))}
+  .row-clues{grid-area:2 / 1;display:grid;grid-template-rows:repeat(5,1fr);padding-block:2px;padding-right:calc(2 * var(--dot-gap))}
+  .outside .board-wrap{grid-area:2 / 2}
+  .clue-line{display:flex;justify-content:flex-end;align-items:center;gap:var(--dot-gap)}
   .column-clues .clue-line{flex-direction:column}
-  .clue-dot{width:3.6cqw;aspect-ratio:1;box-sizing:border-box;border:1.5px solid #222;border-radius:50%;background:white}
+  .clue-dot{width:var(--dot);height:var(--dot);flex:none;box-sizing:border-box;border:1.5px solid #222;border-radius:50%;background:white}
   .clue-dot.black{background:#222}
   .board-wrap{position:relative;border:2px solid #444;background:#fff;user-select:none;-webkit-user-select:none}
   #kropkiBoard{display:grid;grid-template-columns:repeat(var(--size),minmax(0,1fr))}
