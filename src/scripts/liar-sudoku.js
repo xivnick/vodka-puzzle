@@ -15,6 +15,7 @@ const emptyNotes = () => givens.map(() => []);
 const moves = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
 
 let values = emptyValues();
+let activeValues = values;
 let notes = emptyNotes();
 let selected = 0;
 let notesMode = false;
@@ -24,13 +25,12 @@ function persist() {
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
 
-function renderCell(index, conflict) {
+function renderCell(index, active, conflict) {
   const { cell, number, memo } = cells[index];
   const clue = givens[index];
-  const entered = values[index];
-  const confirmed = clue > 0 && entered === clue;
-  const value = confirmed ? 0 : entered;
-  const showNotes = !entered && notes[index].length > 0;
+  const confirmed = clue > 0 && active === clue;
+  const value = confirmed ? 0 : active;
+  const showNotes = !active && notes[index].length > 0;
   cell.classList.toggle('annotated', Boolean(value || showNotes));
   cell.classList.toggle('confirmed', confirmed);
   cell.classList.toggle('conflict', conflict);
@@ -51,8 +51,9 @@ function renderCell(index, conflict) {
 }
 
 function render() {
-  const { conflicts, complete } = inspectLiarSudoku(values);
-  cells.forEach((_, index) => renderCell(index, conflicts.has(index)));
+  const { board: active, conflicts, complete } = inspectLiarSudoku(values);
+  activeValues = active;
+  cells.forEach((_, index) => renderCell(index, active[index], conflicts.has(index)));
   get('liarComplete').hidden = !complete;
 }
 
@@ -71,7 +72,7 @@ function toggleNotes() {
 
 function change(digit) {
   if (notesMode && digit) {
-    if (values[selected]) return;
+    if (activeValues[selected]) return;
     const memo = notes[selected];
     notes[selected] = memo.includes(digit)
       ? memo.filter(value => value !== digit)

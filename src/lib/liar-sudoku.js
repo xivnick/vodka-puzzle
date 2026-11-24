@@ -15,17 +15,26 @@ export const givens = [
 export const isDigit = value => Number.isInteger(value) && value >= 1 && value <= 9;
 
 export function inspectLiarSudoku(values, clues = givens) {
+  const changed = clues.map((clue, index) => Boolean(clue && values[index] && values[index] !== clue));
+  const board = values.slice();
+  for (const unit of units) {
+    if (!unit.some(index => changed[index])) continue;
+    for (const index of unit) {
+      if (!values[index] && clues[index]) board[index] = clues[index];
+    }
+  }
+
   const conflicts = new Set();
   for (const unit of units) {
     for (const index of unit) {
-      if (values[index] && unit.some(other => other !== index && values[other] === values[index])) {
+      if (board[index] && unit.some(other => other !== index && board[other] === board[index])) {
         conflicts.add(index);
       }
     }
   }
 
-  const complete = values.length === 81 && values.every(isDigit) && conflicts.size === 0 && units.every(unit =>
-    unit.filter(index => clues[index] && values[index] !== clues[index]).length === 1
+  const complete = board.length === 81 && board.every(isDigit) && conflicts.size === 0 && units.every(unit =>
+    unit.filter(index => changed[index]).length === 1
   );
-  return { conflicts, complete };
+  return { board, conflicts, complete };
 }
