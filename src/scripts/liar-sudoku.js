@@ -19,9 +19,14 @@ let activeValues = values;
 let notes = emptyNotes();
 let selected = 0;
 let notesMode = false;
+let complete = false;
+
+function state() {
+  return { version: 1, values: [...values], notes: notes.map(memo => [...memo]) };
+}
 
 function persist() {
-  try { window.saveLocalState(puzzleId, { version: 1, values, notes }); }
+  try { window.saveLocalState(puzzleId, state()); }
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
 
@@ -51,10 +56,16 @@ function renderCell(index, active, conflict) {
 }
 
 function render() {
-  const { board: active, conflicts, complete } = inspectLiarSudoku(values);
+  const { board: active, conflicts, complete: solved } = inspectLiarSudoku(values);
   activeValues = active;
+  complete = solved;
   cells.forEach((_, index) => renderCell(index, active[index], conflicts.has(index)));
   get('liarComplete').hidden = !complete;
+  checkComplete();
+}
+
+function checkComplete() {
+  if (complete && window.puzzlePage?.published) window.recordCompletion(puzzleId, state());
 }
 
 function select(index) {
@@ -119,24 +130,46 @@ get('liarErase').addEventListener('click', () => change(0));
 get('liarReset').addEventListener('click', () => {
   if (!values.some(Boolean) && !notes.some(memo => memo.length)) return;
   if (!confirm('입력한 숫자와 메모를 모두 초기화할까요?')) return;
+  window.resetCompletion(puzzleId);
   values = emptyValues();
   notes = emptyNotes();
   persist();
   render();
 });
 
-try {
-  const saved = window.loadLocalState(puzzleId);
-  if (saved?.version === 1) {
-    values = givens.map((_, index) => {
-      const value = saved.values?.[index];
-      return isDigit(value) ? value : 0;
-    });
-    notes = givens.map((_, index) => {
-      const memo = saved.notes?.[index];
-      return Array.isArray(memo) ? [...new Set(memo.filter(isDigit))].sort((a, b) => a - b) : [];
-    });
+function applyState(saved) {
+  values = givens.map((_, index) => {
+    const value = saved.values?.[index];
+    return isDigit(value) ? value : 0;
+  });
+  notes = givens.map((_, index) => {
+    const memo = saved.notes?.[index];
+    return Array.isArray(memo) ? [...new Set(memo.filter(isDigit))].sort((a, b) => a - b) : [];
+  });
+}
+
+function restore() {
+  try {
+    const saved = window.loadLocalState(puzzleId);
+    if (saved?.version === 1) applyState(saved);
+  } catch {}
+  render();
+}
+
+window.checkComplete = checkComplete;
+window.handleCloudSave = () => window.saveProgressCloud(puzzleId, state());
+window.handleCloudLoad = async () => {
+  const saved = await window.loadProgressCloud(puzzleId);
+  if (saved == null) return;
+  if (saved.version !== 1 || saved.values?.length !== givens.length || saved.notes?.length !== givens.length
+    || !Array.isArray(saved.values) || !Array.isArray(saved.notes)) {
+    window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.');
+    return;
   }
-} catch {}
+  if (!confirm('클라우드 기록으로 현재 진행 상황을 바꿀까요?')) return;
+  applyState(saved);
+  persist();
+  render();
+};
 select(0);
-render();
+window.startLocalPuzzle(puzzleId, restore, restore);
