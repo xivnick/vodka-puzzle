@@ -47,6 +47,12 @@ const subtitle = '각 가로줄, 세로줄, 3×3 박스에서 거짓 단서 하�
 <style>
   .sudoku-cell { line-height: 1; -webkit-tap-highlight-color: transparent; }
   .sudoku-cell .liar-value { color: #4a6fa5; }
+  @supports (-webkit-text-stroke: 1px) {
+    .sudoku-cell:not(.annotated) .liar-clue {
+      -webkit-text-stroke: clamp(.75px, .22vw, 1px) currentColor;
+      -webkit-text-fill-color: transparent;
+    }
+  }
   .sudoku-cell.annotated .liar-clue {
     position: absolute;
     top: 7%;
