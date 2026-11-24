@@ -18,19 +18,19 @@ let values = emptyValues();
 let notes = emptyNotes();
 let selected = 0;
 let notesMode = false;
-let activeBoard;
 
 function persist() {
   try { window.saveLocalState(puzzleId, { version: 1, values, notes }); }
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
 
-function renderCell(index, active, conflict) {
+function renderCell(index, conflict) {
   const { cell, number, memo } = cells[index];
   const clue = givens[index];
-  const confirmed = clue > 0 && active === clue;
-  const value = confirmed ? 0 : active;
-  const showNotes = !active && notes[index].length > 0;
+  const entered = values[index];
+  const confirmed = clue > 0 && entered === clue;
+  const value = confirmed ? 0 : entered;
+  const showNotes = !entered && notes[index].length > 0;
   cell.classList.toggle('annotated', Boolean(value || showNotes));
   cell.classList.toggle('confirmed', confirmed);
   cell.classList.toggle('conflict', conflict);
@@ -51,9 +51,8 @@ function renderCell(index, active, conflict) {
 }
 
 function render() {
-  const { board: active, conflicts, complete } = inspectLiarSudoku(values);
-  activeBoard = active;
-  cells.forEach((_, index) => renderCell(index, active[index], conflicts.has(index)));
+  const { conflicts, complete } = inspectLiarSudoku(values);
+  cells.forEach((_, index) => renderCell(index, conflicts.has(index)));
   get('liarComplete').hidden = !complete;
 }
 
@@ -72,7 +71,7 @@ function toggleNotes() {
 
 function change(digit) {
   if (notesMode && digit) {
-    if (activeBoard[selected]) return;
+    if (values[selected]) return;
     const memo = notes[selected];
     notes[selected] = memo.includes(digit)
       ? memo.filter(value => value !== digit)
