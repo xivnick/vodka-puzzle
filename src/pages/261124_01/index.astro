@@ -16,7 +16,8 @@ const subtitle = '각 가로줄, 세로줄, 3×3 박스에서 거짓 단서 하�
     각 가로줄, 세로줄, 3×3 박스에서 주어진 숫자 중 정확히 하나를 다른 숫자로 바꿔야 합니다. 바뀌는 단서는 모두 9개입니다.
   </div>
   <div slot="controls">
-    칸을 누른 뒤 숫자 버튼으로 입력하세요. 지우기를 누르면 입력한 숫자가 지워지고, 단서 칸은 처음 숫자로 돌아갑니다.<br />
+    칸을 누른 뒤 숫자 버튼으로 입력하고, 지우기로 입력을 지우세요.<br />
+    단서와 같은 숫자를 입력하면 그 단서가 확정됩니다. 같은 행·열·박스의 다른 칸에 단서와 같은 숫자를 넣으면 그 단서는 거짓으로 간주됩니다. 거짓 단서가 하나로 정해진 행·열·박스에서는 나머지 단서가 자동으로 확정됩니다.<br />
     메모하기 버튼이나 M 키로 메모 입력을 켜고 끄세요.
   </div>
   <section id="liarGame" data-puzzle-id={puzzleId} aria-label="라이어 스도쿠">
@@ -47,8 +48,9 @@ const subtitle = '각 가로줄, 세로줄, 3×3 박스에서 거짓 단서 하�
 <style>
   .sudoku-cell { line-height: 1; -webkit-tap-highlight-color: transparent; }
   .sudoku-cell .liar-value { color: #4a6fa5; }
+  .sudoku-cell.conflict .liar-value { color: #c34242; }
   @supports (-webkit-text-stroke: 1px) {
-    .sudoku-cell:not(.annotated) .liar-clue {
+    .sudoku-cell:not(.annotated, .confirmed) .liar-clue {
       -webkit-text-stroke: clamp(.75px, .22vw, 1px) currentColor;
       -webkit-text-fill-color: transparent;
     }

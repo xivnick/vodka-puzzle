@@ -1,4 +1,4 @@
-import { givens, isDigit, isLiarSudokuComplete } from '../lib/liar-sudoku.js';
+import { givens, isDigit, inspectLiarSudoku } from '../lib/liar-sudoku.js';
 import { writeNumber } from '../lib/number-notes.js';
 
 const get = id => document.getElementById(id);
@@ -18,18 +18,22 @@ let values = emptyValues();
 let notes = emptyNotes();
 let selected = 0;
 let notesMode = false;
+let activeBoard;
 
 function persist() {
   try { window.saveLocalState(puzzleId, { version: 1, values, notes }); }
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
 
-function renderCell(index) {
+function renderCell(index, active, conflict) {
   const { cell, number, memo } = cells[index];
   const clue = givens[index];
-  const value = values[index];
-  const showNotes = !value && notes[index].length > 0;
+  const confirmed = clue > 0 && active === clue;
+  const value = confirmed ? 0 : active;
+  const showNotes = !active && notes[index].length > 0;
   cell.classList.toggle('annotated', Boolean(value || showNotes));
+  cell.classList.toggle('confirmed', confirmed);
+  cell.classList.toggle('conflict', conflict);
   number.textContent = value || '';
   memo.hidden = !showNotes;
   if (showNotes) {
@@ -38,20 +42,19 @@ function renderCell(index) {
     });
   }
   const label = [`${Math.floor(index / 9) + 1}행 ${index % 9 + 1}열`];
-  if (clue) label.push(`단서 ${clue}`);
+  if (clue) label.push(confirmed ? `확정 숫자 ${clue}` : `단서 ${clue}`);
   if (value) label.push(`입력 ${value}`);
   else if (!clue) label.push('빈칸');
   if (showNotes) label.push(`메모 ${notes[index].join(', ')}`);
+  if (conflict) label.push('중복 숫자');
   cell.setAttribute('aria-label', label.join(', '));
 }
 
-function checkComplete() {
-  get('liarComplete').hidden = !isLiarSudokuComplete(values);
-}
-
 function render() {
-  cells.forEach((_, index) => renderCell(index));
-  checkComplete();
+  const { board: active, conflicts, complete } = inspectLiarSudoku(values);
+  activeBoard = active;
+  cells.forEach((_, index) => renderCell(index, active[index], conflicts.has(index)));
+  get('liarComplete').hidden = !complete;
 }
 
 function select(index) {
@@ -69,19 +72,16 @@ function toggleNotes() {
 
 function change(digit) {
   if (notesMode && digit) {
-    if (values[selected]) return;
+    if (activeBoard[selected]) return;
     const memo = notes[selected];
     notes[selected] = memo.includes(digit)
       ? memo.filter(value => value !== digit)
       : [...memo, digit].sort((a, b) => a - b);
-  } else if (digit === givens[selected] && digit !== 0) {
-    values[selected] = 0;
   } else {
     writeNumber(values, notes, selected, digit);
   }
   persist();
-  renderCell(selected);
-  checkComplete();
+  render();
 }
 
 cells.forEach(({ cell }, index) => {
@@ -128,9 +128,9 @@ get('liarReset').addEventListener('click', () => {
 try {
   const saved = window.loadLocalState(puzzleId);
   if (saved?.version === 1) {
-    values = givens.map((clue, index) => {
+    values = givens.map((_, index) => {
       const value = saved.values?.[index];
-      return isDigit(value) && value !== clue ? value : 0;
+      return isDigit(value) ? value : 0;
     });
     notes = givens.map((_, index) => {
       const memo = saved.notes?.[index];
