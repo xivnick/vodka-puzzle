@@ -13,21 +13,24 @@ let inputSwapped = false;
 let press = null;
 
 function render() {
-  const { conflicts, clueStatuses, complete } = inspectNurikabe(board);
+  const { conflicts, clueStatuses, satisfiedCells, complete } = inspectNurikabe(board);
   for (const cell of cells) {
     const index = Number(cell.dataset.cell);
     const value = board[index];
     const conflict = conflicts.has(index);
+    const satisfied = satisfiedCells.has(index);
     cell.classList.toggle('shaded', value === SHADED);
     cell.classList.toggle('conflict', conflict);
+    cell.classList.toggle('satisfied', satisfied);
     cell.firstElementChild.textContent = value === NOTE ? '×' : '';
     const label = value === SHADED ? '칠한 칸' : value === NOTE ? '× 메모' : '빈칸';
-    cell.setAttribute('aria-label', `${cell.dataset.position}, ${label}${conflict ? ', 2×2 위반' : ''}`);
+    const status = conflict ? ', 2×2 위반' : satisfied ? ', 영역 크기 일치' : '';
+    cell.setAttribute('aria-label', `${cell.dataset.position}, ${label}${status}`);
   }
   for (const cell of clueCells) {
     const index = Number(cell.dataset.clue);
     const status = clueStatuses.get(index);
-    cell.classList.toggle('satisfied', status === 'satisfied');
+    cell.classList.toggle('satisfied', satisfiedCells.has(index));
     cell.classList.toggle('conflict', status === 'conflict');
     const label = { satisfied: ', 영역 크기 일치', conflict: ', 영역 크기 불일치' }[status] ?? '';
     cell.setAttribute('aria-label', `${cell.dataset.position}, 단서 ${clues[index]}${label}`);

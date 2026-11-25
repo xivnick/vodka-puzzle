@@ -30,6 +30,7 @@ export function inspectNurikabe(board, numbers = clues) {
   const visited = new Set();
   const conflicts = new Set();
   const clueStatuses = new Map();
+  const satisfiedCells = new Set();
   let shadedRegions = 0;
   let validRegions = true;
 
@@ -61,11 +62,12 @@ export function inspectNurikabe(board, numbers = clues) {
       const [clue] = regionClues;
       const matches = region.length === numbers[clue];
       clueStatuses.set(clue, matches ? 'satisfied' : 'conflict');
-      if (!matches) validRegions = false;
+      if (matches) region.forEach(cell => satisfiedCells.add(cell));
+      else validRegions = false;
     } else {
       validRegions = false;
     }
   }
 
-  return { conflicts, clueStatuses, complete: validRegions && shadedRegions === 1 && conflicts.size === 0 };
+  return { conflicts, clueStatuses, satisfiedCells, complete: validRegions && shadedRegions === 1 && conflicts.size === 0 };
 }
