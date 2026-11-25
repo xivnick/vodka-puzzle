@@ -69,11 +69,12 @@ const subtitle = '검은 칸을 하나로 잇고, 칠하지 않은 영역의 크
   button.cell:focus-visible { background: #e8edf5; }
   button.cell.shaded { background: #262626; }
   button.cell.shaded:focus-visible { background: #4b5565; }
-  button.cell.conflict { background: #a94444; }
-  button.cell.conflict:focus-visible { background: #873535; }
+  .cell.conflict { background: #f5dcdc; }
+  button.cell.conflict:focus-visible { background: #ecc6c6; }
+  button.cell.shaded.conflict { background: #a94444; }
+  button.cell.shaded.conflict:focus-visible { background: #873535; }
   .cell.satisfied { background: #dcebd7; }
   button.cell.satisfied:focus-visible { background: #c5dfbe; }
   .given { font-weight: 700; }
-  .given.conflict { color: #b05050; }
   button.cell span { color: #666; font-size: .8em; }
 </style>

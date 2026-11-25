@@ -7,32 +7,33 @@ const cells = [...grid.querySelectorAll('[data-cell]')];
 const clueCells = [...grid.querySelectorAll('[data-clue]')];
 const notesToggle = document.getElementById('nurikabeNotes');
 const completion = document.getElementById('nurikabeComplete');
+const regionLabels = { satisfied: ', 영역 크기 일치', conflict: ', 영역 크기 불일치' };
 
 let board = clues.map(() => EMPTY);
 let inputSwapped = false;
 let press = null;
 
 function render() {
-  const { conflicts, clueStatuses, satisfiedCells, complete } = inspectNurikabe(board);
+  const { conflicts, regionStatuses, complete } = inspectNurikabe(board);
   for (const cell of cells) {
     const index = Number(cell.dataset.cell);
     const value = board[index];
-    const conflict = conflicts.has(index);
-    const satisfied = satisfiedCells.has(index);
+    const squareConflict = conflicts.has(index);
+    const status = regionStatuses.get(index);
     cell.classList.toggle('shaded', value === SHADED);
-    cell.classList.toggle('conflict', conflict);
-    cell.classList.toggle('satisfied', satisfied);
+    cell.classList.toggle('conflict', squareConflict || status === 'conflict');
+    cell.classList.toggle('satisfied', status === 'satisfied');
     cell.firstElementChild.textContent = value === NOTE ? '×' : '';
     const label = value === SHADED ? '칠한 칸' : value === NOTE ? '× 메모' : '빈칸';
-    const status = conflict ? ', 2×2 위반' : satisfied ? ', 영역 크기 일치' : '';
-    cell.setAttribute('aria-label', `${cell.dataset.position}, ${label}${status}`);
+    const feedback = squareConflict ? ', 2×2 위반' : (regionLabels[status] ?? '');
+    cell.setAttribute('aria-label', `${cell.dataset.position}, ${label}${feedback}`);
   }
   for (const cell of clueCells) {
     const index = Number(cell.dataset.clue);
-    const status = clueStatuses.get(index);
-    cell.classList.toggle('satisfied', satisfiedCells.has(index));
+    const status = regionStatuses.get(index);
+    cell.classList.toggle('satisfied', status === 'satisfied');
     cell.classList.toggle('conflict', status === 'conflict');
-    const label = { satisfied: ', 영역 크기 일치', conflict: ', 영역 크기 불일치' }[status] ?? '';
+    const label = regionLabels[status] ?? '';
     cell.setAttribute('aria-label', `${cell.dataset.position}, 단서 ${clues[index]}${label}`);
   }
   completion.hidden = !complete;

@@ -29,8 +29,7 @@ export function inspectNurikabe(board, numbers = clues) {
   const isShaded = index => board[index] === SHADED;
   const visited = new Set();
   const conflicts = new Set();
-  const clueStatuses = new Map();
-  const satisfiedCells = new Set();
+  const regionStatuses = new Map();
   let shadedRegions = 0;
   let validRegions = true;
 
@@ -61,13 +60,13 @@ export function inspectNurikabe(board, numbers = clues) {
     } else if (regionClues.length === 1) {
       const [clue] = regionClues;
       const matches = region.length === numbers[clue];
-      clueStatuses.set(clue, matches ? 'satisfied' : 'conflict');
-      if (matches) region.forEach(cell => satisfiedCells.add(cell));
-      else validRegions = false;
+      const status = matches ? 'satisfied' : 'conflict';
+      region.forEach(cell => regionStatuses.set(cell, status));
+      if (!matches) validRegions = false;
     } else {
       validRegions = false;
     }
   }
 
-  return { conflicts, clueStatuses, satisfiedCells, complete: validRegions && shadedRegions === 1 && conflicts.size === 0 };
+  return { conflicts, regionStatuses, complete: validRegions && shadedRegions === 1 && conflicts.size === 0 };
 }
