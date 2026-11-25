@@ -1,0 +1,72 @@
+---
+import PuzzleLayout from '../../layouts/PuzzleLayout.astro';
+import PuzzleCompletion from '../../components/PuzzleCompletion.astro';
+import { size, clues } from '../../lib/nurikabe.js';
+
+const puzzleId = '261125_01';
+const title = '261125 누리카베';
+const subtitle = '검은 칸을 하나로 잇고, 칠하지 않은 영역의 크기를 숫자에 맞추세요';
+---
+<PuzzleLayout {title} {puzzleId} {subtitle} description={subtitle} showCloud={false} showLeaderboard={false}>
+  <div slot="rules">
+    다음 규칙에 따라 격자의 빈칸을 칠하세요.
+    <ul>
+      <li>칠한 칸은 모두 상하좌우로 이어져 하나의 덩어리를 이루어야 합니다.</li>
+      <li>어떤 2×2 부분도 네 칸이 모두 칠해질 수 없습니다.</li>
+      <li>칠하지 않은 칸이 상하좌우로 이어진 공간을 영역이라고 합니다. 각 영역은 칠한 칸이나 격자의 경계로 둘러싸입니다.</li>
+      <li>각 영역에는 숫자가 정확히 하나 있어야 하고, 그 숫자는 영역의 칸 수와 같아야 합니다. 숫자가 있는 칸은 칠할 수 없습니다.</li>
+    </ul>
+  </div>
+  <div slot="controls">
+    빈칸을 눌러 칠하세요. 메모하기 버튼이나 M 키로 × 메모를 켜고 끌 수 있습니다.<br />
+    같은 표시를 다시 누르면 지워집니다.
+  </div>
+  <section id="nurikabeGame" data-puzzle-id={puzzleId} aria-label="누리카베">
+    <div class="board-tools">
+      <button id="nurikabeNotes" type="button" aria-pressed="false">메모하기</button>
+    </div>
+    <div id="nurikabeBoard" role="group" aria-label={`${size}행 ${size}열 격자`} style={`--size:${size}`}>
+      {clues.map((clue, index) => {
+        const position = `${Math.floor(index / size) + 1}행 ${index % size + 1}열`;
+        return clue
+          ? <div class="cell given" aria-label={`${position}, 단서 ${clue}`}>{clue}</div>
+          : <button class="cell" type="button" data-cell={index} data-position={position}
+              aria-label={`${position}, 빈칸`}><span aria-hidden="true"></span></button>;
+      })}
+    </div>
+    <div class="bottom-buttons">
+      <button id="nurikabeReset" class="danger" type="button">초기화</button>
+    </div>
+  </section>
+  <PuzzleCompletion slot="completion" id="nurikabeComplete" />
+</PuzzleLayout>
+
+<script>import '../../scripts/nurikabe.js';</script>
+
+<style>
+  ul { margin: 4px 0 0; padding-left: 20px; }
+  #nurikabeGame { max-width: 480px; margin-inline: auto; }
+  #nurikabeGame button:focus { outline: none; }
+  .board-tools button:focus-visible, .bottom-buttons button:focus-visible { background: #e8edf5; }
+  .board-tools { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+  .board-tools button {
+    background: none; border: 0; border-bottom: 1px solid #ccc; border-radius: 0;
+    padding: 0 0 1px; color: #666; font-size: .82rem; line-height: 1.5;
+  }
+  .board-tools button[aria-pressed="true"] { color: #4a6fa5; border-color: #4a6fa5; font-weight: 700; }
+  #nurikabeBoard {
+    display: grid; grid-template-columns: repeat(var(--size), minmax(0, 1fr));
+    gap: 1px; border: 2px solid #444; background: #999; user-select: none;
+  }
+  .cell {
+    display: grid; place-items: center; aspect-ratio: 1; min-width: 0; min-height: 0;
+    margin: 0; padding: 0; border: 0; border-radius: 0;
+    background: white; color: #222; font-family: inherit; line-height: 1;
+    font-size: clamp(16px, 5.2vw, 28px);
+  }
+  button.cell { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  button.cell:focus-visible { background: #e8edf5; }
+  button.cell.shaded { background: #262626; }
+  button.cell.shaded:focus-visible { background: #4b5565; }
+  button.cell span { color: #666; font-size: .8em; }
+</style>
