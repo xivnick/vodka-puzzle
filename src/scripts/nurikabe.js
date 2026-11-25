@@ -12,9 +12,19 @@ const regionLabels = { satisfied: ', 영역 크기 일치', conflict: ', 영역 
 let board = clues.map(() => EMPTY);
 let inputSwapped = false;
 let press = null;
+let complete = false;
+
+function state() {
+  return { version: 1, board: [...board] };
+}
+
+function checkComplete() {
+  if (complete && window.puzzlePage?.published) window.recordCompletion(puzzleId, state());
+}
 
 function render() {
-  const { conflicts, regionStatuses, complete } = inspectNurikabe(board);
+  const { conflicts, regionStatuses, complete: solved } = inspectNurikabe(board);
+  complete = solved;
   for (const cell of cells) {
     const index = Number(cell.dataset.cell);
     const value = board[index];
@@ -37,10 +47,11 @@ function render() {
     cell.setAttribute('aria-label', `${cell.dataset.position}, 단서 ${clues[index]}${label}`);
   }
   completion.hidden = !complete;
+  checkComplete();
 }
 
 function persist() {
-  try { window.saveLocalState(puzzleId, { version: 1, board }); }
+  try { window.saveLocalState(puzzleId, state()); }
   catch { window.showToast('브라우저에 저장하지 못했습니다.'); }
 }
 
@@ -95,18 +106,42 @@ grid.addEventListener('click', event => {
 document.getElementById('nurikabeReset').addEventListener('click', () => {
   if (!board.some(Boolean) || !confirm('칠한 칸과 메모를 모두 초기화할까요?')) return;
   board.fill(EMPTY);
+  if (window.puzzlePage?.published) window.resetCompletion(puzzleId);
   persist();
   render();
 });
 
+function parseBoard(saved) {
+  if (saved?.version !== 1 || !Array.isArray(saved.board) || saved.board.length !== clues.length) return null;
+  return clues.map((clue, index) => {
+    const mark = saved.board[index];
+    return !clue && (mark === SHADED || mark === NOTE) ? mark : EMPTY;
+  });
+}
+
 function restore() {
   try {
-    const saved = window.loadLocalState(puzzleId);
-    if (saved?.version === 1 && Array.isArray(saved.board) && saved.board.length === clues.length) {
-      board = saved.board.map((mark, index) => !clues[index] && (mark === SHADED || mark === NOTE) ? mark : EMPTY);
-    }
+    const restored = parseBoard(window.loadLocalState(puzzleId));
+    if (restored) board = restored;
   } catch {}
   render();
 }
 
+window.checkComplete = checkComplete;
+window.handleCloudSave = () => window.saveProgressCloud(puzzleId, state());
+window.handleCloudLoad = async () => {
+  const owner = window.puzzleAccount?.user?.id;
+  const before = JSON.stringify(board);
+  const saved = await window.loadProgressCloud(puzzleId);
+  if (saved == null || owner !== window.puzzleAccount?.user?.id || before !== JSON.stringify(board)) return;
+  const restored = parseBoard(saved);
+  if (!restored) {
+    window.showToast('이 문제에 맞는 저장 데이터가 아닙니다.');
+    return;
+  }
+  if (!confirm('클라우드 기록으로 현재 진행 상황을 바꿀까요?')) return;
+  board = restored;
+  persist();
+  render();
+};
 window.startLocalPuzzle(puzzleId, restore, restore);
