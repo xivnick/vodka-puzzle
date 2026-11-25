@@ -18,18 +18,19 @@ const subtitle = '검은 칸을 하나로 잇고, 칠하지 않은 영역의 크
     </ul>
   </div>
   <div slot="controls">
-    빈칸을 눌러 칠하세요. 메모하기 버튼이나 M 키로 × 메모를 켜고 끌 수 있습니다.<br />
-    같은 표시를 다시 누르면 지워집니다.
+    짧게 누르면 칠하고, 길게 누르면 ×를 표시합니다. 오른쪽 위 버튼이나 M 키로 두 입력을 바꾸세요.<br />
+    같은 표시를 다시 입력하면 지워집니다.
   </div>
   <section id="nurikabeGame" data-puzzle-id={puzzleId} aria-label="누리카베">
     <div class="board-tools">
-      <button id="nurikabeNotes" type="button" aria-pressed="false">메모하기</button>
+      <button id="nurikabeNotes" type="button" aria-pressed="false">길게 눌러 × 표시</button>
     </div>
     <div id="nurikabeBoard" role="group" aria-label={`${size}행 ${size}열 격자`} style={`--size:${size}`}>
       {clues.map((clue, index) => {
         const position = `${Math.floor(index / size) + 1}행 ${index % size + 1}열`;
         return clue
-          ? <div class="cell given" aria-label={`${position}, 단서 ${clue}`}>{clue}</div>
+          ? <div class="cell given" data-clue={index} data-position={position}
+              aria-label={`${position}, 단서 ${clue}`}>{clue}</div>
           : <button class="cell" type="button" data-cell={index} data-position={position}
               aria-label={`${position}, 빈칸`}><span aria-hidden="true"></span></button>;
       })}
@@ -64,9 +65,13 @@ const subtitle = '검은 칸을 하나로 잇고, 칠하지 않은 영역의 크
     background: white; color: #222; font-family: inherit; line-height: 1;
     font-size: clamp(16px, 5.2vw, 28px);
   }
-  button.cell { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  button.cell { cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
   button.cell:focus-visible { background: #e8edf5; }
   button.cell.shaded { background: #262626; }
   button.cell.shaded:focus-visible { background: #4b5565; }
+  button.cell.conflict { background: #a94444; }
+  button.cell.conflict:focus-visible { background: #873535; }
+  .given.conflict { color: #b05050; }
+  .given.satisfied { color: var(--puzzle-clue-satisfied); }
   button.cell span { color: #666; font-size: .8em; }
 </style>

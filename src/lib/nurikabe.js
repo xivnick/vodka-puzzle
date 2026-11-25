@@ -25,26 +25,28 @@ function neighbors(index) {
   return result;
 }
 
-export function isNurikabeComplete(board, numbers = clues) {
+export function inspectNurikabe(board, numbers = clues) {
   const isShaded = index => board[index] === SHADED;
   const visited = new Set();
+  const conflicts = new Set();
+  const clueStatuses = new Map();
   let shadedRegions = 0;
+  let validRegions = true;
 
   for (let index = 0; index < numbers.length; index++) {
     if (visited.has(index)) continue;
     const shaded = isShaded(index);
-    if (shaded && ++shadedRegions > 1) return false;
+    if (shaded) shadedRegions++;
 
     const region = [index];
     visited.add(index);
-    let clue = 0;
+    const regionClues = [];
     for (const cell of region) {
-      if (numbers[cell]) {
-        if (shaded || clue) return false;
-        clue = numbers[cell];
+      if (numbers[cell]) regionClues.push(cell);
+      if (shaded && cell % size < size - 1 && cell < size * (size - 1)) {
+        const square = [cell, cell + 1, cell + size, cell + size + 1];
+        if (square.every(isShaded)) square.forEach(index => conflicts.add(index));
       }
-      if (shaded && cell % size < size - 1 && cell < size * (size - 1)
-        && isShaded(cell + 1) && isShaded(cell + size) && isShaded(cell + size + 1)) return false;
 
       for (const next of neighbors(cell)) {
         if (visited.has(next) || isShaded(next) !== shaded) continue;
@@ -53,8 +55,17 @@ export function isNurikabeComplete(board, numbers = clues) {
       }
     }
 
-    if (!shaded && region.length !== clue) return false;
+    if (shaded) {
+      if (regionClues.length) validRegions = false;
+    } else if (regionClues.length === 1) {
+      const [clue] = regionClues;
+      const matches = region.length === numbers[clue];
+      clueStatuses.set(clue, matches ? 'satisfied' : 'conflict');
+      if (!matches) validRegions = false;
+    } else {
+      validRegions = false;
+    }
   }
 
-  return shadedRegions === 1;
+  return { conflicts, clueStatuses, complete: validRegions && shadedRegions === 1 && conflicts.size === 0 };
 }
