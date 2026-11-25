@@ -59,10 +59,12 @@ export function inspectNurikabe(board, numbers = clues) {
       if (regionClues.length) validRegions = false;
     } else if (regionClues.length === 1) {
       const [clue] = regionClues;
-      const matches = region.length === numbers[clue];
-      const status = matches ? 'satisfied' : 'conflict';
-      region.forEach(cell => regionStatuses.set(cell, status));
-      if (!matches) validRegions = false;
+      const difference = region.length - numbers[clue];
+      if (difference <= 0) {
+        const status = difference === 0 ? 'satisfied' : 'conflict';
+        region.forEach(cell => regionStatuses.set(cell, status));
+      }
+      if (difference !== 0) validRegions = false;
     } else {
       validRegions = false;
     }
