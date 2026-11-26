@@ -7,7 +7,11 @@ const cells = [...grid.querySelectorAll('[data-cell]')];
 const clueCells = [...grid.querySelectorAll('[data-clue]')];
 const notesToggle = document.getElementById('nurikabeNotes');
 const completion = document.getElementById('nurikabeComplete');
-const regionLabels = { satisfied: ', 영역 크기 일치', conflict: ', 영역 크기 불일치' };
+const regionLabels = {
+  satisfied: ', 영역 크기 일치',
+  conflict: ', 영역 크기 불일치',
+  'missing-clue': ', 숫자 단서가 없는 영역',
+};
 
 let board = clues.map(() => EMPTY);
 let inputSwapped = false;
@@ -31,7 +35,7 @@ function render() {
     const squareConflict = conflicts.has(index);
     const status = regionStatuses.get(index);
     cell.classList.toggle('shaded', value === SHADED);
-    cell.classList.toggle('conflict', squareConflict || status === 'conflict');
+    cell.classList.toggle('conflict', squareConflict || status === 'conflict' || status === 'missing-clue');
     cell.classList.toggle('satisfied', status === 'satisfied');
     cell.firstElementChild.textContent = value === NOTE ? '×' : '';
     const label = value === SHADED ? '칠한 칸' : value === NOTE ? '× 메모' : '빈칸';

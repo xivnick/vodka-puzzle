@@ -67,6 +67,7 @@ export function inspectNurikabe(board, numbers = clues) {
       if (difference !== 0) validRegions = false;
     } else {
       validRegions = false;
+      if (regionClues.length === 0) region.forEach(cell => regionStatuses.set(cell, 'missing-clue'));
     }
   }
 
