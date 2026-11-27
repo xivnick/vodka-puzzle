@@ -8,6 +8,7 @@ import fcntl
 import json
 import os
 from pathlib import Path
+import re
 import socket
 import time
 import urllib.error
@@ -15,6 +16,16 @@ import urllib.request
 
 API = 'https://hlhrzbylbwebtoytmmpd.supabase.co'
 KEY = 'sb_publishable_YHte_s6VgQOQlU91hdsOoA_sDJ4_03y'
+
+
+def record_headers(result, headers):
+    for field, header, pattern in (
+        ('request_id', 'sb-request-id', r'[a-fA-F0-9-]{1,40}'),
+        ('cf_ray', 'cf-ray', r'[a-fA-F0-9]{8,32}-[A-Z]{3}'),
+    ):
+        value = headers.get(header, '')
+        if re.fullmatch(pattern, value):
+            result[field] = value
 
 
 def probe(name, url, body=None):
@@ -25,17 +36,32 @@ def probe(name, url, body=None):
     request = urllib.request.Request(url, data=json.dumps(body).encode() if body is not None else None,
                                      headers=headers)
     try:
-        with urllib.request.urlopen(request, timeout=12) as response:
+        # Allow time for Cloudflare to return its upstream connection error.
+        with urllib.request.urlopen(request, timeout=23 if url.startswith(API) else 12) as response:
             # These endpoints have bounded, small responses. Do not store their bodies.
             response.read(262144)
             result['status'] = response.status
-            result['request_id'] = response.headers.get('sb-request-id', '')
+            record_headers(result, response.headers)
     except urllib.error.HTTPError as error:
         result.update(status=error.code, error='http')
+        record_headers(result, error.headers)
+        if error.code == 503 and name == 'database':
+            try:
+                payload = json.loads(error.read(4096).decode())
+                code = payload.get('code', '') if isinstance(payload, dict) else ''
+                if isinstance(code, str) and re.fullmatch(r'PGRST[0-9]{3}', code):
+                    result['api_error_code'] = code
+            except (OSError, ValueError):
+                pass
     except (socket.timeout, TimeoutError):
         result['error'] = 'timeout'
     except urllib.error.URLError as error:
-        result['error'] = 'timeout' if isinstance(error.reason, socket.timeout) else 'connection'
+        if isinstance(error.reason, socket.timeout):
+            result['error'] = 'timeout'
+        elif isinstance(error.reason, socket.gaierror):
+            result['error'] = 'dns'
+        else:
+            result['error'] = 'connection'
     except Exception:
         result['error'] = 'unexpected'
     result['duration_ms'] = round((time.monotonic() - started) * 1000)
